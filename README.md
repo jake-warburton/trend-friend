@@ -1,89 +1,165 @@
-# Global Trend Intelligence Landscape
+# Trend Friend MVP
 
-This repository documents the ecosystem of tools used to discover emerging trends across the internet.
+Trend Friend is a local-first trend intelligence MVP that aggregates free signals from across the web, extracts recurring topics, computes transparent momentum scores, and displays a ranked list of emerging trends.
 
-The purpose is to explore the feasibility of building a **multi-signal trend detection platform** capable of identifying early signals of global interest.
+The implementation is intentionally simple:
 
-## Motivation
+- Python 3.9+
+- SQLite for persistence
+- standard-library HTTP clients
+- resilient source fallbacks so the system still runs without live network access
 
-Many founders, investors, and creators want to answer questions such as:
+## What It Does
 
-- What topics are gaining attention globally?
-- Which technologies are emerging before they go mainstream?
-- What markets are about to grow rapidly?
-- Where should content, products, or investments be positioned?
+The MVP ingests signals from these free sources:
 
-Existing tools often track **only one signal**, such as search data or social media engagement.
+- Reddit hot posts
+- Hacker News top stories
+- GitHub repository search
+- Wikipedia top pageviews
 
-This project explores the opportunity to combine multiple signals into a unified **attention intelligence platform**.
+It then:
 
----
+1. normalizes source items into a shared internal model
+2. extracts and clusters candidate topics
+3. computes explainable component scores
+4. ranks topics deterministically
+5. stores the latest signals and scores in SQLite
+6. prints a readable CLI dashboard
 
-# Proposed Product Concept
+## Project Structure
 
-## Global Attention Radar
+```text
+app/
+  sources/      external source adapters
+  topics/       topic extraction, normalization, clustering
+  scoring/      weights, score calculation, ranking
+  data/         SQLite setup and repositories
+  jobs/         ingestion and pipeline orchestration
+  ui/           CLI dashboard rendering
+scripts/
+  run_ingestion.py
+  run_dashboard.py
+  run_scheduler.py
+tests/
+main.py
+.env.example
+requirements.txt
+```
 
-A platform that aggregates signals from across the internet to detect emerging trends early.
+## Installation
 
-Example signals:
+No third-party packages are required for the MVP.
 
-- search momentum
-- social discussion velocity
-- developer ecosystem activity
-- startup ecosystem signals
-- financial market interest
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-Example output:
+## Configuration
 
-Trend: AI Agents
+Copy the example environment file if you want to customize runtime values:
 
-Search Growth: +420%
-Reddit Mentions: +700%
-GitHub Activity: +310%
+```bash
+cp .env.example .env
+```
 
-Prediction: Breakout trend
-Opportunity Score: High
+Supported environment variables:
 
----
+- `TREND_FRIEND_DATABASE_PATH`: SQLite database location. Default: `data/trend_friend.db`
+- `TREND_FRIEND_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
+- `TREND_FRIEND_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
+- `TREND_FRIEND_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `10`
+- `TREND_FRIEND_REDDIT_USER_AGENT`: User agent for Reddit requests
+- `GITHUB_TOKEN`: Optional token for higher GitHub API rate limits
 
-# Repository Contents
+## Running The MVP
 
-## Research
+Run the full ingestion, scoring, persistence, and dashboard flow:
 
-Research into existing tools and datasets.
+```bash
+python3 main.py
+```
 
-- `research/competitors.md`
-- `research/signals.md`
-- `research/datasets.md`
+Run ingestion only:
 
-## Documentation
+```bash
+python3 scripts/run_ingestion.py
+```
 
-Detailed documentation and reports.
+Render the latest stored ranking:
 
-- `docs/trend-tools-landscape.md`
-- `docs/product-concept.md`
-- `docs/market-gap.md`
+```bash
+python3 scripts/run_dashboard.py
+```
 
-## Examples
+Run the simple scheduler loop:
 
-Example outputs of what the system could produce.
+```bash
+python3 scripts/run_scheduler.py
+```
 
-- `examples/example-trend-report.md`
-- `examples/example-dashboard.md`
+The scheduler runs ingestion every 30 minutes until stopped.
 
----
+## Running Tests
 
-# Existing Tools Landscape
+```bash
+PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -v
+```
 
-Several tools exist for discovering trends:
+The test suite covers:
 
-| Tool             | Website                     | Focus                   |
-| ---------------- | --------------------------- | ----------------------- |
-| Exploding Topics | https://explodingtopics.com | early topic discovery   |
-| Treendly         | https://treendly.com        | keyword trends          |
-| Google Trends    | https://trends.google.com   | search trends           |
-| AnswerThePublic  | https://answerthepublic.com | search questions        |
-| BuzzSumo         | https://buzzsumo.com        | social content analysis |
-| TrendHunter      | https://trendhunter.com     | curated trend reports   |
+- topic normalization
+- duplicate merging
+- score calculation
+- deterministic ranking
+- repository persistence
+- source adapter normalization
 
-More details are available in:
+## How Scoring Works
+
+Each topic receives explicit score components:
+
+- `social_score`: Reddit and Hacker News signals
+- `developer_score`: GitHub signals
+- `knowledge_score`: Wikipedia pageview signals
+- `diversity_score`: bonus for appearing across multiple sources
+
+The implementation uses a simple weighted logarithmic scale so large raw metrics stay comparable without hiding the scoring logic.
+
+Each ranked result includes:
+
+- topic name
+- total score
+- component scores
+- source coverage
+- evidence text
+- latest update timestamp
+
+## Fallback Behavior
+
+Live APIs are not guaranteed to be available. To keep the MVP usable:
+
+- each source adapter catches fetch failures
+- the pipeline logs the failure
+- the adapter falls back to deterministic sample payloads
+- the full ingestion run continues
+
+This makes the project runnable in offline or rate-limited environments and keeps tests independent from live services.
+
+## Adding A New Source
+
+1. Create a new adapter in `app/sources/`.
+2. Normalize external records into `RawSourceItem`.
+3. Add the adapter to `fetch_source_items()` in [app/jobs/ingest.py](/Users/jakewarburton/Documents/repos/trend-friend/app/jobs/ingest.py).
+4. Map the source to a `signal_type` in [app/topics/extract.py](/Users/jakewarburton/Documents/repos/trend-friend/app/topics/extract.py) if needed.
+5. Add normalization tests in `tests/test_sources.py`.
+
+Because all sources feed the same shared models, scoring, ranking, persistence, and UI do not need structural changes for most new adapters.
+
+## Assumptions
+
+- Google Trends was not included in the first MVP because a stable free integration usually requires extra unofficial tooling. The current architecture leaves room to add it later as another adapter.
+- The CLI dashboard is the chosen MVP presentation layer because it is the lowest-complexity option that still satisfies the product and acceptance requirements.
+- Topic extraction uses simple heuristics rather than ML so behavior stays inspectable and testable.
