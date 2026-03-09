@@ -187,6 +187,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.first_seen_at, previous_captured_at)
         self.assertEqual(ai_agents.momentum.absolute_delta, 20.0)
         self.assertEqual(ai_agents.momentum.percent_delta, 200.0)
+        self.assertEqual(ai_agents.status, "breakout")
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
 
@@ -215,6 +216,7 @@ class RepositoryTests(unittest.TestCase):
 
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].history[0].captured_at, previous_captured_at)
+        self.assertEqual(records[0].status, "breakout")
         self.assertEqual(records[0].source_breakdown[0].source, "github")
         self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
 

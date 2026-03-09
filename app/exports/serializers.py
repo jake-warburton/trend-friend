@@ -217,6 +217,7 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
     return TrendExplorerRecordPayload(
         id=trend.id,
         name=trend.name,
+        status=trend.status,
         rank=trend.rank,
         previous_rank=trend.previous_rank,
         rank_change=trend.rank_change,
@@ -251,6 +252,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
     return TrendDetailRecordPayload(
         id=trend.id,
         name=trend.name,
+        status=trend.status,
         rank=trend.rank,
         previous_rank=trend.previous_rank,
         rank_change=trend.rank_change,

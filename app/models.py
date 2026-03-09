@@ -98,6 +98,7 @@ class TrendExplorerRecord:
 
     id: str
     name: str
+    status: str
     rank: int
     previous_rank: int | None
     rank_change: int | None
@@ -135,6 +136,7 @@ class TrendDetailRecord:
 
     id: str
     name: str
+    status: str
     rank: int
     previous_rank: int | None
     rank_change: int | None

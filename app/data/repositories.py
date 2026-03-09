@@ -426,6 +426,7 @@ class TrendScoreRepository:
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
                     name=self._format_trend_name(score.topic),
+                    status=self._build_trend_status(momentum),
                     rank=rank,
                     previous_rank=momentum.previous_rank,
                     rank_change=momentum.rank_change,
@@ -459,6 +460,7 @@ class TrendScoreRepository:
                 TrendDetailRecord(
                     id=self._slugify_topic(score.topic),
                     name=self._format_trend_name(score.topic),
+                    status=self._build_trend_status(momentum),
                     rank=rank,
                     previous_rank=momentum.previous_rank,
                     rank_change=momentum.rank_change,
@@ -558,6 +560,20 @@ class TrendScoreRepository:
             absolute_delta=absolute_delta,
             percent_delta=percent_delta,
         )
+
+    @staticmethod
+    def _build_trend_status(momentum: TrendMomentum) -> str:
+        """Return a compact product-facing label for current movement state."""
+
+        if momentum.previous_rank is None:
+            return "new"
+        if (momentum.rank_change or 0) >= 3 or (momentum.percent_delta or 0) >= 25:
+            return "breakout"
+        if (momentum.rank_change or 0) > 0 or (momentum.percent_delta or 0) > 0:
+            return "rising"
+        if (momentum.rank_change or 0) < 0 or (momentum.percent_delta or 0) < 0:
+            return "cooling"
+        return "steady"
 
     @staticmethod
     def _slugify_topic(topic: str) -> str:

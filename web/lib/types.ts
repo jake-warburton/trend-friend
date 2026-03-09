@@ -114,6 +114,7 @@ export type TrendCoverage = {
 export type TrendExplorerRecord = {
   id: string;
   name: string;
+  status: string;
   rank: number;
   previousRank: number | null;
   rankChange: number | null;
@@ -154,6 +155,7 @@ export type TrendEvidenceItem = {
 export type TrendDetailRecord = {
   id: string;
   name: string;
+  status: string;
   rank: number;
   previousRank: number | null;
   rankChange: number | null;

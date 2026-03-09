@@ -29,6 +29,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Back to explorer
           </Link>
           <p className="eyebrow">Trend detail</p>
+          <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
           <h1>{trend.name}</h1>
           <p className="detail-copy">
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
@@ -175,4 +176,36 @@ function formatMomentum(value: number | null) {
     return "No prior run";
   }
   return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function formatTrendStatus(status: string) {
+  if (status === "breakout") {
+    return "Breakout";
+  }
+  if (status === "rising") {
+    return "Rising";
+  }
+  if (status === "cooling") {
+    return "Cooling";
+  }
+  if (status === "new") {
+    return "New";
+  }
+  return "Steady";
+}
+
+function trendStatusClassName(status: string) {
+  if (status === "breakout") {
+    return "trend-status-pill trend-status-pill-breakout";
+  }
+  if (status === "rising") {
+    return "trend-status-pill trend-status-pill-rising";
+  }
+  if (status === "cooling") {
+    return "trend-status-pill trend-status-pill-cooling";
+  }
+  if (status === "new") {
+    return "trend-status-pill trend-status-pill-new";
+  }
+  return "trend-status-pill";
 }

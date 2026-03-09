@@ -258,6 +258,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                               {trend.name}
                             </Link>
                           </strong>
+                          <span className={trendStatusClassName(trend.status)}>
+                            {formatTrendStatus(trend.status)}
+                          </span>
                           <span>
                             First seen {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "this run"}
                           </span>
@@ -473,4 +476,36 @@ function formatDuration(durationMs: number) {
     return `${(durationMs / 1000).toFixed(1)}s`;
   }
   return `${durationMs}ms`;
+}
+
+function formatTrendStatus(status: string) {
+  if (status === "breakout") {
+    return "Breakout";
+  }
+  if (status === "rising") {
+    return "Rising";
+  }
+  if (status === "cooling") {
+    return "Cooling";
+  }
+  if (status === "new") {
+    return "New";
+  }
+  return "Steady";
+}
+
+function trendStatusClassName(status: string) {
+  if (status === "breakout") {
+    return "trend-status-pill trend-status-pill-breakout";
+  }
+  if (status === "rising") {
+    return "trend-status-pill trend-status-pill-rising";
+  }
+  if (status === "cooling") {
+    return "trend-status-pill trend-status-pill-cooling";
+  }
+  if (status === "new") {
+    return "trend-status-pill trend-status-pill-new";
+  }
+  return "trend-status-pill";
 }
