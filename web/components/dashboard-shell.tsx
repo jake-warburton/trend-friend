@@ -83,7 +83,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   return (
     <main className="dashboard-page">
       <section className="hero-panel">
-        <p className="eyebrow">Trend Friend</p>
         <div className="hero-rail">
           <article className="hero-summary-card">
             <span>Top trend</span>
@@ -204,10 +203,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       <section className="content-grid">
         <div className="ranking-panel">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">Explorer</p>
-              <h2>{filteredTrends.length} trends match the current filters</h2>
-            </div>
+            <h2>Explorer</h2>
+            <span className="section-heading-meta">{filteredTrends.length} live</span>
           </div>
 
           {filteredTrends.length === 0 ? (
@@ -219,7 +216,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <div className="explorer-list">
               <div className="explorer-legend" aria-hidden="true">
                 <span>Trend</span>
-                <span>Rank</span>
+                <span>Pos</span>
                 <span>Move</span>
                 <span>Score</span>
                 <span>Signals</span>
@@ -269,17 +266,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     </div>
                   </div>
 
-                  <div className="source-row source-row-compact">
-                    {trend.sources.map((source) => (
-                      <span className="source-badge" key={source}>
-                        {formatSourceLabel(source)}
-                      </span>
-                    ))}
-                  </div>
+                  <div className="explorer-card-bottom">
+                    <div className="evidence-preview evidence-preview-inline">
+                      <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                    </div>
 
-                  <div className="evidence-preview evidence-preview-wide">
-                    <strong>Evidence</strong>
-                    <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                    <div className="source-row source-row-compact">
+                      {trend.sources.map((source) => (
+                        <span className="source-badge" key={source}>
+                          {formatSourceLabel(source)}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -289,10 +287,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
         <aside className="history-panel">
           <div className="section-heading">
-            <div>
-              <p className="eyebrow">Operations</p>
-              <h2>Recent pipeline runs</h2>
-            </div>
+            <h2>Runs</h2>
           </div>
 
           <div className="snapshot-list">
@@ -326,10 +321,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           </div>
 
           <div className="section-heading section-heading-spaced">
-            <div>
-              <p className="eyebrow">Source health</p>
-              <h2>Contribution summary</h2>
-            </div>
+            <h2>Sources</h2>
           </div>
 
           <div className="snapshot-list">
