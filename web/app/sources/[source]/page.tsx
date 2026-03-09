@@ -19,6 +19,10 @@ export default async function SourcePage({ params }: SourcePageProps) {
     notFound();
   }
 
+  const maxItemCount = Math.max(...summary.runHistory.map((run) => run.itemCount), 1);
+  const maxDurationMs = Math.max(...summary.runHistory.map((run) => run.durationMs), 1);
+  const successfulRuns = summary.runHistory.filter((run) => run.success).length;
+
   return (
     <main className="detail-page">
       <section className="detail-hero">
@@ -62,6 +66,64 @@ export default async function SourcePage({ params }: SourcePageProps) {
               <h2>Recent ingestion history</h2>
             </div>
           </div>
+
+          <div className="source-metric-grid">
+            <article className="source-metric-card">
+              <span>Success rate</span>
+              <strong>
+                {summary.runHistory.length === 0
+                  ? "No runs"
+                  : `${Math.round((successfulRuns / summary.runHistory.length) * 100)}%`}
+              </strong>
+            </article>
+            <article className="source-metric-card">
+              <span>Peak items</span>
+              <strong>{maxItemCount}</strong>
+            </article>
+            <article className="source-metric-card">
+              <span>Slowest run</span>
+              <strong>{formatDuration(maxDurationMs)}</strong>
+            </article>
+          </div>
+
+          <div className="source-run-chart">
+            <div className="source-run-chart-header">
+              <strong>Item volume</strong>
+              <span>Recent runs</span>
+            </div>
+            <div className="source-run-bars">
+              {summary.runHistory.map((run, index) => (
+                <article className="source-run-bar-card" key={`items-${run.fetchedAt}-${index}`}>
+                  <div
+                    className={runBarClassName(run)}
+                    style={{ height: `${Math.max((run.itemCount / maxItemCount) * 100, 14)}%` }}
+                  />
+                  <strong>{run.itemCount}</strong>
+                  <span>{formatShortDate(run.fetchedAt)}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="source-run-chart">
+            <div className="source-run-chart-header">
+              <strong>Fetch duration</strong>
+              <span>Recent runs</span>
+            </div>
+            <div className="source-run-bars">
+              {summary.runHistory.map((run, index) => (
+                <article className="source-run-bar-card" key={`duration-${run.fetchedAt}-${index}`}>
+                  <div
+                    className={runBarClassName(run)}
+                    style={{ height: `${Math.max((run.durationMs / maxDurationMs) * 100, 14)}%` }}
+                  />
+                  <strong>{formatCompactDuration(run.durationMs)}</strong>
+                  <span>{formatShortDate(run.fetchedAt)}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+
           <div className="detail-list">
             {summary.runHistory.map((run, index) => (
               <article className="detail-list-item" key={`${run.fetchedAt}-${index}`}>
@@ -139,6 +201,20 @@ function formatDuration(durationMs: number) {
   return `${durationMs}ms`;
 }
 
+function formatCompactDuration(durationMs: number) {
+  if (durationMs >= 1000) {
+    return `${(durationMs / 1000).toFixed(1)}s`;
+  }
+  return `${durationMs}ms`;
+}
+
+function formatShortDate(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function formatSourceStatus(status: string) {
   if (status === "healthy") {
     return "Healthy";
@@ -147,4 +223,14 @@ function formatSourceStatus(status: string) {
     return "Degraded";
   }
   return "Stale";
+}
+
+function runBarClassName(run: { success: boolean; usedFallback: boolean }) {
+  if (!run.success) {
+    return "source-run-bar source-run-bar-failed";
+  }
+  if (run.usedFallback) {
+    return "source-run-bar source-run-bar-fallback";
+  }
+  return "source-run-bar";
 }
