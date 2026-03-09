@@ -5,7 +5,7 @@ import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState, useTransition } from "react";
+import { Fragment, useDeferredValue, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import type { DashboardData } from "@/lib/types";
@@ -245,61 +245,65 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <th>Total</th>
                     <th>Signals</th>
                     <th>Sources</th>
-                    <th>Evidence</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTrends.map((trend) => (
-                    <tr key={trend.id}>
-                      <td>
-                        <div className="trend-cell">
-                          <strong>
-                            <Link className="trend-link" href={`/trends/${trend.id}`}>
-                              {trend.name}
-                            </Link>
-                          </strong>
-                          <span className={trendStatusClassName(trend.status)}>
-                            {formatTrendStatus(trend.status)}
-                          </span>
-                          <span>
-                            First seen {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "this run"}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <strong>#{trend.rank}</strong>
-                      </td>
-                      <td>
-                        <span className={movementClassName(trend.rankChange)}>
-                          {formatRankChange(trend.rankChange)}
-                        </span>
-                        <small>{formatMomentum(trend.momentum.percentDelta)}</small>
-                      </td>
-                      <td>
-                        <div className="score-cell">
-                          <strong>{trend.score.total.toFixed(1)}</strong>
-                          <span>
-                            S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
-                            {trend.score.knowledge.toFixed(1)}
-                          </span>
-                        </div>
-                      </td>
-                      <td>{trend.coverage.signalCount}</td>
-                      <td>
-                        <div className="source-row source-row-compact">
-                          {trend.sources.map((source) => (
-                            <span className="source-badge" key={source}>
-                              {formatSourceLabel(source)}
+                    <Fragment key={trend.id}>
+                      <tr className="explorer-main-row">
+                        <td>
+                          <div className="trend-cell">
+                            <strong>
+                              <Link className="trend-link" href={`/trends/${trend.id}`}>
+                                {trend.name}
+                              </Link>
+                            </strong>
+                            <span className={trendStatusClassName(trend.status)}>
+                              {formatTrendStatus(trend.status)}
                             </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="evidence-cell">
-                        <div className="evidence-preview">
-                          {trend.evidencePreview[0] ?? "No evidence available."}
-                        </div>
-                      </td>
-                    </tr>
+                            <span>
+                              First seen {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "this run"}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <strong>#{trend.rank}</strong>
+                        </td>
+                        <td>
+                          <span className={movementClassName(trend.rankChange)}>
+                            {formatRankChange(trend.rankChange)}
+                          </span>
+                          <small>{formatMomentum(trend.momentum.percentDelta)}</small>
+                        </td>
+                        <td>
+                          <div className="score-cell">
+                            <strong>{trend.score.total.toFixed(1)}</strong>
+                            <span>
+                              S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
+                              {trend.score.knowledge.toFixed(1)}
+                            </span>
+                          </div>
+                        </td>
+                        <td>{trend.coverage.signalCount}</td>
+                        <td>
+                          <div className="source-row source-row-compact">
+                            {trend.sources.map((source) => (
+                              <span className="source-badge" key={source}>
+                                {formatSourceLabel(source)}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                      <tr className="explorer-evidence-row">
+                        <td colSpan={6}>
+                          <div className="evidence-preview evidence-preview-wide">
+                            <strong>Evidence</strong>
+                            <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

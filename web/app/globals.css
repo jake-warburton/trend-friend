@@ -444,6 +444,16 @@ input {
   background: rgba(54, 83, 135, 0.2);
 }
 
+.explorer-main-row td {
+  border-bottom: 0;
+  padding-bottom: 8px;
+}
+
+.explorer-evidence-row td {
+  padding-top: 0;
+  padding-bottom: 14px;
+}
+
 .trend-cell,
 .score-cell {
   display: grid;
@@ -493,10 +503,29 @@ input {
 }
 
 .evidence-preview {
-  display: -webkit-box;
-  overflow: hidden;
   color: var(--muted);
   line-height: 1.4;
+}
+
+.evidence-preview-wide {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(124, 157, 216, 0.12);
+  border-radius: 16px;
+  background: rgba(10, 22, 42, 0.6);
+}
+
+.evidence-preview-wide strong {
+  color: var(--accent-strong);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.evidence-preview-wide span {
+  display: -webkit-box;
+  overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
