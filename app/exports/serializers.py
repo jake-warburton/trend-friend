@@ -11,6 +11,10 @@ from app.exports.contracts import (
     DashboardOverviewSourcePayload,
     DashboardOverviewSummaryPayload,
     LatestTrendsPayload,
+    SourceRunPayload,
+    SourceSummaryPayload,
+    SourceSummaryRecordPayload,
+    SourceSummaryTrendPayload,
     TrendCoveragePayload,
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
@@ -25,8 +29,15 @@ from app.exports.contracts import (
     TrendSourceBreakdownPayload,
     TrendSnapshotPayload,
 )
-from app.models import NormalizedSignal, TrendDetailRecord, TrendExplorerRecord, TrendScoreResult
-from app.models import SourceIngestionRun
+from app.models import (
+    NormalizedSignal,
+    SourceIngestionRun,
+    SourceSummaryRecord,
+    SourceSummaryTrend,
+    TrendDetailRecord,
+    TrendExplorerRecord,
+    TrendScoreResult,
+)
 
 
 def build_latest_trends_payload(
@@ -125,6 +136,52 @@ def build_dashboard_overview_payload(
             newest_trend_name=newest_trend.name if newest_trend is not None else None,
         ),
         sources=source_summaries,
+    )
+
+
+def build_source_summary_payload(
+    generated_at: datetime,
+    sources: list[SourceSummaryRecord],
+) -> SourceSummaryPayload:
+    """Create the source summary payload for Dashboard V2."""
+
+    return SourceSummaryPayload(
+        generated_at=to_timestamp(generated_at),
+        sources=[
+            SourceSummaryRecordPayload(
+                source=source.source,
+                status=source.status,
+                latest_fetch_at=to_optional_timestamp(source.latest_fetch_at),
+                latest_success_at=to_optional_timestamp(source.latest_success_at),
+                latest_item_count=source.latest_item_count,
+                duration_ms=source.duration_ms,
+                used_fallback=source.used_fallback,
+                error_message=source.error_message,
+                signal_count=source.signal_count,
+                trend_count=source.trend_count,
+                run_history=[
+                    SourceRunPayload(
+                        fetched_at=to_timestamp(run.fetched_at),
+                        success=run.success,
+                        item_count=run.item_count,
+                        duration_ms=run.duration_ms,
+                        used_fallback=run.used_fallback,
+                        error_message=run.error_message,
+                    )
+                    for run in source.run_history
+                ],
+                top_trends=[
+                    SourceSummaryTrendPayload(
+                        id=trend.id,
+                        name=trend.name,
+                        rank=trend.rank,
+                        score_total=trend.score_total,
+                    )
+                    for trend in source.top_trends
+                ],
+            )
+            for source in sources
+        ],
     )
 
 
@@ -324,3 +381,57 @@ def build_source_status(run: SourceIngestionRun | None) -> str:
     if run.used_fallback:
         return "degraded"
     return "healthy"
+
+
+def build_source_summary_records(
+    trends: list[TrendDetailRecord],
+    signals: list[NormalizedSignal],
+    latest_source_runs: list[SourceIngestionRun],
+    source_run_history: dict[str, list[SourceIngestionRun]],
+) -> list[SourceSummaryRecord]:
+    """Build detailed source summaries from trend and ingestion state."""
+
+    signal_counts: dict[str, int] = {}
+    trend_counts: dict[str, set[str]] = {}
+    for signal in signals:
+        signal_counts[signal.source] = signal_counts.get(signal.source, 0) + 1
+        trend_counts.setdefault(signal.source, set()).add(signal.topic)
+
+    trends_by_source: dict[str, list[SourceSummaryTrend]] = {}
+    for trend in trends:
+        for source in trend.sources:
+            trends_by_source.setdefault(source, []).append(
+                SourceSummaryTrend(
+                    id=trend.id,
+                    name=trend.name,
+                    rank=trend.rank,
+                    score_total=round(trend.score.total_score, 1),
+                )
+            )
+
+    latest_run_map = {run.source: run for run in latest_source_runs}
+    known_sources = set(signal_counts) | set(latest_run_map) | set(trends_by_source) | set(source_run_history)
+    summaries: list[SourceSummaryRecord] = []
+    for source in sorted(known_sources):
+        latest_run = latest_run_map.get(source)
+        successful_runs = [run for run in source_run_history.get(source, []) if run.success]
+        summaries.append(
+            SourceSummaryRecord(
+                source=source,
+                status=build_source_status(latest_run),
+                latest_fetch_at=latest_run.fetched_at if latest_run is not None else None,
+                latest_success_at=successful_runs[0].fetched_at if successful_runs else None,
+                latest_item_count=latest_run.item_count if latest_run is not None else 0,
+                duration_ms=latest_run.duration_ms if latest_run is not None else 0,
+                used_fallback=latest_run.used_fallback if latest_run is not None else False,
+                error_message=latest_run.error_message if latest_run is not None else None,
+                signal_count=signal_counts.get(source, 0),
+                trend_count=len(trend_counts.get(source, set())),
+                run_history=source_run_history.get(source, []),
+                top_trends=sorted(
+                    trends_by_source.get(source, []),
+                    key=lambda trend: (trend.rank, -trend.score_total, trend.name),
+                )[:5],
+            )
+        )
+    return summaries

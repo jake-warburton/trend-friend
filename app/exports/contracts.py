@@ -269,6 +269,80 @@ class DashboardOverviewPayload:
         return payload
 
 
+@dataclass(frozen=True)
+class SourceRunPayload:
+    """Source ingestion run history item."""
+
+    fetched_at: str
+    success: bool
+    item_count: int
+    duration_ms: int
+    used_fallback: bool
+    error_message: str | None
+
+
+@dataclass(frozen=True)
+class SourceSummaryTrendPayload:
+    """Trend summary nested under a source summary."""
+
+    id: str
+    name: str
+    rank: int
+    score_total: float
+
+
+@dataclass(frozen=True)
+class SourceSummaryRecordPayload:
+    """Detailed source summary for source health pages."""
+
+    source: str
+    status: str
+    latest_fetch_at: str | None
+    latest_success_at: str | None
+    latest_item_count: int
+    duration_ms: int
+    used_fallback: bool
+    error_message: str | None
+    signal_count: int
+    trend_count: int
+    run_history: list[SourceRunPayload]
+    top_trends: list[SourceSummaryTrendPayload]
+
+
+@dataclass(frozen=True)
+class SourceSummaryPayload:
+    """Source summary response for Dashboard V2."""
+
+    generated_at: str
+    sources: list[SourceSummaryRecordPayload]
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-serializable dictionary with API-style keys."""
+
+        payload = asdict(self)
+        payload["generatedAt"] = payload.pop("generated_at")
+        for source in payload["sources"]:
+            source["latestFetchAt"] = source.pop("latest_fetch_at")
+            source["latestSuccessAt"] = source.pop("latest_success_at")
+            source["latestItemCount"] = source.pop("latest_item_count")
+            source["durationMs"] = source.pop("duration_ms")
+            source["usedFallback"] = source.pop("used_fallback")
+            source["errorMessage"] = source.pop("error_message")
+            source["signalCount"] = source.pop("signal_count")
+            source["trendCount"] = source.pop("trend_count")
+            source["runHistory"] = source.pop("run_history")
+            source["topTrends"] = source.pop("top_trends")
+            for run in source["runHistory"]:
+                run["fetchedAt"] = run.pop("fetched_at")
+                run["itemCount"] = run.pop("item_count")
+                run["durationMs"] = run.pop("duration_ms")
+                run["usedFallback"] = run.pop("used_fallback")
+                run["errorMessage"] = run.pop("error_message")
+            for trend in source["topTrends"]:
+                trend["scoreTotal"] = trend.pop("score_total")
+        return payload
+
+
 def trend_to_dict(trend: TrendRecord) -> dict[str, object]:
     """Serialize a trend record using API-style keys."""
 

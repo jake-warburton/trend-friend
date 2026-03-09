@@ -4,6 +4,7 @@ import path from "node:path";
 import type {
   DashboardData,
   DashboardOverviewResponse,
+  SourceSummaryResponse,
   TrendDetailIndexResponse,
   TrendDetailRecord,
   LatestTrendsResponse,
@@ -14,14 +15,15 @@ import type {
 const DATA_DIRECTORY = path.join(process.cwd(), "data");
 
 export async function loadDashboardData(): Promise<DashboardData> {
-  const [latest, history, overview, explorer, details] = await Promise.all([
+  const [latest, history, overview, explorer, details, sourceSummary] = await Promise.all([
     readLatestTrends(),
     readTrendHistory(),
     readDashboardOverview(),
     readTrendExplorer(),
     readTrendDetailIndex(),
+    readSourceSummary(),
   ]);
-  return { latest, history, overview, explorer, details };
+  return { latest, history, overview, explorer, details, sourceSummary };
 }
 
 async function readLatestTrends(): Promise<LatestTrendsResponse> {
@@ -121,6 +123,11 @@ export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord |
   return payload.trends.find((trend) => trend.id === slug) ?? null;
 }
 
+export async function loadSourceSummary(sourceId: string) {
+  const payload = await readSourceSummary();
+  return payload.sources.find((source) => source.source === sourceId) ?? null;
+}
+
 async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
   const payload = await readJsonFile<TrendDetailIndexResponse>("trend-detail-index.v2.json", {
     generatedAt: new Date(0).toISOString(),
@@ -147,6 +154,30 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
       history: trend.history ?? [],
       sourceBreakdown: trend.sourceBreakdown ?? [],
       evidenceItems: trend.evidenceItems ?? [],
+    })),
+  };
+}
+
+async function readSourceSummary(): Promise<SourceSummaryResponse> {
+  const payload = await readJsonFile<SourceSummaryResponse>("source-summary.v2.json", {
+    generatedAt: new Date(0).toISOString(),
+    sources: [],
+  });
+  return {
+    generatedAt: payload.generatedAt,
+    sources: (payload.sources ?? []).map((source) => ({
+      source: source.source,
+      status: source.status ?? "stale",
+      latestFetchAt: source.latestFetchAt ?? null,
+      latestSuccessAt: source.latestSuccessAt ?? null,
+      latestItemCount: source.latestItemCount ?? 0,
+      durationMs: source.durationMs ?? 0,
+      usedFallback: source.usedFallback ?? false,
+      errorMessage: source.errorMessage ?? null,
+      signalCount: source.signalCount ?? 0,
+      trendCount: source.trendCount ?? 0,
+      runHistory: source.runHistory ?? [],
+      topTrends: source.topTrends ?? [],
     })),
   };
 }

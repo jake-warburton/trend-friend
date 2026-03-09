@@ -18,6 +18,8 @@ from app.data.repositories import (
 from app.exports.files import write_export_payloads
 from app.exports.serializers import (
     build_dashboard_overview_payload,
+    build_source_summary_payload,
+    build_source_summary_records,
     build_trend_detail_index_payload,
     build_latest_trends_payload,
     build_trend_explorer_payload,
@@ -41,6 +43,7 @@ def main() -> None:
     generated_at = datetime.now(tz=timezone.utc)
     signals = signal_repository.list_signals()
     source_runs = source_run_repository.list_latest_runs()
+    source_run_history = source_run_repository.list_recent_runs(limit_per_source=6)
     latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
     history = repository.list_score_history(
         limit_runs=HISTORY_RUN_LIMIT,
@@ -69,6 +72,15 @@ def main() -> None:
         signals=signals,
         source_runs=source_runs,
     )
+    source_summary_payload = build_source_summary_payload(
+        generated_at=latest_captured_at or generated_at,
+        sources=build_source_summary_records(
+            trends=detail_records,
+            signals=signals,
+            latest_source_runs=source_runs,
+            source_run_history=source_run_history,
+        ),
+    )
     write_export_payloads(
         settings.web_data_path,
         latest_payload,
@@ -76,6 +88,7 @@ def main() -> None:
         overview_payload,
         explorer_payload,
         detail_payload,
+        source_summary_payload,
     )
 
 

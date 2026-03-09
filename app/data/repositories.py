@@ -129,6 +129,35 @@ class SourceIngestionRunRepository:
             for row in rows
         ]
 
+    def list_recent_runs(self, limit_per_source: int) -> dict[str, list[SourceIngestionRun]]:
+        """Return recent ingestion results for each source ordered newest first."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, fetched_at, success, item_count, duration_ms, used_fallback, error_message
+            FROM source_ingestion_runs
+            ORDER BY fetched_at DESC, id DESC
+            """
+        ).fetchall()
+        grouped: dict[str, list[SourceIngestionRun]] = {}
+        for row in rows:
+            source = row["source"]
+            runs = grouped.setdefault(source, [])
+            if len(runs) >= limit_per_source:
+                continue
+            runs.append(
+                SourceIngestionRun(
+                    source=source,
+                    fetched_at=datetime.fromisoformat(row["fetched_at"]),
+                    success=bool(row["success"]),
+                    item_count=row["item_count"],
+                    duration_ms=row["duration_ms"],
+                    used_fallback=bool(row["used_fallback"]),
+                    error_message=row["error_message"],
+                )
+            )
+        return grouped
+
 
 class TrendScoreRepository:
     """Persist and retrieve ranked trend scores."""

@@ -38,6 +38,7 @@ export type DashboardData = {
   overview: DashboardOverviewResponse;
   explorer: TrendExplorerResponse;
   details: TrendDetailIndexResponse;
+  sourceSummary: SourceSummaryResponse;
 };
 
 export type DashboardOverviewSummary = {
@@ -148,4 +149,40 @@ export type TrendDetailRecord = {
 export type TrendDetailIndexResponse = {
   generatedAt: string;
   trends: TrendDetailRecord[];
+};
+
+export type SourceRun = {
+  fetchedAt: string;
+  success: boolean;
+  itemCount: number;
+  durationMs: number;
+  usedFallback: boolean;
+  errorMessage: string | null;
+};
+
+export type SourceSummaryTrend = {
+  id: string;
+  name: string;
+  rank: number;
+  scoreTotal: number;
+};
+
+export type SourceSummaryRecord = {
+  source: string;
+  status: string;
+  latestFetchAt: string | null;
+  latestSuccessAt: string | null;
+  latestItemCount: number;
+  durationMs: number;
+  usedFallback: boolean;
+  errorMessage: string | null;
+  signalCount: number;
+  trendCount: number;
+  runHistory: SourceRun[];
+  topTrends: SourceSummaryTrend[];
+};
+
+export type SourceSummaryResponse = {
+  generatedAt: string;
+  sources: SourceSummaryRecord[];
 };

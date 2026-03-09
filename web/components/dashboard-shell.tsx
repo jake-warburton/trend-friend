@@ -300,7 +300,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             {initialData.overview.sources.map((source) => (
               <section className="snapshot-card" key={source.source}>
                 <header>
-                  <strong>{formatSourceLabel(source.source)}</strong>
+                  <strong>
+                    <Link className="trend-link" href={`/sources/${source.source}`}>
+                      {formatSourceLabel(source.source)}
+                    </Link>
+                  </strong>
                   <span className={sourceHealthClassName(source.status)}>
                     {formatSourceStatus(source.status)}
                   </span>

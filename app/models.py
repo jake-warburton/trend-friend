@@ -148,3 +148,31 @@ class TrendDetailRecord:
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
     evidence_items: list[TrendEvidenceItem]
+
+
+@dataclass(frozen=True)
+class SourceSummaryTrend:
+    """Trend summary associated with a source."""
+
+    id: str
+    name: str
+    rank: int
+    score_total: float
+
+
+@dataclass(frozen=True)
+class SourceSummaryRecord:
+    """Detailed source health and contribution summary."""
+
+    source: str
+    status: str
+    latest_fetch_at: datetime | None
+    latest_success_at: datetime | None
+    latest_item_count: int
+    duration_ms: int
+    used_fallback: bool
+    error_message: str | None
+    signal_count: int
+    trend_count: int
+    run_history: list[SourceIngestionRun]
+    top_trends: list[SourceSummaryTrend]
