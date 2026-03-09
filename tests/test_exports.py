@@ -24,6 +24,7 @@ from app.models import (
     TrendHistoryPoint,
     TrendMomentum,
     NormalizedSignal,
+    PipelineRun,
     SourceIngestionRun,
     SourceSummaryRecord,
     SourceSummaryTrend,
@@ -83,6 +84,7 @@ class ExportPayloadTests(unittest.TestCase):
                 build_source_run("reddit", True, 3, duration_ms=120),
                 build_source_run("github", False, 0, duration_ms=920, error_message="timeout"),
             ],
+            pipeline_runs=[build_pipeline_run()],
         )
         source_summary_payload = build_source_summary_payload(
             generated_at=generated_at,
@@ -123,6 +125,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
         self.assertEqual(payload["trends"][0]["firstSeenAt"], "2026-03-01T00:00:00Z")
+        self.assertEqual(payload["trends"][0]["momentum"]["percentDelta"], 40.2)
+        self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
+        self.assertEqual(payload["trends"][0]["evidencePreview"][0], "ai agents evidence")
 
     def test_build_trend_detail_index_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -134,6 +139,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
+        self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
+        self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
 
     def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -149,11 +156,14 @@ class ExportPayloadTests(unittest.TestCase):
                 build_source_run("reddit", True, 2, duration_ms=100),
                 build_source_run("github", True, 2, duration_ms=85, used_fallback=True),
             ],
+            pipeline_runs=[build_pipeline_run()],
         ).to_dict()
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["summary"]["totalSignals"], 3)
         self.assertEqual(payload["summary"]["sourceCount"], 2)
         self.assertEqual(payload["highlights"]["topTrendName"], "AI Agents")
+        self.assertEqual(payload["operations"]["successRate"], 100.0)
+        self.assertEqual(payload["operations"]["recentRuns"][0]["topTrendName"], "AI Agents")
         self.assertEqual(payload["sources"][0]["signalCount"], 2)
         self.assertEqual(payload["sources"][0]["trendCount"], 2)
         self.assertEqual(payload["sources"][0]["status"], "healthy")
@@ -168,7 +178,9 @@ class ExportPayloadTests(unittest.TestCase):
             trends=[build_detail_record("ai agents")],
             signals=[build_signal("ai agents", "reddit", "social", 12.0)],
             source_runs=[build_source_run("reddit", False, 0, duration_ms=900, error_message="timeout")],
+            pipeline_runs=[build_pipeline_run(failed_source_count=1, successful_source_count=3)],
         ).to_dict()
+        self.assertEqual(payload["operations"]["recentRuns"][0]["status"], "degraded")
         self.assertEqual(payload["sources"][0]["status"], "stale")
         self.assertEqual(payload["sources"][0]["errorMessage"], "timeout")
 
@@ -347,4 +359,24 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
                 score_total=42.4,
             )
         ],
+    )
+
+
+def build_pipeline_run(
+    *,
+    failed_source_count: int = 0,
+    successful_source_count: int = 4,
+) -> PipelineRun:
+    """Create a stable pipeline run fixture."""
+
+    return PipelineRun(
+        captured_at=datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc),
+        duration_ms=2400,
+        source_count=4,
+        successful_source_count=successful_source_count,
+        failed_source_count=failed_source_count,
+        signal_count=42,
+        ranked_trend_count=10,
+        top_topic="ai agents",
+        top_score=42.4,
     )

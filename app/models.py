@@ -176,3 +176,18 @@ class SourceSummaryRecord:
     trend_count: int
     run_history: list[SourceIngestionRun]
     top_trends: list[SourceSummaryTrend]
+
+
+@dataclass(frozen=True)
+class PipelineRun:
+    """Operational summary for a full pipeline execution."""
+
+    captured_at: datetime
+    duration_ms: int
+    source_count: int
+    successful_source_count: int
+    failed_source_count: int
+    signal_count: int
+    ranked_trend_count: int
+    top_topic: str | None
+    top_score: float | None

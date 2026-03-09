@@ -11,6 +11,7 @@ bootstrap_project_root()
 from app.config import load_settings
 from app.data.database import connect_database, initialize_database
 from app.data.repositories import (
+    PipelineRunRepository,
     SignalRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
@@ -28,6 +29,7 @@ from app.exports.serializers import (
 from app.logging import configure_logging
 
 HISTORY_RUN_LIMIT = 10
+PIPELINE_RUN_LIMIT = 6
 
 
 def main() -> None:
@@ -38,10 +40,12 @@ def main() -> None:
     connection = connect_database(settings.database_path)
     initialize_database(connection)
     signal_repository = SignalRepository(connection)
+    pipeline_run_repository = PipelineRunRepository(connection)
     source_run_repository = SourceIngestionRunRepository(connection)
     repository = TrendScoreRepository(connection)
     generated_at = datetime.now(tz=timezone.utc)
     signals = signal_repository.list_signals()
+    pipeline_runs = pipeline_run_repository.list_recent_runs(limit=PIPELINE_RUN_LIMIT)
     source_runs = source_run_repository.list_latest_runs()
     source_run_history = source_run_repository.list_recent_runs(limit_per_source=6)
     latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
@@ -71,6 +75,7 @@ def main() -> None:
         trends=detail_records,
         signals=signals,
         source_runs=source_runs,
+        pipeline_runs=pipeline_runs,
     )
     source_summary_payload = build_source_summary_payload(
         generated_at=latest_captured_at or generated_at,

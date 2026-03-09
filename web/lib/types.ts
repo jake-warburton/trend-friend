@@ -70,10 +70,32 @@ export type DashboardOverviewSource = {
   errorMessage: string | null;
 };
 
+export type DashboardOverviewRun = {
+  capturedAt: string;
+  durationMs: number;
+  sourceCount: number;
+  successfulSourceCount: number;
+  failedSourceCount: number;
+  signalCount: number;
+  rankedTrendCount: number;
+  status: string;
+  topTrendId: string | null;
+  topTrendName: string | null;
+  topScore: number | null;
+};
+
+export type DashboardOverviewOperations = {
+  lastRunAt: string | null;
+  successRate: number;
+  averageDurationMs: number;
+  recentRuns: DashboardOverviewRun[];
+};
+
 export type DashboardOverviewResponse = {
   generatedAt: string;
   summary: DashboardOverviewSummary;
   highlights: DashboardOverviewHighlights;
+  operations: DashboardOverviewOperations;
   sources: DashboardOverviewSource[];
 };
 

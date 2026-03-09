@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app.models import (
     NormalizedSignal,
+    PipelineRun,
     SourceIngestionRun,
     TrendDetailRecord,
     TrendEvidenceItem,
@@ -157,6 +158,73 @@ class SourceIngestionRunRepository:
                 )
             )
         return grouped
+
+
+class PipelineRunRepository:
+    """Persist and retrieve full pipeline execution summaries."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self.connection = connection
+
+    def append_run(self, run: PipelineRun) -> None:
+        """Persist one pipeline execution summary."""
+
+        self.connection.execute(
+            """
+            INSERT INTO pipeline_runs (
+                captured_at,
+                duration_ms,
+                source_count,
+                successful_source_count,
+                failed_source_count,
+                signal_count,
+                ranked_trend_count,
+                top_topic,
+                top_score
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                run.captured_at.isoformat(),
+                run.duration_ms,
+                run.source_count,
+                run.successful_source_count,
+                run.failed_source_count,
+                run.signal_count,
+                run.ranked_trend_count,
+                run.top_topic,
+                run.top_score,
+            ),
+        )
+        self.connection.commit()
+
+    def list_recent_runs(self, limit: int) -> list[PipelineRun]:
+        """Return recent pipeline execution summaries ordered newest first."""
+
+        rows = self.connection.execute(
+            """
+            SELECT captured_at, duration_ms, source_count, successful_source_count,
+                   failed_source_count, signal_count, ranked_trend_count, top_topic, top_score
+            FROM pipeline_runs
+            ORDER BY captured_at DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [
+            PipelineRun(
+                captured_at=datetime.fromisoformat(row["captured_at"]),
+                duration_ms=row["duration_ms"],
+                source_count=row["source_count"],
+                successful_source_count=row["successful_source_count"],
+                failed_source_count=row["failed_source_count"],
+                signal_count=row["signal_count"],
+                ranked_trend_count=row["ranked_trend_count"],
+                top_topic=row["top_topic"],
+                top_score=row["top_score"],
+            )
+            for row in rows
+        ]
 
 
 class TrendScoreRepository:

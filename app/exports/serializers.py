@@ -7,7 +7,9 @@ from datetime import datetime, timezone
 
 from app.exports.contracts import (
     DashboardOverviewHighlightsPayload,
+    DashboardOverviewOperationsPayload,
     DashboardOverviewPayload,
+    DashboardOverviewRunPayload,
     DashboardOverviewSourcePayload,
     DashboardOverviewSummaryPayload,
     LatestTrendsPayload,
@@ -31,6 +33,7 @@ from app.exports.contracts import (
 )
 from app.models import (
     NormalizedSignal,
+    PipelineRun,
     SourceIngestionRun,
     SourceSummaryRecord,
     SourceSummaryTrend,
@@ -99,6 +102,7 @@ def build_dashboard_overview_payload(
     trends: list[TrendDetailRecord],
     signals: list[NormalizedSignal],
     source_runs: list[SourceIngestionRun],
+    pipeline_runs: list[PipelineRun],
 ) -> DashboardOverviewPayload:
     """Create the overview payload for the dashboard landing page."""
 
@@ -135,6 +139,7 @@ def build_dashboard_overview_payload(
             newest_trend_id=newest_trend.id if newest_trend is not None else None,
             newest_trend_name=newest_trend.name if newest_trend is not None else None,
         ),
+        operations=build_dashboard_operations_payload(pipeline_runs),
         sources=source_summaries,
     )
 
@@ -381,6 +386,46 @@ def build_source_status(run: SourceIngestionRun | None) -> str:
     if run.used_fallback:
         return "degraded"
     return "healthy"
+
+
+def build_dashboard_operations_payload(
+    pipeline_runs: list[PipelineRun],
+) -> DashboardOverviewOperationsPayload:
+    """Return recent operational history for full pipeline runs."""
+
+    if not pipeline_runs:
+        return DashboardOverviewOperationsPayload(
+            last_run_at=None,
+            success_rate=0.0,
+            average_duration_ms=0,
+            recent_runs=[],
+        )
+
+    healthy_runs = sum(1 for run in pipeline_runs if run.failed_source_count == 0)
+    average_duration_ms = round(
+        sum(run.duration_ms for run in pipeline_runs) / len(pipeline_runs)
+    )
+    return DashboardOverviewOperationsPayload(
+        last_run_at=to_timestamp(pipeline_runs[0].captured_at),
+        success_rate=round((healthy_runs / len(pipeline_runs)) * 100, 1),
+        average_duration_ms=average_duration_ms,
+        recent_runs=[
+            DashboardOverviewRunPayload(
+                captured_at=to_timestamp(run.captured_at),
+                duration_ms=run.duration_ms,
+                source_count=run.source_count,
+                successful_source_count=run.successful_source_count,
+                failed_source_count=run.failed_source_count,
+                signal_count=run.signal_count,
+                ranked_trend_count=run.ranked_trend_count,
+                status="healthy" if run.failed_source_count == 0 else "degraded",
+                top_trend_id=slugify(run.top_topic) if run.top_topic else None,
+                top_trend_name=format_trend_name(run.top_topic) if run.top_topic else None,
+                top_score=round(run.top_score, 1) if run.top_score is not None else None,
+            )
+            for run in pipeline_runs
+        ],
+    )
 
 
 def build_source_summary_records(

@@ -8,11 +8,12 @@ from pathlib import Path
 
 from app.data.database import connect_database, initialize_database
 from app.data.repositories import (
+    PipelineRunRepository,
     SignalRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
 )
-from app.models import NormalizedSignal, SourceIngestionRun, TrendScoreResult
+from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
 
 
 class RepositoryTests(unittest.TestCase):
@@ -98,6 +99,42 @@ class RepositoryTests(unittest.TestCase):
         repository.replace_scores([score])
         stored_scores = repository.list_scores(limit=5)
         self.assertEqual(stored_scores, [score])
+
+    def test_pipeline_run_repository_returns_recent_runs(self) -> None:
+        repository = PipelineRunRepository(self.connection)
+        repository.append_run(
+            PipelineRun(
+                captured_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                duration_ms=1800,
+                source_count=4,
+                successful_source_count=4,
+                failed_source_count=0,
+                signal_count=40,
+                ranked_trend_count=10,
+                top_topic="ai agents",
+                top_score=41.2,
+            )
+        )
+        repository.append_run(
+            PipelineRun(
+                captured_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+                duration_ms=2200,
+                source_count=4,
+                successful_source_count=3,
+                failed_source_count=1,
+                signal_count=32,
+                ranked_trend_count=9,
+                top_topic="battery recycling",
+                top_score=28.4,
+            )
+        )
+
+        runs = repository.list_recent_runs(limit=5)
+
+        self.assertEqual(len(runs), 2)
+        self.assertEqual(runs[0].captured_at, datetime(2026, 3, 9, tzinfo=timezone.utc))
+        self.assertEqual(runs[0].failed_source_count, 1)
+        self.assertEqual(runs[1].top_topic, "ai agents")
 
     def test_trend_score_repository_stores_history_snapshots(self) -> None:
         repository = TrendScoreRepository(self.connection)

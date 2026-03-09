@@ -57,6 +57,12 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       newestTrendId: null,
       newestTrendName: null,
     },
+    operations: {
+      lastRunAt: null,
+      successRate: 0,
+      averageDurationMs: 0,
+      recentRuns: [],
+    },
     sources: [],
   });
   return {
@@ -74,6 +80,24 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       biggestMoverName: payload.highlights?.biggestMoverName ?? null,
       newestTrendId: payload.highlights?.newestTrendId ?? null,
       newestTrendName: payload.highlights?.newestTrendName ?? null,
+    },
+    operations: {
+      lastRunAt: payload.operations?.lastRunAt ?? null,
+      successRate: payload.operations?.successRate ?? 0,
+      averageDurationMs: payload.operations?.averageDurationMs ?? 0,
+      recentRuns: (payload.operations?.recentRuns ?? []).map((run) => ({
+        capturedAt: run.capturedAt,
+        durationMs: run.durationMs ?? 0,
+        sourceCount: run.sourceCount ?? 0,
+        successfulSourceCount: run.successfulSourceCount ?? 0,
+        failedSourceCount: run.failedSourceCount ?? 0,
+        signalCount: run.signalCount ?? 0,
+        rankedTrendCount: run.rankedTrendCount ?? 0,
+        status: run.status ?? "degraded",
+        topTrendId: run.topTrendId ?? null,
+        topTrendName: run.topTrendName ?? null,
+        topScore: run.topScore ?? null,
+      })),
     },
     sources: (payload.sources ?? []).map((source) => ({
       source: source.source,

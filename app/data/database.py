@@ -61,6 +61,19 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             captured_at TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS pipeline_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            captured_at TEXT NOT NULL,
+            duration_ms INTEGER NOT NULL,
+            source_count INTEGER NOT NULL,
+            successful_source_count INTEGER NOT NULL,
+            failed_source_count INTEGER NOT NULL,
+            signal_count INTEGER NOT NULL,
+            ranked_trend_count INTEGER NOT NULL,
+            top_topic TEXT NULL,
+            top_score REAL NULL
+        );
+
         CREATE TABLE IF NOT EXISTS trend_score_snapshots (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             run_id INTEGER NOT NULL,

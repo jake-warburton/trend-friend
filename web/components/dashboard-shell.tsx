@@ -108,6 +108,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <span>Total signals</span>
             <strong>{initialData.overview.summary.totalSignals}</strong>
           </div>
+          <div className="stat-card">
+            <span>Run health</span>
+            <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
+          </div>
           <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
             {isPending ? "Refreshing..." : "Refresh trends"}
           </Button>
@@ -124,6 +128,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           <span className="overview-label">Newest trend</span>
           <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
           <small>Most recently first-seen topic in the ranked set.</small>
+        </article>
+        <article className="overview-card">
+          <span className="overview-label">Pipeline health</span>
+          <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
+          <small>
+            Average run {formatDuration(initialData.overview.operations.averageDurationMs)} across recent
+            refreshes.
+          </small>
         </article>
         <article className="overview-card">
           <span className="overview-label">Average score</span>
@@ -290,6 +302,44 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
         <aside className="history-panel">
           <div className="section-heading">
+            <div>
+              <p className="eyebrow">Operations</p>
+              <h2>Recent pipeline runs</h2>
+            </div>
+          </div>
+
+          <div className="snapshot-list">
+            {initialData.overview.operations.recentRuns.map((run) => (
+              <section className="snapshot-card" key={run.capturedAt}>
+                <header>
+                  <strong>{formatTimestamp(run.capturedAt)}</strong>
+                  <span className={sourceHealthClassName(run.status)}>
+                    {run.failedSourceCount === 0 ? "Healthy run" : "Degraded run"}
+                  </span>
+                </header>
+                <p className="source-summary-copy">
+                  {run.signalCount} signals, {run.rankedTrendCount} ranked trends,{" "}
+                  {run.successfulSourceCount}/{run.sourceCount} sources healthy.
+                </p>
+                <p className="source-summary-copy">
+                  Duration {formatDuration(run.durationMs)}.{" "}
+                  {run.topTrendId && run.topTrendName ? (
+                    <>
+                      Top trend{" "}
+                      <Link className="trend-link" href={`/trends/${run.topTrendId}`}>
+                        {run.topTrendName}
+                      </Link>
+                      {run.topScore != null ? ` at ${run.topScore.toFixed(1)}.` : "."}
+                    </>
+                  ) : (
+                    "No ranked top trend."
+                  )}
+                </p>
+              </section>
+            ))}
+          </div>
+
+          <div className="section-heading section-heading-spaced">
             <div>
               <p className="eyebrow">Source health</p>
               <h2>Contribution summary</h2>

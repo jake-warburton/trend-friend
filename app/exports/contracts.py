@@ -234,12 +234,40 @@ class DashboardOverviewSourcePayload:
 
 
 @dataclass(frozen=True)
+class DashboardOverviewRunPayload:
+    """Recent pipeline execution summary shown on the dashboard."""
+
+    captured_at: str
+    duration_ms: int
+    source_count: int
+    successful_source_count: int
+    failed_source_count: int
+    signal_count: int
+    ranked_trend_count: int
+    status: str
+    top_trend_id: str | None
+    top_trend_name: str | None
+    top_score: float | None
+
+
+@dataclass(frozen=True)
+class DashboardOverviewOperationsPayload:
+    """Operational summary for recent pipeline executions."""
+
+    last_run_at: str | None
+    success_rate: float
+    average_duration_ms: int
+    recent_runs: list[DashboardOverviewRunPayload]
+
+
+@dataclass(frozen=True)
 class DashboardOverviewPayload:
     """Overview response for the dashboard landing page."""
 
     generated_at: str
     summary: DashboardOverviewSummaryPayload
     highlights: DashboardOverviewHighlightsPayload
+    operations: DashboardOverviewOperationsPayload
     sources: list[DashboardOverviewSourcePayload]
 
     def to_dict(self) -> dict[str, object]:
@@ -257,6 +285,21 @@ class DashboardOverviewPayload:
         payload["highlights"]["biggestMoverName"] = payload["highlights"].pop("biggest_mover_name")
         payload["highlights"]["newestTrendId"] = payload["highlights"].pop("newest_trend_id")
         payload["highlights"]["newestTrendName"] = payload["highlights"].pop("newest_trend_name")
+        payload["operations"]["lastRunAt"] = payload["operations"].pop("last_run_at")
+        payload["operations"]["successRate"] = payload["operations"].pop("success_rate")
+        payload["operations"]["averageDurationMs"] = payload["operations"].pop("average_duration_ms")
+        payload["operations"]["recentRuns"] = payload["operations"].pop("recent_runs")
+        for run in payload["operations"]["recentRuns"]:
+            run["capturedAt"] = run.pop("captured_at")
+            run["durationMs"] = run.pop("duration_ms")
+            run["sourceCount"] = run.pop("source_count")
+            run["successfulSourceCount"] = run.pop("successful_source_count")
+            run["failedSourceCount"] = run.pop("failed_source_count")
+            run["signalCount"] = run.pop("signal_count")
+            run["rankedTrendCount"] = run.pop("ranked_trend_count")
+            run["topTrendId"] = run.pop("top_trend_id")
+            run["topTrendName"] = run.pop("top_trend_name")
+            run["topScore"] = run.pop("top_score")
         for source in payload["sources"]:
             source["signalCount"] = source.pop("signal_count")
             source["trendCount"] = source.pop("trend_count")
@@ -359,6 +402,13 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
     payload["latestSignalAt"] = payload.pop("latest_signal_at")
+    payload["momentum"]["previousRank"] = payload["momentum"].pop("previous_rank")
+    payload["momentum"]["rankChange"] = payload["momentum"].pop("rank_change")
+    payload["momentum"]["absoluteDelta"] = payload["momentum"].pop("absolute_delta")
+    payload["momentum"]["percentDelta"] = payload["momentum"].pop("percent_delta")
+    payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
+    payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
+    payload["evidencePreview"] = payload.pop("evidence_preview")
     return payload
 
 
@@ -370,12 +420,19 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
     payload["latestSignalAt"] = payload.pop("latest_signal_at")
+    payload["momentum"]["previousRank"] = payload["momentum"].pop("previous_rank")
+    payload["momentum"]["rankChange"] = payload["momentum"].pop("rank_change")
+    payload["momentum"]["absoluteDelta"] = payload["momentum"].pop("absolute_delta")
+    payload["momentum"]["percentDelta"] = payload["momentum"].pop("percent_delta")
+    payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
+    payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
     payload["evidenceItems"] = payload.pop("evidence_items")
     for point in payload["history"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")
     for source in payload["sourceBreakdown"]:
+        source["signalCount"] = source.pop("signal_count")
         source["latestSignalAt"] = source.pop("latest_signal_at")
     for item in payload["evidenceItems"]:
         item["signalType"] = item.pop("signal_type")
