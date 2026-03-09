@@ -246,10 +246,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
-                        <strong className={movementClassName(trend.rankChange)}>
-                          {formatRankChange(trend.rankChange)}
-                        </strong>
-                        <small>{formatMomentum(trend.momentum.percentDelta)}</small>
+                        <div className="movement-inline">
+                          <strong className={movementClassName(trend.rankChange)}>
+                            {formatRankChange(trend.rankChange)}
+                          </strong>
+                          <small>{formatMomentum(trend.momentum.percentDelta)}</small>
+                        </div>
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">

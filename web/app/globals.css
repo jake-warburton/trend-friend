@@ -525,7 +525,20 @@ input {
   white-space: nowrap;
 }
 
+.movement-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
 .score-inline small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movement-inline small {
   overflow: hidden;
   text-overflow: ellipsis;
 }
