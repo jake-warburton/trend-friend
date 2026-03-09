@@ -12,7 +12,11 @@ from app.config import load_settings
 from app.data.database import connect_database, initialize_database
 from app.data.repositories import TrendScoreRepository
 from app.exports.files import write_export_payloads
-from app.exports.serializers import build_latest_trends_payload, build_trend_history_payload
+from app.exports.serializers import (
+    build_latest_trends_payload,
+    build_trend_explorer_payload,
+    build_trend_history_payload,
+)
 from app.logging import configure_logging
 
 HISTORY_RUN_LIMIT = 10
@@ -32,6 +36,7 @@ def main() -> None:
         limit_runs=HISTORY_RUN_LIMIT,
         per_run_limit=settings.ranking_limit,
     )
+    explorer_records = repository.list_trend_explorer_records(limit=settings.ranking_limit)
     connection.close()
 
     latest_payload = build_latest_trends_payload(
@@ -39,7 +44,11 @@ def main() -> None:
         scores=latest_scores,
     )
     history_payload = build_trend_history_payload(generated_at=generated_at, snapshots=history)
-    write_export_payloads(settings.web_data_path, latest_payload, history_payload)
+    explorer_payload = build_trend_explorer_payload(
+        generated_at=latest_captured_at or generated_at,
+        trends=explorer_records,
+    )
+    write_export_payloads(settings.web_data_path, latest_payload, history_payload, explorer_payload)
 
 
 if __name__ == "__main__":

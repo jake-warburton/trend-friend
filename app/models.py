@@ -58,3 +58,39 @@ class TrendScoreResult:
     evidence: list[str]
     source_counts: dict[str, int]
     latest_timestamp: datetime
+
+
+@dataclass(frozen=True)
+class TrendHistoryPoint:
+    """Historical position and score for a topic at a specific run."""
+
+    captured_at: datetime
+    rank: int
+    score_total: float
+
+
+@dataclass(frozen=True)
+class TrendMomentum:
+    """Movement metrics derived from the most recent historical snapshots."""
+
+    previous_rank: int | None
+    rank_change: int | None
+    absolute_delta: float | None
+    percent_delta: float | None
+
+
+@dataclass(frozen=True)
+class TrendExplorerRecord:
+    """Richer read model for the explorer dashboard."""
+
+    id: str
+    name: str
+    rank: int
+    previous_rank: int | None
+    rank_change: int | None
+    first_seen_at: datetime | None
+    latest_signal_at: datetime
+    score: TrendScoreResult
+    momentum: TrendMomentum
+    source_count: int
+    signal_count: int

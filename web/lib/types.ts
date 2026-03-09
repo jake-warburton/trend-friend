@@ -35,4 +35,37 @@ export type TrendHistoryResponse = {
 export type DashboardData = {
   latest: LatestTrendsResponse;
   history: TrendHistoryResponse;
+  explorer: TrendExplorerResponse;
+};
+
+export type TrendMomentum = {
+  previousRank: number | null;
+  rankChange: number | null;
+  absoluteDelta: number | null;
+  percentDelta: number | null;
+};
+
+export type TrendCoverage = {
+  sourceCount: number;
+  signalCount: number;
+};
+
+export type TrendExplorerRecord = {
+  id: string;
+  name: string;
+  rank: number;
+  previousRank: number | null;
+  rankChange: number | null;
+  firstSeenAt: string | null;
+  latestSignalAt: string;
+  score: TrendScore;
+  momentum: TrendMomentum;
+  coverage: TrendCoverage;
+  sources: string[];
+  evidencePreview: string[];
+};
+
+export type TrendExplorerResponse = {
+  generatedAt: string;
+  trends: TrendExplorerRecord[];
 };

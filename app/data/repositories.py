@@ -6,7 +6,13 @@ import json
 import sqlite3
 from datetime import datetime
 
-from app.models import NormalizedSignal, TrendScoreResult
+from app.models import (
+    NormalizedSignal,
+    TrendExplorerRecord,
+    TrendHistoryPoint,
+    TrendMomentum,
+    TrendScoreResult,
+)
 
 
 class SignalRepository:
@@ -200,6 +206,75 @@ class TrendScoreRepository:
             )
         return history
 
+    def get_topic_history(self, topic: str, limit_runs: int) -> list[TrendHistoryPoint]:
+        """Return recent history points for a single topic ordered newest first."""
+
+        rows = self.connection.execute(
+            """
+            SELECT trend_runs.captured_at, trend_score_snapshots.rank_position, trend_score_snapshots.total_score
+            FROM trend_score_snapshots
+            INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
+            WHERE trend_score_snapshots.topic = ?
+            ORDER BY trend_runs.captured_at DESC, trend_runs.id DESC
+            LIMIT ?
+            """,
+            (topic, limit_runs),
+        ).fetchall()
+        return [
+            TrendHistoryPoint(
+                captured_at=datetime.fromisoformat(row["captured_at"]),
+                rank=row["rank_position"],
+                score_total=row["total_score"],
+            )
+            for row in rows
+        ]
+
+    def get_first_seen_at(self, topic: str) -> datetime | None:
+        """Return the first captured run timestamp for a topic."""
+
+        row = self.connection.execute(
+            """
+            SELECT trend_runs.captured_at
+            FROM trend_score_snapshots
+            INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
+            WHERE trend_score_snapshots.topic = ?
+            ORDER BY trend_runs.captured_at ASC, trend_runs.id ASC
+            LIMIT 1
+            """,
+            (topic,),
+        ).fetchone()
+        if row is None:
+            return None
+        return datetime.fromisoformat(row["captured_at"])
+
+    def list_trend_explorer_records(self, limit: int, history_limit: int = 2) -> list[TrendExplorerRecord]:
+        """Return explorer-ready records with movement fields derived from snapshots."""
+
+        latest_captured_at, latest_scores = self.list_latest_snapshot(limit=limit)
+        if latest_captured_at is None:
+            return []
+
+        records: list[TrendExplorerRecord] = []
+        for rank, score in enumerate(latest_scores, start=1):
+            history = self.get_topic_history(score.topic, limit_runs=history_limit)
+            momentum = self._build_momentum(score.total_score, history)
+            records.append(
+                TrendExplorerRecord(
+                    id=self._slugify_topic(score.topic),
+                    name=self._format_trend_name(score.topic),
+                    rank=rank,
+                    previous_rank=momentum.previous_rank,
+                    rank_change=momentum.rank_change,
+                    first_seen_at=self.get_first_seen_at(score.topic),
+                    latest_signal_at=score.latest_timestamp,
+                    score=score,
+                    momentum=momentum,
+                    source_count=len(score.source_counts),
+                    signal_count=sum(score.source_counts.values()),
+                )
+            )
+        return records
+
     @staticmethod
     def _score_from_row(row: sqlite3.Row) -> TrendScoreResult:
         """Build a score model from a SQLite row."""
@@ -216,3 +291,36 @@ class TrendScoreRepository:
             evidence=json.loads(row["evidence_json"]),
             latest_timestamp=datetime.fromisoformat(row["latest_timestamp"]),
         )
+
+    @staticmethod
+    def _build_momentum(latest_total_score: float, history: list[TrendHistoryPoint]) -> TrendMomentum:
+        """Build movement metrics from the two newest historical points."""
+
+        previous = history[1] if len(history) > 1 else None
+        absolute_delta = None
+        percent_delta = None
+        if previous is not None:
+            absolute_delta = round(latest_total_score - previous.score_total, 1)
+            if previous.score_total != 0:
+                percent_delta = round((absolute_delta / previous.score_total) * 100, 1)
+
+        return TrendMomentum(
+            previous_rank=previous.rank if previous is not None else None,
+            rank_change=(previous.rank - history[0].rank) if previous is not None else None,
+            absolute_delta=absolute_delta,
+            percent_delta=percent_delta,
+        )
+
+    @staticmethod
+    def _slugify_topic(topic: str) -> str:
+        """Convert a topic to a stable slug identifier."""
+
+        normalized = "".join(character.lower() if character.isalnum() else "-" for character in topic)
+        compact = "-".join(part for part in normalized.split("-") if part)
+        return compact or "trend"
+
+    @staticmethod
+    def _format_trend_name(topic: str) -> str:
+        """Return a display-friendly topic name."""
+
+        return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in topic.split())

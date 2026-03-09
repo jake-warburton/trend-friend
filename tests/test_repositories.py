@@ -77,6 +77,55 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(latest_scores, [score])
         self.assertEqual(history, [(captured_at, [score])])
 
+    def test_trend_score_repository_builds_explorer_records_with_movement(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        previous_captured_at = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        latest_captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [
+                build_score(topic="battery recycling", total_score=20.0),
+                build_score(topic="ai agents", total_score=10.0),
+            ],
+            captured_at=previous_captured_at,
+        )
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="battery recycling", total_score=25.0),
+            ],
+            captured_at=latest_captured_at,
+        )
+
+        records = repository.list_trend_explorer_records(limit=5)
+        ai_agents = next(record for record in records if record.id == "ai-agents")
+
+        self.assertEqual(ai_agents.rank, 1)
+        self.assertEqual(ai_agents.previous_rank, 2)
+        self.assertEqual(ai_agents.rank_change, 1)
+        self.assertEqual(ai_agents.first_seen_at, previous_captured_at)
+        self.assertEqual(ai_agents.momentum.absolute_delta, 20.0)
+        self.assertEqual(ai_agents.momentum.percent_delta, 200.0)
+        self.assertEqual(ai_agents.source_count, 2)
+        self.assertEqual(ai_agents.signal_count, 2)
+
+
+def build_score(topic: str, total_score: float) -> TrendScoreResult:
+    """Create a stable score fixture."""
+
+    return TrendScoreResult(
+        topic=topic,
+        total_score=total_score,
+        search_score=0.0,
+        social_score=10.0,
+        developer_score=8.0,
+        knowledge_score=6.0,
+        diversity_score=2.0,
+        evidence=[f"{topic} evidence"],
+        source_counts={"reddit": 1, "github": 1},
+        latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+    )
+
 
 if __name__ == "__main__":
     unittest.main()

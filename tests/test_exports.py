@@ -8,8 +8,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app.exports.files import write_export_payloads
-from app.exports.serializers import build_latest_trends_payload, build_trend_history_payload
-from app.models import TrendScoreResult
+from app.exports.serializers import (
+    build_latest_trends_payload,
+    build_trend_explorer_payload,
+    build_trend_history_payload,
+)
+from app.models import TrendExplorerRecord, TrendMomentum, TrendScoreResult
 
 
 class ExportPayloadTests(unittest.TestCase):
@@ -44,11 +48,29 @@ class ExportPayloadTests(unittest.TestCase):
             generated_at=generated_at,
             snapshots=[(generated_at, [build_score("battery recycling")])],
         )
-        write_export_payloads(self.export_directory, latest_payload, history_payload)
+        explorer_payload = build_trend_explorer_payload(
+            generated_at=generated_at,
+            trends=[build_explorer_record("ai agents")],
+        )
+        write_export_payloads(self.export_directory, latest_payload, history_payload, explorer_payload)
         latest_data = json.loads((self.export_directory / "latest-trends.json").read_text(encoding="utf-8"))
         history_data = json.loads((self.export_directory / "trend-history.json").read_text(encoding="utf-8"))
+        explorer_data = json.loads((self.export_directory / "trend-explorer.v2.json").read_text(encoding="utf-8"))
         self.assertEqual(latest_data["trends"][0]["name"], "AI Agents")
         self.assertEqual(history_data["snapshots"][0]["trends"][0]["name"], "Battery Recycling")
+        self.assertEqual(explorer_data["trends"][0]["previousRank"], 4)
+
+    def test_build_trend_explorer_payload_uses_api_style_keys(self) -> None:
+        generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
+        payload = build_trend_explorer_payload(
+            generated_at=generated_at,
+            trends=[build_explorer_record("ai agents")],
+        ).to_dict()
+        self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
+        self.assertEqual(payload["trends"][0]["id"], "ai-agents")
+        self.assertEqual(payload["trends"][0]["previousRank"], 4)
+        self.assertEqual(payload["trends"][0]["rankChange"], 3)
+        self.assertEqual(payload["trends"][0]["firstSeenAt"], "2026-03-01T00:00:00Z")
 
 
 def build_score(topic: str) -> TrendScoreResult:
@@ -65,4 +87,27 @@ def build_score(topic: str) -> TrendScoreResult:
         evidence=[f"{topic} evidence"],
         source_counts={"github": 1, "reddit": 1},
         latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+    )
+
+
+def build_explorer_record(topic: str) -> TrendExplorerRecord:
+    """Create a stable explorer fixture."""
+
+    return TrendExplorerRecord(
+        id="ai-agents",
+        name="AI Agents",
+        rank=1,
+        previous_rank=4,
+        rank_change=3,
+        first_seen_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+        latest_signal_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        score=build_score(topic),
+        momentum=TrendMomentum(
+            previous_rank=4,
+            rank_change=3,
+            absolute_delta=12.3,
+            percent_delta=40.2,
+        ),
+        source_count=2,
+        signal_count=2,
     )
