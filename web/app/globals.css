@@ -517,6 +517,19 @@ input {
   font-size: 0.76rem;
 }
 
+.score-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.score-inline small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .explorer-card-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

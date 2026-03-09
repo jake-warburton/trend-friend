@@ -253,11 +253,13 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
-                        <strong>{trend.score.total.toFixed(1)}</strong>
-                        <small>
-                          S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
-                          {trend.score.knowledge.toFixed(1)}
-                        </small>
+                        <div className="score-inline">
+                          <strong>{trend.score.total.toFixed(1)}</strong>
+                          <small>
+                            S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
+                            {trend.score.knowledge.toFixed(1)}
+                          </small>
+                        </div>
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
