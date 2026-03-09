@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from _bootstrap import bootstrap_project_root
+
+bootstrap_project_root()
+
 from app.config import load_settings
 from app.data.database import connect_database, initialize_database
 from app.data.repositories import TrendScoreRepository

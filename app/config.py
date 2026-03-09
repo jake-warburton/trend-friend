@@ -14,6 +14,7 @@ class Settings:
 
     app_name: str
     database_path: Path
+    web_data_path: Path
     request_timeout_seconds: int
     max_items_per_source: int
     ranking_limit: int
@@ -28,6 +29,7 @@ def load_settings() -> Settings:
     return Settings(
         app_name="Trend Friend",
         database_path=Path(os.getenv("TREND_FRIEND_DATABASE_PATH", "data/trend_friend.db")),
+        web_data_path=Path(os.getenv("TREND_FRIEND_WEB_DATA_PATH", "web/data")),
         request_timeout_seconds=int(os.getenv("TREND_FRIEND_REQUEST_TIMEOUT_SECONDS", "10")),
         max_items_per_source=int(os.getenv("TREND_FRIEND_MAX_ITEMS_PER_SOURCE", "30")),
         ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "10")),

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from app.config import Settings
 from app.data.database import connect_database, initialize_database
 from app.data.repositories import SignalRepository, TrendScoreRepository
@@ -26,7 +28,9 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     connection = connect_database(settings.database_path)
     initialize_database(connection)
     SignalRepository(connection).replace_signals(normalized_signals)
-    TrendScoreRepository(connection).replace_scores(ranked_scores)
+    repository = TrendScoreRepository(connection)
+    repository.replace_scores(ranked_scores)
+    repository.append_snapshot(ranked_scores, captured_at=datetime.now(tz=timezone.utc))
     connection.close()
 
     return ranked_scores

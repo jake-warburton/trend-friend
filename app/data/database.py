@@ -44,6 +44,28 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             latest_timestamp TEXT NOT NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS trend_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            captured_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS trend_score_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            run_id INTEGER NOT NULL,
+            rank_position INTEGER NOT NULL,
+            topic TEXT NOT NULL,
+            total_score REAL NOT NULL,
+            search_score REAL NOT NULL,
+            social_score REAL NOT NULL,
+            developer_score REAL NOT NULL,
+            knowledge_score REAL NOT NULL,
+            diversity_score REAL NOT NULL,
+            source_counts_json TEXT NOT NULL,
+            evidence_json TEXT NOT NULL,
+            latest_timestamp TEXT NOT NULL,
+            FOREIGN KEY (run_id) REFERENCES trend_runs (id)
+        );
         """
     )
     connection.commit()

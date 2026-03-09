@@ -55,6 +55,28 @@ class RepositoryTests(unittest.TestCase):
         stored_scores = repository.list_scores(limit=5)
         self.assertEqual(stored_scores, [score])
 
+    def test_trend_score_repository_stores_history_snapshots(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+        score = TrendScoreResult(
+            topic="battery recycling",
+            total_score=10.0,
+            search_score=0.0,
+            social_score=4.0,
+            developer_score=3.0,
+            knowledge_score=2.0,
+            diversity_score=1.0,
+            evidence=["Battery recycling"],
+            source_counts={"reddit": 1},
+            latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        )
+        repository.append_snapshot([score], captured_at=captured_at)
+        latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=5)
+        history = repository.list_score_history(limit_runs=5, per_run_limit=5)
+        self.assertEqual(latest_captured_at, captured_at)
+        self.assertEqual(latest_scores, [score])
+        self.assertEqual(history, [(captured_at, [score])])
+
 
 if __name__ == "__main__":
     unittest.main()

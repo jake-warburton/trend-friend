@@ -5,6 +5,7 @@ Trend Friend is a local-first trend intelligence MVP that aggregates free signal
 The implementation is intentionally simple:
 
 - Python 3.9+
+- Next.js for the browser dashboard
 - SQLite for persistence
 - standard-library HTTP clients
 - resilient source fallbacks so the system still runs without live network access
@@ -35,11 +36,18 @@ app/
   topics/       topic extraction, normalization, clustering
   scoring/      weights, score calculation, ranking
   data/         SQLite setup and repositories
+  exports/      frontend-facing JSON contract and file export
   jobs/         ingestion and pipeline orchestration
   ui/           CLI dashboard rendering
+web/
+  app/          Next.js App Router pages and routes
+  components/   browser dashboard components
+  lib/          typed data loading helpers
+  data/         generated JSON snapshots for the web app
 scripts/
   run_ingestion.py
   run_dashboard.py
+  export_web_data.py
   run_scheduler.py
 tests/
 main.py
@@ -68,6 +76,7 @@ cp .env.example .env
 Supported environment variables:
 
 - `TREND_FRIEND_DATABASE_PATH`: SQLite database location. Default: `data/trend_friend.db`
+- `TREND_FRIEND_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
 - `TREND_FRIEND_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
 - `TREND_FRIEND_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
 - `TREND_FRIEND_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `10`
@@ -94,6 +103,12 @@ Render the latest stored ranking:
 python3 scripts/run_dashboard.py
 ```
 
+Export the latest and historical JSON payloads for the web UI:
+
+```bash
+python3 scripts/export_web_data.py
+```
+
 Run the simple scheduler loop:
 
 ```bash
@@ -101,6 +116,40 @@ python3 scripts/run_scheduler.py
 ```
 
 The scheduler runs ingestion every 30 minutes until stopped.
+
+## Running The Browser Dashboard
+
+Generate fresh data for the browser UI:
+
+```bash
+python3 scripts/run_ingestion.py
+python3 scripts/export_web_data.py
+```
+
+Or run the whole browser workflow in one command:
+
+```bash
+./scripts/start_dashboard.sh
+```
+
+Install and run the Next.js app:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000` in your browser.
+
+If port `3000` is already in use, run:
+
+```bash
+PORT=3001 npm run dev
+```
+
+The dashboard reads `web/data/latest-trends.json` and `web/data/trend-history.json`.
+The refresh button triggers the local Python ingestion and export scripts through a Next.js server route.
 
 ## Running Tests
 
@@ -115,6 +164,7 @@ The test suite covers:
 - score calculation
 - deterministic ranking
 - repository persistence
+- web export contract generation
 - source adapter normalization
 
 ## How Scoring Works
