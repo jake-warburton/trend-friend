@@ -63,7 +63,7 @@ input {
 
 .hero-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1.9fr) minmax(250px, 0.9fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(250px, 0.9fr);
   gap: 18px;
   padding: 22px 24px;
   border-radius: 24px;
@@ -78,7 +78,6 @@ input {
   text-transform: uppercase;
 }
 
-.hero-panel h1,
 .section-heading h2,
 .empty-state h3 {
   margin: 0;
@@ -86,18 +85,35 @@ input {
   font-weight: 800;
 }
 
-.hero-panel h1 {
-  max-width: 8ch;
-  font-size: clamp(2.2rem, 4vw, 4rem);
-  line-height: 0.88;
-  letter-spacing: -0.05em;
+.hero-summary {
+  display: grid;
+  gap: 10px;
+  align-content: start;
 }
 
-.hero-copy {
-  max-width: 56ch;
+.hero-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hero-summary-card {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(19, 35, 64, 0.95), rgba(12, 24, 45, 0.92));
+}
+
+.hero-summary-card span {
+  display: block;
   color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.45;
+  font-size: 0.72rem;
+}
+
+.hero-summary-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.96rem;
 }
 
 .hero-meta {
@@ -852,6 +868,10 @@ input {
   }
 
   .explorer-card-top {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-summary-grid {
     grid-template-columns: 1fr;
   }
 }
