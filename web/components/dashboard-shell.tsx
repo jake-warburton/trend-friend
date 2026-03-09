@@ -83,43 +83,27 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   return (
     <main className="dashboard-page">
       <section className="hero-panel">
-        <div className="hero-summary">
-          <p className="eyebrow">Trend Friend</p>
-          <div className="hero-summary-grid">
-            <article className="hero-summary-card">
-              <span>Top trend</span>
-              <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>
-            </article>
-            <article className="hero-summary-card">
-              <span>Newest</span>
-              <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
-            </article>
-            <article className="hero-summary-card">
-              <span>Biggest mover</span>
-              <strong>{initialData.overview.highlights.biggestMoverName ?? "No data"}</strong>
-            </article>
-            <article className="hero-summary-card">
-              <span>Last run</span>
-              <strong>
-                {initialData.overview.operations.lastRunAt
-                  ? formatTimestamp(initialData.overview.operations.lastRunAt)
-                  : "No data"}
-              </strong>
-            </article>
-          </div>
-        </div>
-        <div className="hero-meta">
-          <div className="stat-card">
-            <span>Overview snapshot</span>
-            <strong>{formatTimestamp(initialData.overview.generatedAt)}</strong>
-          </div>
+        <p className="eyebrow">Trend Friend</p>
+        <div className="hero-rail">
+          <article className="hero-summary-card">
+            <span>Top trend</span>
+            <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>
+          </article>
+          <article className="hero-summary-card">
+            <span>Newest</span>
+            <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
+          </article>
+          <article className="hero-summary-card">
+            <span>Last run</span>
+            <strong>
+              {initialData.overview.operations.lastRunAt
+                ? formatTimestamp(initialData.overview.operations.lastRunAt)
+                : "No data"}
+            </strong>
+          </article>
           <div className="stat-card">
             <span>Tracked trends</span>
             <strong>{initialData.overview.summary.trackedTrends}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Biggest mover</span>
-            <strong>{initialData.overview.highlights.biggestMoverName ?? "No data"}</strong>
           </div>
           <div className="stat-card">
             <span>Total signals</span>
@@ -129,9 +113,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <span>Run health</span>
             <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
           </div>
-          <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
-            {isPending ? "Refreshing..." : "Refresh trends"}
-          </Button>
+          <div className="hero-action-wrap">
+            <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
+              {isPending ? "Refreshing..." : "Refresh trends"}
+            </Button>
+          </div>
         </div>
       </section>
 
