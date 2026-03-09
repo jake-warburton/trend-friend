@@ -403,6 +403,18 @@ input {
   gap: 10px;
 }
 
+.explorer-legend {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .explorer-card {
   padding: 12px;
   border: 1px solid var(--border);
@@ -453,6 +465,7 @@ input {
   border: 1px solid rgba(124, 157, 216, 0.1);
   border-radius: 12px;
   background: rgba(8, 18, 35, 0.46);
+  min-height: 48px;
 }
 
 .explorer-metric strong {
@@ -866,6 +879,10 @@ input {
 
   .explorer-metrics-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .explorer-legend {
+    display: none;
   }
 
   .hero-rail {

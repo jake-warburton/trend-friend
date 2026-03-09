@@ -217,6 +217,13 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </div>
           ) : (
             <div className="explorer-list">
+              <div className="explorer-legend" aria-hidden="true">
+                <span>Trend</span>
+                <span>Rank</span>
+                <span>Move</span>
+                <span>Score</span>
+                <span>Signals</span>
+              </div>
               {filteredTrends.map((trend) => (
                 <article className="explorer-card" key={trend.id}>
                   <div className="explorer-card-top">
@@ -238,12 +245,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                     <div className="explorer-metrics-row">
                       <div className="explorer-metric explorer-metric-inline">
-                        <span>Rank</span>
                         <strong>#{trend.rank}</strong>
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
-                        <span>Move</span>
                         <strong className={movementClassName(trend.rankChange)}>
                           {formatRankChange(trend.rankChange)}
                         </strong>
@@ -251,7 +256,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
-                        <span>Score</span>
                         <strong>{trend.score.total.toFixed(1)}</strong>
                         <small>
                           S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
@@ -260,7 +264,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
-                        <span>Signals</span>
                         <strong>{trend.coverage.signalCount}</strong>
                       </div>
                     </div>
