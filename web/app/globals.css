@@ -86,7 +86,7 @@ input {
 
 .hero-rail {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 10px;
   align-items: stretch;
 }
@@ -183,38 +183,6 @@ input {
   border-radius: 20px;
 }
 
-.overview-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.overview-card {
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(20, 35, 64, 0.94), rgba(13, 26, 49, 0.92));
-  box-shadow: var(--shadow);
-  padding: 14px 16px;
-}
-
-.overview-label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--accent-strong);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.overview-card strong {
-  display: block;
-  font-size: 1.1rem;
-  font-family: var(--font-serif);
-}
-
-.overview-card small,
 .source-summary-copy {
   color: var(--muted);
   line-height: 1.35;
@@ -846,7 +814,6 @@ input {
   .hero-panel,
   .content-grid,
   .filters-panel,
-  .overview-strip,
   .detail-grid,
   .detail-hero {
     grid-template-columns: 1fr;

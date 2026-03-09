@@ -113,38 +113,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <span>Run health</span>
             <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
           </div>
+          <div className="stat-card">
+            <span>Average score</span>
+            <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
+          </div>
           <div className="hero-action-wrap">
             <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
               {isPending ? "Refreshing..." : "Refresh trends"}
             </Button>
           </div>
         </div>
-      </section>
-
-      <section className="overview-strip">
-        <article className="overview-card">
-          <span className="overview-label">Top trend</span>
-          <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>
-          <small>Highest ranked topic in the current snapshot.</small>
-        </article>
-        <article className="overview-card">
-          <span className="overview-label">Newest trend</span>
-          <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
-          <small>Most recently first-seen topic in the ranked set.</small>
-        </article>
-        <article className="overview-card">
-          <span className="overview-label">Pipeline health</span>
-          <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
-          <small>
-            Average run {formatDuration(initialData.overview.operations.averageDurationMs)} across recent
-            refreshes.
-          </small>
-        </article>
-        <article className="overview-card">
-          <span className="overview-label">Average score</span>
-          <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
-          <small>Mean total score across tracked trends.</small>
-        </article>
       </section>
 
       <section className="filters-panel filters-panel-wide">
