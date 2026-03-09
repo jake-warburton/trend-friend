@@ -302,21 +302,20 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   </span>
                 </header>
                 <p className="source-summary-copy">
-                  {run.signalCount} signals, {run.rankedTrendCount} ranked trends,{" "}
-                  {run.successfulSourceCount}/{run.sourceCount} sources healthy.
+                  {run.signalCount} signals · {run.rankedTrendCount} trends ·{" "}
+                  {run.successfulSourceCount}/{run.sourceCount} healthy
                 </p>
                 <p className="source-summary-copy">
-                  Duration {formatDuration(run.durationMs)}.{" "}
+                  {formatDuration(run.durationMs)} ·{" "}
                   {run.topTrendId && run.topTrendName ? (
                     <>
-                      Top trend{" "}
                       <Link className="trend-link" href={`/trends/${run.topTrendId}`}>
                         {run.topTrendName}
                       </Link>
-                      {run.topScore != null ? ` at ${run.topScore.toFixed(1)}.` : "."}
+                      {run.topScore != null ? ` ${run.topScore.toFixed(1)}` : ""}
                     </>
                   ) : (
-                    "No ranked top trend."
+                    "No top trend"
                   )}
                 </p>
               </section>
@@ -344,12 +343,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   </span>
                 </header>
                 <p className="source-summary-copy">
-                  {source.signalCount} signals across {source.trendCount} trends. Last fetch{" "}
-                  {source.latestFetchAt ? formatTimestamp(source.latestFetchAt) : "not recorded"}.
+                  {source.signalCount} signals · {source.trendCount} trends
                 </p>
                 <p className="source-summary-copy">
-                  Last success {source.latestSuccessAt ? formatTimestamp(source.latestSuccessAt) : "never"}.
-                  Latest item count {source.latestItemCount}. Duration {formatDuration(source.durationMs)}.
+                  {source.latestFetchAt ? formatTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
+                  {source.latestItemCount} items · {formatDuration(source.durationMs)}
                 </p>
                 {source.usedFallback ? (
                   <p className="source-warning-copy">Latest successful fetch used fallback sample data.</p>

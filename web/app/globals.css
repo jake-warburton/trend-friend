@@ -177,10 +177,10 @@ input {
 .filters-panel {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 20px;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
 }
 
 .source-summary-copy {
@@ -265,11 +265,11 @@ input {
 
 .filter-field {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .filter-field > span {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -281,20 +281,20 @@ input {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 42px;
+  min-height: 36px;
   border: 1px solid rgba(124, 157, 216, 0.16);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(7, 18, 35, 0.82);
   color: var(--copy);
 }
 
 .text-input {
-  padding: 0 16px;
+  padding: 0 12px;
 }
 
 .select-trigger {
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
 }
 
 .select-positioner {
@@ -342,11 +342,11 @@ input {
 }
 
 .number-button {
-  width: 38px;
-  min-height: 42px;
+  width: 32px;
+  min-height: 36px;
   background: #172947;
   color: var(--accent-strong);
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .trend-link,
@@ -371,31 +371,31 @@ input {
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.95fr) minmax(260px, 0.72fr);
-  gap: 16px;
-  margin-top: 14px;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .ranking-panel,
 .history-panel {
-  padding: 16px;
-  border-radius: 22px;
+  padding: 12px;
+  border-radius: 18px;
 }
 
 .section-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .section-heading-spaced {
-  margin-top: 24px;
+  margin-top: 14px;
 }
 
 .trend-list,
 .snapshot-list {
   display: grid;
-  gap: 16px;
+  gap: 10px;
 }
 
 .explorer-list {
@@ -808,12 +808,21 @@ input {
 }
 
 .snapshot-card {
-  padding: 13px;
+  padding: 10px;
   border-radius: 18px;
 }
 
 .snapshot-card header {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+}
+
+.history-panel .eyebrow {
+  margin-bottom: 4px;
+}
+
+.history-panel .section-heading h2,
+.ranking-panel .section-heading h2 {
+  font-size: 1.05rem;
 }
 
 .snapshot-card ol {
