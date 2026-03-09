@@ -1,10 +1,11 @@
 # AI Foundation Guidelines Repository
 
-A template repository providing universal AI (Claude Code) guidelines for consistent, high-quality engineering across all projects.
+A template repository providing universal coding-agent guidelines for consistent, high-quality engineering across all projects.
 
 ## Purpose
 
 This repository establishes baseline engineering standards that apply regardless of:
+
 - Programming language or framework
 - Project scale (prototype to production)
 - Team size
@@ -14,9 +15,10 @@ The guidelines enforce reliable, repeatable practices and serve as the foundatio
 
 ## Files Included
 
-### `CLAUDE.md` — Core AI Guidelines (Always Include)
+### Main Agent Instructions — Core Guidelines (Always Include)
 
-The primary guidelines file. Covers:
+The primary guidelines file. In this repository, the base template currently lives in `AGENTS.md`, but it is intended to be adapted to the instruction filename your agent expects. It covers:
+
 - **Principles**: DRY, KISS, YAGNI, SOLID, 12-Factor App, security-first mindset
 - **Architecture**: Separation of concerns, modular design, layered architecture
 - **Project Layout**: Language-agnostic conventions for `src/`, `tests/`, `docs/`, `scripts/`, configuration
@@ -25,9 +27,9 @@ The primary guidelines file. Covers:
 - **Code Quality**: No dead code, named constants, focused functions, clear naming, error handling
 - **Reliability & Repeatability**: Reproducible builds, environment as code, testability, no environment-specific code paths
 
-**Always copy `CLAUDE.md` to the root of every new project.** It's the baseline for all work.
+**Always copy the main instruction file to the root of every new project.** It's the baseline for all work.
 
-### `CLAUDE.tdd.md` — TDD Guidelines (Optional, Conditionally Include)
+### TDD Instructions — Optional Add-On
 
 Covers Test-Driven Development practices. Include this file when using TDD.
 
@@ -42,7 +44,7 @@ Covers Test-Driven Development practices. Include this file when using TDD.
 - **Refactoring**: Safe refactoring with tests, common pitfalls
 - **CI/CD Integration**: Test requirements before merge
 
-**Copy `CLAUDE.tdd.md` to projects using TDD.** It stands alone alongside `CLAUDE.md` without duplication.
+**Copy the TDD instruction file to projects using TDD.** It stands alone alongside the main instruction file without duplication.
 
 ### `context/business/README.md` & `context/stack/README.md` — Context Templates
 
@@ -51,7 +53,7 @@ Templates for two context directories that hold project-specific information:
 - **`context/business/`** — Domain knowledge, business rules, product requirements, user personas, design decisions, compliance rules. Files here take priority over generic guidelines when copied to a real project.
 - **`context/stack/`** — Technical stack, cloud architecture, external integrations, CI/CD, service architecture, database schema. Files here document the project's technical environment and constraints.
 
-**Copy both directories to your project.** Then populate them with project-specific files. These become the primary source of truth for Claude Code, overriding generic guidelines where applicable.
+**Copy both directories to your project.** Then populate them with project-specific files. These become the primary source of truth for your coding agent, overriding generic guidelines where applicable.
 
 See the context `README.md` files for examples and conventions.
 
@@ -66,9 +68,9 @@ When you copy this repository to a real project, the two context directories bec
 1. **`context/business/`** takes priority for domain knowledge, requirements, and business decisions. If a business decision conflicts with a generic guideline, the business context wins.
 2. **`context/stack/`** takes priority for technical architecture and infrastructure decisions. If a stack decision conflicts with a generic guideline, the stack context wins.
 
-Claude Code will read these directories automatically and apply their contents as overrides to the generic `CLAUDE.md` guidelines.
+Your coding agent should read these directories first and apply their contents as overrides to the generic baseline guidelines.
 
-**Example**: `CLAUDE.md` says "prefer simple JSON REST APIs." But if `context/stack/service-architecture.md` specifies "all inter-service communication uses gRPC for performance," Claude follows the context directive.
+**Example**: The base instruction file says "prefer simple JSON REST APIs." But if `context/stack/service-architecture.md` specifies "all inter-service communication uses gRPC for performance," the agent should follow the context directive.
 
 This separation keeps generic guidelines portable (copy them to any project) while allowing projects to document and enforce their specific constraints.
 
@@ -77,17 +79,19 @@ This separation keeps generic guidelines portable (copy them to any project) whi
 ### For a New Project
 
 1. **Clone this repository:**
+
    ```bash
    git clone <this-repo-url> ai-foundation
    ```
 
 2. **Copy the guidelines and context templates to your new project:**
-   ```bash
-   # Always copy CLAUDE.md
-   cp ai-foundation/CLAUDE.md my-project/CLAUDE.md
 
-   # Copy CLAUDE.tdd.md if using TDD
-   cp ai-foundation/CLAUDE.tdd.md my-project/CLAUDE.tdd.md
+   ```bash
+   # Copy the main instruction template and rename it for your agent
+   cp ai-foundation/AGENTS.md my-project/AGENTS.md
+
+   # Copy the TDD add-on if using TDD
+   cp ai-foundation/AGENTS.tdd.md my-project/AGENTS.tdd.md
 
    # Copy context directory templates
    cp -r ai-foundation/context my-project/context
@@ -99,37 +103,40 @@ This separation keeps generic guidelines portable (copy them to any project) whi
    - Example files to start with: `context/business/domain-model.md`, `context/business/design-decisions.md`, `context/stack/ci-cd.md`, `context/stack/aws.md`
 
 4. **Commit the guidelines and context:**
+
    ```bash
    cd my-project
-   git add CLAUDE.md CLAUDE.tdd.md context/
-   git commit -m "Add AI Foundation guidelines and context directories"
+   git add AGENTS.md AGENTS.tdd.md context/
+   git commit -m "Add agent guidelines and context directories"
    ```
 
 5. **Customize (optional):**
-   - Extend `CLAUDE.md` with project-specific rules after the base content, or use `context/business/` and `context/stack/` files instead.
-   - Add project-specific rules to context directories rather than modifying the base `CLAUDE.md`.
+   - Extend your main instruction file with project-specific rules after the base content, or use `context/business/` and `context/stack/` files instead.
+   - Add project-specific rules to context directories rather than modifying the base template.
    - Example: If all services must use gRPC, document it in `context/stack/service-architecture.md`.
    - Example: If the project enforces Prettier, document it in `context/stack/tooling.md`.
    - Never remove or contradict the base guidelines; extend them via context directories or new sections.
 
 ### For an Existing Project
 
-1. **Copy `CLAUDE.md` to the root:**
+1. **Copy the main instruction file to the root:**
+
    ```bash
-   cp ai-foundation/CLAUDE.md my-existing-project/CLAUDE.md
+   cp ai-foundation/AGENTS.md my-existing-project/AGENTS.md
    ```
 
-2. **If using TDD, copy `CLAUDE.tdd.md`:**
+2. **If using TDD, copy the TDD add-on:**
+
    ```bash
-   cp ai-foundation/CLAUDE.tdd.md my-existing-project/CLAUDE.tdd.md
+   cp ai-foundation/AGENTS.tdd.md my-existing-project/AGENTS.tdd.md
    ```
 
-3. **Reference additional guidelines in `CLAUDE.md` (optional):**
-   - At the end of `CLAUDE.md`, add:
+3. **Reference additional guidelines in your main instruction file (optional):**
+   - At the end of that file, add:
      ```markdown
-     @CLAUDE.tdd.md
+     @AGENTS.tdd.md
      ```
-     This tells Claude Code to also read the TDD guidelines when working on the project.
+     This tells agents that support file inclusion to also read the TDD guidelines when working on the project.
 
 4. **Commit and integrate.**
 
@@ -138,6 +145,7 @@ This separation keeps generic guidelines portable (copy them to any project) whi
 ### When to Extend
 
 The base guidelines intentionally avoid language/framework-specific details. Extend them to add:
+
 - **Language/Framework conventions**: Go formatting, Python naming, JavaScript async patterns, etc.
 - **Project-specific practices**: Required architectural patterns, deployment procedures, secret management, etc.
 - **Team agreements**: Code review process, PR size limits, on-call procedures, etc.
@@ -156,26 +164,30 @@ Add sections after the base content, clearly marked as project-specific:
 ## Project-Specific Extensions
 
 ### Language & Framework
+
 - All code follows [Language] conventions via [Tool] (e.g., `gofmt`, `prettier`).
 - Async code uses [Pattern] (e.g., async/await, Promises).
 - Error types extend `BaseError` and include a unique code for tracking.
 
 ### Architecture
+
 - All services use gRPC for inter-service communication; REST only for external APIs.
 - Database schema changes require a migration file in `migrations/`.
 
 ### Testing
+
 - Integration tests use Docker containers for all stateful services.
 - Every public API endpoint must have at least one E2E test.
 
 ### Deployment
+
 - Secrets are stored in [Service] and injected as env vars; never hardcoded.
 - All deployments must run through CI/CD; manual deployments are not allowed.
 ```
 
 ### Anti-Patterns in Customization
 
-- ❌ **Don't override the base**: Rewriting or contradicting CLAUDE.md defeats its purpose.
+- ❌ **Don't override the base**: Rewriting or contradicting the base instruction file defeats its purpose.
 - ❌ **Don't add subjective style**: "Use camelCase" is redundant if language conventions already dictate it.
 - ❌ **Don't document what code shows**: If a `README.md` template exists in the repo, don't repeat it.
 - ✅ **Do extend with specifics**: "Database migrations use [Tool] in `migrations/`" is a valid project rule.
@@ -184,23 +196,24 @@ Add sections after the base content, clearly marked as project-specific:
 
 ### Using These Guidelines in Your Project
 
-Once copied, Claude Code will read `CLAUDE.md` automatically at the start of each session. If you also have `CLAUDE.tdd.md`, reference it in `CLAUDE.md`:
+Once copied, configure your agent to read the main instruction file at the start of each session. If your setup supports file references and you also have a TDD add-on, reference it from the main file:
 
 ```markdown
 # AI Foundation Guidelines
 
-@CLAUDE.tdd.md
+@AGENTS.tdd.md
 
-[... rest of CLAUDE.md ...]
+[... rest of AGENTS.md ...]
 ```
 
-Claude Code will then load both files and apply the combined guidelines to all work.
+Your agent will then load both files and apply the combined guidelines to all work.
 
 ### Structure of Guidelines
 
 Both files are organized to avoid duplication:
-- **CLAUDE.md** covers universal principles and practices.
-- **CLAUDE.tdd.md** covers TDD-specific details that complement (not replace) the testing section in CLAUDE.md.
+
+- The main instruction file covers universal principles and practices.
+- The TDD add-on covers TDD-specific details that complement, not replace, the testing section in the main instruction file.
 
 You can safely use both files together; they're designed to do so.
 
@@ -209,18 +222,21 @@ You can safely use both files together; they're designed to do so.
 Before distributing guidelines to your team:
 
 **Base Files**
-- ✅ `CLAUDE.md` is present and includes the "Source of Truth" section at the top.
-- ✅ If using TDD, `CLAUDE.tdd.md` is present and referenced.
+
+- ✅ A root instruction file is present and includes the "Source of Truth" section at the top.
+- ✅ If using TDD, the TDD add-on file is present and referenced where supported.
 
 **Context Directories**
+
 - ✅ `context/business/` exists with a populated `README.md` explaining its purpose.
 - ✅ `context/stack/` exists with a populated `README.md` explaining its purpose.
 - ✅ Both directories contain relevant project-specific files (e.g., `domain-model.md`, `design-decisions.md`, `ci-cd.md`, `aws.md`).
 
 **Quality & Consistency**
-- ✅ No language/framework-specific sections in `CLAUDE.md` base; they belong in `context/` directories.
-- ✅ All project-specific rules are in context directories, not mixed into the base `CLAUDE.md`.
-- ✅ No contradictions between `CLAUDE.md` and context files; context overrides are intentional.
+
+- ✅ No language/framework-specific sections in the base template; they belong in `context/` directories.
+- ✅ All project-specific rules are in context directories, not mixed into the base instruction file.
+- ✅ No contradictions between the base instruction file and context files; context overrides are intentional.
 - ✅ README exists in the project and documents setup/run procedures.
 - ✅ No dead code, commented-out blocks, or TODOs in the guidelines or context files.
 
@@ -233,8 +249,8 @@ ai-foundation/
 │   │   └── README.md   # Template: what belongs in context/business/ (copy when creating project)
 │   └── stack/
 │       └── README.md   # Template: what belongs in context/stack/ (copy when creating project)
-├── CLAUDE.md           # Core universal AI guidelines (copy to every project)
-├── CLAUDE.tdd.md       # TDD-specific guidelines (copy when using TDD)
+├── AGENTS.md           # Base instruction template; rename per agent conventions when copying
+├── AGENTS.tdd.md       # TDD add-on template; rename per agent conventions when copying
 └── README.md           # This file; explains how to use the template
 ```
 
@@ -242,9 +258,9 @@ This repository is minimal by design. It's meant to be cloned, its files copied 
 
 ## Questions?
 
-Refer to the guidelines themselves (`CLAUDE.md`, `CLAUDE.tdd.md`) for detailed rationales and examples. The guidelines are written to be self-contained and clear.
+Refer to the guideline templates themselves (`AGENTS.md`, `AGENTS.tdd.md`) for detailed rationales and examples. The guidelines are written to be self-contained and clear.
 
-For questions about using Claude Code in your project, refer to the [Claude Code documentation](https://docs.anthropic.com/claude-code).
+For questions about using these files in your project, consult the documentation for the coding agent you use and rename the templates to match that agent's conventions.
 
 ---
 

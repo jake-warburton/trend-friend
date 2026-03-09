@@ -1,6 +1,6 @@
 # Test-Driven Development (TDD) Guidelines
 
-Use this document alongside `CLAUDE.md` for projects adopting Test-Driven Development. TDD inverts the traditional workflow: tests are written first, then production code. This enforces good design, comprehensive coverage, and confidence in refactoring.
+Use this document alongside your main agent instruction file for projects adopting Test-Driven Development. TDD inverts the traditional workflow: tests are written first, then production code. This enforces good design, comprehensive coverage, and confidence in refactoring.
 
 ## Core TDD Workflow
 

@@ -1,6 +1,6 @@
 # AI Foundation Guidelines
 
-These guidelines ensure consistent, high-quality engineering across all projects, regardless of language, tech stack, or scale. They are enforced by Claude Code and serve as the first design artifact for reliable, repeatable results.
+These guidelines ensure consistent, high-quality engineering across all projects, regardless of language, tech stack, or scale. They are intended for use with any coding agent and serve as the first design artifact for reliable, repeatable results.
 
 ## Source of Truth
 
@@ -11,7 +11,7 @@ When you copy this file to a real project, **always** create two context directo
 
 **These directories take priority over these generic guidelines.** If a file in `context/business/` or `context/stack/` specifies an approach that conflicts with the guidelines below, follow the context directory's guidance.
 
-Claude Code will read these directories automatically at the start of each session. Treat them as the primary source of truth for your project. Generic guidelines are defaults; context directories are overrides.
+Your coding agent should treat these directories as the primary source of truth for your project. Generic guidelines are defaults; context directories are overrides.
 
 See `context/business/README.md` and `context/stack/README.md` for what to put in each.
 
@@ -92,8 +92,8 @@ my-project/
 ├── scripts/                          # Utility scripts, migrations, seeders
 ├── .env.example                      # Example environment variables (no secrets)
 ├── README.md                         # Project overview, setup, how to run
-├── CLAUDE.md                         # AI guidelines (this file, if project-specific additions exist)
-├── CLAUDE.tdd.md                     # TDD guidelines (if using TDD)
+├── AGENTS.md (or equivalent)         # Agent guidelines (this file, if project-specific additions exist)
+├── AGENTS.tdd.md (or equivalent)     # TDD guidelines (if using TDD)
 └── [Dependency manifest]             # package.json, Gemfile, go.mod, Cargo.toml, etc.
 ```
 

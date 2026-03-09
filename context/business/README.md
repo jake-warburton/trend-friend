@@ -1,10 +1,10 @@
 # Business & Domain Context
 
-This directory contains project-specific business domain knowledge, requirements, and design decisions that override or extend the generic guidelines in `CLAUDE.md`.
+This directory contains project-specific business domain knowledge, requirements, and design decisions that override or extend the generic baseline instruction file.
 
 ## Purpose
 
-When copied to a real project, files in this directory become the **primary source of truth** for Claude Code. They take precedence over generic engineering guidelines where there is overlap or conflict. They communicate:
+When copied to a real project, files in this directory become the **primary source of truth** for your coding agent. They take precedence over generic engineering guidelines where there is overlap or conflict. They communicate:
 
 - **Product & domain knowledge**: What the project does, its business purpose, target users
 - **Business rules**: Domain-specific logic, policies, constraints that shape architecture
@@ -56,13 +56,13 @@ Create one file per topic. Examples:
 - Update these docs when business context changes
 - Keep examples concrete, not abstract
 
-## Optional: Defining Claude's Role in Your Project
+## Optional: Defining the Agent's Role in Your Project
 
-Create an optional file `llm-context.md` or `llm-role.md` to describe how Claude should approach work in your project. This helps Claude understand the business priorities and constraints.
+Create an optional file `llm-context.md` or `llm-role.md` to describe how your coding agent should approach work in your project. This helps the agent understand the business priorities and constraints.
 
 Example:
 ```markdown
-# Claude's Role in This Project
+# Agent Role in This Project
 
 - Prioritize user experience and accessibility; we serve customers with diverse abilities
 - When suggesting features, consider our mission to serve non-profit organizations (budget constraints matter)
@@ -70,18 +70,18 @@ Example:
 - When uncertain about business logic, err on the side of asking rather than guessing
 ```
 
-This file helps Claude make decisions that align with your business values and priorities.
+This file helps the agent make decisions that align with your business values and priorities.
 
 
-## How Claude Uses These Files
+## How an Agent Uses These Files
 
-Claude Code reads files in `context/business/` at the start of each session and treats them as overrides to generic guidelines. If a generic guideline conflicts with something documented here, the business context wins.
+Your coding agent should read files in `context/business/` at the start of each session and treat them as overrides to generic guidelines. If a generic guideline conflicts with something documented here, the business context wins.
 
-**Example**: CLAUDE.md says "use a REST API." But if `design-decisions.md` documents "We use GraphQL for our public API because of client flexibility," Claude follows the documented decision.
+**Example**: The base instruction file says "use a REST API." But if `design-decisions.md` documents "We use GraphQL for our public API because of client flexibility," the agent should follow the documented decision.
 
-## Link from CLAUDE.md
+## Link from the Main Instruction File
 
-In your project's `CLAUDE.md`, add a reference to this directory:
+In your project's main instruction file, add a reference to this directory:
 
 ```markdown
 ## Source of Truth
@@ -90,4 +90,4 @@ Check `context/business/` and `context/stack/` first; they override generic guid
 See those directories for project-specific context.
 ```
 
-Claude will then load these files automatically.
+Your agent will then load these files automatically if it supports that workflow.

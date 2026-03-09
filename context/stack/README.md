@@ -1,6 +1,6 @@
 # Stack & Infrastructure Context
 
-This directory contains technical architecture, stack specifics, and infrastructure decisions that override or extend the generic guidelines in `CLAUDE.md`.
+This directory contains technical architecture, stack specifics, and infrastructure decisions that override or extend the generic baseline instruction file.
 
 ## Purpose
 
@@ -81,13 +81,13 @@ graph LR
 - Never commit actual credentials; use `.env.example` instead
 - Update when stack changes (version upgrades, new integrations, etc.)
 
-## Optional: Defining Claude's Technical Role in Your Project
+## Optional: Defining the Agent's Technical Role in Your Project
 
-Create an optional file `llm-role.md` to describe how Claude should approach technical decisions in your project. This helps Claude understand your priorities and constraints.
+Create an optional file `llm-role.md` to describe how your coding agent should approach technical decisions in your project. This helps the agent understand your priorities and constraints.
 
 Example:
 ```markdown
-# Claude's Technical Role in This Project
+# Agent Technical Role in This Project
 
 ## Primary Focus
 - Act as a senior backend architect with expertise in distributed systems and database optimization
@@ -106,23 +106,23 @@ Example:
 - When suggesting external services, consider our cloud-native-first policy
 ```
 
-This file helps Claude make technical decisions aligned with your system's constraints and architectural decisions.
+This file helps the agent make technical decisions aligned with your system's constraints and architectural decisions.
 
 
-## How Claude Uses These Files
+## How an Agent Uses These Files
 
-Claude Code reads files in `context/stack/` at the start of each session to understand:
+Your coding agent should read files in `context/stack/` at the start of each session to understand:
 
 - Which services are available and their capabilities
 - How to structure code to match the existing tech choices
 - Integration points and contracts to respect
 - Infrastructure constraints (e.g., "No local disk storage; use S3")
 
-**Example**: CLAUDE.md suggests "use async/await for concurrency." But if `service-architecture.md` documents "All inter-service calls are synchronous RPC," Claude respects that constraint.
+**Example**: The base instruction file suggests "use async/await for concurrency." But if `service-architecture.md` documents "All inter-service calls are synchronous RPC," the agent should respect that constraint.
 
-## Link from CLAUDE.md
+## Link from the Main Instruction File
 
-In your project's `CLAUDE.md`, add a reference to this directory:
+In your project's main instruction file, add a reference to this directory:
 
 ```markdown
 ## Source of Truth
@@ -131,4 +131,4 @@ Check `context/business/` and `context/stack/` first; they override generic guid
 See those directories for project-specific context.
 ```
 
-Claude will then load these files automatically.
+Your agent will then load these files automatically if it supports that workflow.
