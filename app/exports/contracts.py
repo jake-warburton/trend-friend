@@ -228,6 +228,8 @@ class DashboardOverviewSourcePayload:
     latest_fetch_at: str | None
     latest_success_at: str | None
     latest_item_count: int
+    duration_ms: int
+    used_fallback: bool
     error_message: str | None
 
 
@@ -261,6 +263,8 @@ class DashboardOverviewPayload:
             source["latestFetchAt"] = source.pop("latest_fetch_at")
             source["latestSuccessAt"] = source.pop("latest_success_at")
             source["latestItemCount"] = source.pop("latest_item_count")
+            source["durationMs"] = source.pop("duration_ms")
+            source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
         return payload
 

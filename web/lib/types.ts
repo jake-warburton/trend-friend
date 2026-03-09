@@ -64,6 +64,8 @@ export type DashboardOverviewSource = {
   latestFetchAt: string | null;
   latestSuccessAt: string | null;
   latestItemCount: number;
+  durationMs: number;
+  usedFallback: boolean;
   errorMessage: string | null;
 };
 

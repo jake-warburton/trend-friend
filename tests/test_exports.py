@@ -76,8 +76,8 @@ class ExportPayloadTests(unittest.TestCase):
                 build_signal("ai agents", "github", "developer", 8.0),
             ],
             source_runs=[
-                build_source_run("reddit", True, 3),
-                build_source_run("github", False, 0, error_message="timeout"),
+                build_source_run("reddit", True, 3, duration_ms=120),
+                build_source_run("github", False, 0, duration_ms=920, error_message="timeout"),
             ],
         )
         write_export_payloads(
@@ -133,8 +133,8 @@ class ExportPayloadTests(unittest.TestCase):
                 build_signal("ai agents", "github", "developer", 8.0),
             ],
             source_runs=[
-                build_source_run("reddit", True, 2),
-                build_source_run("github", False, 0, error_message="timeout"),
+                build_source_run("reddit", True, 2, duration_ms=100),
+                build_source_run("github", True, 2, duration_ms=85, used_fallback=True),
             ],
         ).to_dict()
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
@@ -144,8 +144,20 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sources"][0]["signalCount"], 2)
         self.assertEqual(payload["sources"][0]["trendCount"], 2)
         self.assertEqual(payload["sources"][0]["status"], "healthy")
-        self.assertEqual(payload["sources"][1]["status"], "stale")
-        self.assertEqual(payload["sources"][1]["errorMessage"], "timeout")
+        self.assertEqual(payload["sources"][1]["status"], "degraded")
+        self.assertTrue(payload["sources"][1]["usedFallback"])
+        self.assertEqual(payload["sources"][1]["durationMs"], 85)
+
+    def test_build_dashboard_overview_payload_marks_failed_sources_stale(self) -> None:
+        generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
+        payload = build_dashboard_overview_payload(
+            generated_at=generated_at,
+            trends=[build_detail_record("ai agents")],
+            signals=[build_signal("ai agents", "reddit", "social", 12.0)],
+            source_runs=[build_source_run("reddit", False, 0, duration_ms=900, error_message="timeout")],
+        ).to_dict()
+        self.assertEqual(payload["sources"][0]["status"], "stale")
+        self.assertEqual(payload["sources"][0]["errorMessage"], "timeout")
 
 
 def build_score(topic: str) -> TrendScoreResult:
@@ -257,6 +269,8 @@ def build_source_run(
     source: str,
     success: bool,
     item_count: int,
+    duration_ms: int,
+    used_fallback: bool = False,
     error_message: str | None = None,
 ) -> SourceIngestionRun:
     """Create a stable source ingestion run fixture."""
@@ -266,5 +280,7 @@ def build_source_run(
         fetched_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
         success=success,
         item_count=item_count,
+        duration_ms=duration_ms,
+        used_fallback=used_fallback,
         error_message=error_message,
     )

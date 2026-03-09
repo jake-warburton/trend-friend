@@ -311,8 +311,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 </p>
                 <p className="source-summary-copy">
                   Last success {source.latestSuccessAt ? formatTimestamp(source.latestSuccessAt) : "never"}.
-                  Latest item count {source.latestItemCount}.
+                  Latest item count {source.latestItemCount}. Duration {formatDuration(source.durationMs)}.
                 </p>
+                {source.usedFallback ? (
+                  <p className="source-warning-copy">Latest successful fetch used fallback sample data.</p>
+                ) : null}
                 {source.errorMessage ? (
                   <p className="source-error-copy">{source.errorMessage}</p>
                 ) : null}
@@ -395,6 +398,9 @@ function formatSourceStatus(status: string) {
   if (status === "healthy") {
     return "Healthy";
   }
+  if (status === "degraded") {
+    return "Degraded";
+  }
   return "Stale";
 }
 
@@ -402,5 +408,15 @@ function sourceHealthClassName(status: string) {
   if (status === "healthy") {
     return "source-health-pill source-health-pill-healthy";
   }
+  if (status === "degraded") {
+    return "source-health-pill source-health-pill-degraded";
+  }
   return "source-health-pill source-health-pill-stale";
+}
+
+function formatDuration(durationMs: number) {
+  if (durationMs >= 1000) {
+    return `${(durationMs / 1000).toFixed(1)}s`;
+  }
+  return `${durationMs}ms`;
 }

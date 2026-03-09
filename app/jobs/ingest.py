@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from time import perf_counter
 
 from app.config import Settings
 from app.models import RawSourceItem, SourceIngestionRun
@@ -27,9 +28,12 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
     all_items: list[RawSourceItem] = []
     source_runs: list[SourceIngestionRun] = []
     for adapter in adapters:
+        adapter.reset_fetch_state()
         fetched_at = datetime.now(tz=timezone.utc)
+        started_at = perf_counter()
         try:
             source_items = adapter.fetch()
+            duration_ms = int((perf_counter() - started_at) * 1000)
             LOGGER.info("Fetched %s items from %s", len(source_items), adapter.source_name)
             all_items.extend(source_items)
             source_runs.append(
@@ -38,9 +42,12 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
                     fetched_at=fetched_at,
                     success=True,
                     item_count=len(source_items),
+                    duration_ms=duration_ms,
+                    used_fallback=adapter.used_fallback,
                 )
             )
         except Exception as error:
+            duration_ms = int((perf_counter() - started_at) * 1000)
             LOGGER.exception("Unexpected failure while fetching %s: %s", adapter.source_name, error)
             source_runs.append(
                 SourceIngestionRun(
@@ -48,6 +55,8 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
                     fetched_at=fetched_at,
                     success=False,
                     item_count=0,
+                    duration_ms=duration_ms,
+                    used_fallback=adapter.used_fallback,
                     error_message=str(error),
                 )
             )

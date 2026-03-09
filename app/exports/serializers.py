@@ -296,7 +296,7 @@ def build_source_summaries(
             source=source,
             signal_count=signal_counts.get(source, 0),
             trend_count=len(source_map.get(source, set())),
-            status="healthy" if latest_by_source.get(source, None) and latest_by_source[source].success else "stale",
+            status=build_source_status(latest_by_source.get(source)),
             latest_fetch_at=(
                 to_timestamp(latest_by_source[source].fetched_at)
                 if source in latest_by_source
@@ -308,7 +308,19 @@ def build_source_summaries(
                 else None
             ),
             latest_item_count=latest_by_source[source].item_count if source in latest_by_source else 0,
+            duration_ms=latest_by_source[source].duration_ms if source in latest_by_source else 0,
+            used_fallback=latest_by_source[source].used_fallback if source in latest_by_source else False,
             error_message=latest_by_source[source].error_message if source in latest_by_source else None,
         )
         for source in sorted(known_sources, key=lambda item: (-signal_counts.get(item, 0), item))
     ]
+
+
+def build_source_status(run: SourceIngestionRun | None) -> str:
+    """Return the dashboard health label for a source."""
+
+    if run is None or not run.success:
+        return "stale"
+    if run.used_fallback:
+        return "degraded"
+    return "healthy"

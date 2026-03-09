@@ -39,6 +39,8 @@ class SourceIngestionRun:
     fetched_at: datetime
     success: bool
     item_count: int
+    duration_ms: int
+    used_fallback: bool = False
     error_message: str | None = None
 
 

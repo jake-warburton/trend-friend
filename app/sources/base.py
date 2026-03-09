@@ -23,6 +23,7 @@ class SourceAdapter(ABC):
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        self.used_fallback = False
 
     @abstractmethod
     def fetch(self) -> list[RawSourceItem]:
@@ -54,4 +55,10 @@ class SourceAdapter(ABC):
     def log_fallback(self, error: Exception) -> None:
         """Log a source failure and continue with fallback data."""
 
+        self.used_fallback = True
         LOGGER.warning("Falling back to sample data for %s: %s", self.source_name, error)
+
+    def reset_fetch_state(self) -> None:
+        """Clear per-fetch state before a new request cycle."""
+
+        self.used_fallback = False

@@ -211,9 +211,20 @@ input {
   color: #1f7b45;
 }
 
+.source-health-pill-degraded {
+  background: rgba(182, 126, 30, 0.16);
+  color: #8b5a12;
+}
+
 .source-health-pill-stale {
   background: rgba(154, 49, 34, 0.12);
   color: #8b2e1f;
+}
+
+.source-warning-copy {
+  margin: 10px 0 0;
+  color: #8b5a12;
+  line-height: 1.5;
 }
 
 .source-error-copy {

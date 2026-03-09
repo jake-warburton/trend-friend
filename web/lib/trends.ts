@@ -81,6 +81,8 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       latestFetchAt: source.latestFetchAt ?? null,
       latestSuccessAt: source.latestSuccessAt ?? null,
       latestItemCount: source.latestItemCount ?? 0,
+      durationMs: source.durationMs ?? 0,
+      usedFallback: source.usedFallback ?? false,
       errorMessage: source.errorMessage ?? null,
     })),
   };

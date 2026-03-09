@@ -36,6 +36,8 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             fetched_at TEXT NOT NULL,
             success INTEGER NOT NULL,
             item_count INTEGER NOT NULL,
+            duration_ms INTEGER NOT NULL DEFAULT 0,
+            used_fallback INTEGER NOT NULL DEFAULT 0,
             error_message TEXT NULL
         );
 
@@ -77,4 +79,32 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         );
         """
     )
+    ensure_column(
+        connection,
+        table_name="source_ingestion_runs",
+        column_name="duration_ms",
+        column_sql="INTEGER NOT NULL DEFAULT 0",
+    )
+    ensure_column(
+        connection,
+        table_name="source_ingestion_runs",
+        column_name="used_fallback",
+        column_sql="INTEGER NOT NULL DEFAULT 0",
+    )
     connection.commit()
+
+
+def ensure_column(
+    connection: sqlite3.Connection,
+    table_name: str,
+    column_name: str,
+    column_sql: str,
+) -> None:
+    """Add a column to an existing table only when it is missing."""
+
+    rows = connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+    if any(row["name"] == column_name for row in rows):
+        return
+    connection.execute(
+        f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}"
+    )

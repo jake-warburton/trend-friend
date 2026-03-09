@@ -78,8 +78,10 @@ class SourceIngestionRunRepository:
 
         self.connection.executemany(
             """
-            INSERT INTO source_ingestion_runs (source, fetched_at, success, item_count, error_message)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO source_ingestion_runs (
+                source, fetched_at, success, item_count, duration_ms, used_fallback, error_message
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -87,6 +89,8 @@ class SourceIngestionRunRepository:
                     run.fetched_at.isoformat(),
                     int(run.success),
                     run.item_count,
+                    run.duration_ms,
+                    int(run.used_fallback),
                     run.error_message,
                 )
                 for run in runs
@@ -99,7 +103,8 @@ class SourceIngestionRunRepository:
 
         rows = self.connection.execute(
             """
-            SELECT current.source, current.fetched_at, current.success, current.item_count, current.error_message
+            SELECT current.source, current.fetched_at, current.success, current.item_count,
+                   current.duration_ms, current.used_fallback, current.error_message
             FROM source_ingestion_runs AS current
             INNER JOIN (
                 SELECT source, MAX(fetched_at) AS fetched_at
@@ -117,6 +122,8 @@ class SourceIngestionRunRepository:
                 fetched_at=datetime.fromisoformat(row["fetched_at"]),
                 success=bool(row["success"]),
                 item_count=row["item_count"],
+                duration_ms=row["duration_ms"],
+                used_fallback=bool(row["used_fallback"]),
                 error_message=row["error_message"],
             )
             for row in rows
