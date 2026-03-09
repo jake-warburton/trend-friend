@@ -160,6 +160,68 @@ input {
   border-radius: 26px;
 }
 
+.overview-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.overview-card {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 20px 22px;
+}
+
+.overview-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.overview-card strong {
+  display: block;
+  font-size: 1.35rem;
+  font-family: var(--font-serif);
+}
+
+.overview-card small,
+.source-summary-copy {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.source-health-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.source-health-pill-healthy {
+  background: rgba(37, 138, 77, 0.12);
+  color: #1f7b45;
+}
+
+.source-health-pill-stale {
+  background: rgba(154, 49, 34, 0.12);
+  color: #8b2e1f;
+}
+
+.source-error-copy {
+  margin: 10px 0 0;
+  color: #8b2e1f;
+  line-height: 1.5;
+}
+
 .filters-panel-wide {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -247,6 +309,17 @@ input {
   background: #f5ecde;
   color: var(--accent-strong);
   font-size: 1.2rem;
+}
+
+.trend-link,
+.detail-back-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.trend-link:hover,
+.detail-back-link:hover {
+  text-decoration: underline;
 }
 
 .error-banner {
@@ -359,6 +432,129 @@ input {
   line-height: 1.5;
 }
 
+.detail-page {
+  width: min(1240px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 40px 0 64px;
+}
+
+.detail-hero,
+.detail-panel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+
+.detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 24px;
+  padding: 32px;
+  border-radius: 32px;
+}
+
+.detail-hero h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(2.8rem, 5vw, 4.6rem);
+  line-height: 0.95;
+}
+
+.detail-back-link {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.detail-copy {
+  max-width: 56ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.detail-meta-grid {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.detail-panel {
+  padding: 24px;
+  border-radius: 28px;
+}
+
+.detail-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.history-bars,
+.detail-list {
+  display: grid;
+  gap: 14px;
+}
+
+.history-bar-card,
+.detail-list-item {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-strong);
+}
+
+.history-bar-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.history-bar-card header,
+.detail-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.history-bar-card header span,
+.detail-list-item span,
+.detail-list-item small {
+  color: var(--muted);
+}
+
+.history-bar-track {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(66, 46, 18, 0.08);
+}
+
+.history-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent) 0%, #cf7d2d 100%);
+}
+
+.detail-list-item {
+  align-items: start;
+  padding: 18px 20px;
+}
+
+.detail-list-item strong,
+.detail-list-item span {
+  display: block;
+}
+
+.detail-evidence-item strong {
+  margin-bottom: 6px;
+}
+
 .trend-card {
   padding: 20px;
 }
@@ -461,17 +657,25 @@ input {
 @media (max-width: 1040px) {
   .hero-panel,
   .content-grid,
-  .filters-panel {
+  .filters-panel,
+  .overview-strip,
+  .detail-grid,
+  .detail-hero {
     grid-template-columns: 1fr;
   }
 
   .filters-panel-wide {
     grid-template-columns: 1fr;
   }
+
+  .detail-panel-wide {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 640px) {
-  .dashboard-page {
+  .dashboard-page,
+  .detail-page {
     width: min(100% - 24px, 1380px);
     padding: 20px 0 36px;
   }
@@ -479,7 +683,9 @@ input {
   .hero-panel,
   .filters-panel,
   .ranking-panel,
-  .history-panel {
+  .history-panel,
+  .detail-hero,
+  .detail-panel {
     padding: 18px;
     border-radius: 22px;
   }

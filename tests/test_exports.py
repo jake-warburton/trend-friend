@@ -9,11 +9,23 @@ from pathlib import Path
 
 from app.exports.files import write_export_payloads
 from app.exports.serializers import (
+    build_dashboard_overview_payload,
+    build_trend_detail_index_payload,
     build_latest_trends_payload,
     build_trend_explorer_payload,
     build_trend_history_payload,
 )
-from app.models import TrendExplorerRecord, TrendMomentum, TrendScoreResult
+from app.models import (
+    TrendDetailRecord,
+    TrendEvidenceItem,
+    TrendExplorerRecord,
+    TrendHistoryPoint,
+    TrendMomentum,
+    NormalizedSignal,
+    SourceIngestionRun,
+    TrendScoreResult,
+    TrendSourceBreakdown,
+)
 
 
 class ExportPayloadTests(unittest.TestCase):
@@ -52,13 +64,40 @@ class ExportPayloadTests(unittest.TestCase):
             generated_at=generated_at,
             trends=[build_explorer_record("ai agents")],
         )
-        write_export_payloads(self.export_directory, latest_payload, history_payload, explorer_payload)
+        detail_payload = build_trend_detail_index_payload(
+            generated_at=generated_at,
+            trends=[build_detail_record("ai agents")],
+        )
+        overview_payload = build_dashboard_overview_payload(
+            generated_at=generated_at,
+            trends=[build_detail_record("ai agents")],
+            signals=[
+                build_signal("ai agents", "reddit", "social", 12.0),
+                build_signal("ai agents", "github", "developer", 8.0),
+            ],
+            source_runs=[
+                build_source_run("reddit", True, 3),
+                build_source_run("github", False, 0, error_message="timeout"),
+            ],
+        )
+        write_export_payloads(
+            self.export_directory,
+            latest_payload,
+            history_payload,
+            overview_payload,
+            explorer_payload,
+            detail_payload,
+        )
         latest_data = json.loads((self.export_directory / "latest-trends.json").read_text(encoding="utf-8"))
         history_data = json.loads((self.export_directory / "trend-history.json").read_text(encoding="utf-8"))
+        overview_data = json.loads((self.export_directory / "dashboard-overview.v2.json").read_text(encoding="utf-8"))
         explorer_data = json.loads((self.export_directory / "trend-explorer.v2.json").read_text(encoding="utf-8"))
+        detail_data = json.loads((self.export_directory / "trend-detail-index.v2.json").read_text(encoding="utf-8"))
         self.assertEqual(latest_data["trends"][0]["name"], "AI Agents")
         self.assertEqual(history_data["snapshots"][0]["trends"][0]["name"], "Battery Recycling")
+        self.assertEqual(overview_data["summary"]["trackedTrends"], 1)
         self.assertEqual(explorer_data["trends"][0]["previousRank"], 4)
+        self.assertEqual(detail_data["trends"][0]["sourceBreakdown"][0]["latestSignalAt"], "2026-03-08T00:00:00Z")
 
     def test_build_trend_explorer_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -71,6 +110,42 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
         self.assertEqual(payload["trends"][0]["firstSeenAt"], "2026-03-01T00:00:00Z")
+
+    def test_build_trend_detail_index_payload_uses_api_style_keys(self) -> None:
+        generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
+        payload = build_trend_detail_index_payload(
+            generated_at=generated_at,
+            trends=[build_detail_record("ai agents")],
+        ).to_dict()
+        self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
+        self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
+        self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
+        self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
+
+    def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
+        generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
+        payload = build_dashboard_overview_payload(
+            generated_at=generated_at,
+            trends=[build_detail_record("ai agents")],
+            signals=[
+                build_signal("ai agents", "reddit", "social", 12.0),
+                build_signal("battery recycling", "reddit", "social", 10.0),
+                build_signal("ai agents", "github", "developer", 8.0),
+            ],
+            source_runs=[
+                build_source_run("reddit", True, 2),
+                build_source_run("github", False, 0, error_message="timeout"),
+            ],
+        ).to_dict()
+        self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
+        self.assertEqual(payload["summary"]["totalSignals"], 3)
+        self.assertEqual(payload["summary"]["sourceCount"], 2)
+        self.assertEqual(payload["highlights"]["topTrendName"], "AI Agents")
+        self.assertEqual(payload["sources"][0]["signalCount"], 2)
+        self.assertEqual(payload["sources"][0]["trendCount"], 2)
+        self.assertEqual(payload["sources"][0]["status"], "healthy")
+        self.assertEqual(payload["sources"][1]["status"], "stale")
+        self.assertEqual(payload["sources"][1]["errorMessage"], "timeout")
 
 
 def build_score(topic: str) -> TrendScoreResult:
@@ -110,4 +185,86 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
         ),
         source_count=2,
         signal_count=2,
+    )
+
+
+def build_detail_record(topic: str) -> TrendDetailRecord:
+    """Create a stable detail fixture."""
+
+    return TrendDetailRecord(
+        id="ai-agents",
+        name="AI Agents",
+        rank=1,
+        previous_rank=4,
+        rank_change=3,
+        first_seen_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+        latest_signal_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        score=build_score(topic),
+        momentum=TrendMomentum(
+            previous_rank=4,
+            rank_change=3,
+            absolute_delta=12.3,
+            percent_delta=40.2,
+        ),
+        source_count=2,
+        signal_count=2,
+        sources=["github", "reddit"],
+        history=[
+            TrendHistoryPoint(
+                captured_at=datetime(2026, 3, 7, tzinfo=timezone.utc),
+                rank=4,
+                score_total=20.4,
+            ),
+            TrendHistoryPoint(
+                captured_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                rank=1,
+                score_total=42.4,
+            ),
+        ],
+        source_breakdown=[
+            TrendSourceBreakdown(
+                source="reddit",
+                signal_count=1,
+                latest_signal_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            )
+        ],
+        evidence_items=[
+            TrendEvidenceItem(
+                source="reddit",
+                signal_type="social",
+                timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                value=12.0,
+                evidence="AI agents evidence",
+            )
+        ],
+    )
+
+
+def build_signal(topic: str, source: str, signal_type: str, value: float) -> NormalizedSignal:
+    """Create a stable signal fixture."""
+
+    return NormalizedSignal(
+        topic=topic,
+        source=source,
+        signal_type=signal_type,
+        value=value,
+        timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        evidence=f"{topic} evidence",
+    )
+
+
+def build_source_run(
+    source: str,
+    success: bool,
+    item_count: int,
+    error_message: str | None = None,
+) -> SourceIngestionRun:
+    """Create a stable source ingestion run fixture."""
+
+    return SourceIngestionRun(
+        source=source,
+        fetched_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        success=success,
+        item_count=item_count,
+        error_message=error_message,
     )

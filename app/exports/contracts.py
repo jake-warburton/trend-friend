@@ -130,6 +130,141 @@ class TrendExplorerPayload:
         }
 
 
+@dataclass(frozen=True)
+class TrendHistoryPointPayload:
+    """Historical score and rank point for a trend."""
+
+    captured_at: str
+    rank: int
+    score_total: float
+
+
+@dataclass(frozen=True)
+class TrendSourceBreakdownPayload:
+    """Source-level coverage metrics for a trend."""
+
+    source: str
+    signal_count: int
+    latest_signal_at: str
+
+
+@dataclass(frozen=True)
+class TrendEvidenceItemPayload:
+    """Evidence item exposed on the trend detail page."""
+
+    source: str
+    signal_type: str
+    timestamp: str
+    value: float
+    evidence: str
+
+
+@dataclass(frozen=True)
+class TrendDetailRecordPayload:
+    """Detailed trend record consumed by trend detail pages."""
+
+    id: str
+    name: str
+    rank: int
+    previous_rank: int | None
+    rank_change: int | None
+    first_seen_at: str | None
+    latest_signal_at: str
+    score: TrendScoreComponents
+    momentum: TrendMomentumPayload
+    coverage: TrendCoveragePayload
+    sources: list[str]
+    history: list[TrendHistoryPointPayload]
+    source_breakdown: list[TrendSourceBreakdownPayload]
+    evidence_items: list[TrendEvidenceItemPayload]
+
+
+@dataclass(frozen=True)
+class TrendDetailIndexPayload:
+    """Index response for trend detail pages."""
+
+    generated_at: str
+    trends: list[TrendDetailRecordPayload]
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-serializable dictionary with API-style keys."""
+
+        return {
+            "generatedAt": self.generated_at,
+            "trends": [trend_detail_record_to_dict(trend) for trend in self.trends],
+        }
+
+
+@dataclass(frozen=True)
+class DashboardOverviewSummaryPayload:
+    """Top-level dashboard summary metrics."""
+
+    tracked_trends: int
+    total_signals: int
+    source_count: int
+    average_score: float
+
+
+@dataclass(frozen=True)
+class DashboardOverviewHighlightsPayload:
+    """Headline trends for the dashboard overview."""
+
+    top_trend_id: str | None
+    top_trend_name: str | None
+    biggest_mover_id: str | None
+    biggest_mover_name: str | None
+    newest_trend_id: str | None
+    newest_trend_name: str | None
+
+
+@dataclass(frozen=True)
+class DashboardOverviewSourcePayload:
+    """Source-level aggregate for overview and source health summary."""
+
+    source: str
+    signal_count: int
+    trend_count: int
+    status: str
+    latest_fetch_at: str | None
+    latest_success_at: str | None
+    latest_item_count: int
+    error_message: str | None
+
+
+@dataclass(frozen=True)
+class DashboardOverviewPayload:
+    """Overview response for the dashboard landing page."""
+
+    generated_at: str
+    summary: DashboardOverviewSummaryPayload
+    highlights: DashboardOverviewHighlightsPayload
+    sources: list[DashboardOverviewSourcePayload]
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-serializable dictionary with API-style keys."""
+
+        payload = asdict(self)
+        payload["generatedAt"] = payload.pop("generated_at")
+        payload["summary"]["trackedTrends"] = payload["summary"].pop("tracked_trends")
+        payload["summary"]["totalSignals"] = payload["summary"].pop("total_signals")
+        payload["summary"]["sourceCount"] = payload["summary"].pop("source_count")
+        payload["summary"]["averageScore"] = payload["summary"].pop("average_score")
+        payload["highlights"]["topTrendId"] = payload["highlights"].pop("top_trend_id")
+        payload["highlights"]["topTrendName"] = payload["highlights"].pop("top_trend_name")
+        payload["highlights"]["biggestMoverId"] = payload["highlights"].pop("biggest_mover_id")
+        payload["highlights"]["biggestMoverName"] = payload["highlights"].pop("biggest_mover_name")
+        payload["highlights"]["newestTrendId"] = payload["highlights"].pop("newest_trend_id")
+        payload["highlights"]["newestTrendName"] = payload["highlights"].pop("newest_trend_name")
+        for source in payload["sources"]:
+            source["signalCount"] = source.pop("signal_count")
+            source["trendCount"] = source.pop("trend_count")
+            source["latestFetchAt"] = source.pop("latest_fetch_at")
+            source["latestSuccessAt"] = source.pop("latest_success_at")
+            source["latestItemCount"] = source.pop("latest_item_count")
+            source["errorMessage"] = source.pop("error_message")
+        return payload
+
+
 def trend_to_dict(trend: TrendRecord) -> dict[str, object]:
     """Serialize a trend record using API-style keys."""
 
@@ -146,4 +281,24 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
     payload["latestSignalAt"] = payload.pop("latest_signal_at")
+    return payload
+
+
+def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, object]:
+    """Serialize a trend detail record using API-style keys."""
+
+    payload = asdict(trend)
+    payload["previousRank"] = payload.pop("previous_rank")
+    payload["rankChange"] = payload.pop("rank_change")
+    payload["firstSeenAt"] = payload.pop("first_seen_at")
+    payload["latestSignalAt"] = payload.pop("latest_signal_at")
+    payload["sourceBreakdown"] = payload.pop("source_breakdown")
+    payload["evidenceItems"] = payload.pop("evidence_items")
+    for point in payload["history"]:
+        point["capturedAt"] = point.pop("captured_at")
+        point["scoreTotal"] = point.pop("score_total")
+    for source in payload["sourceBreakdown"]:
+        source["latestSignalAt"] = source.pop("latest_signal_at")
+    for item in payload["evidenceItems"]:
+        item["signalType"] = item.pop("signal_type")
     return payload

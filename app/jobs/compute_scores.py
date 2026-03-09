@@ -6,7 +6,11 @@ from datetime import datetime, timezone
 
 from app.config import Settings
 from app.data.database import connect_database, initialize_database
-from app.data.repositories import SignalRepository, TrendScoreRepository
+from app.data.repositories import (
+    SignalRepository,
+    SourceIngestionRunRepository,
+    TrendScoreRepository,
+)
 from app.models import TrendScoreResult
 from app.scoring.calculator import calculate_trend_scores
 from app.scoring.ranking import rank_topics_by_score
@@ -19,7 +23,7 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
 
     from app.jobs.ingest import fetch_source_items
 
-    source_items = fetch_source_items(settings)
+    source_items, source_runs = fetch_source_items(settings)
     normalized_signals = build_signals_from_items(source_items)
     aggregates = aggregate_topic_signals(normalized_signals)
     scores = calculate_trend_scores(aggregates)
@@ -27,6 +31,7 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
 
     connection = connect_database(settings.database_path)
     initialize_database(connection)
+    SourceIngestionRunRepository(connection).append_runs(source_runs)
     SignalRepository(connection).replace_signals(normalized_signals)
     repository = TrendScoreRepository(connection)
     repository.replace_scores(ranked_scores)

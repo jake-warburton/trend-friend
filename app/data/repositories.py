@@ -8,9 +8,13 @@ from datetime import datetime
 
 from app.models import (
     NormalizedSignal,
+    SourceIngestionRun,
+    TrendDetailRecord,
+    TrendEvidenceItem,
     TrendExplorerRecord,
     TrendHistoryPoint,
     TrendMomentum,
+    TrendSourceBreakdown,
     TrendScoreResult,
 )
 
@@ -58,6 +62,62 @@ class SignalRepository:
                 value=row["value"],
                 timestamp=datetime.fromisoformat(row["timestamp"]),
                 evidence=row["evidence"],
+            )
+            for row in rows
+        ]
+
+
+class SourceIngestionRunRepository:
+    """Persist and retrieve source ingestion outcomes."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self.connection = connection
+
+    def append_runs(self, runs: list[SourceIngestionRun]) -> None:
+        """Persist source ingestion results for a pipeline run."""
+
+        self.connection.executemany(
+            """
+            INSERT INTO source_ingestion_runs (source, fetched_at, success, item_count, error_message)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    run.source,
+                    run.fetched_at.isoformat(),
+                    int(run.success),
+                    run.item_count,
+                    run.error_message,
+                )
+                for run in runs
+            ],
+        )
+        self.connection.commit()
+
+    def list_latest_runs(self) -> list[SourceIngestionRun]:
+        """Return the most recent ingestion result for each source."""
+
+        rows = self.connection.execute(
+            """
+            SELECT current.source, current.fetched_at, current.success, current.item_count, current.error_message
+            FROM source_ingestion_runs AS current
+            INNER JOIN (
+                SELECT source, MAX(fetched_at) AS fetched_at
+                FROM source_ingestion_runs
+                GROUP BY source
+            ) AS latest
+                ON latest.source = current.source
+               AND latest.fetched_at = current.fetched_at
+            ORDER BY current.source ASC
+            """
+        ).fetchall()
+        return [
+            SourceIngestionRun(
+                source=row["source"],
+                fetched_at=datetime.fromisoformat(row["fetched_at"]),
+                success=bool(row["success"]),
+                item_count=row["item_count"],
+                error_message=row["error_message"],
             )
             for row in rows
         ]
@@ -275,6 +335,89 @@ class TrendScoreRepository:
             )
         return records
 
+    def list_trend_detail_records(
+        self,
+        limit: int,
+        history_limit: int = 8,
+        evidence_limit: int = 8,
+    ) -> list[TrendDetailRecord]:
+        """Return detail-ready records for the latest ranked topics."""
+
+        latest_captured_at, latest_scores = self.list_latest_snapshot(limit=limit)
+        if latest_captured_at is None:
+            return []
+
+        records: list[TrendDetailRecord] = []
+        for rank, score in enumerate(latest_scores, start=1):
+            history = list(reversed(self.get_topic_history(score.topic, limit_runs=history_limit)))
+            momentum = self._build_momentum(score.total_score, list(reversed(history)))
+            records.append(
+                TrendDetailRecord(
+                    id=self._slugify_topic(score.topic),
+                    name=self._format_trend_name(score.topic),
+                    rank=rank,
+                    previous_rank=momentum.previous_rank,
+                    rank_change=momentum.rank_change,
+                    first_seen_at=self.get_first_seen_at(score.topic),
+                    latest_signal_at=score.latest_timestamp,
+                    score=score,
+                    momentum=momentum,
+                    source_count=len(score.source_counts),
+                    signal_count=sum(score.source_counts.values()),
+                    sources=sorted(score.source_counts),
+                    history=history,
+                    source_breakdown=self.get_topic_source_breakdown(score.topic),
+                    evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
+                )
+            )
+        return records
+
+    def get_topic_source_breakdown(self, topic: str) -> list[TrendSourceBreakdown]:
+        """Return source-level signal coverage for a topic."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, COUNT(*) AS signal_count, MAX(timestamp) AS latest_signal_at
+            FROM signals
+            WHERE topic = ?
+            GROUP BY source
+            ORDER BY signal_count DESC, source ASC
+            """,
+            (topic,),
+        ).fetchall()
+        return [
+            TrendSourceBreakdown(
+                source=row["source"],
+                signal_count=row["signal_count"],
+                latest_signal_at=datetime.fromisoformat(row["latest_signal_at"]),
+            )
+            for row in rows
+        ]
+
+    def get_topic_evidence(self, topic: str, limit: int) -> list[TrendEvidenceItem]:
+        """Return recent evidence items for a topic ordered newest first."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, signal_type, timestamp, value, evidence
+            FROM signals
+            WHERE topic = ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT ?
+            """,
+            (topic, limit),
+        ).fetchall()
+        return [
+            TrendEvidenceItem(
+                source=row["source"],
+                signal_type=row["signal_type"],
+                timestamp=datetime.fromisoformat(row["timestamp"]),
+                value=row["value"],
+                evidence=row["evidence"],
+            )
+            for row in rows
+        ]
+
     @staticmethod
     def _score_from_row(row: sqlite3.Row) -> TrendScoreResult:
         """Build a score model from a SQLite row."""
@@ -296,7 +439,8 @@ class TrendScoreRepository:
     def _build_momentum(latest_total_score: float, history: list[TrendHistoryPoint]) -> TrendMomentum:
         """Build movement metrics from the two newest historical points."""
 
-        previous = history[1] if len(history) > 1 else None
+        ordered_history = sorted(history, key=lambda point: point.captured_at, reverse=True)
+        previous = ordered_history[1] if len(ordered_history) > 1 else None
         absolute_delta = None
         percent_delta = None
         if previous is not None:
@@ -306,7 +450,7 @@ class TrendScoreRepository:
 
         return TrendMomentum(
             previous_rank=previous.rank if previous is not None else None,
-            rank_change=(previous.rank - history[0].rank) if previous is not None else None,
+            rank_change=(previous.rank - ordered_history[0].rank) if previous is not None else None,
             absolute_delta=absolute_delta,
             percent_delta=percent_delta,
         )

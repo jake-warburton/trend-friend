@@ -30,6 +30,15 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             evidence TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS source_ingestion_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source TEXT NOT NULL,
+            fetched_at TEXT NOT NULL,
+            success INTEGER NOT NULL,
+            item_count INTEGER NOT NULL,
+            error_message TEXT NULL
+        );
+
         CREATE TABLE IF NOT EXISTS trend_scores (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             topic TEXT NOT NULL,

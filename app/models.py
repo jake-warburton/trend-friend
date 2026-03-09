@@ -32,6 +32,17 @@ class NormalizedSignal:
 
 
 @dataclass(frozen=True)
+class SourceIngestionRun:
+    """Fetch result for a single source during a pipeline run."""
+
+    source: str
+    fetched_at: datetime
+    success: bool
+    item_count: int
+    error_message: str | None = None
+
+
+@dataclass(frozen=True)
 class TopicAggregate:
     """Aggregated metrics for a topic across many signals."""
 
@@ -94,3 +105,44 @@ class TrendExplorerRecord:
     momentum: TrendMomentum
     source_count: int
     signal_count: int
+
+
+@dataclass(frozen=True)
+class TrendSourceBreakdown:
+    """Source-level coverage details for a trend."""
+
+    source: str
+    signal_count: int
+    latest_signal_at: datetime
+
+
+@dataclass(frozen=True)
+class TrendEvidenceItem:
+    """Evidence item captured from a normalized signal."""
+
+    source: str
+    signal_type: str
+    timestamp: datetime
+    value: float
+    evidence: str
+
+
+@dataclass(frozen=True)
+class TrendDetailRecord:
+    """Detailed read model for a single trend page."""
+
+    id: str
+    name: str
+    rank: int
+    previous_rank: int | None
+    rank_change: int | None
+    first_seen_at: datetime | None
+    latest_signal_at: datetime
+    score: TrendScoreResult
+    momentum: TrendMomentum
+    source_count: int
+    signal_count: int
+    sources: list[str]
+    history: list[TrendHistoryPoint]
+    source_breakdown: list[TrendSourceBreakdown]
+    evidence_items: list[TrendEvidenceItem]

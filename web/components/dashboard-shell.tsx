@@ -4,10 +4,11 @@ import { Button } from "@base-ui/react/button";
 import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
+import Link from "next/link";
 import { useDeferredValue, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import type { DashboardData, TrendExplorerRecord } from "@/lib/types";
+import type { DashboardData } from "@/lib/types";
 
 type DashboardShellProps = {
   initialData: DashboardData;
@@ -66,17 +67,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     });
   }, [deferredKeyword, initialData.explorer.trends, minimumScore, selectedSource, sortBy]);
 
-  const biggestMover = useMemo(() => {
-    return initialData.explorer.trends.reduce<TrendExplorerRecord | null>((current, trend) => {
-      if (current === null) {
-        return trend;
-      }
-      return (trend.rankChange ?? Number.NEGATIVE_INFINITY) > (current.rankChange ?? Number.NEGATIVE_INFINITY)
-        ? trend
-        : current;
-    }, null);
-  }, [initialData.explorer.trends]);
-
   function handleRefresh() {
     setRefreshError(null);
     startTransition(async () => {
@@ -103,21 +93,43 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         </div>
         <div className="hero-meta">
           <div className="stat-card">
-            <span>Explorer snapshot</span>
-            <strong>{formatTimestamp(initialData.explorer.generatedAt)}</strong>
+            <span>Overview snapshot</span>
+            <strong>{formatTimestamp(initialData.overview.generatedAt)}</strong>
           </div>
           <div className="stat-card">
             <span>Tracked trends</span>
-            <strong>{initialData.explorer.trends.length}</strong>
+            <strong>{initialData.overview.summary.trackedTrends}</strong>
           </div>
           <div className="stat-card">
             <span>Biggest mover</span>
-            <strong>{biggestMover?.name ?? "No data"}</strong>
+            <strong>{initialData.overview.highlights.biggestMoverName ?? "No data"}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Total signals</span>
+            <strong>{initialData.overview.summary.totalSignals}</strong>
           </div>
           <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
             {isPending ? "Refreshing..." : "Refresh trends"}
           </Button>
         </div>
+      </section>
+
+      <section className="overview-strip">
+        <article className="overview-card">
+          <span className="overview-label">Top trend</span>
+          <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>
+          <small>Highest ranked topic in the current snapshot.</small>
+        </article>
+        <article className="overview-card">
+          <span className="overview-label">Newest trend</span>
+          <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
+          <small>Most recently first-seen topic in the ranked set.</small>
+        </article>
+        <article className="overview-card">
+          <span className="overview-label">Average score</span>
+          <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
+          <small>Mean total score across tracked trends.</small>
+        </article>
       </section>
 
       <section className="filters-panel filters-panel-wide">
@@ -229,7 +241,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <tr key={trend.id}>
                       <td>
                         <div className="trend-cell">
-                          <strong>{trend.name}</strong>
+                          <strong>
+                            <Link className="trend-link" href={`/trends/${trend.id}`}>
+                              {trend.name}
+                            </Link>
+                          </strong>
                           <span>
                             First seen {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "this run"}
                           </span>
@@ -275,26 +291,31 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         <aside className="history-panel">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Recent runs</p>
-              <h2>Snapshot history</h2>
+              <p className="eyebrow">Source health</p>
+              <h2>Contribution summary</h2>
             </div>
           </div>
 
           <div className="snapshot-list">
-            {initialData.history.snapshots.map((snapshot) => (
-              <section className="snapshot-card" key={snapshot.capturedAt}>
+            {initialData.overview.sources.map((source) => (
+              <section className="snapshot-card" key={source.source}>
                 <header>
-                  <strong>{formatTimestamp(snapshot.capturedAt)}</strong>
-                  <span>{snapshot.trends.length} stored ranks</span>
+                  <strong>{formatSourceLabel(source.source)}</strong>
+                  <span className={sourceHealthClassName(source.status)}>
+                    {formatSourceStatus(source.status)}
+                  </span>
                 </header>
-                <ol>
-                  {snapshot.trends.slice(0, 3).map((trend) => (
-                    <li key={trend.id}>
-                      <span>{trend.name}</span>
-                      <strong>{trend.score.total.toFixed(1)}</strong>
-                    </li>
-                  ))}
-                </ol>
+                <p className="source-summary-copy">
+                  {source.signalCount} signals across {source.trendCount} trends. Last fetch{" "}
+                  {source.latestFetchAt ? formatTimestamp(source.latestFetchAt) : "not recorded"}.
+                </p>
+                <p className="source-summary-copy">
+                  Last success {source.latestSuccessAt ? formatTimestamp(source.latestSuccessAt) : "never"}.
+                  Latest item count {source.latestItemCount}.
+                </p>
+                {source.errorMessage ? (
+                  <p className="source-error-copy">{source.errorMessage}</p>
+                ) : null}
               </section>
             ))}
           </div>
@@ -368,4 +389,18 @@ function compareDates(left: string | null, right: string | null) {
     return 1;
   }
   return new Date(left).getTime() - new Date(right).getTime();
+}
+
+function formatSourceStatus(status: string) {
+  if (status === "healthy") {
+    return "Healthy";
+  }
+  return "Stale";
+}
+
+function sourceHealthClassName(status: string) {
+  if (status === "healthy") {
+    return "source-health-pill source-health-pill-healthy";
+  }
+  return "source-health-pill source-health-pill-stale";
 }

@@ -7,8 +7,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app.data.database import connect_database, initialize_database
-from app.data.repositories import SignalRepository, TrendScoreRepository
-from app.models import NormalizedSignal, TrendScoreResult
+from app.data.repositories import (
+    SignalRepository,
+    SourceIngestionRunRepository,
+    TrendScoreRepository,
+)
+from app.models import NormalizedSignal, SourceIngestionRun, TrendScoreResult
 
 
 class RepositoryTests(unittest.TestCase):
@@ -36,6 +40,39 @@ class RepositoryTests(unittest.TestCase):
         repository.replace_signals(signals)
         stored_signals = repository.list_signals()
         self.assertEqual(stored_signals, signals)
+
+    def test_source_ingestion_run_repository_returns_latest_runs_per_source(self) -> None:
+        repository = SourceIngestionRunRepository(self.connection)
+        repository.append_runs(
+            [
+                SourceIngestionRun(
+                    source="reddit",
+                    fetched_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                    success=True,
+                    item_count=10,
+                ),
+                SourceIngestionRun(
+                    source="reddit",
+                    fetched_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+                    success=False,
+                    item_count=0,
+                    error_message="timeout",
+                ),
+                SourceIngestionRun(
+                    source="github",
+                    fetched_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+                    success=True,
+                    item_count=4,
+                ),
+            ]
+        )
+
+        runs = repository.list_latest_runs()
+
+        self.assertEqual(len(runs), 2)
+        reddit_run = next(run for run in runs if run.source == "reddit")
+        self.assertFalse(reddit_run.success)
+        self.assertEqual(reddit_run.error_message, "timeout")
 
     def test_trend_score_repository_round_trip(self) -> None:
         score = TrendScoreResult(
@@ -108,6 +145,34 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.momentum.percent_delta, 200.0)
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
+
+    def test_trend_score_repository_builds_detail_records_with_signal_breakdown(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        signal_repository = SignalRepository(self.connection)
+        previous_captured_at = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        latest_captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        signal_repository.replace_signals(
+            [
+                NormalizedSignal("ai agents", "reddit", "social", 12.0, latest_captured_at, "Reddit evidence"),
+                NormalizedSignal("ai agents", "github", "developer", 9.0, previous_captured_at, "GitHub evidence"),
+            ]
+        )
+        repository.append_snapshot(
+            [build_score(topic="ai agents", total_score=10.0)],
+            captured_at=previous_captured_at,
+        )
+        repository.append_snapshot(
+            [build_score(topic="ai agents", total_score=30.0)],
+            captured_at=latest_captured_at,
+        )
+
+        records = repository.list_trend_detail_records(limit=5)
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].history[0].captured_at, previous_captured_at)
+        self.assertEqual(records[0].source_breakdown[0].source, "github")
+        self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
 
 
 def build_score(topic: str, total_score: float) -> TrendScoreResult:
