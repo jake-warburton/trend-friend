@@ -221,44 +221,48 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <article className="explorer-card" key={trend.id}>
                   <div className="explorer-card-top">
                     <div className="trend-cell">
-                      <strong>
-                        <Link className="trend-link" href={`/trends/${trend.id}`}>
-                          {trend.name}
-                        </Link>
-                      </strong>
-                      <span className={trendStatusClassName(trend.status)}>
-                        {formatTrendStatus(trend.status)}
-                      </span>
+                      <div className="trend-title-row">
+                        <strong>
+                          <Link className="trend-link" href={`/trends/${trend.id}`}>
+                            {trend.name}
+                          </Link>
+                        </strong>
+                        <span className={trendStatusClassName(trend.status)}>
+                          {formatTrendStatus(trend.status)}
+                        </span>
+                      </div>
                       <span>
                         First seen {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "this run"}
                       </span>
                     </div>
 
-                    <div className="explorer-metric">
-                      <span>Rank</span>
-                      <strong>#{trend.rank}</strong>
-                    </div>
+                    <div className="explorer-metrics-row">
+                      <div className="explorer-metric explorer-metric-inline">
+                        <span>Rank</span>
+                        <strong>#{trend.rank}</strong>
+                      </div>
 
-                    <div className="explorer-metric">
-                      <span>Movement</span>
-                      <strong className={movementClassName(trend.rankChange)}>
-                        {formatRankChange(trend.rankChange)}
-                      </strong>
-                      <small>{formatMomentum(trend.momentum.percentDelta)}</small>
-                    </div>
+                      <div className="explorer-metric explorer-metric-inline">
+                        <span>Move</span>
+                        <strong className={movementClassName(trend.rankChange)}>
+                          {formatRankChange(trend.rankChange)}
+                        </strong>
+                        <small>{formatMomentum(trend.momentum.percentDelta)}</small>
+                      </div>
 
-                    <div className="explorer-metric">
-                      <span>Total</span>
-                      <strong>{trend.score.total.toFixed(1)}</strong>
-                      <small>
-                        S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
-                        {trend.score.knowledge.toFixed(1)}
-                      </small>
-                    </div>
+                      <div className="explorer-metric explorer-metric-inline">
+                        <span>Score</span>
+                        <strong>{trend.score.total.toFixed(1)}</strong>
+                        <small>
+                          S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
+                          {trend.score.knowledge.toFixed(1)}
+                        </small>
+                      </div>
 
-                    <div className="explorer-metric">
-                      <span>Signals</span>
-                      <strong>{trend.coverage.signalCount}</strong>
+                      <div className="explorer-metric explorer-metric-inline">
+                        <span>Signals</span>
+                        <strong>{trend.coverage.signalCount}</strong>
+                      </div>
                     </div>
                   </div>
 
