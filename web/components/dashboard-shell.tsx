@@ -85,7 +85,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       <section className="hero-panel">
         <div className="hero-rail">
           <article className="hero-summary-card">
-            <span>Top trend</span>
+            <span>Top</span>
             <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>
           </article>
           <article className="hero-summary-card">
@@ -96,29 +96,29 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <span>Last run</span>
             <strong>
               {initialData.overview.operations.lastRunAt
-                ? formatTimestamp(initialData.overview.operations.lastRunAt)
+                ? formatCompactTimestamp(initialData.overview.operations.lastRunAt)
                 : "No data"}
             </strong>
           </article>
           <div className="stat-card">
-            <span>Tracked trends</span>
+            <span>Tracked</span>
             <strong>{initialData.overview.summary.trackedTrends}</strong>
           </div>
           <div className="stat-card">
-            <span>Total signals</span>
+            <span>Signals</span>
             <strong>{initialData.overview.summary.totalSignals}</strong>
           </div>
           <div className="stat-card">
-            <span>Run health</span>
+            <span>Health</span>
             <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
           </div>
           <div className="stat-card">
-            <span>Average score</span>
+            <span>Avg score</span>
             <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
           </div>
           <div className="hero-action-wrap">
             <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
-              {isPending ? "Refreshing..." : "Refresh trends"}
+              {isPending ? "Refreshing..." : "Refresh"}
             </Button>
           </div>
         </div>
@@ -236,7 +236,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         </span>
                       </div>
                       <span>
-                        First seen {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "this run"}
+                        {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
                       </span>
                     </div>
 
@@ -300,8 +300,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   </span>
                 </header>
                 <p className="source-summary-copy">
-                  {run.signalCount} signals · {run.rankedTrendCount} trends ·{" "}
-                  {run.successfulSourceCount}/{run.sourceCount} healthy
+                  {run.signalCount} sig · {run.rankedTrendCount} trends · {run.successfulSourceCount}/
+                  {run.sourceCount} healthy
                 </p>
                 <p className="source-summary-copy">
                   {formatDuration(run.durationMs)} ·{" "}
@@ -338,10 +338,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   </span>
                 </header>
                 <p className="source-summary-copy">
-                  {source.signalCount} signals · {source.trendCount} trends
+                  {source.signalCount} sig · {source.trendCount} trends
                 </p>
                 <p className="source-summary-copy">
-                  {source.latestFetchAt ? formatTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
+                  {source.latestFetchAt ? formatCompactTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
                   {source.latestItemCount} items · {formatDuration(source.durationMs)}
                 </p>
                 {source.usedFallback ? (
@@ -363,6 +363,15 @@ function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function formatCompactTimestamp(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(new Date(value));
 }
 
