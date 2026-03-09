@@ -462,12 +462,26 @@ input {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .trend-title-row strong {
   font-size: 0.84rem;
   line-height: 1.1;
+}
+
+.trend-date-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border: 1px solid rgba(124, 157, 216, 0.1);
+  border-radius: 999px;
+  background: rgba(8, 18, 35, 0.42);
+  color: var(--muted);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .trend-cell span,

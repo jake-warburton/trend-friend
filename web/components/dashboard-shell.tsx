@@ -234,10 +234,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         <span className={trendStatusClassName(trend.status)}>
                           {formatTrendStatus(trend.status)}
                         </span>
+                        <span className="trend-date-chip">
+                          {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
+                        </span>
                       </div>
-                      <span>
-                        {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
-                      </span>
                     </div>
 
                     <div className="explorer-metrics-row">
