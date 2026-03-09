@@ -426,7 +426,7 @@ input {
 
 .explorer-table th,
 .explorer-table td {
-  padding: 16px 14px;
+  padding: 13px 12px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
@@ -447,7 +447,7 @@ input {
 .trend-cell,
 .score-cell {
   display: grid;
-  gap: 6px;
+  gap: 5px;
 }
 
 .trend-cell span,
@@ -487,8 +487,18 @@ input {
 }
 
 .evidence-cell {
-  max-width: 30ch;
-  line-height: 1.5;
+  width: 28%;
+  min-width: 220px;
+  max-width: 34ch;
+}
+
+.evidence-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .detail-page {

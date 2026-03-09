@@ -294,7 +294,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           ))}
                         </div>
                       </td>
-                      <td className="evidence-cell">{trend.evidencePreview[0] ?? "No evidence available."}</td>
+                      <td className="evidence-cell">
+                        <div className="evidence-preview">
+                          {trend.evidencePreview[0] ?? "No evidence available."}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
