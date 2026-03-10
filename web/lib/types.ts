@@ -419,6 +419,10 @@ export type PublicWatchlistSummary = {
   showCreator?: boolean;
   ownerDisplayName?: string | null;
   expiresAt?: string | null;
+  accessCount?: number;
+  recentOpenCount?: number;
+  lastAccessedAt?: string | null;
+  popularThisWeek?: boolean;
   createdAt: string;
   updatedAt: string;
   geoSummary?: TrendGeoSummary[];

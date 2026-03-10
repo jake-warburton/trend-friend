@@ -112,23 +112,35 @@ def build_public_watchlists_payload(
     public_watchlists: list[tuple[Watchlist, WatchlistShare]],
     score_repo: TrendScoreRepository | None = None,
     owner_display_names: dict[int, str] | None = None,
+    recent_open_counts: dict[int, int] | None = None,
 ) -> dict[str, object]:
     """Build the public community directory payload."""
 
     latest_scores = score_repo.list_scores(limit=WATCHLIST_SCORE_LOOKUP_LIMIT) if score_repo else []
     score_by_slug = {_slugify(score.topic): score for score in latest_scores}
 
+    summaries = [
+        _serialize_public_watchlist_summary(
+            watchlist,
+            share,
+            score_repo,
+            score_by_slug,
+            owner_display_name=(owner_display_names or {}).get(share.id),
+            recent_open_count=(recent_open_counts or {}).get(share.id, 0),
+        )
+        for watchlist, share in public_watchlists
+    ]
+
+    summaries.sort(
+        key=lambda item: (
+            -int(item["recentOpenCount"]),
+            -int(item["accessCount"]),
+            item["createdAt"],
+        )
+    )
+
     return {
-        "watchlists": [
-            _serialize_public_watchlist_summary(
-                watchlist,
-                share,
-                score_repo,
-                score_by_slug,
-                owner_display_name=(owner_display_names or {}).get(share.id),
-            )
-            for watchlist, share in public_watchlists
-        ]
+        "watchlists": summaries
     }
 
 
@@ -138,6 +150,7 @@ def _serialize_public_watchlist_summary(
     score_repo: TrendScoreRepository | None,
     score_by_slug: dict[str, object],
     owner_display_name: str | None,
+    recent_open_count: int,
 ) -> dict[str, object]:
     geo = _aggregate_watchlist_geo(watchlist, score_repo, score_by_slug)
     source_contributions = _aggregate_watchlist_source_contributions(watchlist, score_repo, score_by_slug)
@@ -149,6 +162,10 @@ def _serialize_public_watchlist_summary(
         "showCreator": share.show_creator,
         "ownerDisplayName": owner_display_name if share.show_creator else None,
         "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
+        "accessCount": share.access_count,
+        "recentOpenCount": recent_open_count,
+        "lastAccessedAt": _to_utc_iso(share.last_accessed_at) if share.last_accessed_at is not None else None,
+        "popularThisWeek": recent_open_count >= 3,
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
         "geoSummary": [_serialize_geo_summary(g) for g in geo],

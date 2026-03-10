@@ -240,10 +240,15 @@ def list_public_watchlists(db: sqlite3.Connection = Depends(get_db)) -> dict:
     repo = WatchlistRepository(db)
     score_repo = TrendScoreRepository(db)
     public = repo.list_public_watchlists()
+    recent_open_counts = {
+        share.id: sum(point.access_count for point in repo.list_share_access_history(share.id, days=7))
+        for _, share in public
+    }
     return build_public_watchlists_payload(
         public,
         score_repo=score_repo,
         owner_display_names=_resolve_owner_display_names(db, [share for _, share in public]),
+        recent_open_counts=recent_open_counts,
     )
 
 

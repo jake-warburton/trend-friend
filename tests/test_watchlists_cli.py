@@ -312,6 +312,8 @@ class ListPublicWatchlistsTests(unittest.TestCase):
 
         for key in ("id", "name", "itemCount", "shareToken", "createdAt", "updatedAt", "geoSummary"):
             self.assertIn(key, entry, f"Missing key: {key}")
+        for key in ("recentOpenCount", "popularThisWeek"):
+            self.assertIn(key, entry, f"Missing key: {key}")
 
 
 class ListAlertsTests(unittest.TestCase):

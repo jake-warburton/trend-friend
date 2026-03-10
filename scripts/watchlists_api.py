@@ -347,9 +347,14 @@ def list_public_payload(
 
     from app.watchlists_payloads import build_public_watchlists_payload
 
+    public_watchlists = watchlist_repository.list_public_watchlists()
     return build_public_watchlists_payload(
-        watchlist_repository.list_public_watchlists(),
+        public_watchlists,
         score_repo=score_repository,
+        recent_open_counts={
+            share.id: sum(point.access_count for point in watchlist_repository.list_share_access_history(share.id, days=7))
+            for _, share in public_watchlists
+        },
     )
 
 

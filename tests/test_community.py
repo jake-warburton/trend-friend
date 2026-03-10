@@ -176,6 +176,8 @@ class CommunityAPITests(unittest.TestCase):
         self.assertEqual(data["watchlists"][0]["name"], "Public List")
         self.assertIn("shareToken", data["watchlists"][0])
         self.assertIn("sourceContributions", data["watchlists"][0])
+        self.assertIn("recentOpenCount", data["watchlists"][0])
+        self.assertIn("popularThisWeek", data["watchlists"][0])
 
     def test_private_shares_not_listed(self) -> None:
         wl_id = self._create_watchlist("Private List")
@@ -187,6 +189,22 @@ class CommunityAPITests(unittest.TestCase):
         resp = self.client.get("/api/v1/community/watchlists")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["watchlists"], [])
+
+    def test_public_watchlists_are_sorted_by_recent_opens(self) -> None:
+        first_id = self._create_watchlist("First List")
+        second_id = self._create_watchlist("Second List")
+        first_token = self.client.post(f"/api/v1/watchlists/{first_id}/share", json={"public": True}).json()["shareToken"]
+        second_token = self.client.post(f"/api/v1/watchlists/{second_id}/share", json={"public": True}).json()["shareToken"]
+
+        self.client.get(f"/api/v1/shared/{second_token}")
+        self.client.get(f"/api/v1/shared/{second_token}")
+        self.client.get(f"/api/v1/shared/{second_token}")
+        self.client.get(f"/api/v1/shared/{first_token}")
+
+        payload = self.client.get("/api/v1/community/watchlists").json()["watchlists"]
+        self.assertEqual(payload[0]["name"], "Second List")
+        self.assertEqual(payload[0]["recentOpenCount"], 3)
+        self.assertTrue(payload[0]["popularThisWeek"])
 
     def test_revoke_share_removes_public_watchlist(self) -> None:
         wl_id = self._create_watchlist("Revoke List")

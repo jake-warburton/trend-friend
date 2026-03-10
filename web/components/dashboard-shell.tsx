@@ -1419,8 +1419,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         {watchlist.name}
                       </Link>
                     </strong>
-                    <span>{watchlist.itemCount} tracked</span>
+                    <span>{watchlist.popularThisWeek ? "Popular this week" : `${watchlist.itemCount} tracked`}</span>
                   </header>
+                  {watchlist.recentOpenCount != null ? (
+                    <p className="source-summary-copy">
+                      {watchlist.recentOpenCount} opens in the last 7 days
+                      {watchlist.accessCount != null ? ` · ${watchlist.accessCount} total` : ""}
+                    </p>
+                  ) : null}
                   {watchlist.sourceContributions?.[0] ? (
                     <p className="source-summary-copy">
                       {formatSourceContributionSummary(watchlist.sourceContributions[0])}
@@ -1434,6 +1440,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <p className="source-summary-copy">
                       {watchlist.geoSummary.map((geo) => geo.label).join(", ")}
                     </p>
+                  ) : null}
+                  {watchlist.lastAccessedAt ? (
+                    <p className="source-summary-copy">Last opened {formatCompactTimestamp(watchlist.lastAccessedAt)}</p>
                   ) : null}
                   <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
                 </section>
