@@ -1,8 +1,9 @@
-"""Google Trends source adapter using pytrends."""
+"""Google Trends source adapter using the public trending RSS feed."""
 
 from __future__ import annotations
 
 import logging
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from app.models import RawSourceItem
@@ -10,65 +11,87 @@ from app.sources.base import SourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
-TREND_CATEGORIES = {
-    "t": 0,  # All categories
-}
-
-GEO = ""  # Worldwide
+_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
 
 
 class GoogleTrendsSourceAdapter(SourceAdapter):
-    """Fetch trending searches from Google Trends and normalize them."""
+    """Fetch trending searches from Google Trends RSS and normalize them."""
 
     source_name = "google_trends"
 
     def fetch(self) -> list[RawSourceItem]:
         try:
-            return self._fetch_trending_searches()
+            return self._fetch_rss()
         except Exception as error:
             self.log_fallback(error)
             return self._normalize_trending(self.sample_payload())
 
-    def _fetch_trending_searches(self) -> list[RawSourceItem]:
-        """Fetch daily trending searches via pytrends."""
+    def _fetch_rss(self) -> list[RawSourceItem]:
+        """Fetch and parse the Google Trends daily trending RSS feed."""
 
-        try:
-            from pytrends.request import TrendReq
-        except ImportError as error:
-            raise RuntimeError(
-                "pytrends is required for Google Trends. Install with: pip install pytrends"
-            ) from error
+        xml_bytes = self.get_url(_RSS_URL, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; TrendFriend/1.0)",
+            "Accept": "application/rss+xml, application/xml, text/xml",
+        })
+        return self._parse_rss(xml_bytes)
 
-        pytrends = TrendReq(hl="en-US", tz=360, timeout=(10, 25))
-        trending_df = pytrends.trending_searches(pn="united_states")
-        return self._normalize_trending_df(trending_df)
+    def _parse_rss(self, xml_bytes: bytes) -> list[RawSourceItem]:
+        """Parse RSS XML into normalized items."""
 
-    def _normalize_trending_df(self, trending_df: object) -> list[RawSourceItem]:
-        """Normalize a pandas DataFrame of trending searches into shared models."""
+        root = ET.fromstring(xml_bytes)
+
+        # The feed uses the ht namespace for traffic/picture data
+        ns = {"ht": "https://trends.google.com/trending/rss"}
 
         items: list[RawSourceItem] = []
-        now = datetime.now(tz=timezone.utc)
-        try:
-            rows = list(trending_df.itertuples())
-        except AttributeError:
-            return items
-
-        for index, row in enumerate(rows[: self.settings.max_items_per_source]):
-            title = str(row[1]).strip() if len(row) > 1 else ""
+        for item in root.iter("item"):
+            title = (item.findtext("title") or "").strip()
             if not title:
                 continue
+
+            link = (item.findtext("link") or "").strip()
+            pub_date = item.findtext("pubDate") or ""
+            traffic_text = item.findtext("ht:approx_traffic", namespaces=ns) or "0"
+
+            timestamp = self._parse_pub_date(pub_date)
+            traffic = self._parse_traffic(traffic_text)
+
             items.append(
                 RawSourceItem(
                     source=self.source_name,
-                    external_id=f"gt-trending-{index}",
+                    external_id=f"gt-{hash(title) & 0xFFFFFFFF:08x}",
                     title=title,
-                    url=f"https://trends.google.com/trending?geo=US&q={title.replace(' ', '+')}",
-                    timestamp=now,
-                    engagement_score=float(self.settings.max_items_per_source - index),
+                    url=link or f"https://trends.google.com/trending?geo=US&q={title.replace(' ', '+')}",
+                    timestamp=timestamp,
+                    engagement_score=traffic,
                     metadata={"region": "US"},
                 )
             )
+
+            if len(items) >= self.settings.max_items_per_source:
+                break
+
         return items
+
+    @staticmethod
+    def _parse_pub_date(date_str: str) -> datetime:
+        """Parse an RSS pubDate string, falling back to now on failure."""
+        if not date_str:
+            return datetime.now(tz=timezone.utc)
+        try:
+            from email.utils import parsedate_to_datetime
+            return parsedate_to_datetime(date_str).astimezone(timezone.utc)
+        except (ValueError, TypeError):
+            return datetime.now(tz=timezone.utc)
+
+    @staticmethod
+    def _parse_traffic(traffic_text: str) -> float:
+        """Parse traffic strings like '500,000+' into a float."""
+        cleaned = traffic_text.replace(",", "").replace("+", "").strip()
+        try:
+            return float(cleaned)
+        except ValueError:
+            return 0.0
 
     def _normalize_trending(self, payload: list[dict[str, object]]) -> list[RawSourceItem]:
         """Normalize a list of sample trending search entries."""

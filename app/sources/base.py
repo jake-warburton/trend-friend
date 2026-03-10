@@ -29,15 +29,38 @@ class SourceAdapter(ABC):
     def fetch(self) -> list[RawSourceItem]:
         """Return normalized items from the source."""
 
-    def get_json(self, url: str, headers: Optional[Dict[str, str]] = None) -> Any:
-        """Fetch JSON and raise a clear runtime error on failure."""
+    def get_url(self, url: str, headers: Optional[Dict[str, str]] = None) -> bytes:
+        """Fetch raw bytes from a URL, preferring requests over urllib."""
+
+        try:
+            import requests as _requests
+            resp = _requests.get(
+                url,
+                headers=headers or {},
+                timeout=self.settings.request_timeout_seconds,
+            )
+            resp.raise_for_status()
+            return resp.content
+        except ImportError:
+            pass
+        except Exception as error:
+            raise RuntimeError(f"{self.source_name} request failed for {url}: {error}") from error
 
         request = Request(url, headers=headers or {})
         try:
             with urlopen(request, timeout=self.settings.request_timeout_seconds) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except (HTTPError, URLError, TimeoutError, ValueError) as error:
+                return response.read()
+        except (HTTPError, URLError, TimeoutError) as error:
             raise RuntimeError(f"{self.source_name} request failed for {url}: {error}") from error
+
+    def get_json(self, url: str, headers: Optional[Dict[str, str]] = None) -> Any:
+        """Fetch JSON and raise a clear runtime error on failure."""
+
+        raw = self.get_url(url, headers)
+        try:
+            return json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError) as error:
+            raise RuntimeError(f"{self.source_name} failed to parse JSON from {url}: {error}") from error
 
     @staticmethod
     def parse_unix_timestamp(timestamp: int | float) -> datetime:
