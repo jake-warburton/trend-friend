@@ -306,6 +306,23 @@ input {
   line-height: 1.5;
 }
 
+.action-success-notice {
+  margin: 6px 0 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(127, 224, 167, 0.1);
+  color: #7fe0a7;
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.empty-state-hint {
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
 .filters-panel-wide {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }

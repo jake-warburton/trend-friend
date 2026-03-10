@@ -58,8 +58,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [actionPending, setActionPending] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(true);
   const [publicWatchlists, setPublicWatchlists] = useState<PublicWatchlistSummary[]>([]);
   const deferredKeyword = useDeferredValue(keyword);
+
+  function showActionNotice(message: string) {
+    setActionNotice(message);
+    setWatchlistError(null);
+    setTimeout(() => setActionNotice(null), 3000);
+  }
 
   const filteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
@@ -122,12 +131,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     try {
       const response = await fetch("/api/watchlists");
       if (!response.ok) {
-        throw new Error("Watchlists unavailable");
+        const payload = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(payload.error ?? `Watchlists unavailable (${response.status})`);
       }
       setWatchlistData((await response.json()) as WatchlistResponse);
       setWatchlistError(null);
     } catch (error) {
       setWatchlistError(error instanceof Error ? error.message : "Watchlists unavailable");
+    } finally {
+      setWatchlistLoading(false);
     }
   }
 
@@ -135,61 +147,79 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     if (watchlistName.trim().length === 0) {
       return;
     }
-    const response = await fetch("/api/watchlists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "create-watchlist", name: watchlistName.trim() }),
-    });
-    if (response.ok) {
-      setWatchlistData((await response.json()) as WatchlistResponse);
-      setWatchlistName("");
-      setWatchlistError(null);
-      return;
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create-watchlist", name: watchlistName.trim() }),
+      });
+      if (response.ok) {
+        setWatchlistData((await response.json()) as WatchlistResponse);
+        setWatchlistName("");
+        showActionNotice("Watchlist created");
+        return;
+      }
+      setWatchlistError("Could not create watchlist");
+    } finally {
+      setActionPending(false);
     }
-    setWatchlistError("Could not create watchlist");
   }
 
   async function handleToggleTracked(trendId: string, trendName: string) {
     if (defaultWatchlist == null) {
       return;
     }
-    const isTracked = defaultWatchlist.items.some((item) => item.trendId === trendId);
-    const payload = isTracked
-      ? { action: "remove-item", watchlistId: defaultWatchlist.id, trendId }
-      : { action: "add-item", watchlistId: defaultWatchlist.id, trendId, trendName };
-    const response = await fetch("/api/watchlists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (response.ok) {
-      setWatchlistData((await response.json()) as WatchlistResponse);
-      setWatchlistError(null);
-      return;
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const isTracked = defaultWatchlist.items.some((item) => item.trendId === trendId);
+      const payload = isTracked
+        ? { action: "remove-item", watchlistId: defaultWatchlist.id, trendId }
+        : { action: "add-item", watchlistId: defaultWatchlist.id, trendId, trendName };
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        setWatchlistData((await response.json()) as WatchlistResponse);
+        showActionNotice(isTracked ? "Removed from watchlist" : "Added to watchlist");
+        return;
+      }
+      setWatchlistError("Could not update watchlist");
+    } finally {
+      setActionPending(false);
     }
-    setWatchlistError("Could not update watchlist");
   }
 
   async function handleCreateAlert() {
     if (defaultWatchlist == null || alertThreshold == null) {
       return;
     }
-    const response = await fetch("/api/alerts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        watchlistId: defaultWatchlist.id,
-        name: `Score >= ${alertThreshold}`,
-        ruleType: "score_above",
-        threshold: alertThreshold,
-      }),
-    });
-    if (response.ok) {
-      setWatchlistData((await response.json()) as WatchlistResponse);
-      setWatchlistError(null);
-      return;
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          watchlistId: defaultWatchlist.id,
+          name: `Score >= ${alertThreshold}`,
+          ruleType: "score_above",
+          threshold: alertThreshold,
+        }),
+      });
+      if (response.ok) {
+        setWatchlistData((await response.json()) as WatchlistResponse);
+        showActionNotice("Alert rule created");
+        return;
+      }
+      setWatchlistError("Could not create alert");
+    } finally {
+      setActionPending(false);
     }
-    setWatchlistError("Could not create alert");
   }
 
   async function loadAlertEvents() {
@@ -233,28 +263,34 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
   async function handleCreateShare(targetWatchlist: Watchlist, isPublic: boolean) {
     setShareNotice(null);
-    const response = await fetch(`/api/watchlists/${targetWatchlist.id}/share`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ public: isPublic }),
-    });
-
-    if (!response.ok) {
-      setWatchlistError("Could not create share link");
-      return;
-    }
-
-    const payload = (await response.json()) as { shareToken: string };
-    const shareUrl = `${window.location.origin}/shared/${payload.shareToken}`;
+    setActionPending(true);
+    setWatchlistError(null);
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShareNotice(`${isPublic ? "Public" : "Private"} link copied`);
-    } catch {
-      setShareNotice(shareUrl);
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public: isPublic }),
+      });
+
+      if (!response.ok) {
+        setWatchlistError("Could not create share link");
+        return;
     }
-    await loadWatchlists();
-    if (isPublic) {
-      await loadPublicWatchlists();
+
+      const payload = (await response.json()) as { shareToken: string };
+      const shareUrl = `${window.location.origin}/shared/${payload.shareToken}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareNotice(`${isPublic ? "Public" : "Private"} link copied`);
+      } catch {
+        setShareNotice(shareUrl);
+      }
+      await loadWatchlists();
+      if (isPublic) {
+        await loadPublicWatchlists();
+      }
+    } finally {
+      setActionPending(false);
     }
   }
 
@@ -630,7 +666,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <section className="snapshot-card">
               <header>
                 <strong>{defaultWatchlist?.name ?? "Core Watchlist"}</strong>
-                <span>{defaultWatchlist?.items.length ?? 0} tracked</span>
+                <span>{watchlistLoading ? "Loading..." : `${defaultWatchlist?.items.length ?? 0} tracked`}</span>
               </header>
               <div className="watchlist-form">
                 <Input
@@ -639,7 +675,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   value={watchlistName}
                   onChange={(event) => setWatchlistName(event.target.value)}
                 />
-                <Button className="mini-action-button" onClick={() => void handleCreateWatchlist()}>
+                <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleCreateWatchlist()}>
                   Add
                 </Button>
               </div>
@@ -651,7 +687,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <NumberField.Increment className="number-button">+</NumberField.Increment>
                   </NumberField.Group>
                 </NumberField.Root>
-                <Button className="mini-action-button" onClick={() => void handleCreateAlert()}>
+                <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleCreateAlert()}>
                   Alert
                 </Button>
               </div>
@@ -659,19 +695,22 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <div className="watchlist-form">
                   <Button
                     className="mini-action-button"
+                    disabled={actionPending}
                     onClick={() => void handleCreateShare(defaultWatchlist, false)}
                   >
-                    Private link
+                    {actionPending ? "Sharing..." : "Private link"}
                   </Button>
                   <Button
                     className="mini-action-button"
+                    disabled={actionPending}
                     onClick={() => void handleCreateShare(defaultWatchlist, true)}
                   >
-                    Public link
+                    {actionPending ? "Sharing..." : "Public link"}
                   </Button>
                 </div>
               ) : null}
               {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
+              {actionNotice ? <p className="action-success-notice">{actionNotice}</p> : null}
               {shareNotice ? <p className="source-summary-copy">{shareNotice}</p> : null}
               <div className="watchlist-items">
                 {(defaultWatchlist?.items ?? []).slice(0, 5).map((item) => (
@@ -715,7 +754,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
           <div className="snapshot-list">
             {alertEvents.length === 0 ? (
-              <p className="source-summary-copy">No unread alerts.</p>
+              <p className="empty-state-hint">No unread alerts. Create alert rules above to get notified when trends cross score thresholds.</p>
             ) : (
               alertEvents.slice(0, 8).map((event) => (
                 <section className="snapshot-card snapshot-card-alert" key={event.id}>
@@ -810,7 +849,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
           <div className="snapshot-list">
             {publicWatchlists.length === 0 ? (
-              <p className="source-summary-copy">No public watchlists yet.</p>
+              <p className="empty-state-hint">No public watchlists yet. Share a watchlist with a public link to have it listed here.</p>
             ) : (
               publicWatchlists.slice(0, 6).map((watchlist) => (
                 <section className="snapshot-card" key={watchlist.shareToken}>
