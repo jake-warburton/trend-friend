@@ -188,20 +188,20 @@ test("community helpers derive category, status, source, and location option lis
   ];
 
   assert.deepEqual(listCommunityCategoryOptions(watchlists), [
-    { value: "ai-machine-learning", label: "Ai Machine Learning" },
-    { value: "hardware-robotics", label: "Hardware Robotics" },
+    { value: "ai-machine-learning", label: "Ai Machine Learning (1)" },
+    { value: "hardware-robotics", label: "Hardware Robotics (1)" },
   ]);
   assert.deepEqual(listCommunityStatusOptions(watchlists), [
-    { value: "breakout", label: "Breakout" },
-    { value: "rising", label: "Rising" },
+    { value: "breakout", label: "Breakout (1)" },
+    { value: "rising", label: "Rising (1)" },
   ]);
   assert.deepEqual(listCommunitySourceOptions(watchlists), [
-    { value: "github", label: "GitHub" },
-    { value: "google_trends", label: "Google Trends" },
+    { value: "github", label: "GitHub (1)" },
+    { value: "google_trends", label: "Google Trends (1)" },
   ]);
   assert.deepEqual(listCommunityLocationOptions(watchlists), [
-    { value: "United Kingdom", label: "United Kingdom" },
-    { value: "United States", label: "United States" },
+    { value: "United Kingdom", label: "United Kingdom (1)" },
+    { value: "United States", label: "United States (1)" },
   ]);
 });
 
@@ -411,6 +411,8 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Status/);
   assert.match(html, /Source/);
   assert.match(html, /Location/);
+  assert.match(html, /Hardware Robotics \(1\)/);
+  assert.match(html, /GitHub \(1\)/);
   assert.match(html, /7 day opens/);
   assert.match(html, /<strong>6<\/strong>/);
   assert.match(html, /Hardware Robotics/);

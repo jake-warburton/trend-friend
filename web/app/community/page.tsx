@@ -390,39 +390,35 @@ export function filterAndSortCommunityWatchlists(
 }
 
 export function listCommunityCategoryOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
-  return Array.from(
-    new Set(watchlists.flatMap((watchlist) => watchlist.categories ?? [])),
-  )
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ value, label: formatCategory(value) }));
+  return buildCommunityFilterOptions(
+    watchlists,
+    (watchlist) => watchlist.categories ?? [],
+    formatCategory,
+  );
 }
 
 export function listCommunityStatusOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
-  return Array.from(
-    new Set(watchlists.flatMap((watchlist) => watchlist.statuses ?? [])),
-  )
-    .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ value, label: formatStatusLabel(value) }));
+  return buildCommunityFilterOptions(
+    watchlists,
+    (watchlist) => watchlist.statuses ?? [],
+    formatStatusLabel,
+  );
 }
 
 export function listCommunitySourceOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
-  return Array.from(
-    new Map(
-      watchlists
-        .flatMap((watchlist) => watchlist.sourceContributions ?? [])
-        .map((source) => [source.source, { value: source.source, label: formatSourceLabel(source.source) }]),
-    ).values(),
-  ).sort((left, right) => left.label.localeCompare(right.label));
+  return buildCommunityFilterOptions(
+    watchlists,
+    (watchlist) => (watchlist.sourceContributions ?? []).map((source) => source.source),
+    formatSourceLabel,
+  );
 }
 
 export function listCommunityLocationOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
-  return Array.from(
-    new Map(
-      watchlists
-        .flatMap((watchlist) => watchlist.geoSummary ?? [])
-        .map((geo) => [geo.label, { value: geo.label, label: geo.label }]),
-    ).values(),
-  ).sort((left, right) => left.label.localeCompare(right.label));
+  return buildCommunityFilterOptions(
+    watchlists,
+    (watchlist) => (watchlist.geoSummary ?? []).map((geo) => geo.label),
+    (value) => value,
+  );
 }
 
 export function paginateCommunityWatchlists(watchlists: PublicWatchlistSummary[], page: number) {
@@ -557,6 +553,26 @@ export function buildCommunityEmptyStateSuggestions(activeFilters: ActiveCommuni
   });
 
   return suggestions.slice(0, 2);
+}
+
+function buildCommunityFilterOptions(
+  watchlists: PublicWatchlistSummary[],
+  valuesForWatchlist: (watchlist: PublicWatchlistSummary) => string[],
+  formatValue: (value: string) => string,
+): CommunityFilterOption[] {
+  const counts = new Map<string, number>();
+  for (const watchlist of watchlists) {
+    for (const value of new Set(valuesForWatchlist(watchlist))) {
+      counts.set(value, (counts.get(value) ?? 0) + 1);
+    }
+  }
+
+  return Array.from(counts.entries())
+    .sort((left, right) => left[0].localeCompare(right[0]))
+    .map(([value, count]) => ({
+      value,
+      label: `${formatValue(value)} (${count})`,
+    }));
 }
 
 function readSearchParam(value: string | string[] | undefined) {
