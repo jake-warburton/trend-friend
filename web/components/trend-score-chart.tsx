@@ -44,13 +44,11 @@ export function buildTrendScoreChartData(
 
   // Include the last two actual points in the forecast series so the
   // monotone spline has enough context to enter the forecast smoothly
-  // instead of creating a sharp corner at the junction. The first
-  // overlap point is stored in a hidden series so it provides curve
-  // context without drawing a visible line over the history.
-  if (data.length >= 2) {
-    data[data.length - 2].forecastHidden = data[data.length - 2].score;
+  // instead of creating a sharp corner at the junction.
+  const tailCount = Math.min(2, data.length);
+  for (let i = data.length - tailCount; i < data.length; i++) {
+    data[i].forecast = data[i].score;
   }
-  data[data.length - 1].forecast = data[data.length - 1].score;
 
   forecast.predictedScores.forEach((score, index) => {
     data.push({
@@ -75,6 +73,13 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
     currentScore,
   );
 
+  // Clip the forecast line so the overlap tail is invisible.
+  // The last actual point is at index (history.length - 1). With equal
+  // spacing the visible forecast starts at that fraction of total width.
+  const forecastClipX = data.length > 1
+    ? `${((history.length - 1) / (data.length - 1)) * 100}%`
+    : "0%";
+
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={260}>
@@ -84,6 +89,9 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               <stop offset="5%" stopColor="#5e6bff" stopOpacity={0.3} />
               <stop offset="95%" stopColor="#5e6bff" stopOpacity={0} />
             </linearGradient>
+            <clipPath id="forecastClip">
+              <rect x={forecastClipX} y="0" width="100%" height="100%" />
+            </clipPath>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e2d4d" />
           <XAxis
@@ -132,6 +140,7 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               dot={false}
               activeDot={{ r: 4 }}
               connectNulls
+              style={{ clipPath: "url(#forecastClip)" }}
             />
           ) : null}
         </AreaChart>
