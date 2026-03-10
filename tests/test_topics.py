@@ -101,6 +101,14 @@ class TopicNormalizationTests(unittest.TestCase):
             "sales strategy",
         )
 
+    def test_extract_candidate_topics_ranks_domain_phrase_ahead_of_earlier_generic_bigram(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics(
+                "Founders discuss pricing models while vertical SaaS analytics adoption accelerates"
+            )[:2],
+            ["saas analytics", "pricing models"],
+        )
+
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [

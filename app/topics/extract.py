@@ -15,6 +15,81 @@ from app.topics.normalize import (
 
 MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
+BIGRAM_HEAD_TOKENS = {
+    "analytics",
+    "automation",
+    "battery",
+    "center",
+    "cloud",
+    "copilot",
+    "database",
+    "filesystem",
+    "framework",
+    "guitar",
+    "inference",
+    "infrastructure",
+    "lisp",
+    "market",
+    "model",
+    "models",
+    "monitoring",
+    "network",
+    "origin",
+    "page",
+    "payments",
+    "pipeline",
+    "plant",
+    "platform",
+    "pricing",
+    "recycling",
+    "robotics",
+    "sales",
+    "sensors",
+    "software",
+    "stack",
+    "storage",
+    "strategy",
+    "supply",
+    "systems",
+    "tuner",
+    "view",
+    "vision",
+    "words",
+    "workflow",
+    "workflows",
+}
+BIGRAM_MODIFIER_TOKENS = {
+    "agent",
+    "agents",
+    "ai",
+    "audio",
+    "battery",
+    "climate",
+    "common",
+    "copyleft",
+    "data",
+    "developer",
+    "distributed",
+    "electric",
+    "embedded",
+    "enterprise",
+    "filesystem",
+    "guitar",
+    "open",
+    "posthog",
+    "pricing",
+    "quantum",
+    "robot",
+    "robotics",
+    "sales",
+    "saas",
+    "street",
+    "supply",
+    "vector",
+    "vercel",
+    "video",
+    "warehouse",
+}
 LOW_SIGNAL_BIGRAM_TOKENS = {
     "all",
     "adopted",
@@ -131,8 +206,8 @@ def infer_repository_topic(title: str) -> str | None:
 def infer_meaningful_bigrams(tokens: list[str]) -> list[str]:
     """Return a small set of higher-signal bigrams from an ordered token list."""
 
-    bigrams: list[str] = []
-    for first, second in zip(tokens, tokens[1:]):
+    scored_bigrams: list[tuple[float, int, str]] = []
+    for index, (first, second) in enumerate(zip(tokens, tokens[1:])):
         if first == second:
             continue
         if token_contains_number(first) or token_contains_number(second):
@@ -142,9 +217,11 @@ def infer_meaningful_bigrams(tokens: list[str]) -> list[str]:
         if first in LOW_SIGNAL_BIGRAM_TOKENS or second in LOW_SIGNAL_BIGRAM_TOKENS:
             continue
         bigram = f"{first} {second}"
-        if is_meaningful_topic(normalize_topic_name(bigram)):
-            bigrams.append(bigram)
-    return bigrams
+        normalized = normalize_topic_name(bigram)
+        if is_meaningful_topic(normalized):
+            scored_bigrams.append((score_bigram_candidate(first, second, index), index, bigram))
+    scored_bigrams.sort(key=lambda item: (-item[0], item[1]))
+    return [bigram for _, _, bigram in scored_bigrams]
 
 
 def infer_meaningful_unigrams(tokens: list[str]) -> list[str]:
@@ -161,6 +238,23 @@ def token_contains_number(token: str) -> bool:
     """Return True for numeric or year-like tokens that make weak topic fragments."""
 
     return any(character.isdigit() for character in token)
+
+
+def score_bigram_candidate(first: str, second: str, index: int) -> float:
+    """Prefer noun-like domain phrases over generic adjacent token pairs."""
+
+    score = 0.0
+    if second in BIGRAM_HEAD_TOKENS:
+        score += 4.0
+    if first in BIGRAM_MODIFIER_TOKENS:
+        score += 2.5
+    if len(second) >= 7:
+        score += 0.75
+    if len(first) >= 6:
+        score += 0.35
+    # Slightly prefer later surviving phrases over headline framing near the start.
+    score += min(index, 5) * 0.15
+    return score
 
 
 def infer_canonical_topics(tokens: list[str]) -> list[str]:
