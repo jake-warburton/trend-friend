@@ -109,7 +109,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
             ))}
           </div>
         </div>
-        <Link className="refresh-button shared-back-link" href="/">
+        <Link className="detail-back-link" href="/">
           Back to dashboard
         </Link>
       </section>

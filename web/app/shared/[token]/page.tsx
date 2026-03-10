@@ -24,7 +24,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
           <p className="eyebrow">Shared Watchlist</p>
           <h1>Link expired</h1>
           <p className="source-summary-copy">This share link is no longer available.</p>
-          <Link className="refresh-button shared-back-link" href="/">
+          <Link className="detail-back-link" href="/">
             Back to dashboard
           </Link>
         </section>
@@ -47,7 +47,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
           {payload.expiresAt ? `Expires ${formatTimestamp(payload.expiresAt)}` : "No expiry"}
         </p>
         <p className="source-summary-copy">Created {formatTimestamp(payload.createdAt)}</p>
-        <Link className="refresh-button shared-back-link" href="/">
+        <Link className="detail-back-link" href="/">
           Back to dashboard
         </Link>
       </section>

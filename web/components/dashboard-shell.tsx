@@ -1302,113 +1302,129 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </section>
           </div>
 
-          <div className="section-heading section-heading-spaced">
-            <h2>
-              Alerts
-              {alertCount > 0 ? (
-                <span className="alert-badge">{alertCount}</span>
-              ) : null}
-            </h2>
-            {alertCount > 0 ? (
-              <button className="mini-action-button" onClick={() => void handleMarkAlertsRead()} type="button">
-                Mark read
-              </button>
-            ) : null}
-          </div>
+          <details className="sidebar-section" open={alertCount > 0 ? true : undefined}>
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>
+                  Alerts
+                  {alertCount > 0 ? (
+                    <span className="alert-badge">{alertCount}</span>
+                  ) : null}
+                </h2>
+                {alertCount > 0 ? (
+                  <button className="mini-action-button" onClick={() => void handleMarkAlertsRead()} type="button">
+                    Mark read
+                  </button>
+                ) : null}
+              </div>
+            </summary>
 
-          <div className="snapshot-list">
-            {alertEvents.length === 0 ? (
-              <p className="empty-state-hint">No unread alerts. Create alert rules above to get notified when trends cross score thresholds.</p>
-            ) : (
-              alertEvents.slice(0, 8).map((event) => (
-                <section className="snapshot-card snapshot-card-alert" key={event.id}>
+            <div className="snapshot-list">
+              {alertEvents.length === 0 ? (
+                <p className="empty-state-hint">No unread alerts. Create alert rules above to get notified when trends cross score thresholds.</p>
+              ) : (
+                alertEvents.slice(0, 8).map((event) => (
+                  <section className="snapshot-card snapshot-card-alert" key={event.id}>
+                    <header>
+                      <strong>
+                        <Link className="trend-link" href={`/trends/${event.trendId}`}>
+                          {event.trendName}
+                        </Link>
+                      </strong>
+                      <span className="trend-status-pill trend-status-pill-breakout">
+                        {formatAlertRuleType(event.ruleType)}
+                      </span>
+                    </header>
+                    <p className="source-summary-copy">{event.message}</p>
+                    <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
+                  </section>
+                ))
+              )}
+            </div>
+          </details>
+
+          <details className="sidebar-section">
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Runs</h2>
+              </div>
+            </summary>
+
+            <div className="snapshot-list">
+              {initialData.overview.operations.recentRuns.map((run) => (
+                <section className="snapshot-card" key={run.capturedAt}>
                   <header>
-                    <strong>
-                      <Link className="trend-link" href={`/trends/${event.trendId}`}>
-                        {event.trendName}
-                      </Link>
-                    </strong>
-                    <span className="trend-status-pill trend-status-pill-breakout">
-                      {formatAlertRuleType(event.ruleType)}
+                    <strong>{formatTimestamp(run.capturedAt)}</strong>
+                    <span className={sourceHealthClassName(run.status)}>
+                      {run.failedSourceCount === 0 ? "Healthy run" : "Degraded run"}
                     </span>
                   </header>
-                  <p className="source-summary-copy">{event.message}</p>
-                  <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
+                  <p className="source-summary-copy">
+                    {run.signalCount} sig · {run.rankedTrendCount} trends · {run.successfulSourceCount}/
+                    {run.sourceCount} healthy
+                  </p>
+                  <p className="source-summary-copy">
+                    {formatDuration(run.durationMs)} ·{" "}
+                    {run.topTrendId && run.topTrendName ? (
+                      <>
+                        <Link className="trend-link" href={`/trends/${run.topTrendId}`}>
+                          {run.topTrendName}
+                        </Link>
+                        {run.topScore != null ? ` ${run.topScore.toFixed(1)}` : ""}
+                      </>
+                    ) : (
+                      "No top trend"
+                    )}
+                  </p>
                 </section>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          </details>
 
-          <div className="section-heading section-heading-spaced">
-            <h2>Runs</h2>
-          </div>
+          <details className="sidebar-section">
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Sources</h2>
+              </div>
+            </summary>
 
-          <div className="snapshot-list">
-            {initialData.overview.operations.recentRuns.map((run) => (
-              <section className="snapshot-card" key={run.capturedAt}>
-                <header>
-                  <strong>{formatTimestamp(run.capturedAt)}</strong>
-                  <span className={sourceHealthClassName(run.status)}>
-                    {run.failedSourceCount === 0 ? "Healthy run" : "Degraded run"}
-                  </span>
-                </header>
-                <p className="source-summary-copy">
-                  {run.signalCount} sig · {run.rankedTrendCount} trends · {run.successfulSourceCount}/
-                  {run.sourceCount} healthy
-                </p>
-                <p className="source-summary-copy">
-                  {formatDuration(run.durationMs)} ·{" "}
-                  {run.topTrendId && run.topTrendName ? (
-                    <>
-                      <Link className="trend-link" href={`/trends/${run.topTrendId}`}>
-                        {run.topTrendName}
+            <div className="snapshot-list">
+              {initialData.overview.sources.map((source) => (
+                <section className="snapshot-card" key={source.source}>
+                  <header>
+                    <strong>
+                      <Link className="trend-link" href={`/sources/${source.source}`}>
+                        {formatSourceLabel(source.source)}
                       </Link>
-                      {run.topScore != null ? ` ${run.topScore.toFixed(1)}` : ""}
-                    </>
-                  ) : (
-                    "No top trend"
-                  )}
-                </p>
-              </section>
-            ))}
-          </div>
+                    </strong>
+                    <span className={sourceHealthClassName(source.status)}>
+                      {formatSourceStatus(source.status)}
+                    </span>
+                  </header>
+                  <p className="source-summary-copy">
+                    {source.signalCount} sig · {source.trendCount} trends
+                  </p>
+                  <p className="source-summary-copy">
+                    {source.latestFetchAt ? formatCompactTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
+                    {source.latestItemCount} items · {formatDuration(source.durationMs)}
+                  </p>
+                  {source.usedFallback ? (
+                    <p className="source-warning-copy">Latest successful fetch used fallback sample data.</p>
+                  ) : null}
+                  {source.errorMessage ? (
+                    <p className="source-error-copy">{source.errorMessage}</p>
+                  ) : null}
+                </section>
+              ))}
+            </div>
+          </details>
 
-          <div className="section-heading section-heading-spaced">
-            <h2>Sources</h2>
-          </div>
-
-          <div className="snapshot-list">
-            {initialData.overview.sources.map((source) => (
-              <section className="snapshot-card" key={source.source}>
-                <header>
-                  <strong>
-                    <Link className="trend-link" href={`/sources/${source.source}`}>
-                      {formatSourceLabel(source.source)}
-                    </Link>
-                  </strong>
-                  <span className={sourceHealthClassName(source.status)}>
-                    {formatSourceStatus(source.status)}
-                  </span>
-                </header>
-                <p className="source-summary-copy">
-                  {source.signalCount} sig · {source.trendCount} trends
-                </p>
-                <p className="source-summary-copy">
-                  {source.latestFetchAt ? formatCompactTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
-                  {source.latestItemCount} items · {formatDuration(source.durationMs)}
-                </p>
-                {source.usedFallback ? (
-                  <p className="source-warning-copy">Latest successful fetch used fallback sample data.</p>
-                ) : null}
-                {source.errorMessage ? (
-                  <p className="source-error-copy">{source.errorMessage}</p>
-                ) : null}
-              </section>
-            ))}
-          </div>
-
-          <div className="section-heading section-heading-spaced">
-            <h2>Public watchlists</h2>
+          <details className="sidebar-section">
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Public watchlists</h2>
+              </div>
+            </summary>
             <div className="community-entry-links">
               <Link className="mini-action-button community-link-button" href="/community?popular=true">
                 Popular this week
@@ -1420,7 +1436,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 Browse all
               </Link>
             </div>
-          </div>
 
           <div className="snapshot-list">
             {publicWatchlists.length === 0 ? (
@@ -1492,6 +1507,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               </>
             )}
           </div>
+          </details>
         </aside>
       </section>
     </main>
