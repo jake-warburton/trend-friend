@@ -302,6 +302,7 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
                     value=item.engagement_score,
                     timestamp=item.timestamp,
                     evidence=item.title,
+                    evidence_url=item.url,
                     geo_flags=geo.flags,
                     geo_country_code=geo.country_code,
                     geo_region=geo.region,

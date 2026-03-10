@@ -34,6 +34,7 @@ class NormalizedSignal:
     value: float
     timestamp: datetime
     evidence: str
+    evidence_url: str | None = None
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None
@@ -199,6 +200,7 @@ class TrendEvidenceItem:
     timestamp: datetime
     value: float
     evidence: str
+    evidence_url: str | None = None
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None

@@ -365,7 +365,10 @@ function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord
     sourceBreakdown: trend.sourceBreakdown ?? [],
     sourceContributions: trend.sourceContributions ?? [],
     geoSummary: trend.geoSummary ?? [],
-    evidenceItems: trend.evidenceItems ?? [],
+    evidenceItems: (trend.evidenceItems ?? []).map((item) => ({
+      ...item,
+      evidenceUrl: item.evidenceUrl ?? null,
+    })),
     relatedTrends: trend.relatedTrends ?? [],
     seasonality: trend.seasonality
       ? {

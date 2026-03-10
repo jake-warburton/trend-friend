@@ -53,9 +53,9 @@ class SignalRepository:
             """
             INSERT INTO signals (
                 topic, source, signal_type, value, timestamp, evidence,
-                geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
+                evidence_url, geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -65,6 +65,7 @@ class SignalRepository:
                     signal.value,
                     signal.timestamp.isoformat(),
                     signal.evidence,
+                    signal.evidence_url,
                     json.dumps(list(signal.geo_flags)),
                     signal.geo_country_code,
                     signal.geo_region,
@@ -82,7 +83,7 @@ class SignalRepository:
         rows = self.connection.execute(
             """
             SELECT topic, source, signal_type, value, timestamp, evidence,
-                   geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
+                   evidence_url, geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             FROM signals
             """
         ).fetchall()
@@ -94,6 +95,7 @@ class SignalRepository:
                 value=row["value"],
                 timestamp=datetime.fromisoformat(row["timestamp"]),
                 evidence=row["evidence"],
+                evidence_url=row["evidence_url"],
                 geo_flags=tuple(json.loads(row["geo_flags_json"])),
                 geo_country_code=row["geo_country_code"],
                 geo_region=row["geo_region"],
@@ -1830,7 +1832,7 @@ class TrendScoreRepository:
 
         rows = self.connection.execute(
             """
-            SELECT source, signal_type, timestamp, value, evidence,
+            SELECT source, signal_type, timestamp, value, evidence, evidence_url,
                    geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             FROM signals
             WHERE topic = ?
@@ -1846,6 +1848,7 @@ class TrendScoreRepository:
                 timestamp=datetime.fromisoformat(row["timestamp"]),
                 value=row["value"],
                 evidence=row["evidence"],
+                evidence_url=row["evidence_url"],
                 geo_flags=tuple(json.loads(row["geo_flags_json"])),
                 geo_country_code=row["geo_country_code"],
                 geo_region=row["geo_region"],

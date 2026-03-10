@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import type { TrendDetailRecord } from "@/lib/types";
+import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { loadTrendDetail } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
@@ -27,6 +28,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
 
   const geoSummary = trend.geoSummary ?? [];
   const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
+  const primaryEvidenceLink = getPrimaryEvidenceLink(trend);
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
   const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
 
@@ -56,6 +58,11 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           {wikipediaLink ? (
             <a className="detail-back-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
               Open Wikipedia page for {wikipediaLink.title}
+            </a>
+          ) : null}
+          {primaryEvidenceLink?.evidenceUrl ? (
+            <a className="detail-back-link" href={primaryEvidenceLink.evidenceUrl} rel="noreferrer" target="_blank">
+              Open source item from {formatSourceLabel(primaryEvidenceLink.source)}
             </a>
           ) : null}
           {trend.relatedTrends[0] ? (
@@ -313,7 +320,15 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             {trend.evidenceItems.map((item, index) => (
               <article className="detail-list-item detail-evidence-item" key={`${item.timestamp}-${index}`}>
                 <div>
-                  <strong>{item.evidence}</strong>
+                  <strong>
+                    {item.evidenceUrl ? (
+                      <a className="trend-link" href={item.evidenceUrl} rel="noreferrer" target="_blank">
+                        {item.evidence}
+                      </a>
+                    ) : (
+                      item.evidence
+                    )}
+                  </strong>
                   <span>
                     {formatSourceLabel(item.source)} · {formatSignalType(item.signalType)} · Value{" "}
                     {item.value.toFixed(1)}

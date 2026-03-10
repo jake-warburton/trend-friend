@@ -215,6 +215,7 @@ class TrendEvidenceItemPayload:
     timestamp: str
     value: float
     evidence: str
+    evidence_url: str | None
     geo_flags: list[str]
     geo_country_code: str | None
     geo_region: str | None
@@ -629,6 +630,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         geo["averageConfidence"] = geo.pop("average_confidence")
     for item in payload["evidenceItems"]:
         item["signalType"] = item.pop("signal_type")
+        item["evidenceUrl"] = item.pop("evidence_url")
         item["geoFlags"] = item.pop("geo_flags")
         item["geoCountryCode"] = item.pop("geo_country_code")
         item["geoRegion"] = item.pop("geo_region")

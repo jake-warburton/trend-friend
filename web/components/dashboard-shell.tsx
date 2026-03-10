@@ -11,6 +11,7 @@ import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { hasOverviewChanged } from "@/lib/auto-refresh";
 import { getExplorerForecastBadge } from "@/lib/forecast-ui";
+import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
@@ -983,6 +984,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
                 const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
                 const detail = detailsByTrendId.get(trend.id);
+                const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
                 const wikipediaLink = getWikipediaLinkFromDetail(detail);
                 return (
                 <article className="explorer-card" key={trend.id}>
@@ -1079,6 +1081,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
                       <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                      {primaryEvidenceLink?.evidenceUrl ? (
+                        <a
+                          className="trend-link"
+                          href={primaryEvidenceLink.evidenceUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          Open source item
+                        </a>
+                      ) : null}
                       {wikipediaLink ? (
                         <a
                           className="trend-link"
@@ -1209,6 +1221,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                                 <Link className="mini-action-button" href={`/trends/${firstRelated.id}`}>
                                   Compare: {firstRelated.name}
                                 </Link>
+                              )}
+                              {primaryEvidenceLink?.evidenceUrl && (
+                                <a
+                                  className="mini-action-button"
+                                  href={primaryEvidenceLink.evidenceUrl}
+                                  rel="noreferrer"
+                                  target="_blank"
+                                >
+                                  Open source
+                                </a>
                               )}
                               {wikipediaLink && (
                                 <a

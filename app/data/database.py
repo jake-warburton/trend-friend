@@ -28,6 +28,7 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             value REAL NOT NULL,
             timestamp TEXT NOT NULL,
             evidence TEXT NOT NULL,
+            evidence_url TEXT NULL,
             geo_flags_json TEXT NOT NULL DEFAULT '[]',
             geo_country_code TEXT NULL,
             geo_region TEXT NULL,
@@ -272,6 +273,12 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         column_sql="INTEGER NULL",
     )
     migrate_watchlists_table(connection)
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="evidence_url",
+        column_sql="TEXT NULL",
+    )
     ensure_column(
         connection,
         table_name="signals",

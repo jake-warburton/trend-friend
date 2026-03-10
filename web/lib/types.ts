@@ -220,6 +220,7 @@ export type TrendEvidenceItem = {
   timestamp: string;
   value: number;
   evidence: string;
+  evidenceUrl: string | null;
   geoFlags: string[];
   geoCountryCode: string | null;
   geoRegion: string | null;

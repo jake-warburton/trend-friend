@@ -171,6 +171,7 @@ class TopicNormalizationTests(unittest.TestCase):
             ]
         )
         self.assertEqual(signals[0].geo_country_code, "US")
+        self.assertEqual(signals[0].evidence_url, "https://example.com")
         self.assertIn("geo:explicit", signals[0].geo_flags)
         self.assertIn("geo:country:US", signals[0].geo_flags)
 
