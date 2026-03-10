@@ -93,6 +93,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     () => summarizeShareUsage(defaultWatchlist?.shares ?? []),
     [defaultWatchlist?.shares],
   );
+  const communitySpotlights = useMemo(
+    () => buildCommunitySpotlights(publicWatchlists),
+    [publicWatchlists],
+  );
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -1422,42 +1426,70 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             {publicWatchlists.length === 0 ? (
               <p className="empty-state-hint">No public watchlists yet. Share a watchlist with a public link to have it listed here.</p>
             ) : (
-              publicWatchlists.slice(0, 6).map((watchlist) => (
-                <section className="snapshot-card" key={watchlist.shareToken}>
-                  <header>
-                    <strong>
-                      <Link className="trend-link" href={`/shared/${watchlist.shareToken}`}>
-                        {watchlist.name}
-                      </Link>
-                    </strong>
-                    <span>{watchlist.popularThisWeek ? "Popular this week" : `${watchlist.itemCount} tracked`}</span>
-                  </header>
-                  {watchlist.recentOpenCount != null ? (
-                    <p className="source-summary-copy">
-                      {watchlist.recentOpenCount} opens in the last 7 days
-                      {watchlist.accessCount != null ? ` · ${watchlist.accessCount} total` : ""}
-                    </p>
-                  ) : null}
-                  {watchlist.sourceContributions?.[0] ? (
-                    <p className="source-summary-copy">
-                      {formatSourceContributionSummary(watchlist.sourceContributions[0])}
-                    </p>
-                  ) : null}
-                  {watchlist.ownerDisplayName ? (
-                    <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
-                  ) : null}
-                  <p className="source-summary-copy">{formatShareExpirySummary(watchlist.expiresAt ?? null)}</p>
-                  {watchlist.geoSummary?.length ? (
-                    <p className="source-summary-copy">
-                      {watchlist.geoSummary.map((geo) => geo.label).join(", ")}
-                    </p>
-                  ) : null}
-                  {watchlist.lastAccessedAt ? (
-                    <p className="source-summary-copy">Last opened {formatCompactTimestamp(watchlist.lastAccessedAt)}</p>
-                  ) : null}
-                  <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
-                </section>
-              ))
+              <>
+                {communitySpotlights.length > 0 ? (
+                  <div className="community-spotlight-grid">
+                    {communitySpotlights.map((spotlight) => (
+                      <section className="snapshot-card community-spotlight-card" key={spotlight.title}>
+                        <header>
+                          <strong>{spotlight.title}</strong>
+                          <Link className="mini-action-button community-link-button" href={spotlight.href}>
+                            Open
+                          </Link>
+                        </header>
+                        <p className="source-summary-copy">{spotlight.description}</p>
+                        <p className="source-summary-copy">
+                          <Link className="trend-link" href={`/shared/${spotlight.watchlist.shareToken}`}>
+                            {spotlight.watchlist.name}
+                          </Link>
+                        </p>
+                        {spotlight.watchlist.sourceContributions?.[0] ? (
+                          <p className="source-summary-copy">
+                            {formatSourceContributionSummary(spotlight.watchlist.sourceContributions[0])}
+                          </p>
+                        ) : null}
+                      </section>
+                    ))}
+                  </div>
+                ) : null}
+
+                {publicWatchlists.slice(0, 6).map((watchlist) => (
+                  <section className="snapshot-card" key={watchlist.shareToken}>
+                    <header>
+                      <strong>
+                        <Link className="trend-link" href={`/shared/${watchlist.shareToken}`}>
+                          {watchlist.name}
+                        </Link>
+                      </strong>
+                      <span>{watchlist.popularThisWeek ? "Popular this week" : `${watchlist.itemCount} tracked`}</span>
+                    </header>
+                    {watchlist.recentOpenCount != null ? (
+                      <p className="source-summary-copy">
+                        {watchlist.recentOpenCount} opens in the last 7 days
+                        {watchlist.accessCount != null ? ` · ${watchlist.accessCount} total` : ""}
+                      </p>
+                    ) : null}
+                    {watchlist.sourceContributions?.[0] ? (
+                      <p className="source-summary-copy">
+                        {formatSourceContributionSummary(watchlist.sourceContributions[0])}
+                      </p>
+                    ) : null}
+                    {watchlist.ownerDisplayName ? (
+                      <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
+                    ) : null}
+                    <p className="source-summary-copy">{formatShareExpirySummary(watchlist.expiresAt ?? null)}</p>
+                    {watchlist.geoSummary?.length ? (
+                      <p className="source-summary-copy">
+                        {watchlist.geoSummary.map((geo) => geo.label).join(", ")}
+                      </p>
+                    ) : null}
+                    {watchlist.lastAccessedAt ? (
+                      <p className="source-summary-copy">Last opened {formatCompactTimestamp(watchlist.lastAccessedAt)}</p>
+                    ) : null}
+                    <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
+                  </section>
+                ))}
+              </>
             )}
           </div>
         </aside>
@@ -1699,6 +1731,49 @@ function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSumm
     return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}%`;
   }
   return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
+}
+
+function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
+  const spotlights: Array<{
+    title: string;
+    description: string;
+    href: string;
+    watchlist: PublicWatchlistSummary;
+  }> = [];
+
+  const popular = watchlists.find((watchlist) => watchlist.popularThisWeek);
+  if (popular) {
+    spotlights.push({
+      title: "Popular this week",
+      description: "The most-opened public watchlist right now.",
+      href: "/community?popular=true",
+      watchlist: popular,
+    });
+  }
+
+  const searchDriven = watchlists.find((watchlist) =>
+    (watchlist.sourceContributions ?? []).some((contribution) => contribution.source === "google_trends"),
+  );
+  if (searchDriven) {
+    spotlights.push({
+      title: "Search-driven",
+      description: "Led by search demand and Google Trends signals.",
+      href: "/community?source=google_trends",
+      watchlist: searchDriven,
+    });
+  }
+
+  const global = watchlists.find((watchlist) => (watchlist.geoSummary?.length ?? 0) >= 2);
+  if (global) {
+    spotlights.push({
+      title: "Global interest",
+      description: "Showing up across multiple regions at once.",
+      href: "/community",
+      watchlist: global,
+    });
+  }
+
+  return spotlights;
 }
 
 function buildShareExpiryIso(preset: string) {
