@@ -27,6 +27,7 @@ from app.models import (
     TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
+    TrendPrimaryEvidence,
     NormalizedSignal,
     OpportunitySummary,
     PipelineRun,
@@ -140,6 +141,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["momentum"]["percentDelta"], 40.2)
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["evidencePreview"][0], "ai agents evidence")
+        self.assertEqual(payload["trends"][0]["primaryEvidence"]["source"], "reddit")
+        self.assertEqual(payload["trends"][0]["primaryEvidence"]["evidenceUrl"], "https://example.com/ai-agents")
         self.assertEqual(payload["trends"][0]["seasonality"]["tag"], "recurring")
         self.assertEqual(payload["trends"][0]["seasonality"]["recurrenceCount"], 2)
         self.assertEqual(payload["trends"][0]["forecastDirection"], "accelerating")
@@ -160,6 +163,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["geoSummary"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["evidenceUrl"], "https://example.com/ai-agents")
+        self.assertEqual(payload["trends"][0]["primaryEvidence"]["evidenceUrl"], "https://example.com/ai-agents")
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["geoCountryCode"], "US")
         self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
@@ -300,6 +304,14 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
                 score_total=31.1,
             ),
         ],
+        primary_evidence=TrendPrimaryEvidence(
+            source="reddit",
+            signal_type="social",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            value=12.0,
+            evidence="AI agents evidence",
+            evidence_url="https://example.com/ai-agents",
+        ),
         seasonality=SeasonalityResult(
             tag="recurring",
             recurrence_count=2,
@@ -411,6 +423,14 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 geo_confidence=0.95,
             )
         ],
+        primary_evidence=TrendPrimaryEvidence(
+            source="reddit",
+            signal_type="social",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            value=12.0,
+            evidence="AI agents evidence",
+            evidence_url="https://example.com/ai-agents",
+        ),
         related_trends=[
             RelatedTrend(
                 id="agentic-workflows",

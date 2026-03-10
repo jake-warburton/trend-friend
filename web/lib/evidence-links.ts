@@ -10,8 +10,18 @@ const SOURCE_PRIORITY: Record<string, number> = {
 };
 
 export function getPrimaryEvidenceLink(
-  detail: Pick<TrendDetailRecord, "evidenceItems"> | null | undefined,
+  detail: Pick<TrendDetailRecord, "evidenceItems" | "primaryEvidence"> | null | undefined,
 ): TrendEvidenceItem | null {
+  if (detail?.primaryEvidence) {
+    return {
+      ...detail.primaryEvidence,
+      geoFlags: [],
+      geoCountryCode: null,
+      geoRegion: null,
+      geoDetectionMode: "unknown",
+      geoConfidence: 0,
+    };
+  }
   const linkedItems = (detail?.evidenceItems ?? []).filter(
     (item) => typeof item.evidenceUrl === "string" && item.evidenceUrl.length > 0,
   );

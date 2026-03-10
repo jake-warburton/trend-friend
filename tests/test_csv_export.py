@@ -150,4 +150,5 @@ def _build_explorer_record() -> TrendExplorerRecord:
                 score_total=31.1,
             ),
         ],
+        primary_evidence=None,
     )

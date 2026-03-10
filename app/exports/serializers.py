@@ -36,6 +36,7 @@ from app.exports.contracts import (
     TrendHistoryPointPayload,
     TrendHistoryPayload,
     TrendMomentumPayload,
+    TrendPrimaryEvidencePayload,
     TrendRecord,
     SeasonalityPayload,
     TrendScoreComponents,
@@ -260,6 +261,18 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
         ),
         sources=sorted(trend.score.source_counts),
         evidence_preview=trend.score.evidence[:2],
+        primary_evidence=(
+            TrendPrimaryEvidencePayload(
+                source=trend.primary_evidence.source,
+                signal_type=trend.primary_evidence.signal_type,
+                timestamp=to_timestamp(trend.primary_evidence.timestamp),
+                value=round(trend.primary_evidence.value, 1),
+                evidence=trend.primary_evidence.evidence,
+                evidence_url=trend.primary_evidence.evidence_url,
+            )
+            if trend.primary_evidence is not None
+            else None
+        ),
         recent_history=[
             TrendHistoryPointPayload(
                 captured_at=to_timestamp(point.captured_at),
@@ -399,6 +412,18 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             )
             for item in trend.evidence_items
         ],
+        primary_evidence=(
+            TrendPrimaryEvidencePayload(
+                source=trend.primary_evidence.source,
+                signal_type=trend.primary_evidence.signal_type,
+                timestamp=to_timestamp(trend.primary_evidence.timestamp),
+                value=round(trend.primary_evidence.value, 1),
+                evidence=trend.primary_evidence.evidence,
+                evidence_url=trend.primary_evidence.evidence_url,
+            )
+            if trend.primary_evidence is not None
+            else None
+        ),
         related_trends=[
             serialize_related_trend(item)
             for item in trend.related_trends

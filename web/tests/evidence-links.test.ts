@@ -5,6 +5,7 @@ import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 
 test("getPrimaryEvidenceLink returns the first evidence item with a source URL", () => {
   const item = getPrimaryEvidenceLink({
+    primaryEvidence: null,
     evidenceItems: [
       {
         source: "reddit",
@@ -41,6 +42,7 @@ test("getPrimaryEvidenceLink returns the first evidence item with a source URL",
 
 test("getPrimaryEvidenceLink prefers stronger sources over wikipedia when both are present", () => {
   const item = getPrimaryEvidenceLink({
+    primaryEvidence: null,
     evidenceItems: [
       {
         source: "wikipedia",
@@ -77,6 +79,7 @@ test("getPrimaryEvidenceLink prefers stronger sources over wikipedia when both a
 
 test("getPrimaryEvidenceLink uses value and recency to break ties within the same source", () => {
   const item = getPrimaryEvidenceLink({
+    primaryEvidence: null,
     evidenceItems: [
       {
         source: "reddit",
@@ -108,4 +111,40 @@ test("getPrimaryEvidenceLink uses value and recency to break ties within the sam
   });
 
   assert.equal(item?.evidenceUrl, "https://reddit.com/stronger");
+});
+
+test("getPrimaryEvidenceLink prefers backend-provided primary evidence when present", () => {
+  const item = getPrimaryEvidenceLink({
+    primaryEvidence: {
+      source: "github",
+      signalType: "developer",
+      timestamp: "2026-03-10T12:10:00Z",
+      value: 30,
+      evidence: "GitHub repo spike",
+      evidenceUrl: "https://github.com/example/repo",
+      geoFlags: [],
+      geoCountryCode: null,
+      geoRegion: null,
+      geoDetectionMode: "unknown",
+      geoConfidence: 0,
+    },
+    evidenceItems: [
+      {
+        source: "reddit",
+        signalType: "social",
+        timestamp: "2026-03-10T12:00:00Z",
+        value: 20,
+        evidence: "Reddit discussion",
+        evidenceUrl: "https://reddit.com/test",
+        geoFlags: [],
+        geoCountryCode: null,
+        geoRegion: null,
+        geoDetectionMode: "unknown",
+        geoConfidence: 0,
+      },
+    ],
+  });
+
+  assert.equal(item?.source, "github");
+  assert.equal(item?.evidenceUrl, "https://github.com/example/repo");
 });

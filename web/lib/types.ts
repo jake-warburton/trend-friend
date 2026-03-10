@@ -192,6 +192,7 @@ export type TrendExplorerRecord = {
   coverage: TrendCoverage;
   sources: string[];
   evidencePreview: string[];
+  primaryEvidence?: TrendEvidenceItem | null;
   recentHistory?: TrendHistoryPoint[];
   seasonality?: SeasonalitySummary | null;
   forecastDirection?: string | null;
@@ -278,6 +279,7 @@ export type TrendDetailRecord = {
   sourceContributions: TrendSourceContribution[];
   geoSummary: TrendGeoSummary[];
   evidenceItems: TrendEvidenceItem[];
+  primaryEvidence?: TrendEvidenceItem | null;
   relatedTrends: RelatedTrend[];
   seasonality?: SeasonalitySummary | null;
 };

@@ -137,6 +137,18 @@ class TrendCoveragePayload:
 
 
 @dataclass(frozen=True)
+class TrendPrimaryEvidencePayload:
+    """Compact linked evidence item exposed on explorer/detail surfaces."""
+
+    source: str
+    signal_type: str
+    timestamp: str
+    value: float
+    evidence: str
+    evidence_url: str
+
+
+@dataclass(frozen=True)
 class TrendExplorerRecordPayload:
     """Public explorer record consumed by the dashboard V2."""
 
@@ -155,6 +167,7 @@ class TrendExplorerRecordPayload:
     coverage: TrendCoveragePayload
     sources: list[str]
     evidence_preview: list[str]
+    primary_evidence: TrendPrimaryEvidencePayload | None
     recent_history: list[TrendHistoryPointPayload]
     seasonality: SeasonalityPayload | None = None
     forecast_direction: str | None = None
@@ -273,6 +286,7 @@ class TrendDetailRecordPayload:
     source_contributions: list[TrendSourceContributionPayload]
     geo_summary: list[TrendGeoSummaryPayload]
     evidence_items: list[TrendEvidenceItemPayload]
+    primary_evidence: TrendPrimaryEvidencePayload | None
     related_trends: list[RelatedTrendPayload]
     seasonality: SeasonalityPayload | None = None
 
@@ -574,7 +588,11 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["evidencePreview"] = payload.pop("evidence_preview")
+    payload["primaryEvidence"] = payload.pop("primary_evidence")
     payload["recentHistory"] = payload.pop("recent_history")
+    if payload["primaryEvidence"] is not None:
+        payload["primaryEvidence"]["signalType"] = payload["primaryEvidence"].pop("signal_type")
+        payload["primaryEvidence"]["evidenceUrl"] = payload["primaryEvidence"].pop("evidence_url")
     if payload["seasonality"] is not None:
         payload["seasonality"]["recurrenceCount"] = payload["seasonality"].pop("recurrence_count")
         payload["seasonality"]["avgGapRuns"] = payload["seasonality"].pop("avg_gap_runs")
@@ -610,6 +628,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["sourceContributions"] = payload.pop("source_contributions")
     payload["geoSummary"] = payload.pop("geo_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
+    payload["primaryEvidence"] = payload.pop("primary_evidence")
     payload["relatedTrends"] = payload.pop("related_trends")
     for point in payload["history"]:
         point["capturedAt"] = point.pop("captured_at")
@@ -636,6 +655,9 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         item["geoRegion"] = item.pop("geo_region")
         item["geoDetectionMode"] = item.pop("geo_detection_mode")
         item["geoConfidence"] = item.pop("geo_confidence")
+    if payload["primaryEvidence"] is not None:
+        payload["primaryEvidence"]["signalType"] = payload["primaryEvidence"].pop("signal_type")
+        payload["primaryEvidence"]["evidenceUrl"] = payload["primaryEvidence"].pop("evidence_url")
     for item in payload["relatedTrends"]:
         item["scoreTotal"] = item.pop("score_total")
     return payload

@@ -162,6 +162,7 @@ class TrendExplorerRecord:
     source_count: int
     signal_count: int
     recent_history: list[TrendHistoryPoint]
+    primary_evidence: "TrendPrimaryEvidence | None" = None
     seasonality: SeasonalityResult | None = None
     forecast_direction: str | None = None
 
@@ -206,6 +207,18 @@ class TrendEvidenceItem:
     geo_region: str | None = None
     geo_detection_mode: str = "unknown"
     geo_confidence: float = 0.0
+
+
+@dataclass(frozen=True)
+class TrendPrimaryEvidence:
+    """Best explanatory linked evidence item for a trend."""
+
+    source: str
+    signal_type: str
+    timestamp: datetime
+    value: float
+    evidence: str
+    evidence_url: str
 
 
 @dataclass(frozen=True)
@@ -259,6 +272,7 @@ class TrendDetailRecord:
     source_contributions: list[TrendSourceContribution]
     geo_summary: list[TrendGeoSummary]
     evidence_items: list[TrendEvidenceItem]
+    primary_evidence: TrendPrimaryEvidence | None
     related_trends: list[RelatedTrend]
     seasonality: SeasonalityResult | None = None
 

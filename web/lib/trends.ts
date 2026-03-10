@@ -243,6 +243,12 @@ function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExplorerRe
       },
       sources: trend.sources ?? [],
       evidencePreview: trend.evidencePreview ?? [],
+      primaryEvidence: trend.primaryEvidence
+        ? {
+            ...trend.primaryEvidence,
+            evidenceUrl: trend.primaryEvidence.evidenceUrl ?? null,
+          }
+        : null,
       seasonality: trend.seasonality
         ? {
             tag: trend.seasonality.tag ?? null,
@@ -369,6 +375,12 @@ function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord
       ...item,
       evidenceUrl: item.evidenceUrl ?? null,
     })),
+    primaryEvidence: trend.primaryEvidence
+      ? {
+          ...trend.primaryEvidence,
+          evidenceUrl: trend.primaryEvidence.evidenceUrl ?? null,
+        }
+      : null,
     relatedTrends: trend.relatedTrends ?? [],
     seasonality: trend.seasonality
       ? {

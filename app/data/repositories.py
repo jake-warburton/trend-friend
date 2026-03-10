@@ -28,6 +28,7 @@ from app.models import (
     TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
+    TrendPrimaryEvidence,
     TrendSourceContribution,
     TrendSourceBreakdown,
     TrendScoreResult,
@@ -1364,6 +1365,15 @@ class WatchlistRepository:
 class TrendScoreRepository:
     """Persist and retrieve ranked trend scores."""
 
+    PRIMARY_EVIDENCE_SOURCE_PRIORITY = {
+        "hacker_news": 6,
+        "reddit": 5,
+        "github": 4,
+        "twitter": 4,
+        "google_trends": 3,
+        "wikipedia": 1,
+    }
+
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
 
@@ -1614,6 +1624,7 @@ class TrendScoreRepository:
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
                     recent_history=recent_history,
+                    primary_evidence=self.get_primary_evidence(score.topic),
                     seasonality=seasonality if seasonality.tag is not None else None,
                     forecast_direction=describe_forecast_direction(forecast, score.total_score),
                 )
@@ -1721,6 +1732,7 @@ class TrendScoreRepository:
                     source_contributions=self.get_topic_source_contributions(score.topic, score),
                     geo_summary=self.get_topic_geo_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
+                    primary_evidence=self.get_primary_evidence(score.topic),
                     related_trends=[],
                     seasonality=seasonality_by_topic[score.topic],
                 )
@@ -1858,6 +1870,26 @@ class TrendScoreRepository:
             for row in rows
         ]
 
+    def get_primary_evidence(self, topic: str) -> TrendPrimaryEvidence | None:
+        """Return the best explanatory linked evidence item for a topic."""
+
+        linked_items = [
+            item
+            for item in self.get_topic_evidence(topic, limit=12)
+            if item.evidence_url
+        ]
+        if not linked_items:
+            return None
+        best = sorted(linked_items, key=self._primary_evidence_sort_key, reverse=True)[0]
+        return TrendPrimaryEvidence(
+            source=best.source,
+            signal_type=best.signal_type,
+            timestamp=best.timestamp,
+            value=best.value,
+            evidence=best.evidence,
+            evidence_url=best.evidence_url or "",
+        )
+
     def get_topic_geo_summary(self, topic: str, limit: int = 5) -> list[TrendGeoSummary]:
         """Return aggregated location coverage for a topic."""
 
@@ -1984,6 +2016,17 @@ class TrendScoreRepository:
         compact = "-".join(part for part in normalized.split("-") if part)
         return compact or "trend"
 
+    def _primary_evidence_sort_key(self, item: TrendEvidenceItem) -> tuple[float, float, float, int]:
+        """Prefer stronger, newer linked evidence from more explanatory sources."""
+
+        source_priority = float(self.PRIMARY_EVIDENCE_SOURCE_PRIORITY.get(item.source, 0))
+        return (
+            source_priority,
+            item.value,
+            item.timestamp.timestamp(),
+            len(item.evidence),
+        )
+
     @staticmethod
     def _format_trend_name(topic: str) -> str:
         """Return a display-friendly topic name."""
@@ -2051,6 +2094,7 @@ class TrendScoreRepository:
                 source_contributions=record.source_contributions,
                 geo_summary=record.geo_summary,
                 evidence_items=record.evidence_items,
+                primary_evidence=record.primary_evidence,
                 related_trends=related_map.get(record.id, []),
                 seasonality=record.seasonality,
             )
