@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.rate_limit import rate_limiter, response_cache
-from app.api.routers import alerts, auth, dashboard, predictions, trends, sources, refresh, watchlists
+from app.api.routers import alerts, auth, community, dashboard, predictions, trends, sources, refresh, watchlists
 
 # Cacheable GET endpoints with their TTL in seconds
 _CACHE_ROUTES: dict[str, float] = {
@@ -105,6 +105,7 @@ def create_app() -> FastAPI:
     application.include_router(sources.router, prefix="/api/v1")
     application.include_router(refresh.router, prefix="/api/v1")
     application.include_router(watchlists.router, prefix="/api/v1")
+    application.include_router(community.router, prefix="/api/v1")
 
     @application.get("/api/v1/health")
     def health_check() -> dict[str, str]:
