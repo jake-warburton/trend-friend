@@ -14,6 +14,7 @@ It complements older planning docs rather than replacing them.
 - Broader feature roadmap: [docs/IMPROVEMENT_PLANS.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/IMPROVEMENT_PLANS.md)
 - Earlier web/dashboard deferrals: [docs/NEXT_PHASE.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/NEXT_PHASE.md)
 - Dashboard V2 contract and rollout context: [docs/DASHBOARD_V2_PLAN.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/DASHBOARD_V2_PLAN.md)
+- Competitor-inspired feature ranking: [docs/FEATURE_IMPLEMENTATION_PLAN.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/FEATURE_IMPLEMENTATION_PLAN.md)
 
 ## Highest-Priority Next Steps
 
