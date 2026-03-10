@@ -8,13 +8,14 @@ import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkline } from "@/components/sparkline";
+import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import {
   AUTO_REFRESH_INTERVAL_MS,
   formatAutoRefreshStatus,
   hasOverviewChanged,
 } from "@/lib/auto-refresh";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
-import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/trends";
+import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
 
 import type {
   AlertEvent,
@@ -854,6 +855,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               </div>
             ))}
           </div>
+        </article>
+      </section>
+
+      <section className="trajectory-strip">
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Top trends over time</h2>
+          </div>
+          <TrendTrajectoryChart trends={initialData.details.trends} />
         </article>
       </section>
 
