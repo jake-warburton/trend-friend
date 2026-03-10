@@ -7,6 +7,7 @@ import sqlite3
 from datetime import datetime
 
 from app.models import (
+    AlertRule,
     NormalizedSignal,
     PipelineRun,
     RelatedTrend,
@@ -18,6 +19,8 @@ from app.models import (
     TrendMomentum,
     TrendSourceBreakdown,
     TrendScoreResult,
+    Watchlist,
+    WatchlistItem,
 )
 
 
@@ -226,6 +229,175 @@ class PipelineRunRepository:
             )
             for row in rows
         ]
+
+
+class WatchlistRepository:
+    """Persist and retrieve watchlists and simple alert rules."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self.connection = connection
+
+    def ensure_default_watchlist(self, name: str = "Core Watchlist") -> Watchlist:
+        """Return the default watchlist, creating it if necessary."""
+
+        existing = self.get_watchlist_by_name(name)
+        if existing is not None:
+            return existing
+        return self.create_watchlist(name)
+
+    def list_watchlists(self) -> list[Watchlist]:
+        """Return all watchlists with nested items."""
+
+        rows = self.connection.execute(
+            "SELECT id, name, created_at, updated_at FROM watchlists ORDER BY updated_at DESC, id DESC"
+        ).fetchall()
+        return [self._watchlist_from_row(row) for row in rows]
+
+    def get_watchlist(self, watchlist_id: int) -> Watchlist | None:
+        """Return a watchlist by id when present."""
+
+        row = self.connection.execute(
+            "SELECT id, name, created_at, updated_at FROM watchlists WHERE id = ?",
+            (watchlist_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._watchlist_from_row(row)
+
+    def get_watchlist_by_name(self, name: str) -> Watchlist | None:
+        """Return a watchlist by name when present."""
+
+        row = self.connection.execute(
+            "SELECT id, name, created_at, updated_at FROM watchlists WHERE name = ?",
+            (name,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._watchlist_from_row(row)
+
+    def create_watchlist(self, name: str) -> Watchlist:
+        """Create and return a watchlist."""
+
+        self.connection.execute("INSERT INTO watchlists (name) VALUES (?)", (name,))
+        self.connection.commit()
+        return self.get_watchlist_by_name(name)  # type: ignore[return-value]
+
+    def add_item(self, watchlist_id: int, trend_id: str, trend_name: str) -> Watchlist:
+        """Add a trend to a watchlist and return the updated watchlist."""
+
+        self.connection.execute(
+            """
+            INSERT OR IGNORE INTO watchlist_items (watchlist_id, trend_id, trend_name)
+            VALUES (?, ?, ?)
+            """,
+            (watchlist_id, trend_id, trend_name),
+        )
+        self.connection.execute(
+            "UPDATE watchlists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (watchlist_id,),
+        )
+        self.connection.commit()
+        return self.get_watchlist(watchlist_id)  # type: ignore[return-value]
+
+    def remove_item(self, watchlist_id: int, trend_id: str) -> Watchlist:
+        """Remove a trend from a watchlist and return the updated watchlist."""
+
+        self.connection.execute(
+            "DELETE FROM watchlist_items WHERE watchlist_id = ? AND trend_id = ?",
+            (watchlist_id, trend_id),
+        )
+        self.connection.execute(
+            "UPDATE watchlists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (watchlist_id,),
+        )
+        self.connection.commit()
+        return self.get_watchlist(watchlist_id)  # type: ignore[return-value]
+
+    def list_alert_rules(self) -> list[AlertRule]:
+        """Return all alert rules."""
+
+        rows = self.connection.execute(
+            """
+            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            FROM alert_rules
+            ORDER BY created_at DESC, id DESC
+            """
+        ).fetchall()
+        return [
+            AlertRule(
+                id=row["id"],
+                watchlist_id=row["watchlist_id"],
+                name=row["name"],
+                rule_type=row["rule_type"],
+                threshold=row["threshold"],
+                enabled=bool(row["enabled"]),
+                created_at=datetime.fromisoformat(row["created_at"]),
+            )
+            for row in rows
+        ]
+
+    def create_alert_rule(
+        self,
+        watchlist_id: int,
+        name: str,
+        rule_type: str,
+        threshold: float,
+        enabled: bool = True,
+    ) -> AlertRule:
+        """Create and return an alert rule."""
+
+        cursor = self.connection.execute(
+            """
+            INSERT INTO alert_rules (watchlist_id, name, rule_type, threshold, enabled)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (watchlist_id, name, rule_type, threshold, int(enabled)),
+        )
+        self.connection.commit()
+        row = self.connection.execute(
+            """
+            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            FROM alert_rules
+            WHERE id = ?
+            """,
+            (int(cursor.lastrowid),),
+        ).fetchone()
+        return AlertRule(
+            id=row["id"],
+            watchlist_id=row["watchlist_id"],
+            name=row["name"],
+            rule_type=row["rule_type"],
+            threshold=row["threshold"],
+            enabled=bool(row["enabled"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
+
+    def _watchlist_from_row(self, row: sqlite3.Row) -> Watchlist:
+        """Build a watchlist model with nested items."""
+
+        item_rows = self.connection.execute(
+            """
+            SELECT trend_id, trend_name, added_at
+            FROM watchlist_items
+            WHERE watchlist_id = ?
+            ORDER BY added_at DESC, id DESC
+            """,
+            (row["id"],),
+        ).fetchall()
+        return Watchlist(
+            id=row["id"],
+            name=row["name"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+            items=[
+                WatchlistItem(
+                    trend_id=item["trend_id"],
+                    trend_name=item["trend_name"],
+                    added_at=datetime.fromisoformat(item["added_at"]),
+                )
+                for item in item_rows
+            ],
+        )
 
 
 class TrendScoreRepository:

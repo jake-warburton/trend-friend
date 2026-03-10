@@ -205,3 +205,36 @@ class PipelineRun:
     ranked_trend_count: int
     top_topic: str | None
     top_score: float | None
+
+
+@dataclass(frozen=True)
+class WatchlistItem:
+    """Tracked trend saved under a watchlist."""
+
+    trend_id: str
+    trend_name: str
+    added_at: datetime
+
+
+@dataclass(frozen=True)
+class Watchlist:
+    """Named collection of tracked trends."""
+
+    id: int
+    name: str
+    created_at: datetime
+    updated_at: datetime
+    items: list[WatchlistItem]
+
+
+@dataclass(frozen=True)
+class AlertRule:
+    """Simple alert condition attached to a watchlist."""
+
+    id: int
+    watchlist_id: int
+    name: str
+    rule_type: str
+    threshold: float
+    enabled: bool
+    created_at: datetime

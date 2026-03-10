@@ -246,3 +246,44 @@ export type SourceSummaryResponse = {
   generatedAt: string;
   sources: SourceSummaryRecord[];
 };
+
+export type WatchlistItem = {
+  trendId: string;
+  trendName: string;
+  addedAt: string;
+};
+
+export type Watchlist = {
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  items: WatchlistItem[];
+};
+
+export type AlertRule = {
+  id: number;
+  watchlistId: number;
+  name: string;
+  ruleType: string;
+  threshold: number;
+  enabled: boolean;
+  createdAt: string;
+};
+
+export type AlertMatch = {
+  alertId: number;
+  alertName: string;
+  watchlistId: number;
+  trendId: string;
+  trendName: string;
+  ruleType: string;
+  threshold: number;
+  currentValue: number;
+};
+
+export type WatchlistResponse = {
+  watchlists: Watchlist[];
+  alerts: AlertRule[];
+  matches: AlertMatch[];
+};

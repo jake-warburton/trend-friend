@@ -514,6 +514,60 @@ input {
   font-size: 0.68rem;
 }
 
+.watch-toggle,
+.mini-action-button {
+  border: 1px solid rgba(124, 157, 216, 0.14);
+  border-radius: 999px;
+  background: rgba(8, 18, 35, 0.42);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.watch-toggle {
+  padding: 3px 7px;
+}
+
+.watch-toggle-active {
+  background: rgba(94, 107, 255, 0.18);
+  color: #dce5ff;
+}
+
+.mini-action-button {
+  padding: 7px 10px;
+}
+
+.watchlist-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.watchlist-items {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.watchlist-item {
+  display: block;
+  padding: 6px 7px;
+  border: 1px solid rgba(124, 157, 216, 0.08);
+  border-radius: 10px;
+  background: rgba(8, 18, 35, 0.36);
+  color: inherit;
+  font-size: 0.68rem;
+  text-decoration: none;
+}
+
+.watchlist-item-alert {
+  color: #ffca6e;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.35fr) minmax(190px, 0.52fr);

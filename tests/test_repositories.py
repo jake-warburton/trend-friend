@@ -12,6 +12,7 @@ from app.data.repositories import (
     SignalRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
+    WatchlistRepository,
 )
 from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
 
@@ -219,6 +220,22 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].status, "breakout")
         self.assertEqual(records[0].source_breakdown[0].source, "github")
         self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
+
+    def test_watchlist_repository_round_trip(self) -> None:
+        repository = WatchlistRepository(self.connection)
+
+        watchlist = repository.ensure_default_watchlist()
+        updated = repository.add_item(watchlist.id, "ai-agents", "AI Agents")
+        repository.create_alert_rule(
+            watchlist_id=watchlist.id,
+            name="Score >= 25",
+            rule_type="score_above",
+            threshold=25.0,
+        )
+
+        self.assertEqual(updated.items[0].trend_id, "ai-agents")
+        self.assertEqual(repository.list_watchlists()[0].name, "Core Watchlist")
+        self.assertEqual(repository.list_alert_rules()[0].rule_type, "score_above")
 
 
 def build_score(topic: str, total_score: float) -> TrendScoreResult:

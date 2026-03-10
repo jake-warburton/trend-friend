@@ -5,10 +5,10 @@ import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import type { DashboardData } from "@/lib/types";
+import type { DashboardData, WatchlistResponse } from "@/lib/types";
 
 type DashboardShellProps = {
   initialData: DashboardData;
@@ -37,6 +37,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
   const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(null);
+  const [watchlistError, setWatchlistError] = useState<string | null>(null);
+  const [watchlistName, setWatchlistName] = useState("");
+  const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
   const deferredKeyword = useDeferredValue(keyword);
 
   const filteredTrends = useMemo(() => {
@@ -79,6 +83,86 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       router.refresh();
     });
   }
+
+  useEffect(() => {
+    void loadWatchlists();
+  }, []);
+
+  async function loadWatchlists() {
+    try {
+      const response = await fetch("/api/watchlists");
+      if (!response.ok) {
+        throw new Error("Watchlists unavailable");
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setWatchlistError(null);
+    } catch (error) {
+      setWatchlistError(error instanceof Error ? error.message : "Watchlists unavailable");
+    }
+  }
+
+  async function handleCreateWatchlist() {
+    if (watchlistName.trim().length === 0) {
+      return;
+    }
+    const response = await fetch("/api/watchlists", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "create-watchlist", name: watchlistName.trim() }),
+    });
+    if (response.ok) {
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setWatchlistName("");
+      setWatchlistError(null);
+      return;
+    }
+    setWatchlistError("Could not create watchlist");
+  }
+
+  async function handleToggleTracked(trendId: string, trendName: string) {
+    if (defaultWatchlist == null) {
+      return;
+    }
+    const isTracked = defaultWatchlist.items.some((item) => item.trendId === trendId);
+    const payload = isTracked
+      ? { action: "remove-item", watchlistId: defaultWatchlist.id, trendId }
+      : { action: "add-item", watchlistId: defaultWatchlist.id, trendId, trendName };
+    const response = await fetch("/api/watchlists", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (response.ok) {
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setWatchlistError(null);
+      return;
+    }
+    setWatchlistError("Could not update watchlist");
+  }
+
+  async function handleCreateAlert() {
+    if (defaultWatchlist == null || alertThreshold == null) {
+      return;
+    }
+    const response = await fetch("/api/alerts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        watchlistId: defaultWatchlist.id,
+        name: `Score >= ${alertThreshold}`,
+        ruleType: "score_above",
+        threshold: alertThreshold,
+      }),
+    });
+    if (response.ok) {
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setWatchlistError(null);
+      return;
+    }
+    setWatchlistError("Could not create alert");
+  }
+
+  const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
 
   return (
     <main className="dashboard-page">
@@ -337,6 +421,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                             {trend.name}
                           </Link>
                         </strong>
+                        <button
+                          className={
+                            defaultWatchlist?.items.some((item) => item.trendId === trend.id)
+                              ? "watch-toggle watch-toggle-active"
+                              : "watch-toggle"
+                          }
+                          onClick={() => void handleToggleTracked(trend.id, trend.name)}
+                          type="button"
+                        >
+                          {defaultWatchlist?.items.some((item) => item.trendId === trend.id) ? "Tracked" : "Track"}
+                        </button>
                         <span className={trendStatusClassName(trend.status)}>
                           {formatTrendStatus(trend.status)}
                         </span>
@@ -396,6 +491,59 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         </div>
 
         <aside className="history-panel">
+          <div className="section-heading">
+            <h2>Watchlists</h2>
+          </div>
+
+          <div className="snapshot-list">
+            <section className="snapshot-card">
+              <header>
+                <strong>{defaultWatchlist?.name ?? "Core Watchlist"}</strong>
+                <span>{defaultWatchlist?.items.length ?? 0} tracked</span>
+              </header>
+              <div className="watchlist-form">
+                <Input
+                  className="text-input"
+                  placeholder="New watchlist"
+                  value={watchlistName}
+                  onChange={(event) => setWatchlistName(event.target.value)}
+                />
+                <Button className="mini-action-button" onClick={() => void handleCreateWatchlist()}>
+                  Add
+                </Button>
+              </div>
+              <div className="watchlist-form">
+                <NumberField.Root min={1} value={alertThreshold} onValueChange={setAlertThreshold}>
+                  <NumberField.Group className="number-group">
+                    <NumberField.Decrement className="number-button">-</NumberField.Decrement>
+                    <NumberField.Input className="number-input" />
+                    <NumberField.Increment className="number-button">+</NumberField.Increment>
+                  </NumberField.Group>
+                </NumberField.Root>
+                <Button className="mini-action-button" onClick={() => void handleCreateAlert()}>
+                  Alert
+                </Button>
+              </div>
+              {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
+              <div className="watchlist-items">
+                {(defaultWatchlist?.items ?? []).slice(0, 5).map((item) => (
+                  <Link className="watchlist-item" href={`/trends/${item.trendId}`} key={item.trendId}>
+                    <span>{item.trendName}</span>
+                  </Link>
+                ))}
+              </div>
+              <div className="watchlist-items">
+                {(watchlistData?.matches ?? []).slice(0, 3).map((match) => (
+                  <div className="watchlist-item watchlist-item-alert" key={`${match.alertId}-${match.trendId}`}>
+                    <span>
+                      {match.trendName} {match.currentValue.toFixed(1)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
           <div className="section-heading">
             <h2>Runs</h2>
           </div>

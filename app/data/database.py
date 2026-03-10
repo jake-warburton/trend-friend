@@ -90,6 +90,34 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             latest_timestamp TEXT NOT NULL,
             FOREIGN KEY (run_id) REFERENCES trend_runs (id)
         );
+
+        CREATE TABLE IF NOT EXISTS watchlists (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS watchlist_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            watchlist_id INTEGER NOT NULL,
+            trend_id TEXT NOT NULL,
+            trend_name TEXT NOT NULL,
+            added_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE (watchlist_id, trend_id),
+            FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS alert_rules (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            watchlist_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            rule_type TEXT NOT NULL,
+            threshold REAL NOT NULL,
+            enabled INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE
+        );
         """
     )
     ensure_column(
