@@ -343,8 +343,11 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Location/);
   assert.match(html, /7 day opens/);
   assert.match(html, /<strong>6<\/strong>/);
-  assert.match(html, /Categories: Hardware Robotics/);
-  assert.match(html, /Statuses: Breakout/);
+  assert.match(html, /Hardware Robotics/);
+  assert.match(html, /Breakout/);
+  assert.match(html, /GitHub/);
+  assert.match(html, /United Kingdom/);
+  assert.match(html, /Top driver: GitHub drove 66.7%/);
   assert.match(html, /Shared by Owner One/);
   assert.match(html, /Showing 1-1 of 1 public watchlists/);
 });

@@ -188,17 +188,33 @@ export default async function CommunityPage({ searchParams }: PageProps) {
                   <strong>{formatTimestamp(watchlist.createdAt)}</strong>
                 </div>
               </div>
-              {watchlist.categories?.length ? (
-                <p className="source-summary-copy">
-                  Categories: {watchlist.categories.map(formatCategory).join(", ")}
-                </p>
-              ) : null}
-              {watchlist.statuses?.length ? (
-                <p className="source-summary-copy">Statuses: {watchlist.statuses.map(formatStatusLabel).join(", ")}</p>
+              {hasCommunityCardTags(watchlist) ? (
+                <div className="community-chip-group">
+                  {watchlist.categories?.map((category) => (
+                    <span className="trend-date-chip" key={`category-${category}`}>
+                      {formatCategory(category)}
+                    </span>
+                  ))}
+                  {watchlist.statuses?.map((status) => (
+                    <span className="trend-date-chip" key={`status-${status}`}>
+                      {formatStatusLabel(status)}
+                    </span>
+                  ))}
+                  {watchlist.sourceContributions?.[0] ? (
+                    <span className="trend-date-chip" key={`source-${watchlist.sourceContributions[0].source}`}>
+                      {formatSourceLabel(watchlist.sourceContributions[0].source)}
+                    </span>
+                  ) : null}
+                  {watchlist.geoSummary?.slice(0, 2).map((geo) => (
+                    <span className="trend-date-chip" key={`geo-${geo.label}`}>
+                      {geo.label}
+                    </span>
+                  ))}
+                </div>
               ) : null}
               {watchlist.sourceContributions?.[0] ? (
                 <p className="source-summary-copy">
-                  {formatSourceContributionSummary(watchlist.sourceContributions[0])}
+                  Top driver: {formatSourceContributionSummary(watchlist.sourceContributions[0])}
                 </p>
               ) : null}
               {watchlist.ownerDisplayName ? (
@@ -207,9 +223,6 @@ export default async function CommunityPage({ searchParams }: PageProps) {
               <p className="source-summary-copy">
                 {watchlist.expiresAt ? `Expires ${formatTimestamp(watchlist.expiresAt)}` : "No expiry"}
               </p>
-              {watchlist.geoSummary?.length ? (
-                <p className="source-summary-copy">{watchlist.geoSummary.map((geo) => geo.label).join(", ")}</p>
-              ) : null}
             </article>
           ))
         )}
@@ -491,4 +504,13 @@ function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSumm
     return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}%`;
   }
   return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
+}
+
+function hasCommunityCardTags(watchlist: PublicWatchlistSummary) {
+  return (
+    (watchlist.categories?.length ?? 0) > 0 ||
+    (watchlist.statuses?.length ?? 0) > 0 ||
+    (watchlist.sourceContributions?.length ?? 0) > 0 ||
+    (watchlist.geoSummary?.length ?? 0) > 0
+  );
 }
