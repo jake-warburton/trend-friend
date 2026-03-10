@@ -6,6 +6,7 @@ import json
 import sqlite3
 from datetime import datetime
 
+from app.topics.categorize import categorize_topic
 from app.models import (
     AlertRule,
     NormalizedSignal,
@@ -769,29 +770,9 @@ class TrendScoreRepository:
 
     @staticmethod
     def _build_category(topic: str, source_counts: dict[str, int]) -> str:
-        """Assign a simple product-facing category to a trend."""
+        """Assign a product-facing category to a trend."""
 
-        normalized = topic.lower()
-        category_keywords = (
-            ("artificial-intelligence", ("ai", "llm", "agent", "inference", "model", "prompt")),
-            ("developer-tools", ("github", "sdk", "cli", "compiler", "framework", "typescript", "python", "devtool")),
-            ("data-analytics", ("data", "database", "analytics", "warehouse", "metadata")),
-            ("infrastructure", ("cloud", "infra", "kubernetes", "server", "hosting", "compute")),
-            ("security", ("security", "auth", "identity", "vulnerability", "encryption")),
-            ("commerce-fintech", ("payment", "checkout", "commerce", "market", "crypto", "fintech")),
-            ("media-social", ("creator", "social", "video", "content", "stream", "podcast")),
-            ("productivity-saas", ("calendar", "meeting", "workflow", "project", "automation", "saas")),
-            ("hardware-robotics", ("robot", "battery", "chip", "drone", "hardware", "semiconductor")),
-            ("knowledge-reference", ("wiki", "wikipedia", "reference", "education", "research")),
-        )
-        for category, keywords in category_keywords:
-            if any(keyword in normalized for keyword in keywords):
-                return category
-        if "github" in source_counts:
-            return "developer-tools"
-        if "wikipedia" in source_counts:
-            return "knowledge-reference"
-        return "general-tech"
+        return categorize_topic(topic, source_counts)
 
     @staticmethod
     def _slugify_topic(topic: str) -> str:
