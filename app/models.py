@@ -311,6 +311,16 @@ class SourceSummaryRecord:
 
 
 @dataclass(frozen=True)
+class SourceWatchRecord:
+    """Operational warning or advisory derived from recent source behavior."""
+
+    source: str
+    severity: str
+    title: str
+    detail: str
+
+
+@dataclass(frozen=True)
 class PipelineRun:
     """Operational summary for a full pipeline execution."""
 

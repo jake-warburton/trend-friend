@@ -108,6 +108,13 @@ export type DashboardOverviewSource = {
   errorMessage: string | null;
 };
 
+export type DashboardOverviewSourceWatch = {
+  source: string;
+  severity: "critical" | "warning" | "info";
+  title: string;
+  detail: string;
+};
+
 export type DashboardOverviewRun = {
   capturedAt: string;
   durationMs: number;
@@ -137,6 +144,7 @@ export type DashboardOverviewResponse = {
   sections: DashboardOverviewSections;
   operations: DashboardOverviewOperations;
   sources: DashboardOverviewSource[];
+  sourceWatch?: DashboardOverviewSourceWatch[];
 };
 
 export type TrendMomentum = {

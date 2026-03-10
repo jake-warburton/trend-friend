@@ -13,6 +13,7 @@ from app.exports.contracts import (
     DashboardOverviewOperationsPayload,
     DashboardOverviewPayload,
     DashboardOverviewRunPayload,
+    DashboardOverviewSourceWatchPayload,
     DashboardOverviewSectionsPayload,
     DashboardOverviewMetaTrendPayload,
     DashboardOverviewSourcePayload,
@@ -50,6 +51,7 @@ from app.models import (
     RelatedTrend,
     SourceIngestionRun,
     SourceSummaryRecord,
+    SourceWatchRecord,
     SourceSummaryTrend,
     TrendDetailRecord,
     TrendExplorerRecord,
@@ -157,6 +159,15 @@ def build_dashboard_overview_payload(
         sections=build_dashboard_sections_payload(ordered_trends),
         operations=build_dashboard_operations_payload(pipeline_runs),
         sources=source_summaries,
+        source_watch=[
+            DashboardOverviewSourceWatchPayload(
+                source=item.source,
+                severity=item.severity,
+                title=item.title,
+                detail=item.detail,
+            )
+            for item in build_source_watch_records(source_summaries)
+        ],
     )
 
 
@@ -552,6 +563,77 @@ def build_yield_rate_percent(run: SourceIngestionRun | None) -> float:
     if run is None or run.raw_item_count <= 0:
         return 0.0
     return round((run.kept_item_count / run.raw_item_count) * 100, 1)
+
+
+def build_source_watch_records(sources: list[DashboardOverviewSourcePayload]) -> list[SourceWatchRecord]:
+    """Derive compact operational warnings from source summaries."""
+
+    watch_items: list[SourceWatchRecord] = []
+    for source in sources:
+        title = format_trend_name(source.source.replace("_", " "))
+        if source.error_message:
+            watch_items.append(
+                SourceWatchRecord(
+                    source=source.source,
+                    severity="critical",
+                    title=title,
+                    detail="Latest run failed",
+                )
+            )
+            continue
+        if source.used_fallback or source.status == "degraded":
+            watch_items.append(
+                SourceWatchRecord(
+                    source=source.source,
+                    severity="warning",
+                    title=title,
+                    detail="Latest run used fallback data",
+                )
+            )
+            continue
+        if source.status == "stale":
+            watch_items.append(
+                SourceWatchRecord(
+                    source=source.source,
+                    severity="warning",
+                    title=title,
+                    detail="No recent healthy run",
+                )
+            )
+            continue
+        if source.raw_item_count >= 10 and source.yield_rate_percent < 30:
+            watch_items.append(
+                SourceWatchRecord(
+                    source=source.source,
+                    severity="warning",
+                    title=title,
+                    detail="Low kept yield from recent fetches",
+                )
+            )
+            continue
+        if source.raw_item_count >= 10 and source.yield_rate_percent < 50:
+            watch_items.append(
+                SourceWatchRecord(
+                    source=source.source,
+                    severity="info",
+                    title=title,
+                    detail="Mixed kept yield from recent fetches",
+                )
+            )
+    return sorted(
+        watch_items,
+        key=lambda item: (-source_watch_severity_weight(item.severity), item.source),
+    )[:4]
+
+
+def source_watch_severity_weight(severity: str) -> int:
+    """Return a stable sort weight for operational source warnings."""
+
+    if severity == "critical":
+        return 3
+    if severity == "warning":
+        return 2
+    return 1
 
 
 def build_dashboard_charts_payload(

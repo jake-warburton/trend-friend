@@ -148,6 +148,7 @@ class APITests(unittest.TestCase):
         data = response.json()
         self.assertIn("summary", data)
         self.assertIn("highlights", data)
+        self.assertIn("sourceWatch", data)
 
     def test_list_sources(self) -> None:
         self._seed_data()

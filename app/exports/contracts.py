@@ -399,6 +399,16 @@ class DashboardOverviewSourcePayload:
 
 
 @dataclass(frozen=True)
+class DashboardOverviewSourceWatchPayload:
+    """Operational source warning surfaced on the dashboard."""
+
+    source: str
+    severity: str
+    title: str
+    detail: str
+
+
+@dataclass(frozen=True)
 class DashboardOverviewRunPayload:
     """Recent pipeline execution summary shown on the dashboard."""
 
@@ -436,6 +446,7 @@ class DashboardOverviewPayload:
     sections: DashboardOverviewSectionsPayload
     operations: DashboardOverviewOperationsPayload
     sources: list[DashboardOverviewSourcePayload]
+    source_watch: list[DashboardOverviewSourceWatchPayload]
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serializable dictionary with API-style keys."""
@@ -494,6 +505,7 @@ class DashboardOverviewPayload:
             source["durationMs"] = source.pop("duration_ms")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
+        payload["sourceWatch"] = payload.pop("source_watch")
         return payload
 
 

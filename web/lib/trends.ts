@@ -186,6 +186,12 @@ function normalizeDashboardOverview(payload: DashboardOverviewResponse): Dashboa
         topScore: run.topScore ?? null,
       })),
     },
+    sourceWatch: (payload.sourceWatch ?? []).map((item) => ({
+      source: item.source,
+      severity: item.severity ?? "info",
+      title: item.title ?? item.source,
+      detail: item.detail ?? "",
+    })),
     sources: (payload.sources ?? []).map((source) => ({
       source: source.source,
       signalCount: source.signalCount ?? 0,

@@ -120,6 +120,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(overview_data["summary"]["trackedTrends"], 1)
         self.assertEqual(overview_data["charts"]["topTrendScores"][0]["label"], "AI Agents")
         self.assertEqual(overview_data["sections"]["topTrends"][0]["scoreTotal"], 42.4)
+        self.assertEqual(overview_data["sourceWatch"][0]["source"], "github")
         self.assertEqual(explorer_data["trends"][0]["previousRank"], 4)
         self.assertEqual(detail_data["trends"][0]["sourceBreakdown"][0]["latestSignalAt"], "2026-03-08T00:00:00Z")
         self.assertEqual(source_summary_data["sources"][0]["runHistory"][0]["durationMs"], 120)
@@ -206,6 +207,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["charts"]["statusBreakdown"][0]["label"], "Breakout")
         self.assertEqual(payload["sections"]["topTrends"][0]["name"], "AI Agents")
         self.assertEqual(payload["sections"]["metaTrends"][0]["category"], "artificial-intelligence")
+        self.assertEqual(payload["sourceWatch"][0]["source"], "github")
+        self.assertEqual(payload["sourceWatch"][0]["detail"], "Latest run used fallback data")
         self.assertEqual(payload["sources"][0]["signalCount"], 2)
         self.assertEqual(payload["sources"][0]["trendCount"], 2)
         self.assertEqual(payload["sources"][0]["rawItemCount"], 2)
@@ -226,6 +229,8 @@ class ExportPayloadTests(unittest.TestCase):
             pipeline_runs=[build_pipeline_run(failed_source_count=1, successful_source_count=3)],
         ).to_dict()
         self.assertEqual(payload["operations"]["recentRuns"][0]["status"], "degraded")
+        self.assertEqual(payload["sourceWatch"][0]["source"], "reddit")
+        self.assertEqual(payload["sourceWatch"][0]["detail"], "Latest run failed")
         self.assertEqual(payload["sources"][0]["status"], "stale")
         self.assertEqual(payload["sources"][0]["errorMessage"], "timeout")
 

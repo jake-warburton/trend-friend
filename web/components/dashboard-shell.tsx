@@ -111,8 +111,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     [publicWatchlists],
   );
   const sourceWatchlist = useMemo(
-    () => buildSourceWatchlist(initialData.overview.sources),
-    [initialData.overview.sources],
+    () =>
+      (initialData.overview.sourceWatch != null && initialData.overview.sourceWatch.length > 0)
+        ? initialData.overview.sourceWatch
+        : buildSourceWatchlist(initialData.overview.sources),
+    [initialData.overview.sourceWatch, initialData.overview.sources],
   );
 
   function showActionNotice(message: string) {
