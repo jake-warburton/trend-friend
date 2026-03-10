@@ -19,21 +19,37 @@ class GitHubSourceAdapter(SourceAdapter):
             if self.settings.github_token:
                 headers["Authorization"] = f"Bearer {self.settings.github_token}"
             recent_date = (datetime.now(tz=timezone.utc) - timedelta(days=30)).date().isoformat()
-            payload = self.get_json(
-                f"https://api.github.com/search/repositories?q=stars:%3E100+pushed:%3E{recent_date}&sort=updated&order=desc&per_page=30",
-                headers=headers,
+            base_url = (
+                "https://api.github.com/search/repositories"
+                f"?q=stars:%3E100+pushed:%3E{recent_date}"
+                "&sort=updated&order=desc&per_page=30"
             )
-            return self.normalize_items(payload)
+            items: list[RawSourceItem] = []
+            seen_ids: set[str] = set()
+            for page in range(1, max(1, self.settings.github_page_limit) + 1):
+                payload = self.get_json(f"{base_url}&page={page}", headers=headers)
+                page_items = self.normalize_items(payload, limit=self.settings.max_items_per_source)
+                if not page_items:
+                    break
+                for item in page_items:
+                    if item.external_id in seen_ids:
+                        continue
+                    seen_ids.add(item.external_id)
+                    items.append(item)
+                    if len(items) >= self.settings.max_items_per_source:
+                        return items
+            return items
         except Exception as error:
             self.log_fallback(error)
             return self.normalize_items(self.sample_payload())
 
-    def normalize_items(self, payload: dict[str, object]) -> list[RawSourceItem]:
+    def normalize_items(self, payload: dict[str, object], limit: int | None = None) -> list[RawSourceItem]:
         """Normalize GitHub search results into shared models."""
 
         repositories = payload.get("items", [])
         items: list[RawSourceItem] = []
-        for repository in repositories[: self.settings.max_items_per_source]:
+        max_items = self.settings.max_items_per_source if limit is None else limit
+        for repository in repositories[:max_items]:
             full_name = str(repository.get("full_name", "")).strip()
             pushed_at = str(repository.get("pushed_at", "")).strip()
             if not full_name or not pushed_at:

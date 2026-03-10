@@ -1,8 +1,7 @@
-"""Reddit source adapter using public Atom/RSS feeds."""
+"""Reddit source adapter using the public JSON listing API."""
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from app.models import RawSourceItem
@@ -23,60 +22,41 @@ class RedditSourceAdapter(SourceAdapter):
 
     def fetch(self) -> list[RawSourceItem]:
         try:
-            return self._fetch_rss()
+            return self._fetch_listing()
         except Exception as error:
             self.log_fallback(error)
             return self.normalize_items(self.sample_payload())
 
-    def _fetch_rss(self) -> list[RawSourceItem]:
-        """Fetch the Atom feed from Reddit's public RSS endpoint."""
+    def _fetch_listing(self) -> list[RawSourceItem]:
+        """Fetch multiple bounded listing pages from Reddit's public JSON endpoint."""
 
         subreddit_path = "+".join(self.TREND_SUBREDDITS)
-        url = f"https://www.reddit.com/r/{subreddit_path}/hot.rss"
-        xml_bytes = self.get_url(url, headers={
+        url = f"https://www.reddit.com/r/{subreddit_path}/hot.json?raw_json=1&limit=100"
+        headers = {
             "User-Agent": self.settings.reddit_user_agent,
-            "Accept": "application/atom+xml, application/rss+xml, application/xml",
-        })
-        return self._parse_atom(xml_bytes)
-
-    def _parse_atom(self, xml_bytes: bytes) -> list[RawSourceItem]:
-        """Parse Atom XML into normalized items."""
-
-        ns = {"atom": "http://www.w3.org/2005/Atom"}
-        root = ET.fromstring(xml_bytes)
-
+            "Accept": "application/json",
+        }
         items: list[RawSourceItem] = []
-        for entry in root.findall("atom:entry", ns):
-            title = (entry.findtext("atom:title", namespaces=ns) or "").strip()
-            if not title:
-                continue
+        seen_ids: set[str] = set()
+        after: str | None = None
+        seen_after_tokens: set[str] = set()
 
-            link_el = entry.find("atom:link", ns)
-            link = link_el.get("href", "") if link_el is not None else ""
-            entry_id = entry.findtext("atom:id", namespaces=ns) or ""
-            updated = entry.findtext("atom:updated", namespaces=ns) or ""
-            author = entry.findtext("atom:author/atom:name", namespaces=ns) or ""
-
-            # Extract subreddit from the category element
-            category_el = entry.find("atom:category", ns)
-            subreddit = category_el.get("term", "") if category_el is not None else ""
-
-            timestamp = self._parse_updated(updated)
-
-            items.append(
-                RawSourceItem(
-                    source=self.source_name,
-                    external_id=entry_id,
-                    title=title,
-                    url=link,
-                    timestamp=timestamp,
-                    engagement_score=1.0,  # RSS feed doesn't include scores
-                    metadata={"subreddit": subreddit, "author": author},
-                )
-            )
-
-            if len(items) >= self.settings.max_items_per_source:
+        for _ in range(max(1, self.settings.reddit_page_limit)):
+            page_url = url if after is None else f"{url}&after={after}"
+            payload = self.get_json(page_url, headers=headers)
+            page_items = self.normalize_items(payload, limit=self.settings.max_items_per_source)
+            for item in page_items:
+                if item.external_id in seen_ids:
+                    continue
+                seen_ids.add(item.external_id)
+                items.append(item)
+                if len(items) >= self.settings.max_items_per_source:
+                    return items
+            after_value = payload.get("data", {}).get("after")
+            after = str(after_value).strip() if after_value else None
+            if not after or after in seen_after_tokens:
                 break
+            seen_after_tokens.add(after)
 
         return items
 
@@ -91,12 +71,13 @@ class RedditSourceAdapter(SourceAdapter):
         except (ValueError, TypeError):
             return datetime.now(tz=timezone.utc)
 
-    def normalize_items(self, payload: dict[str, object]) -> list[RawSourceItem]:
+    def normalize_items(self, payload: dict[str, object], limit: int | None = None) -> list[RawSourceItem]:
         """Normalize Reddit listing payload into shared models (used for fallback sample data)."""
 
         children = payload.get("data", {}).get("children", [])
         items: list[RawSourceItem] = []
-        for child in children[: self.settings.max_items_per_source]:
+        max_items = self.settings.max_items_per_source if limit is None else limit
+        for child in children[:max_items]:
             post = child.get("data", {})
             title = str(post.get("title", "")).strip()
             permalink = str(post.get("permalink", ""))

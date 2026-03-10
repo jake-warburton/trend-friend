@@ -17,17 +17,31 @@ class HackerNewsSourceAdapter(SourceAdapter):
         try:
             story_ids = self.get_json("https://hacker-news.firebaseio.com/v0/topstories.json")
             items: list[RawSourceItem] = []
-            for story_id in story_ids[: self.settings.max_items_per_source]:
+            seen_ids: set[str] = set()
+            stories_per_page = self._stories_per_page()
+            max_story_ids = min(
+                len(story_ids),
+                stories_per_page * max(1, self.settings.hacker_news_page_limit),
+            )
+            for story_id in story_ids[:max_story_ids]:
                 payload = self.get_json(
                     f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
                 )
                 normalized = self.normalize_item(payload)
-                if normalized is not None:
+                if normalized is not None and normalized.external_id not in seen_ids:
+                    seen_ids.add(normalized.external_id)
                     items.append(normalized)
+                if len(items) >= self.settings.max_items_per_source:
+                    break
             return items
         except Exception as error:
             self.log_fallback(error)
             return [item for item in (self.normalize_item(data) for data in self.sample_payload()) if item]
+
+    def _stories_per_page(self) -> int:
+        """Return the conceptual HN page size used to bound depth."""
+
+        return max(1, min(self.settings.max_items_per_source, 30))
 
     def normalize_item(self, payload: dict[str, object]) -> Optional[RawSourceItem]:
         """Normalize a single Hacker News item payload."""

@@ -17,6 +17,9 @@ class Settings:
     web_data_path: Path
     request_timeout_seconds: int
     max_items_per_source: int
+    reddit_page_limit: int
+    hacker_news_page_limit: int
+    github_page_limit: int
     ranking_limit: int
     github_token: Optional[str]
     twitter_bearer_token: Optional[str]
@@ -35,6 +38,9 @@ def load_settings() -> Settings:
         web_data_path=Path(os.getenv("TREND_FRIEND_WEB_DATA_PATH", "web/data")),
         request_timeout_seconds=int(os.getenv("TREND_FRIEND_REQUEST_TIMEOUT_SECONDS", "10")),
         max_items_per_source=int(os.getenv("TREND_FRIEND_MAX_ITEMS_PER_SOURCE", "30")),
+        reddit_page_limit=int(os.getenv("TREND_FRIEND_REDDIT_PAGE_LIMIT", "3")),
+        hacker_news_page_limit=int(os.getenv("TREND_FRIEND_HACKER_NEWS_PAGE_LIMIT", "3")),
+        github_page_limit=int(os.getenv("TREND_FRIEND_GITHUB_PAGE_LIMIT", "2")),
         ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "100")),
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
