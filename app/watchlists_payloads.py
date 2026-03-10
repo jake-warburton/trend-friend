@@ -33,18 +33,33 @@ class _ItemEnrichment:
 def build_watchlist_payload(
     watchlist_repo: WatchlistRepository,
     score_repo: TrendScoreRepository,
+    *,
+    current_user: dict[str, object] | None = None,
+    auth_enabled: bool = False,
 ) -> dict[str, object]:
     """Build the combined watchlists, shares, alerts, and matches payload."""
 
     latest_scores = score_repo.list_scores(limit=WATCHLIST_SCORE_LOOKUP_LIMIT)
     score_by_slug = {_slugify(score.topic): score for score in latest_scores}
 
-    watchlists = watchlist_repo.list_watchlists()
-    alerts = watchlist_repo.list_alert_rules()
+    watchlists = watchlist_repo.list_watchlists(
+        owner_user_id=current_user["id"] if current_user is not None else None,
+    )
+    alerts = watchlist_repo.list_alert_rules(
+        owner_user_id=current_user["id"] if current_user is not None else None,
+    )
 
     return {
+        "authEnabled": auth_enabled,
+        "currentUser": current_user,
         "watchlists": [
-            _serialize_watchlist(watchlist, watchlist_repo.list_shares_for_watchlist(watchlist.id), score_repo, score_by_slug)
+            _serialize_watchlist(
+                watchlist,
+                watchlist_repo.list_shares_for_watchlist(watchlist.id),
+                score_repo,
+                score_by_slug,
+                current_user_id=current_user["id"] if current_user is not None else None,
+            )
             for watchlist in watchlists
         ],
         "alerts": [_serialize_alert_rule(alert) for alert in alerts],
@@ -280,10 +295,13 @@ def _serialize_watchlist(
     shares: list[WatchlistShare],
     score_repo: TrendScoreRepository,
     score_by_slug: dict[str, object],
+    current_user_id: int | None,
 ) -> dict[str, object]:
     return {
         "id": watchlist.id,
         "name": watchlist.name,
+        "ownerUserId": watchlist.owner_user_id,
+        "ownedByCurrentUser": current_user_id is not None and watchlist.owner_user_id == current_user_id,
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
         "items": [

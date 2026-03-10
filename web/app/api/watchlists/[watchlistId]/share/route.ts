@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ApiError } from "@/lib/api-client";
+import { buildForwardedAuthHeaders } from "@/lib/server/forward-auth";
 import { WatchlistServiceError, shareWatchlist } from "@/lib/server/watchlist-service";
 
 type RouteContext = {
@@ -19,7 +20,9 @@ export async function handleShareWatchlistPost(
   try {
     const body = (await request.json()) as { public?: boolean };
     const { watchlistId } = await context.params;
-    const payload = await dependencies.shareWatchlist(Number(watchlistId), body.public === true);
+    const payload = await dependencies.shareWatchlist(Number(watchlistId), body.public === true, {
+      apiHeaders: buildForwardedAuthHeaders(request),
+    });
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Share request failed";

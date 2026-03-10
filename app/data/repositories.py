@@ -261,50 +261,98 @@ class WatchlistRepository:
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
 
-    def ensure_default_watchlist(self, name: str = "Core Watchlist") -> Watchlist:
+    def ensure_default_watchlist(self, name: str = "Core Watchlist", owner_user_id: int | None = None) -> Watchlist:
         """Return the default watchlist, creating it if necessary."""
 
-        existing = self.get_watchlist_by_name(name)
+        existing = self.get_watchlist_by_name(name, owner_user_id=owner_user_id)
         if existing is not None:
             return existing
-        return self.create_watchlist(name)
+        return self.create_watchlist(name, owner_user_id=owner_user_id)
 
-    def list_watchlists(self) -> list[Watchlist]:
+    def list_watchlists(self, owner_user_id: int | None = None) -> list[Watchlist]:
         """Return all watchlists with nested items."""
 
-        rows = self.connection.execute(
-            "SELECT id, name, created_at, updated_at FROM watchlists ORDER BY updated_at DESC, id DESC"
-        ).fetchall()
+        query = "SELECT id, name, owner_user_id, created_at, updated_at FROM watchlists"
+        parameters: tuple[object, ...] = ()
+        if owner_user_id is None:
+            query += " WHERE owner_user_id IS NULL"
+        else:
+            query += " WHERE owner_user_id = ?"
+            parameters = (owner_user_id,)
+        query += " ORDER BY updated_at DESC, id DESC"
+        rows = self.connection.execute(query, parameters).fetchall()
         return [self._watchlist_from_row(row) for row in rows]
 
     def get_watchlist(self, watchlist_id: int) -> Watchlist | None:
         """Return a watchlist by id when present."""
 
         row = self.connection.execute(
-            "SELECT id, name, created_at, updated_at FROM watchlists WHERE id = ?",
+            "SELECT id, name, owner_user_id, created_at, updated_at FROM watchlists WHERE id = ?",
             (watchlist_id,),
         ).fetchone()
         if row is None:
             return None
         return self._watchlist_from_row(row)
 
-    def get_watchlist_by_name(self, name: str) -> Watchlist | None:
-        """Return a watchlist by name when present."""
+    def get_watchlist_for_owner(self, watchlist_id: int, owner_user_id: int | None) -> Watchlist | None:
+        """Return a watchlist by id only when it belongs to the given owner."""
 
-        row = self.connection.execute(
-            "SELECT id, name, created_at, updated_at FROM watchlists WHERE name = ?",
-            (name,),
-        ).fetchone()
+        if owner_user_id is None:
+            row = self.connection.execute(
+                """
+                SELECT id, name, owner_user_id, created_at, updated_at
+                FROM watchlists
+                WHERE id = ? AND owner_user_id IS NULL
+                """,
+                (watchlist_id,),
+            ).fetchone()
+        else:
+            row = self.connection.execute(
+                """
+                SELECT id, name, owner_user_id, created_at, updated_at
+                FROM watchlists
+                WHERE id = ? AND owner_user_id = ?
+                """,
+                (watchlist_id, owner_user_id),
+            ).fetchone()
         if row is None:
             return None
         return self._watchlist_from_row(row)
 
-    def create_watchlist(self, name: str) -> Watchlist:
+    def get_watchlist_by_name(self, name: str, owner_user_id: int | None = None) -> Watchlist | None:
+        """Return a watchlist by name when present."""
+
+        if owner_user_id is None:
+            row = self.connection.execute(
+                """
+                SELECT id, name, owner_user_id, created_at, updated_at
+                FROM watchlists
+                WHERE name = ? AND owner_user_id IS NULL
+                """,
+                (name,),
+            ).fetchone()
+        else:
+            row = self.connection.execute(
+                """
+                SELECT id, name, owner_user_id, created_at, updated_at
+                FROM watchlists
+                WHERE name = ? AND owner_user_id = ?
+                """,
+                (name, owner_user_id),
+            ).fetchone()
+        if row is None:
+            return None
+        return self._watchlist_from_row(row)
+
+    def create_watchlist(self, name: str, owner_user_id: int | None = None) -> Watchlist:
         """Create and return a watchlist."""
 
-        self.connection.execute("INSERT INTO watchlists (name) VALUES (?)", (name,))
+        self.connection.execute(
+            "INSERT INTO watchlists (name, owner_user_id) VALUES (?, ?)",
+            (name, owner_user_id),
+        )
         self.connection.commit()
-        return self.get_watchlist_by_name(name)  # type: ignore[return-value]
+        return self.get_watchlist_by_name(name, owner_user_id=owner_user_id)  # type: ignore[return-value]
 
     def add_item(self, watchlist_id: int, trend_id: str, trend_name: str) -> Watchlist:
         """Add a trend to a watchlist and return the updated watchlist."""
@@ -337,16 +385,30 @@ class WatchlistRepository:
         self.connection.commit()
         return self.get_watchlist(watchlist_id)  # type: ignore[return-value]
 
-    def list_alert_rules(self) -> list[AlertRule]:
+    def list_alert_rules(self, owner_user_id: int | None = None) -> list[AlertRule]:
         """Return all alert rules."""
 
-        rows = self.connection.execute(
-            """
-            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
-            FROM alert_rules
-            ORDER BY created_at DESC, id DESC
-            """
-        ).fetchall()
+        if owner_user_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT ar.id, ar.watchlist_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
+                FROM alert_rules ar
+                INNER JOIN watchlists w ON w.id = ar.watchlist_id
+                WHERE w.owner_user_id IS NULL
+                ORDER BY ar.created_at DESC, ar.id DESC
+                """
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT ar.id, ar.watchlist_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
+                FROM alert_rules ar
+                INNER JOIN watchlists w ON w.id = ar.watchlist_id
+                WHERE w.owner_user_id = ?
+                ORDER BY ar.created_at DESC, ar.id DESC
+                """,
+                (owner_user_id,),
+            ).fetchall()
         return [
             AlertRule(
                 id=row["id"],
@@ -426,20 +488,36 @@ class WatchlistRepository:
         )
         self.connection.commit()
 
-    def list_alert_events(self, unread_only: bool = False, limit: int = 50) -> list[AlertEventRecord]:
+    def list_alert_events(
+        self,
+        unread_only: bool = False,
+        limit: int = 50,
+        owner_user_id: int | None = None,
+    ) -> list[AlertEventRecord]:
         """Return recent alert events, optionally filtered to unread only."""
 
-        where_clause = "WHERE read = 0" if unread_only else ""
+        conditions: list[str] = []
+        parameters: list[object] = []
+        if unread_only:
+            conditions.append("ae.read = 0")
+        if owner_user_id is None:
+            conditions.append("w.owner_user_id IS NULL")
+        else:
+            conditions.append("w.owner_user_id = ?")
+            parameters.append(owner_user_id)
+        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+        parameters.append(limit)
         rows = self.connection.execute(
             f"""
-            SELECT id, rule_id, watchlist_id, trend_id, trend_name, rule_type,
-                   threshold, current_value, message, triggered_at, read
-            FROM alert_events
+            SELECT ae.id, ae.rule_id, ae.watchlist_id, ae.trend_id, ae.trend_name, ae.rule_type,
+                   ae.threshold, ae.current_value, ae.message, ae.triggered_at, ae.read
+            FROM alert_events ae
+            INNER JOIN watchlists w ON w.id = ae.watchlist_id
             {where_clause}
-            ORDER BY triggered_at DESC, id DESC
+            ORDER BY ae.triggered_at DESC, ae.id DESC
             LIMIT ?
             """,
-            (limit,),
+            tuple(parameters),
         ).fetchall()
         return [
             AlertEventRecord(
@@ -458,16 +536,40 @@ class WatchlistRepository:
             for row in rows
         ]
 
-    def mark_alerts_read(self, event_ids: list[int]) -> int:
+    def mark_alerts_read(self, event_ids: list[int], owner_user_id: int | None = None) -> int:
         """Mark alert events as read. Returns the number of rows updated."""
 
         if not event_ids:
             return 0
         placeholders = ",".join("?" for _ in event_ids)
-        cursor = self.connection.execute(
-            f"UPDATE alert_events SET read = 1 WHERE id IN ({placeholders})",
-            event_ids,
-        )
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                f"""
+                UPDATE alert_events
+                SET read = 1
+                WHERE id IN (
+                    SELECT ae.id
+                    FROM alert_events ae
+                    INNER JOIN watchlists w ON w.id = ae.watchlist_id
+                    WHERE ae.id IN ({placeholders}) AND w.owner_user_id IS NULL
+                )
+                """,
+                event_ids,
+            )
+        else:
+            cursor = self.connection.execute(
+                f"""
+                UPDATE alert_events
+                SET read = 1
+                WHERE id IN (
+                    SELECT ae.id
+                    FROM alert_events ae
+                    INNER JOIN watchlists w ON w.id = ae.watchlist_id
+                    WHERE ae.id IN ({placeholders}) AND w.owner_user_id = ?
+                )
+                """,
+                [*event_ids, owner_user_id],
+            )
         self.connection.commit()
         return cursor.rowcount
 
@@ -582,6 +684,7 @@ class WatchlistRepository:
         return Watchlist(
             id=row["id"],
             name=row["name"],
+            owner_user_id=row["owner_user_id"],
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
             items=[

@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -156,3 +157,26 @@ class APITests(unittest.TestCase):
             headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
         )
         self.assertIn("access-control-allow-origin", response.headers)
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_watchlists_are_scoped_to_authenticated_user(self) -> None:
+        first = TestClient(self.app)
+        second = TestClient(self.app)
+
+        first.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        second.post("/api/v1/auth/register", json={"username": "owner2", "password": "password123"})
+
+        first.post("/api/v1/watchlists", json={"name": "Owner One"})
+        second.post("/api/v1/watchlists", json={"name": "Owner Two"})
+
+        first_payload = first.get("/api/v1/watchlists").json()
+        second_payload = second.get("/api/v1/watchlists").json()
+
+        self.assertEqual(
+            {watchlist["name"] for watchlist in first_payload["watchlists"]},
+            {"Core Watchlist", "Owner One"},
+        )
+        self.assertEqual(
+            {watchlist["name"] for watchlist in second_payload["watchlists"]},
+            {"Core Watchlist", "Owner Two"},
+        )

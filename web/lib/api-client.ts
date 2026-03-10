@@ -7,6 +7,10 @@
 
 const API_BASE_URL = process.env.TREND_FRIEND_API_URL ?? "http://localhost:8000";
 
+export type ApiRequestOptions = {
+  headers?: HeadersInit;
+};
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -17,11 +21,14 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+export async function apiGet<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const url = `${API_BASE_URL}/api/v1${path}`;
   const response = await fetch(url, {
     cache: "no-store",
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      ...options.headers,
+    },
   });
   if (!response.ok) {
     throw new ApiError(response.status, `API ${path} returned ${response.status}`);
@@ -29,7 +36,7 @@ export async function apiGet<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+export async function apiPost<T>(path: string, body: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const url = `${API_BASE_URL}/api/v1${path}`;
   const response = await fetch(url, {
     method: "POST",
@@ -37,6 +44,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...options.headers,
     },
     body: JSON.stringify(body),
   });

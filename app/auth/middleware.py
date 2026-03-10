@@ -10,11 +10,13 @@ from fastapi import Depends, HTTPException, Request
 
 from app.api.dependencies import get_db
 from app.auth.repository import UserRepository
-from app.auth.tokens import hash_api_key
+from app.auth.tokens import hash_api_key, hash_session_token
 from app.models import User
 
+SESSION_COOKIE_NAME = "tf_session"
 
-def _auth_enabled() -> bool:
+
+def auth_enabled() -> bool:
     """Check whether authentication is turned on via environment variable."""
 
     return os.getenv("TREND_FRIEND_AUTH_ENABLED", "false").lower() == "true"
@@ -33,7 +35,7 @@ def get_current_user(
     When auth is disabled, returns None (all routes are public).
     """
 
-    if not _auth_enabled():
+    if not auth_enabled():
         return None
 
     auth_header = request.headers.get("Authorization", "")
@@ -42,13 +44,17 @@ def get_current_user(
         if token:
             return _authenticate_api_key(token, db)
 
+    session_token = request.cookies.get(SESSION_COOKIE_NAME)
+    if session_token:
+        return _authenticate_session(session_token, db)
+
     raise HTTPException(status_code=401, detail="Authentication required")
 
 
 def require_auth(user: Optional[User] = Depends(get_current_user)) -> User:
     """Dependency that requires authentication when auth is enabled."""
 
-    if not _auth_enabled():
+    if not auth_enabled():
         # When auth is disabled, return a synthetic admin user
         return User(
             id=0,
@@ -85,4 +91,21 @@ def _authenticate_api_key(token: str, db: sqlite3.Connection) -> User:
         raise HTTPException(status_code=401, detail="User not found")
 
     user_repo.touch_api_key(api_key.id)
+    return user
+
+
+def _authenticate_session(token: str, db: sqlite3.Connection) -> User:
+    """Validate a session cookie and return its associated user."""
+
+    token_hash = hash_session_token(token)
+    user_repo = UserRepository(db)
+    session = user_repo.get_session_by_hash(token_hash)
+    if session is None:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+    user = user_repo.get_user_by_id(session.user_id)
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    user_repo.touch_session(session.id)
     return user

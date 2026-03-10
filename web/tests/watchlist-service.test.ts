@@ -58,6 +58,22 @@ test("listPublicWatchlists uses the API contract when API mode is enabled", asyn
   assert.deepEqual(payload, { apiPath: "/community/watchlists" });
 });
 
+test("listWatchlists forwards auth headers in API mode", async () => {
+  const payload = await listWatchlists({
+    apiEnabled: true,
+    apiHeaders: { cookie: "tf_session=session-token" },
+    apiGet: async <T,>(apiPath: string, options?: { headers?: HeadersInit }) => ({
+      apiPath,
+      cookie: (options?.headers as Record<string, string> | undefined)?.cookie ?? null,
+    } as T),
+  });
+
+  assert.deepEqual(payload, {
+    apiPath: "/watchlists",
+    cookie: "tf_session=session-token",
+  });
+});
+
 test("listAlerts uses the CLI fallback instead of returning an empty list", async () => {
   const payload = await listAlerts(true, {
     apiEnabled: false,

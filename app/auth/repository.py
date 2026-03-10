@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime
 
-from app.models import ApiKey, User
+from app.models import ApiKey, User, UserSession
 
 
 class UserRepository:
@@ -140,6 +140,66 @@ class UserRepository:
         )
         self.connection.commit()
 
+    def create_session(self, user_id: int, token_hash: str) -> UserSession:
+        """Create and return a new user session."""
+
+        cursor = self.connection.execute(
+            """
+            INSERT INTO user_sessions (user_id, token_hash)
+            VALUES (?, ?)
+            """,
+            (user_id, token_hash),
+        )
+        self.connection.commit()
+        return self.get_session_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
+
+    def get_session_by_id(self, session_id: int) -> UserSession | None:
+        """Return a session by id."""
+
+        row = self.connection.execute(
+            """
+            SELECT id, user_id, token_hash, created_at, last_used_at, revoked
+            FROM user_sessions WHERE id = ?
+            """,
+            (session_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._session_from_row(row)
+
+    def get_session_by_hash(self, token_hash: str) -> UserSession | None:
+        """Return an active session by token hash."""
+
+        row = self.connection.execute(
+            """
+            SELECT id, user_id, token_hash, created_at, last_used_at, revoked
+            FROM user_sessions
+            WHERE token_hash = ? AND revoked = 0
+            """,
+            (token_hash,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._session_from_row(row)
+
+    def touch_session(self, session_id: int) -> None:
+        """Update the last_used_at timestamp for a session."""
+
+        self.connection.execute(
+            "UPDATE user_sessions SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (session_id,),
+        )
+        self.connection.commit()
+
+    def revoke_session_by_hash(self, token_hash: str) -> None:
+        """Revoke a session by its token hash."""
+
+        self.connection.execute(
+            "UPDATE user_sessions SET revoked = 1 WHERE token_hash = ?",
+            (token_hash,),
+        )
+        self.connection.commit()
+
     @staticmethod
     def _user_from_row(row: sqlite3.Row) -> User:
         return User(
@@ -159,6 +219,17 @@ class UserRepository:
             key_hash=row["key_hash"],
             key_prefix=row["key_prefix"],
             name=row["name"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+            last_used_at=datetime.fromisoformat(row["last_used_at"]) if row["last_used_at"] else None,
+            revoked=bool(row["revoked"]),
+        )
+
+    @staticmethod
+    def _session_from_row(row: sqlite3.Row) -> UserSession:
+        return UserSession(
+            id=row["id"],
+            user_id=row["user_id"],
+            token_hash=row["token_hash"],
             created_at=datetime.fromisoformat(row["created_at"]),
             last_used_at=datetime.fromisoformat(row["last_used_at"]) if row["last_used_at"] else None,
             revoked=bool(row["revoked"]),

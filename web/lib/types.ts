@@ -328,9 +328,19 @@ export type WatchlistShare = {
   createdAt: string;
 };
 
+export type AuthUser = {
+  id: number;
+  username: string;
+  displayName: string;
+  isAdmin: boolean;
+  createdAt: string;
+};
+
 export type Watchlist = {
   id: number;
   name: string;
+  ownerUserId: number | null;
+  ownedByCurrentUser: boolean;
   createdAt: string;
   updatedAt: string;
   items: WatchlistItem[];
@@ -359,6 +369,8 @@ export type AlertMatch = {
 };
 
 export type WatchlistResponse = {
+  authEnabled?: boolean;
+  currentUser?: AuthUser | null;
   watchlists: Watchlist[];
   alerts: AlertRule[];
   matches: AlertMatch[];
@@ -409,4 +421,9 @@ export type AlertEvent = {
 
 export type AlertEventsResponse = {
   alerts: AlertEvent[];
+};
+
+export type AuthStatusResponse = {
+  authEnabled: boolean;
+  user: AuthUser | null;
 };

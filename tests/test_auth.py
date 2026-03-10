@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import unittest
+from unittest.mock import patch
 
 from app.auth.passwords import hash_password, verify_password
 from app.auth.tokens import generate_api_key, generate_session_token, hash_api_key
@@ -184,3 +185,19 @@ class AuthAPITests(unittest.TestCase):
         response = self.client.post("/api/v1/auth/register", json={"username": "user2", "password": "password123"})
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.json()["user"]["isAdmin"])
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_me_uses_session_cookie(self) -> None:
+        self.client.post("/api/v1/auth/register", json={"username": "user1", "password": "password123"})
+        response = self.client.get("/api/v1/auth/me")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["user"]["username"], "user1")
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_logout_revokes_session_cookie(self) -> None:
+        self.client.post("/api/v1/auth/register", json={"username": "user1", "password": "password123"})
+        response = self.client.post("/api/v1/auth/logout")
+        self.assertEqual(response.status_code, 200)
+
+        me_response = self.client.get("/api/v1/auth/me")
+        self.assertEqual(me_response.status_code, 401)

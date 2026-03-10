@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ApiError } from "@/lib/api-client";
+import { buildForwardedAuthHeaders } from "@/lib/server/forward-auth";
 import { listWatchlists, mutateWatchlists, WatchlistServiceError, type WatchlistMutationBody } from "@/lib/server/watchlist-service";
 
 type WatchlistRouteDependencies = {
@@ -9,11 +10,13 @@ type WatchlistRouteDependencies = {
 };
 
 export async function handleWatchlistsGet(
-  _request?: Request,
+  request?: Request,
   dependencies: WatchlistRouteDependencies = { listWatchlists, mutateWatchlists },
 ) {
   try {
-    const payload = await dependencies.listWatchlists();
+    const payload = await dependencies.listWatchlists({
+      apiHeaders: request ? buildForwardedAuthHeaders(request) : undefined,
+    });
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Watchlist request failed";
@@ -33,7 +36,9 @@ export async function handleWatchlistsPost(
 ) {
   try {
     const body = (await request.json()) as WatchlistMutationBody;
-    const payload = await dependencies.mutateWatchlists(body);
+    const payload = await dependencies.mutateWatchlists(body, {
+      apiHeaders: buildForwardedAuthHeaders(request),
+    });
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Watchlist request failed";

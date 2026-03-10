@@ -17,6 +17,7 @@ import {
 import type {
   AlertEvent,
   AlertEventsResponse,
+  AuthStatusResponse,
   DashboardData,
   PublicWatchlistSummary,
   PublicWatchlistsResponse,
@@ -59,6 +60,13 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(null);
   const [watchlistError, setWatchlistError] = useState<string | null>(null);
   const [watchlistName, setWatchlistName] = useState("");
+  const [authStatus, setAuthStatus] = useState<AuthStatusResponse>({ authEnabled: false, user: null });
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authUsername, setAuthUsername] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authDisplayName, setAuthDisplayName] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authPending, setAuthPending] = useState(false);
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
@@ -136,6 +144,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   }
 
   useEffect(() => {
+    void loadAuthStatus();
     void loadWatchlists();
     void loadAlertEvents();
     void loadPublicWatchlists();
@@ -218,12 +227,29 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         const payload = await response.json().catch(() => ({})) as { error?: string };
         throw new Error(payload.error ?? `Watchlists unavailable (${response.status})`);
       }
-      setWatchlistData((await response.json()) as WatchlistResponse);
+      const payload = (await response.json()) as WatchlistResponse;
+      setWatchlistData(payload);
+      setAuthStatus({
+        authEnabled: payload.authEnabled ?? false,
+        user: payload.currentUser ?? null,
+      });
       setWatchlistError(null);
     } catch (error) {
       setWatchlistError(error instanceof Error ? error.message : "Watchlists unavailable");
     } finally {
       setWatchlistLoading(false);
+    }
+  }
+
+  async function loadAuthStatus() {
+    try {
+      const response = await fetch("/api/auth/me", { cache: "no-store" });
+      if (!response.ok) {
+        return;
+      }
+      setAuthStatus((await response.json()) as AuthStatusResponse);
+    } catch {
+      // ignore auth lookup failures in local mode
     }
   }
 
@@ -248,6 +274,56 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       setWatchlistError("Could not create watchlist");
     } finally {
       setActionPending(false);
+    }
+  }
+
+  async function handleAuthSubmit() {
+    if (authUsername.trim().length === 0 || authPassword.length === 0) {
+      setAuthError("Username and password are required");
+      return;
+    }
+    setAuthPending(true);
+    setAuthError(null);
+    try {
+      const response = await fetch(`/api/auth/${authMode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: authUsername.trim(),
+          password: authPassword,
+          displayName: authDisplayName.trim() || authUsername.trim(),
+        }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({})) as { error?: string };
+        setAuthError(payload.error ?? `${authMode === "login" ? "Login" : "Registration"} failed`);
+        return;
+      }
+      const payload = (await response.json()) as AuthStatusResponse;
+      setAuthStatus(payload);
+      setAuthPassword("");
+      setWatchlistError(null);
+      await loadWatchlists();
+      await loadAlertEvents();
+      showActionNotice(authMode === "login" ? "Signed in" : "Account created");
+    } finally {
+      setAuthPending(false);
+    }
+  }
+
+  async function handleLogout() {
+    setAuthPending(true);
+    setAuthError(null);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setAuthStatus({ authEnabled: authStatus.authEnabled, user: null });
+      setWatchlistData(null);
+      setAlertEvents([]);
+      setAlertCount(0);
+      showActionNotice("Signed out");
+      await loadWatchlists();
+    } finally {
+      setAuthPending(false);
     }
   }
 
@@ -379,6 +455,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   }
 
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
+  const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
 
   return (
     <main className="dashboard-page">
@@ -757,17 +834,84 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           <div className="snapshot-list">
             <section className="snapshot-card">
               <header>
+                <strong>Identity</strong>
+                <span>{authStatus.authEnabled ? (authStatus.user ? "Signed in" : "Required") : "Local mode"}</span>
+              </header>
+              {authStatus.authEnabled ? (
+                authStatus.user ? (
+                  <>
+                    <p className="source-summary-copy">
+                      {authStatus.user.displayName} · @{authStatus.user.username}
+                    </p>
+                    <Button className="mini-action-button" disabled={authPending} onClick={() => void handleLogout()}>
+                      {authPending ? "Signing out..." : "Sign out"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="watchlist-form watchlist-form-stack">
+                      <Input
+                        className="text-input"
+                        placeholder="Username"
+                        value={authUsername}
+                        onChange={(event) => setAuthUsername(event.target.value)}
+                      />
+                      {authMode === "register" ? (
+                        <Input
+                          className="text-input"
+                          placeholder="Display name"
+                          value={authDisplayName}
+                          onChange={(event) => setAuthDisplayName(event.target.value)}
+                        />
+                      ) : null}
+                      <Input
+                        className="text-input"
+                        placeholder="Password"
+                        type="password"
+                        value={authPassword}
+                        onChange={(event) => setAuthPassword(event.target.value)}
+                      />
+                    </div>
+                    <div className="watchlist-form">
+                      <Button className="mini-action-button" disabled={authPending} onClick={() => void handleAuthSubmit()}>
+                        {authPending ? (authMode === "login" ? "Signing in..." : "Creating...") : authMode === "login" ? "Sign in" : "Register"}
+                      </Button>
+                      <Button
+                        className="mini-action-button"
+                        disabled={authPending}
+                        onClick={() => {
+                          setAuthMode((current) => (current === "login" ? "register" : "login"));
+                          setAuthError(null);
+                        }}
+                      >
+                        {authMode === "login" ? "Need account" : "Use login"}
+                      </Button>
+                    </div>
+                    {authError ? <p className="source-error-copy">{authError}</p> : null}
+                  </>
+                )
+              ) : (
+                <p className="empty-state-hint">Authentication is disabled in local-first mode. Watchlists stay machine-local.</p>
+              )}
+            </section>
+
+            <section className="snapshot-card">
+              <header>
                 <strong>{defaultWatchlist?.name ?? "Core Watchlist"}</strong>
                 <span>{watchlistLoading ? "Loading..." : `${defaultWatchlist?.items.length ?? 0} tracked`}</span>
               </header>
+              {watchlistsRequireAuth ? (
+                <p className="empty-state-hint">Sign in to create watchlists, alerts, and share links.</p>
+              ) : null}
               <div className="watchlist-form">
                 <Input
                   className="text-input"
                   placeholder="New watchlist"
                   value={watchlistName}
                   onChange={(event) => setWatchlistName(event.target.value)}
+                  disabled={watchlistsRequireAuth}
                 />
-                <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleCreateWatchlist()}>
+                <Button className="mini-action-button" disabled={actionPending || watchlistsRequireAuth} onClick={() => void handleCreateWatchlist()}>
                   Add
                 </Button>
               </div>
@@ -779,7 +923,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <NumberField.Increment className="number-button">+</NumberField.Increment>
                   </NumberField.Group>
                 </NumberField.Root>
-                <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleCreateAlert()}>
+                <Button className="mini-action-button" disabled={actionPending || watchlistsRequireAuth} onClick={() => void handleCreateAlert()}>
                   Alert
                 </Button>
               </div>
@@ -787,14 +931,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <div className="watchlist-form">
                   <Button
                     className="mini-action-button"
-                    disabled={actionPending}
+                    disabled={actionPending || watchlistsRequireAuth}
                     onClick={() => void handleCreateShare(defaultWatchlist, false)}
                   >
                     {actionPending ? "Sharing..." : "Private link"}
                   </Button>
                   <Button
                     className="mini-action-button"
-                    disabled={actionPending}
+                    disabled={actionPending || watchlistsRequireAuth}
                     onClick={() => void handleCreateShare(defaultWatchlist, true)}
                   >
                     {actionPending ? "Sharing..." : "Public link"}

@@ -17,8 +17,9 @@ type JsonValue = Record<string, unknown>;
 
 type ServiceDependencies = {
   apiEnabled?: boolean;
-  apiGet?: <T>(path: string) => Promise<T>;
-  apiPost?: <T>(path: string, body: unknown) => Promise<T>;
+  apiGet?: <T>(path: string, options?: { headers?: HeadersInit }) => Promise<T>;
+  apiPost?: <T>(path: string, body: unknown, options?: { headers?: HeadersInit }) => Promise<T>;
+  apiHeaders?: HeadersInit;
   runScript?: (...args: string[]) => Promise<JsonValue>;
 };
 
@@ -49,7 +50,9 @@ export async function runWatchlistScript(...args: string[]): Promise<JsonValue> 
 
 export async function listWatchlists(dependencies: ServiceDependencies = {}): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
-    return (dependencies.apiGet ?? defaultApiGet)("/watchlists");
+    return (dependencies.apiGet ?? defaultApiGet)("/watchlists", {
+      headers: dependencies.apiHeaders,
+    });
   }
   return (dependencies.runScript ?? runWatchlistScript)("list");
 }
@@ -61,7 +64,7 @@ export async function mutateWatchlists(
   if (dependencies.apiEnabled ?? hasApi()) {
     const apiPost = dependencies.apiPost ?? defaultApiPost;
     if (body.action === "create-watchlist") {
-      return apiPost("/watchlists", { name: body.name });
+      return apiPost("/watchlists", { name: body.name }, { headers: dependencies.apiHeaders });
     }
     if (body.action === "add-item") {
       return apiPost("/watchlists/items", {
@@ -69,13 +72,13 @@ export async function mutateWatchlists(
         watchlistId: body.watchlistId,
         trendId: body.trendId,
         trendName: body.trendName,
-      });
+      }, { headers: dependencies.apiHeaders });
     }
     return apiPost("/watchlists/items", {
       action: "remove",
       watchlistId: body.watchlistId,
       trendId: body.trendId,
-    });
+    }, { headers: dependencies.apiHeaders });
   }
 
   const runScript = dependencies.runScript ?? runWatchlistScript;
@@ -108,7 +111,9 @@ export async function listAlerts(
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
     const path = unreadOnly ? "/alerts?unread_only=true" : "/alerts";
-    return (dependencies.apiGet ?? defaultApiGet)(path);
+    return (dependencies.apiGet ?? defaultApiGet)(path, {
+      headers: dependencies.apiHeaders,
+    });
   }
   return (dependencies.runScript ?? runWatchlistScript)(
     "list-alerts",
@@ -123,9 +128,9 @@ export async function mutateAlerts(
   if (dependencies.apiEnabled ?? hasApi()) {
     const apiPost = dependencies.apiPost ?? defaultApiPost;
     if ("action" in body && body.action === "mark-read") {
-      return apiPost("/alerts/read", { eventIds: body.eventIds });
+      return apiPost("/alerts/read", { eventIds: body.eventIds }, { headers: dependencies.apiHeaders });
     }
-    return apiPost("/alerts/rules", body);
+    return apiPost("/alerts/rules", body, { headers: dependencies.apiHeaders });
   }
 
   if ("action" in body && body.action === "mark-read") {
@@ -154,7 +159,9 @@ export async function shareWatchlist(
   dependencies: ServiceDependencies = {},
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
-    return (dependencies.apiPost ?? defaultApiPost)(`/watchlists/${watchlistId}/share`, { public: isPublic });
+    return (dependencies.apiPost ?? defaultApiPost)(`/watchlists/${watchlistId}/share`, { public: isPublic }, {
+      headers: dependencies.apiHeaders,
+    });
   }
   return ensureSuccessPayload(await (dependencies.runScript ?? runWatchlistScript)(
     "share-watchlist",
@@ -169,7 +176,9 @@ export async function getSharedWatchlist(
   dependencies: ServiceDependencies = {},
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
-    return (dependencies.apiGet ?? defaultApiGet)(`/shared/${token}`);
+    return (dependencies.apiGet ?? defaultApiGet)(`/shared/${token}`, {
+      headers: dependencies.apiHeaders,
+    });
   }
   return ensureSuccessPayload(await (dependencies.runScript ?? runWatchlistScript)("get-shared", "--token", token));
 }
@@ -178,19 +187,21 @@ export async function listPublicWatchlists(
   dependencies: ServiceDependencies = {},
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
-    return (dependencies.apiGet ?? defaultApiGet)("/community/watchlists");
+    return (dependencies.apiGet ?? defaultApiGet)("/community/watchlists", {
+      headers: dependencies.apiHeaders,
+    });
   }
   return (dependencies.runScript ?? runWatchlistScript)("list-public");
 }
 
-async function defaultApiGet<T>(apiPath: string): Promise<T> {
+async function defaultApiGet<T>(apiPath: string, options?: { headers?: HeadersInit }): Promise<T> {
   const { apiGet } = await import("@/lib/api-client");
-  return apiGet<T>(apiPath);
+  return apiGet<T>(apiPath, options);
 }
 
-async function defaultApiPost<T>(apiPath: string, body: unknown): Promise<T> {
+async function defaultApiPost<T>(apiPath: string, body: unknown, options?: { headers?: HeadersInit }): Promise<T> {
   const { apiPost } = await import("@/lib/api-client");
-  return apiPost<T>(apiPath, body);
+  return apiPost<T>(apiPath, body, options);
 }
 
 function ensureSuccessPayload(payload: JsonValue): JsonValue {

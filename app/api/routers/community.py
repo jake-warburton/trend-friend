@@ -9,7 +9,9 @@ from datetime import timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db, get_settings
+from app.auth.middleware import auth_enabled, require_auth
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
+from app.models import User
 from app.watchlists_payloads import (
     build_public_watchlists_payload,
     build_shared_watchlist_payload,
@@ -22,12 +24,13 @@ router = APIRouter(tags=["community"])
 def share_watchlist(
     watchlist_id: int,
     body: dict,
+    user: User = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db),
 ) -> dict:
     """Create a share link for a watchlist."""
 
     repo = WatchlistRepository(db)
-    watchlist = repo.get_watchlist(watchlist_id)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
     if watchlist is None:
         raise HTTPException(status_code=404, detail="Watchlist not found")
 
@@ -36,6 +39,7 @@ def share_watchlist(
     share = repo.create_share(
         watchlist_id=watchlist_id,
         share_token=token,
+        created_by=user.id if auth_enabled() else None,
         is_public=is_public,
     )
 

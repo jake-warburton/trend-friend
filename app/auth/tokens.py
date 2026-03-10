@@ -12,6 +12,12 @@ def generate_session_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+def hash_session_token(token: str) -> str:
+    """Hash a session token for lookup."""
+
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
 def generate_api_key() -> tuple[str, str, str]:
     """Generate an API key.
 

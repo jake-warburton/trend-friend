@@ -9,7 +9,9 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db
 from app.alerts.evaluate import SUPPORTED_RULE_TYPES
+from app.auth.middleware import auth_enabled, require_auth
 from app.data.repositories import WatchlistRepository
+from app.models import User
 
 
 def _to_utc_iso(value) -> str:
@@ -22,12 +24,17 @@ router = APIRouter(tags=["alerts"])
 def list_alerts(
     unread_only: bool = False,
     limit: int = 50,
+    user: User = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db),
 ) -> dict:
     """Return recent alert events."""
 
     repo = WatchlistRepository(db)
-    events = repo.list_alert_events(unread_only=unread_only, limit=limit)
+    events = repo.list_alert_events(
+        unread_only=unread_only,
+        limit=limit,
+        owner_user_id=user.id if auth_enabled() else None,
+    )
     return {
         "alerts": [
             {
@@ -51,6 +58,7 @@ def list_alerts(
 @router.post("/alerts/read")
 def mark_alerts_read(
     body: dict,
+    user: User = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db),
 ) -> dict:
     """Mark alert events as read."""
@@ -59,16 +67,16 @@ def mark_alerts_read(
     if not isinstance(event_ids, list) or not all(isinstance(i, int) for i in event_ids):
         raise HTTPException(status_code=422, detail="eventIds must be a list of integers")
     repo = WatchlistRepository(db)
-    updated = repo.mark_alerts_read(event_ids)
+    updated = repo.mark_alerts_read(event_ids, owner_user_id=user.id if auth_enabled() else None)
     return {"updated": updated}
 
 
 @router.get("/alerts/rules")
-def list_alert_rules(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_alert_rules(user: User = Depends(require_auth), db: sqlite3.Connection = Depends(get_db)) -> dict:
     """Return all configured alert rules."""
 
     repo = WatchlistRepository(db)
-    rules = repo.list_alert_rules()
+    rules = repo.list_alert_rules(owner_user_id=user.id if auth_enabled() else None)
     return {
         "rules": [
             {
@@ -88,6 +96,7 @@ def list_alert_rules(db: sqlite3.Connection = Depends(get_db)) -> dict:
 @router.post("/alerts/rules")
 def create_alert_rule(
     body: dict,
+    user: User = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db),
 ) -> dict:
     """Create a new alert rule."""
@@ -103,7 +112,7 @@ def create_alert_rule(
         raise HTTPException(status_code=422, detail=f"Unsupported rule type: {rule_type}")
 
     repo = WatchlistRepository(db)
-    watchlist = repo.get_watchlist(watchlist_id)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
     if watchlist is None:
         raise HTTPException(status_code=404, detail="Watchlist not found")
 

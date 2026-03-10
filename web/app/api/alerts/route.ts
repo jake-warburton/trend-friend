@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ApiError } from "@/lib/api-client";
+import { buildForwardedAuthHeaders } from "@/lib/server/forward-auth";
 import { listAlerts, mutateAlerts, WatchlistServiceError, type AlertMutationBody } from "@/lib/server/watchlist-service";
 
 type AlertRouteDependencies = {
@@ -15,7 +16,9 @@ export async function handleAlertsGet(
   try {
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unread_only") === "true";
-    const payload = await dependencies.listAlerts(unreadOnly);
+    const payload = await dependencies.listAlerts(unreadOnly, {
+      apiHeaders: buildForwardedAuthHeaders(request),
+    });
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Alert request failed";
@@ -35,7 +38,9 @@ export async function handleAlertsPost(
 ) {
   try {
     const body = (await request.json()) as AlertMutationBody;
-    const payload = await dependencies.mutateAlerts(body);
+    const payload = await dependencies.mutateAlerts(body, {
+      apiHeaders: buildForwardedAuthHeaders(request),
+    });
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Alert request failed";

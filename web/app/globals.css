@@ -624,6 +624,10 @@ input {
   margin-top: 8px;
 }
 
+.watchlist-form-stack {
+  grid-template-columns: 1fr;
+}
+
 .watchlist-form .mini-action-button + .mini-action-button {
   margin-left: 6px;
 }

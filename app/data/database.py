@@ -98,9 +98,11 @@ def initialize_database(connection: sqlite3.Connection) -> None:
 
         CREATE TABLE IF NOT EXISTS watchlists (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
+            owner_user_id INTEGER NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE CASCADE
         );
 
         CREATE TABLE IF NOT EXISTS watchlist_items (
@@ -156,6 +158,19 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         );
 
+        CREATE TABLE IF NOT EXISTS user_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_used_at TEXT NULL,
+            revoked INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_user_sessions_token_hash ON user_sessions (token_hash);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_watchlists_owner_name ON watchlists (owner_user_id, name);
+
         CREATE TABLE IF NOT EXISTS alert_events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             rule_id INTEGER NOT NULL,
@@ -172,6 +187,13 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         );
         """
     )
+    ensure_column(
+        connection,
+        table_name="watchlists",
+        column_name="owner_user_id",
+        column_sql="INTEGER NULL REFERENCES users(id) ON DELETE CASCADE",
+    )
+    migrate_watchlists_table(connection)
     ensure_column(
         connection,
         table_name="signals",
@@ -231,3 +253,47 @@ def ensure_column(
     connection.execute(
         f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}"
     )
+
+
+def migrate_watchlists_table(connection: sqlite3.Connection) -> None:
+    """Rebuild the watchlists table when it still uses the legacy global-unique name schema."""
+
+    index_rows = connection.execute("PRAGMA index_list(watchlists)").fetchall()
+    has_legacy_name_unique = any(
+        row["unique"] and row["origin"] == "u"
+        for row in index_rows
+    )
+    if not has_legacy_name_unique:
+        return
+
+    column_rows = connection.execute("PRAGMA table_info(watchlists)").fetchall()
+    has_owner_column = any(row["name"] == "owner_user_id" for row in column_rows)
+    owner_select = "owner_user_id" if has_owner_column else "NULL"
+
+    connection.execute("PRAGMA foreign_keys = OFF")
+    connection.execute("ALTER TABLE watchlists RENAME TO watchlists_legacy")
+    connection.execute(
+        """
+        CREATE TABLE watchlists (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            owner_user_id INTEGER NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        f"""
+        INSERT INTO watchlists (id, name, owner_user_id, created_at, updated_at)
+        SELECT id, name, {owner_select}, created_at, updated_at
+        FROM watchlists_legacy
+        """
+    )
+    connection.execute("DROP TABLE watchlists_legacy")
+    connection.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_watchlists_owner_name ON watchlists (owner_user_id, name)"
+    )
+    connection.execute("PRAGMA foreign_keys = ON")
+    connection.commit()

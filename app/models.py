@@ -295,6 +295,7 @@ class Watchlist:
 
     id: int
     name: str
+    owner_user_id: int | None
     created_at: datetime
     updated_at: datetime
     items: list[WatchlistItem]
@@ -363,6 +364,18 @@ class ApiKey:
     key_hash: str
     key_prefix: str
     name: str
+    created_at: datetime
+    last_used_at: datetime | None
+    revoked: bool
+
+
+@dataclass(frozen=True)
+class UserSession:
+    """Session token persisted for browser-backed authentication."""
+
+    id: int
+    user_id: int
+    token_hash: str
     created_at: datetime
     last_used_at: datetime | None
     revoked: bool

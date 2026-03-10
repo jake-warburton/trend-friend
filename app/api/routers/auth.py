@@ -4,20 +4,20 @@ from __future__ import annotations
 
 import sqlite3
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
-from app.auth.middleware import require_admin, require_auth
+from app.auth.middleware import SESSION_COOKIE_NAME, require_admin, require_auth
 from app.auth.passwords import hash_password, verify_password
 from app.auth.repository import UserRepository
-from app.auth.tokens import generate_api_key, generate_session_token
+from app.auth.tokens import generate_api_key, generate_session_token, hash_session_token
 from app.models import User
 
 router = APIRouter(tags=["auth"])
 
 
 @router.post("/auth/register")
-def register_user(body: dict, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def register_user(body: dict, response: Response, db: sqlite3.Connection = Depends(get_db)) -> dict:
     """Register a new user account."""
 
     username = body.get("username", "").strip()
@@ -46,6 +46,8 @@ def register_user(body: dict, db: sqlite3.Connection = Depends(get_db)) -> dict:
     )
 
     token = generate_session_token()
+    repo.create_session(user.id, hash_session_token(token))
+    _set_session_cookie(response, token)
     return {
         "user": _user_response(user),
         "token": token,
@@ -53,7 +55,7 @@ def register_user(body: dict, db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.post("/auth/login")
-def login_user(body: dict, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def login_user(body: dict, response: Response, db: sqlite3.Connection = Depends(get_db)) -> dict:
     """Authenticate with username and password."""
 
     username = body.get("username", "").strip()
@@ -68,6 +70,8 @@ def login_user(body: dict, db: sqlite3.Connection = Depends(get_db)) -> dict:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = generate_session_token()
+    repo.create_session(user.id, hash_session_token(token))
+    _set_session_cookie(response, token)
     return {
         "user": _user_response(user),
         "token": token,
@@ -79,6 +83,22 @@ def get_current_user_info(user: User = Depends(require_auth)) -> dict:
     """Return the current authenticated user."""
 
     return {"user": _user_response(user)}
+
+
+@router.post("/auth/logout")
+def logout_user(
+    request: Request,
+    response: Response,
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Revoke the current session cookie when present."""
+
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if token:
+        repo = UserRepository(db)
+        repo.revoke_session_by_hash(hash_session_token(token))
+    response.delete_cookie(SESSION_COOKIE_NAME, path="/", httponly=True, samesite="lax")
+    return {"ok": True}
 
 
 @router.post("/auth/api-keys")
@@ -163,3 +183,14 @@ def _user_response(user: User) -> dict:
         "isAdmin": user.is_admin,
         "createdAt": user.created_at.isoformat(),
     }
+
+
+def _set_session_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        SESSION_COOKIE_NAME,
+        token,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        path="/",
+    )
