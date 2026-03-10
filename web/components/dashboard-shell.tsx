@@ -14,6 +14,7 @@ import {
   hasOverviewChanged,
 } from "@/lib/auto-refresh";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
+import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/trends";
 
 import type {
   AlertEvent,
@@ -784,6 +785,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </NumberField.Group>
           </NumberField.Root>
         </label>
+
+        <div className="filter-field filter-field-action">
+          <button className="export-button" onClick={() => downloadTrendsCsv()} type="button">
+            Export CSV
+          </button>
+        </div>
       </section>
 
       {refreshError ? <p className="error-banner">{refreshError}</p> : null}
@@ -1230,6 +1237,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <Button className="mini-action-button" disabled={actionPending || watchlistsRequireAuth} onClick={() => void handleCreateWatchlist()}>
                   Add
                 </Button>
+                {defaultWatchlist ? (
+                  <button className="export-button export-button-small" onClick={() => downloadWatchlistCsv(defaultWatchlist.id)} type="button">
+                    Export
+                  </button>
+                ) : null}
               </div>
               <div className="watchlist-form">
                 <NumberField.Root min={1} value={alertThreshold} onValueChange={setAlertThreshold}>

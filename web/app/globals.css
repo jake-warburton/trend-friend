@@ -1284,6 +1284,43 @@ input {
   flex-wrap: wrap;
 }
 
+.export-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 140ms, color 140ms, border-color 140ms;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  background: var(--surface-strong);
+  color: var(--copy);
+  border-color: var(--accent);
+}
+
+.export-button:active {
+  background: var(--accent-soft);
+}
+
+.export-button-small {
+  padding: 4px 10px;
+  font-size: 0.66rem;
+}
+
+.filter-field-action {
+  display: flex;
+  align-items: flex-end;
+}
+
 .explorer-expand-toggle {
   display: inline-flex;
   align-items: center;
