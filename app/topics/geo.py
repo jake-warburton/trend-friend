@@ -7,6 +7,12 @@ from dataclasses import dataclass
 
 from app.models import RawSourceItem
 
+# Centralized confidence thresholds for geo tagging quality control.
+GEO_CONFIDENCE_EXPLICIT = 0.95
+GEO_CONFIDENCE_INFERRED_REGION = 0.65
+GEO_CONFIDENCE_INFERRED_BROAD = 0.55
+GEO_CONFIDENCE_MINIMUM = 0.4
+
 COUNTRY_ALIASES: dict[str, tuple[str | None, str | None]] = {
     "united states": ("US", "US"),
     "u.s.": ("US", "US"),
@@ -70,7 +76,7 @@ def _geo_from_metadata(metadata: dict[str, str]) -> GeoAssignment | None:
         value = metadata.get(key, "").strip()
         if not value:
             continue
-        assignment = _assignment_from_value(value, detection_mode="explicit", confidence=0.95)
+        assignment = _assignment_from_value(value, detection_mode="explicit", confidence=GEO_CONFIDENCE_EXPLICIT)
         if assignment is not None:
             return assignment
     return None
@@ -85,7 +91,7 @@ def _geo_from_text(value: str) -> GeoAssignment | None:
                 country_code=country_code,
                 region=region,
                 detection_mode="inferred",
-                confidence=0.55 if region is None else 0.65,
+                confidence=GEO_CONFIDENCE_INFERRED_BROAD if country_code is None else GEO_CONFIDENCE_INFERRED_REGION,
             )
     return None
 

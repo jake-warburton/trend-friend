@@ -8,6 +8,13 @@ from datetime import datetime, timezone
 from app.models import NormalizedSignal, RawSourceItem
 from app.topics.cluster import aggregate_topic_signals, merge_similar_topics
 from app.topics.extract import build_signals_from_items, extract_candidate_topics
+from app.topics.geo import (
+    GEO_CONFIDENCE_EXPLICIT,
+    GEO_CONFIDENCE_INFERRED_BROAD,
+    GEO_CONFIDENCE_INFERRED_REGION,
+    GEO_CONFIDENCE_MINIMUM,
+    assign_geo_flags,
+)
 from app.topics.normalize import normalize_topic_name
 
 
@@ -168,6 +175,102 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(signals[0].geo_country_code, "GB")
         self.assertEqual(signals[0].geo_detection_mode, "inferred")
         self.assertIn("geo:region:London", signals[0].geo_flags)
+
+
+class GeoQualityControlTests(unittest.TestCase):
+    """Geo tagging should be conservative with confidence thresholds."""
+
+    def test_confidence_constants_are_ordered(self) -> None:
+        self.assertGreater(GEO_CONFIDENCE_EXPLICIT, GEO_CONFIDENCE_INFERRED_REGION)
+        self.assertGreater(GEO_CONFIDENCE_INFERRED_REGION, GEO_CONFIDENCE_INFERRED_BROAD)
+        self.assertGreater(GEO_CONFIDENCE_INFERRED_BROAD, GEO_CONFIDENCE_MINIMUM)
+
+    def test_explicit_metadata_gets_high_confidence(self) -> None:
+        item = RawSourceItem(
+            source="google_trends",
+            external_id="gt-1",
+            title="AI agents",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=100.0,
+            metadata={"region": "US"},
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_EXPLICIT)
+        self.assertEqual(result.detection_mode, "explicit")
+
+    def test_inferred_region_gets_medium_confidence(self) -> None:
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-1",
+            title="Tech hiring picks up in London",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_INFERRED_REGION)
+        self.assertEqual(result.detection_mode, "inferred")
+        self.assertEqual(result.country_code, "GB")
+
+    def test_inferred_broad_region_gets_lower_confidence(self) -> None:
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-2",
+            title="EV subsidies rise across Europe",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_INFERRED_BROAD)
+        self.assertIsNone(result.country_code)
+        self.assertEqual(result.region, "Europe")
+
+    def test_no_geo_for_ambiguous_text(self) -> None:
+        """Titles without geo references should return zero confidence."""
+        item = RawSourceItem(
+            source="hacker_news",
+            external_id="hn-1",
+            title="Show HN: Build serverless functions with Rust",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=50.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.confidence, 0.0)
+        self.assertIsNone(result.country_code)
+
+    def test_no_false_positive_for_us_substring(self) -> None:
+        """'us' should only match as a whole word, not inside 'focus' or 'bus'."""
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-3",
+            title="Focus on what matters: building a bus notification app",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.confidence, 0.0)
+
+    def test_no_false_positive_for_uk_substring(self) -> None:
+        """'uk' should not match inside 'ukulele'."""
+        item = RawSourceItem(
+            source="hacker_news",
+            external_id="hn-2",
+            title="A ukulele tuner written in WebAssembly",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=20.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.confidence, 0.0)
+
+    def test_all_inferred_confidences_exceed_minimum(self) -> None:
+        """Every inferred assignment must clear the minimum threshold."""
+        self.assertGreaterEqual(GEO_CONFIDENCE_INFERRED_BROAD, GEO_CONFIDENCE_MINIMUM)
+        self.assertGreaterEqual(GEO_CONFIDENCE_INFERRED_REGION, GEO_CONFIDENCE_MINIMUM)
 
 
 if __name__ == "__main__":

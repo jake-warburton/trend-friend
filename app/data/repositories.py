@@ -905,6 +905,8 @@ class TrendScoreRepository:
     def get_topic_geo_summary(self, topic: str, limit: int = 5) -> list[TrendGeoSummary]:
         """Return aggregated location coverage for a topic."""
 
+        from app.topics.geo import GEO_CONFIDENCE_MINIMUM
+
         rows = self.connection.execute(
             """
             SELECT
@@ -918,11 +920,12 @@ class TrendScoreRepository:
             FROM signals
             WHERE topic = ?
               AND (geo_country_code IS NOT NULL OR geo_region IS NOT NULL)
+              AND geo_confidence >= ?
             GROUP BY geo_country_code, geo_region
             ORDER BY signal_count DESC, average_confidence DESC, geo_label ASC
             LIMIT ?
             """,
-            (topic, limit),
+            (topic, GEO_CONFIDENCE_MINIMUM, limit),
         ).fetchall()
         return [
             TrendGeoSummary(
