@@ -69,6 +69,22 @@ class TopicNormalizationTests(unittest.TestCase):
             ["vercel filesystem"],
         )
         self.assertEqual(extract_candidate_topics("JSLinux Now Supports x86_64"), ["jslinux"])
+        self.assertEqual(extract_candidate_topics("Two Years of Emacs Solo")[0], "emacs solo")
+        self.assertEqual(
+            extract_candidate_topics(
+                "Redox OS has adopted a Certificate of Origin policy and a strict no-LLM policy"
+            )[0],
+            "certificate origin",
+        )
+        self.assertEqual(
+            extract_candidate_topics("Show HN: I Was Here – Draw on street view, others can find your drawings")[0],
+            "street view",
+        )
+        self.assertEqual(extract_candidate_topics("Getting Started in Common Lisp")[0], "common lisp")
+        self.assertEqual(
+            extract_candidate_topics("Graphing how the 10k* most common English words define each other")[0],
+            "english words",
+        )
 
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

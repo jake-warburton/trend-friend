@@ -16,37 +16,56 @@ MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
 LOW_SIGNAL_BIGRAM_TOKENS = {
     "all",
+    "adopted",
     "away",
     "based",
     "becomes",
+    "can",
     "cost",
     "cross",
     "doesn",
+    "each",
     "everything",
     "extend",
     "extends",
     "film",
+    "find",
+    "getting",
+    "graphing",
+    "has",
     "hn",
+    "here",
     "its",
     "last",
     "legal",
     "legitimate",
     "launch",
     "list",
+    "matters",
     "men",
+    "most",
     "need",
     "now",
+    "opinionated",
+    "others",
     "per",
     "rules",
     "shuts",
     "show",
     "same",
+    "started",
     "supports",
     "successful",
+    "take",
+    "that",
     "t20",
+    "two",
     "use",
     "user",
+    "was",
     "walking",
+    "years",
+    "your",
 }
 
 
@@ -142,6 +161,14 @@ def infer_canonical_topics(tokens: list[str]) -> list[str]:
         inferred_topics.append("robotics")
     if "battery" in token_set and ("recycling" in token_set or "recovery" in token_set):
         inferred_topics.append("battery recycling")
+    if "certificate" in token_set and "origin" in token_set:
+        inferred_topics.append("certificate origin")
+    if "common" in token_set and "lisp" in token_set:
+        inferred_topics.append("common lisp")
+    if "english" in token_set and "words" in token_set:
+        inferred_topics.append("english words")
+    if "street" in token_set and "view" in token_set:
+        inferred_topics.append("street view")
     if "world" in token_set and "cup" in token_set:
         inferred_topics.append("world cup")
     if ("ai" in token_set or "openai" in token_set or "artificial" in token_set) and (
@@ -150,6 +177,8 @@ def infer_canonical_topics(tokens: list[str]) -> list[str]:
         inferred_topics.append("ai agents")
     if "copyleft" in token_set and "erosion" in token_set:
         inferred_topics.append("copyleft erosion")
+    if "stargate" in token_set and "data" in token_set:
+        inferred_topics.append("stargate data")
     return inferred_topics
 
 
