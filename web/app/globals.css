@@ -414,6 +414,12 @@ input {
   color: #ffca6e;
   background: rgba(255, 202, 110, 0.12);
   letter-spacing: 0.02em;
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 .refresh-status-copy {
@@ -432,22 +438,34 @@ input {
 }
 
 .refresh-button {
-  border-radius: var(--radius-pill);
-  padding: 8px 10px;
-  background: linear-gradient(135deg, #4250ff 0%, #14b8ff 100%);
-  color: white;
-  font-size: 0.74rem;
-  font-weight: 700;
-  box-shadow: 0 14px 40px rgba(62, 95, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  padding: 0;
+  background: var(--surface-strong);
+  color: var(--muted);
+  border: 1px solid var(--border);
 }
 
-.hero-action-wrap {
-  display: flex;
-  align-items: stretch;
+.refresh-button:hover {
+  color: var(--copy);
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
-.hero-action-wrap .refresh-button {
-  width: 100%;
+.refresh-icon {
+  display: block;
+}
+
+.refresh-icon-spin {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .refresh-button:hover,
@@ -572,6 +590,7 @@ input {
   margin: 10px 0 0;
   color: #ff9b9b;
   line-height: 1.5;
+  animation: notice-enter 200ms ease;
 }
 
 .action-success-notice {
@@ -582,6 +601,12 @@ input {
   color: #7fe0a7;
   font-size: 0.66rem;
   font-weight: 600;
+  animation: notice-enter 200ms ease;
+}
+
+@keyframes notice-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .empty-state-hint {
@@ -708,6 +733,7 @@ input {
   background: rgba(114, 22, 38, 0.9);
   color: #ffe3ea;
   font-size: 0.8rem;
+  animation: notice-enter 200ms ease;
 }
 
 .analytics-strip {
@@ -1143,6 +1169,16 @@ input {
 .explorer-list {
   display: grid;
   gap: 6px;
+  transition: opacity 180ms ease;
+}
+
+.explorer-list-pending {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.pulse-text {
+  animation: pulse-subtle 1.5s ease-in-out infinite;
 }
 
 .explorer-legend {

@@ -42,10 +42,15 @@ export function buildTrendScoreChartData(
     return data;
   }
 
-  const lastActualPoint = data[data.length - 1];
-  if (lastActualPoint) {
-    lastActualPoint.forecast = lastActualPoint.score;
+  // Include the last two actual points in the forecast series so the
+  // monotone spline has enough context to enter the forecast smoothly
+  // instead of creating a sharp corner at the junction. The first
+  // overlap point is stored in a hidden series so it provides curve
+  // context without drawing a visible line over the history.
+  if (data.length >= 2) {
+    data[data.length - 2].forecastHidden = data[data.length - 2].score;
   }
+  data[data.length - 1].forecast = data[data.length - 1].score;
 
   forecast.predictedScores.forEach((score, index) => {
     data.push({

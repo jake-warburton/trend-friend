@@ -5,15 +5,11 @@ import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
-import {
-  AUTO_REFRESH_INTERVAL_MS,
-  formatAutoRefreshStatus,
-  hasOverviewChanged,
-} from "@/lib/auto-refresh";
+import { hasOverviewChanged } from "@/lib/auto-refresh";
 import { getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
@@ -83,19 +79,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [actionPending, setActionPending] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(true);
   const [publicWatchlists, setPublicWatchlists] = useState<PublicWatchlistSummary[]>([]);
-  const [autoRefreshState, setAutoRefreshState] = useState<"idle" | "checking" | "refreshing" | "updated" | "error">("idle");
   const [overviewMeta, setOverviewMeta] = useState({
     generatedAt: initialData.overview.generatedAt,
     lastRunAt: initialData.overview.operations.lastRunAt,
   });
-  const [lastBackgroundUpdateAt, setLastBackgroundUpdateAt] = useState<number | null>(null);
   const [expandedTrendId, setExpandedTrendId] = useState<string | null>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
   const deferredKeyword = useDeferredValue(keyword);
-  const isPollingRef = useRef(false);
-  const hasMountedRef = useRef(false);
+
   const shareUsageSummary = useMemo(
     () => summarizeShareUsage(defaultWatchlist?.shares ?? []),
     [defaultWatchlist?.shares],
@@ -171,7 +164,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         setRefreshError(payload.error ?? "Refresh failed");
         return;
       }
-      setAutoRefreshState("refreshing");
       router.refresh();
     });
   }
@@ -190,74 +182,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   }, [filteredTrends, expandedTrendId]);
 
   useEffect(() => {
-    const currentOverview = {
-      generatedAt: overviewMeta.generatedAt,
-      operations: {
-        ...initialData.overview.operations,
-        lastRunAt: overviewMeta.lastRunAt,
-      },
-    };
-    const changed = hasOverviewChanged(currentOverview, initialData.overview);
     setOverviewMeta({
       generatedAt: initialData.overview.generatedAt,
       lastRunAt: initialData.overview.operations.lastRunAt,
     });
-    if (hasMountedRef.current && changed) {
-      setAutoRefreshState("updated");
-      setLastBackgroundUpdateAt(Date.now());
-    } else {
-      hasMountedRef.current = true;
-    }
-  }, [initialData.overview, overviewMeta.generatedAt, overviewMeta.lastRunAt]);
-
-  useEffect(() => {
-    async function pollOverview() {
-      if (isPollingRef.current || actionPending || isPending || document.hidden) {
-        return;
-      }
-
-      isPollingRef.current = true;
-      setAutoRefreshState((current) => (current === "refreshing" ? current : "checking"));
-      try {
-        const response = await fetch("/api/dashboard/overview", { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Dashboard overview unavailable");
-        }
-        const nextOverview = (await response.json()) as DashboardData["overview"];
-        const currentOverview = {
-          generatedAt: overviewMeta.generatedAt,
-          operations: {
-            ...nextOverview.operations,
-            lastRunAt: overviewMeta.lastRunAt,
-          },
-        };
-        if (hasOverviewChanged(currentOverview, nextOverview)) {
-          setOverviewMeta({
-            generatedAt: nextOverview.generatedAt,
-            lastRunAt: nextOverview.operations.lastRunAt,
-          });
-          setAutoRefreshState("refreshing");
-          startTransition(() => {
-            router.refresh();
-          });
-          return;
-        }
-        setAutoRefreshState((current) => (current === "updated" ? current : "idle"));
-      } catch {
-        setAutoRefreshState("error");
-      } finally {
-        isPollingRef.current = false;
-      }
-    }
-
-    const intervalId = window.setInterval(() => {
-      void pollOverview();
-    }, AUTO_REFRESH_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [actionPending, isPending, overviewMeta.generatedAt, overviewMeta.lastRunAt, router, startTransition]);
+  }, [initialData.overview]);
 
   useEffect(() => {
     setShareExpiryPreset(defaultShareExpiryPreset(defaultWatchlist));
@@ -667,9 +596,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             {isDataStale(overviewMeta.lastRunAt) && (
               <span className="stale-warning">Data may be stale</span>
             )}
-            <span className="refresh-status-copy">
-              {formatAutoRefreshStatus(autoRefreshState, lastBackgroundUpdateAt)}
-            </span>
           </article>
           <div className="stat-card">
             <span>Tracked</span>
@@ -687,11 +613,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <span>Avg score</span>
             <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
           </div>
-          <div className="hero-action-wrap">
-            <Button className="refresh-button" disabled={isPending} onClick={handleRefresh}>
-              {isPending ? "Refreshing..." : "Refresh"}
-            </Button>
-          </div>
+          <Button className="refresh-button" disabled={isPending} onClick={handleRefresh} aria-label={isPending ? "Refreshing" : "Refresh data"}>
+            <svg className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            </svg>
+          </Button>
         </div>
       </section>
 
@@ -801,15 +727,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             {hideRecurring ? "Hiding recurring" : "Hide recurring"}
           </button>
         </label>
-
-        <div className="filter-field filter-field-action">
-          <button className="export-button" onClick={() => downloadTrendsCsv()} type="button">
-            Export CSV
-          </button>
-        </div>
       </section>
 
-      {refreshError ? <p className="error-banner">{refreshError}</p> : null}
+      {refreshError ? <p className="error-banner" role="alert">{refreshError}</p> : null}
 
       <section className="analytics-strip">
         <article className="analytics-card">
@@ -950,7 +870,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               <p>Lower the minimum score or broaden the keyword and source filters.</p>
             </div>
           ) : (
-            <div className="explorer-list">
+            <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
               <div className="explorer-legend" aria-hidden="true">
                 <span>Trend</span>
                 <span>Pos</span>
@@ -1260,7 +1180,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <section className="snapshot-card">
               <header>
                 <strong>{defaultWatchlist?.name ?? "Core Watchlist"}</strong>
-                <span>{watchlistLoading ? "Loading..." : `${defaultWatchlist?.items.length ?? 0} tracked`}</span>
+                <span>{watchlistLoading ? <span className="pulse-text">Loading\u2026</span> : `${defaultWatchlist?.items.length ?? 0} tracked`}</span>
               </header>
               {watchlistsRequireAuth ? (
                 <p className="empty-state-hint">Sign in to create watchlists, alerts, and share links.</p>
@@ -1345,9 +1265,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 </div>
                 </>
               ) : null}
-              {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
-              {actionNotice ? <p className="action-success-notice">{actionNotice}</p> : null}
-              {shareNotice ? <p className="source-summary-copy">{shareNotice}</p> : null}
+              <div aria-live="polite">
+                {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
+                {actionNotice ? <p className="action-success-notice">{actionNotice}</p> : null}
+                {shareNotice ? <p className="source-summary-copy">{shareNotice}</p> : null}
+              </div>
               {defaultWatchlist && defaultWatchlist.shares.length > 0 ? (
                 <div className="watchlist-share-analytics">
                   <article className="watchlist-share-analytics-card">
