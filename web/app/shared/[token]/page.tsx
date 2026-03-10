@@ -51,7 +51,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
   );
 }
 
-async function loadSharedWatchlist(token: string): Promise<SharedWatchlistResponse | null> {
+export async function loadSharedWatchlist(token: string): Promise<SharedWatchlistResponse | null> {
   const response = await fetch(`${await getBaseUrl()}/api/shared/${token}`, {
     cache: "no-store",
   });
@@ -65,7 +65,7 @@ async function loadSharedWatchlist(token: string): Promise<SharedWatchlistRespon
   return (await response.json()) as SharedWatchlistResponse;
 }
 
-async function getBaseUrl() {
+export async function getBaseUrl() {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL;
   }

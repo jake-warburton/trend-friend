@@ -7,10 +7,18 @@ type RouteContext = {
   params: Promise<{ token: string }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+type SharedRouteDependencies = {
+  getSharedWatchlist: typeof getSharedWatchlist;
+};
+
+export async function handleSharedWatchlistGet(
+  request: Request,
+  context: RouteContext,
+  dependencies: SharedRouteDependencies = { getSharedWatchlist },
+) {
   try {
     const { token } = await context.params;
-    const payload = await getSharedWatchlist(token);
+    const payload = await dependencies.getSharedWatchlist(token);
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Shared watchlist unavailable";
@@ -18,4 +26,8 @@ export async function GET(_request: Request, context: RouteContext) {
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });
   }
+}
+
+export async function GET(request: Request, context: RouteContext) {
+  return handleSharedWatchlistGet(request, context);
 }
