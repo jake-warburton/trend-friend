@@ -56,6 +56,20 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertIn("ai reimplementation", topics)
         self.assertIn("copyleft erosion", topics)
 
+    def test_extract_candidate_topics_skips_weak_headline_leads(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics("OpenAI is walking away from expanding its Stargate data center with Oracle")[
+                :2
+            ],
+            ["stargate data", "data center"],
+        )
+        self.assertEqual(extract_candidate_topics("Show HN: Remotely use my guitar tuner"), ["guitar tuner"])
+        self.assertEqual(
+            extract_candidate_topics("Launch HN: Terminal Use (YC W26) – Vercel for filesystem-based agents"),
+            ["vercel filesystem"],
+        )
+        self.assertEqual(extract_candidate_topics("JSLinux Now Supports x86_64"), ["jslinux"])
+
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [

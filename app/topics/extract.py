@@ -16,23 +16,37 @@ MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
 LOW_SIGNAL_BIGRAM_TOKENS = {
     "all",
+    "away",
+    "based",
     "becomes",
+    "cost",
     "cross",
+    "doesn",
     "everything",
     "extend",
     "extends",
     "film",
+    "hn",
+    "its",
     "last",
     "legal",
     "legitimate",
+    "launch",
     "list",
     "men",
     "need",
+    "now",
+    "per",
     "rules",
     "shuts",
+    "show",
     "same",
+    "supports",
     "successful",
     "t20",
+    "use",
+    "user",
+    "walking",
 }
 
 
@@ -51,7 +65,7 @@ def extract_candidate_topics(title: str) -> list[str]:
     if not repository_topic:
         candidates.extend(infer_meaningful_bigrams(tokens))
     if not candidates:
-        candidates.extend(tokens[:3])
+        candidates.extend(infer_meaningful_unigrams(tokens))
     seen: set[str] = set()
     ordered_candidates: list[str] = []
     added_bigrams = 0
@@ -91,7 +105,7 @@ def infer_meaningful_bigrams(tokens: list[str]) -> list[str]:
     for first, second in zip(tokens, tokens[1:]):
         if first == second:
             continue
-        if token_starts_with_number(first) or token_starts_with_number(second):
+        if token_contains_number(first) or token_contains_number(second):
             continue
         if second == "ai":
             continue
@@ -103,10 +117,20 @@ def infer_meaningful_bigrams(tokens: list[str]) -> list[str]:
     return bigrams
 
 
-def token_starts_with_number(token: str) -> bool:
-    """Return True for numeric or year-like tokens that make weak topic prefixes."""
+def infer_meaningful_unigrams(tokens: list[str]) -> list[str]:
+    """Return fallback single-token topics after removing weak tokens."""
 
-    return bool(token) and token[0].isdigit()
+    return [
+        token
+        for token in tokens
+        if token not in LOW_SIGNAL_BIGRAM_TOKENS and not token_contains_number(token)
+    ][:MAX_TOPICS_PER_ITEM]
+
+
+def token_contains_number(token: str) -> bool:
+    """Return True for numeric or year-like tokens that make weak topic fragments."""
+
+    return any(character.isdigit() for character in token)
 
 
 def infer_canonical_topics(tokens: list[str]) -> list[str]:
