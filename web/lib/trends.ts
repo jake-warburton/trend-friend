@@ -104,7 +104,7 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
   return normalizeDashboardOverview(payload);
 }
 
-function normalizeDashboardOverview(payload: DashboardOverviewResponse): DashboardOverviewResponse {
+export function normalizeDashboardOverview(payload: DashboardOverviewResponse): DashboardOverviewResponse {
   return {
     generatedAt: payload.generatedAt,
     summary: {
@@ -229,7 +229,7 @@ async function readTrendExplorer(): Promise<TrendExplorerResponse> {
   return normalizeTrendExplorer(payload);
 }
 
-function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExplorerResponse {
+export function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExplorerResponse {
   return {
     generatedAt: payload.generatedAt,
     trends: payload.trends.map((trend) => ({
@@ -349,7 +349,7 @@ function normalizeTrendDetailIndex(payload: TrendDetailIndexResponse): TrendDeta
   };
 }
 
-function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord {
+export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord {
   return {
     ...trend,
     category: trend.category ?? "general-tech",
@@ -434,7 +434,7 @@ async function readSourceSummary(): Promise<SourceSummaryResponse> {
   return normalizeSourceSummary(payload);
 }
 
-function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSummaryResponse {
+export function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSummaryResponse {
   return {
     generatedAt: payload.generatedAt,
     sources: (payload.sources ?? []).map((source) => ({
