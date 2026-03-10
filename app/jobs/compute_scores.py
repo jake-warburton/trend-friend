@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from time import perf_counter
 from datetime import datetime, timezone
 
@@ -12,6 +13,7 @@ from app.data.repositories import (
     SignalRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
+    WatchlistRepository,
 )
 from app.models import PipelineRun, TrendScoreResult
 from app.scoring.calculator import calculate_trend_scores
@@ -19,9 +21,11 @@ from app.scoring.ranking import rank_topics_by_score
 from app.topics.cluster import aggregate_topic_signals
 from app.topics.extract import build_signals_from_items
 
+LOGGER = logging.getLogger(__name__)
+
 
 def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
-    """Fetch source items, compute scores, and persist the latest ranking."""
+    """Fetch source items, compute scores, persist the ranking, and evaluate alerts."""
 
     from app.jobs.ingest import fetch_source_items
 
@@ -39,6 +43,10 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     SourceIngestionRunRepository(connection).append_runs(source_runs)
     SignalRepository(connection).replace_signals(normalized_signals)
     repository = TrendScoreRepository(connection)
+
+    # Capture previous snapshot state before overwriting
+    previous_snapshot = _build_previous_state(repository, settings.ranking_limit)
+
     repository.replace_scores(ranked_scores)
     repository.append_snapshot(ranked_scores, captured_at=captured_at)
     PipelineRunRepository(connection).append_run(
@@ -54,6 +62,73 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
             top_score=ranked_scores[0].total_score if ranked_scores else None,
         )
     )
-    connection.close()
 
+    # Evaluate and persist alert events
+    _run_alert_evaluation(
+        connection=connection,
+        repository=repository,
+        ranked_scores=ranked_scores,
+        previous_state=previous_snapshot,
+        ranking_limit=settings.ranking_limit,
+    )
+
+    connection.close()
     return ranked_scores
+
+
+def _build_previous_state(
+    repository: TrendScoreRepository,
+    ranking_limit: int,
+) -> dict:
+    """Capture the previous snapshot state for alert evaluation."""
+
+    _, previous_scores = repository.list_latest_snapshot(limit=ranking_limit)
+    previous_ranks: dict[str, int] = {}
+    previous_trend_ids: set[str] = set()
+    for rank, score in enumerate(previous_scores, start=1):
+        previous_ranks[score.topic] = rank
+        previous_trend_ids.add(score.topic)
+    return {
+        "scores": previous_scores,
+        "ranks": previous_ranks,
+        "trend_ids": previous_trend_ids,
+    }
+
+
+def _run_alert_evaluation(
+    connection: object,
+    repository: TrendScoreRepository,
+    ranked_scores: list[TrendScoreResult],
+    previous_state: dict,
+    ranking_limit: int,
+) -> None:
+    """Evaluate alert rules against the just-computed scores and persist events."""
+
+    from app.alerts.evaluate import evaluate_alerts
+
+    watchlist_repo = WatchlistRepository(connection)
+    rules = watchlist_repo.list_alert_rules()
+    if not rules:
+        return
+
+    watchlist_trend_ids = watchlist_repo.get_watchlist_trend_ids()
+    current_ranks = {score.topic: rank for rank, score in enumerate(ranked_scores, start=1)}
+
+    # Build statuses from explorer records
+    explorer_records = repository.list_trend_explorer_records(limit=ranking_limit)
+    statuses = {record.score.topic: record.status for record in explorer_records}
+
+    events = evaluate_alerts(
+        rules=rules,
+        watchlist_trend_ids=watchlist_trend_ids,
+        current_scores=ranked_scores,
+        previous_scores=previous_state["scores"],
+        current_ranks=current_ranks,
+        previous_ranks=previous_state["ranks"],
+        statuses=statuses,
+        previous_trend_ids=previous_state["trend_ids"],
+    )
+
+    if events:
+        watchlist_repo.save_alert_events(events)
+        LOGGER.info("Triggered %d alert events", len(events))
