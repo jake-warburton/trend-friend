@@ -191,6 +191,28 @@ class CommunityAPITests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["watchlists"], [])
 
+    def test_share_visibility_toggle_adds_watchlist_to_public_directory(self) -> None:
+        wl_id = self._create_watchlist("Visibility List")
+        share_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/share",
+            json={"public": False},
+        )
+        share_id = self.connection.execute(
+            "SELECT id FROM watchlist_shares WHERE share_token = ?",
+            (share_resp.json()["shareToken"],),
+        ).fetchone()[0]
+
+        update_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/shares/{share_id}/visibility",
+            json={"public": True},
+        )
+        self.assertEqual(update_resp.status_code, 200)
+        self.assertTrue(update_resp.json()["public"])
+
+        resp = self.client.get("/api/v1/community/watchlists")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()["watchlists"]), 1)
+
     # -- Public trend page --
 
     def test_get_public_trend_page(self) -> None:

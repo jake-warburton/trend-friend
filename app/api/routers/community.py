@@ -71,6 +71,36 @@ def revoke_watchlist_share(
     return {"ok": True}
 
 
+@router.post("/watchlists/{watchlist_id}/shares/{share_id}/visibility")
+def update_watchlist_share_visibility(
+    watchlist_id: int,
+    share_id: int,
+    body: dict,
+    user: User = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Update whether a share is listed in the public directory."""
+
+    if "public" not in body or not isinstance(body["public"], bool):
+        raise HTTPException(status_code=422, detail="public must be a boolean")
+
+    repo = WatchlistRepository(db)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
+    if watchlist is None:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    share = repo.update_share_visibility(share_id, user.id if auth_enabled() else None, body["public"])
+    if share is None:
+        raise HTTPException(status_code=404, detail="Share link not found")
+
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+
 @router.get("/shared/{share_token}")
 def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_db)) -> dict:
     """View a shared watchlist by its share token."""

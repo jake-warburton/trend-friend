@@ -42,6 +42,10 @@ def main() -> None:
     revoke_share = subparsers.add_parser("revoke-share")
     revoke_share.add_argument("--share-id", type=int, required=True)
 
+    update_share_visibility = subparsers.add_parser("set-share-visibility")
+    update_share_visibility.add_argument("--share-id", type=int, required=True)
+    update_share_visibility.add_argument("--public", action="store_true")
+
     get_shared = subparsers.add_parser("get-shared")
     get_shared.add_argument("--token", required=True)
 
@@ -107,6 +111,12 @@ def main() -> None:
         payload = revoke_share_payload(
             watchlist_repository=watchlist_repository,
             share_id=args.share_id,
+        )
+    elif args.command == "set-share-visibility":
+        payload = update_share_visibility_payload(
+            watchlist_repository=watchlist_repository,
+            share_id=args.share_id,
+            public=args.public,
         )
     elif args.command == "list-public":
         payload = list_public_payload(watchlist_repository, score_repository)
@@ -200,6 +210,24 @@ def revoke_share_payload(
     if not revoked:
         return {"error": "Share link not found"}
     return {"ok": True}
+
+
+def update_share_visibility_payload(
+    watchlist_repository: WatchlistRepository,
+    share_id: int,
+    public: bool,
+) -> dict[str, object]:
+    """Update whether a local share is public."""
+
+    share = watchlist_repository.update_share_visibility(share_id, owner_user_id=None, is_public=public)
+    if share is None:
+        return {"error": "Share link not found"}
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
 
 
 def list_public_payload(

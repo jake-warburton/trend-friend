@@ -8,7 +8,8 @@ export type WatchlistMutationBody =
   | { action: "create-watchlist"; name: string }
   | { action: "add-item"; watchlistId: number; trendId: string; trendName: string }
   | { action: "remove-item"; watchlistId: number; trendId: string }
-  | { action: "revoke-share"; watchlistId: number; shareId: number };
+  | { action: "revoke-share"; watchlistId: number; shareId: number }
+  | { action: "set-share-visibility"; watchlistId: number; shareId: number; public: boolean };
 
 export type AlertMutationBody =
   | { action: "mark-read"; eventIds: number[] }
@@ -82,6 +83,13 @@ export async function mutateWatchlists(
         { headers: dependencies.apiHeaders },
       );
     }
+    if (body.action === "set-share-visibility") {
+      return apiPost(
+        `/watchlists/${body.watchlistId}/shares/${body.shareId}/visibility`,
+        { public: body.public },
+        { headers: dependencies.apiHeaders },
+      );
+    }
     return apiPost("/watchlists/items", {
       action: "remove",
       watchlistId: body.watchlistId,
@@ -106,6 +114,14 @@ export async function mutateWatchlists(
   }
   if (body.action === "revoke-share") {
     return ensureSuccessPayload(await runScript("revoke-share", "--share-id", String(body.shareId)));
+  }
+  if (body.action === "set-share-visibility") {
+    return ensureSuccessPayload(await runScript(
+      "set-share-visibility",
+      "--share-id",
+      String(body.shareId),
+      ...(body.public ? ["--public"] : []),
+    ));
   }
   return runScript(
     "remove-item",

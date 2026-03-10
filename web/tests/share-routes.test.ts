@@ -4,6 +4,7 @@ import test from "node:test";
 import { WatchlistServiceError } from "@/lib/server/watchlist-service";
 import { handleShareWatchlistPost } from "@/app/api/watchlists/[watchlistId]/share/route";
 import { handleRevokeSharePost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/revoke/route";
+import { handleShareVisibilityPost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/visibility/route";
 import { handleSharedWatchlistGet } from "@/app/api/shared/[token]/route";
 
 test("share watchlist route returns the share payload", async () => {
@@ -105,4 +106,33 @@ test("revoke share route returns ok payload", async () => {
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { ok: true });
+});
+
+test("share visibility route returns updated share payload", async () => {
+  const request = new Request("http://localhost/api/watchlists/12/shares/3/visibility", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ public: true }),
+  });
+
+  const response = await handleShareVisibilityPost(
+    request,
+    { params: Promise.resolve({ watchlistId: "12", shareId: "3" }) },
+    {
+      mutateWatchlists: async () => ({
+        id: 3,
+        shareToken: "share-123",
+        public: true,
+        createdAt: "2026-03-10T12:00:00Z",
+      }),
+    },
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    id: 3,
+    shareToken: "share-123",
+    public: true,
+    createdAt: "2026-03-10T12:00:00Z",
+  });
 });

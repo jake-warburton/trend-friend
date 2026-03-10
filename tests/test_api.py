@@ -200,3 +200,18 @@ class APITests(unittest.TestCase):
 
         after_response = client.get("/api/v1/watchlists")
         self.assertEqual(after_response.json()["watchlists"][0]["shares"], [])
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_user_can_toggle_share_visibility(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+        client.post(f"/api/v1/watchlists/{watchlist_id}/share", json={"public": False})
+        share_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["shares"][0]["id"]
+
+        update_response = client.post(
+            f"/api/v1/watchlists/{watchlist_id}/shares/{share_id}/visibility",
+            json={"public": True},
+        )
+        self.assertEqual(update_response.status_code, 200)
+        self.assertTrue(update_response.json()["public"])

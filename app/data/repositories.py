@@ -679,6 +679,42 @@ class WatchlistRepository:
         self.connection.commit()
         return cursor.rowcount > 0
 
+    def update_share_visibility(self, share_id: int, owner_user_id: int | None, is_public: bool) -> WatchlistShare | None:
+        """Update public visibility for a share when it belongs to the given owner."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET is_public = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (int(is_public), share_id),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET is_public = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (int(is_public), share_id, owner_user_id),
+            )
+        self.connection.commit()
+        if cursor.rowcount == 0:
+            return None
+        return self.get_share_by_id(share_id)
+
     @staticmethod
     def _share_from_row(row: sqlite3.Row) -> WatchlistShare:
         return WatchlistShare(

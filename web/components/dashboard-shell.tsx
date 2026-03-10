@@ -474,6 +474,28 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     }
   }
 
+  async function handleToggleShareVisibility(targetWatchlist: Watchlist, shareId: number, isPublic: boolean) {
+    setShareNotice(null);
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/shares/${shareId}/visibility`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public: !isPublic }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not update share visibility");
+        return;
+      }
+      showActionNotice(!isPublic ? "Share is now public" : "Share removed from public directory");
+      await loadWatchlists();
+      await loadPublicWatchlists();
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
 
@@ -979,17 +1001,32 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 {defaultWatchlist
                   ? defaultWatchlist.shares.slice(0, 3).map((share) => (
                     <div className="watchlist-item watchlist-item-share" key={share.id}>
-                      <Link className="watchlist-item-share-link" href={`/shared/${share.shareToken}`}>
-                        <span>{share.public ? "Public share" : "Private share"}</span>
-                      </Link>
-                      <button
-                        className="mini-action-button"
-                        disabled={actionPending || watchlistsRequireAuth}
-                        onClick={() => void handleRevokeShare(defaultWatchlist, share.id)}
-                        type="button"
-                      >
-                        Revoke
-                      </button>
+                      <div className="watchlist-item-share-main">
+                        <Link className="watchlist-item-share-link" href={`/shared/${share.shareToken}`}>
+                          <span>{share.public ? "Public share" : "Private share"}</span>
+                        </Link>
+                        <small className="source-summary-copy">
+                          {share.public ? "Listed in community directory" : "Only works via direct link"} · {formatCompactTimestamp(share.createdAt)}
+                        </small>
+                      </div>
+                      <div className="watchlist-item-share-actions">
+                        <button
+                          className="mini-action-button"
+                          disabled={actionPending || watchlistsRequireAuth}
+                          onClick={() => void handleToggleShareVisibility(defaultWatchlist, share.id, share.public)}
+                          type="button"
+                        >
+                          {share.public ? "Make private" : "Make public"}
+                        </button>
+                        <button
+                          className="mini-action-button"
+                          disabled={actionPending || watchlistsRequireAuth}
+                          onClick={() => void handleRevokeShare(defaultWatchlist, share.id)}
+                          type="button"
+                        >
+                          Revoke
+                        </button>
+                      </div>
                     </div>
                   ))
                   : null}

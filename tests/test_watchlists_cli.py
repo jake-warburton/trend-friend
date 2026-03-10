@@ -85,6 +85,16 @@ class ShareWatchlistTests(unittest.TestCase):
         self.assertEqual(result, {"ok": True})
         self.assertEqual(self.watchlist_repo.list_shares_for_watchlist(watchlist.id), [])
 
+    def test_visibility_update_changes_public_flag(self) -> None:
+        from scripts.watchlists_api import update_share_visibility_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Visibility List")
+        share = self.watchlist_repo.create_share(watchlist.id, "visibility-token", is_public=False)
+
+        result = update_share_visibility_payload(self.watchlist_repo, share.id, public=True)
+
+        self.assertTrue(result["public"])
+
 
 class GetSharedWatchlistTests(unittest.TestCase):
     """Test get_shared_payload from the CLI layer."""
