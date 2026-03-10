@@ -88,7 +88,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
     ...filters,
   });
   const emptyStateSuggestions = buildCommunityEmptyStateSuggestions(activeFilters);
-  const presetSections = listCommunityPresetSections(directory.watchlists);
+  const presetSections = listCommunityPresetSections(directory.watchlists, filters);
 
   return (
     <main className="community-page">
@@ -539,9 +539,14 @@ export function buildCommunityEmptyStateSuggestions(activeFilters: ActiveCommuni
   return suggestions.slice(0, 2);
 }
 
-export function listCommunityPresetSections(watchlists: PublicWatchlistSummary[]): CommunityPresetSection[] {
+export function listCommunityPresetSections(
+  watchlists: PublicWatchlistSummary[],
+  filters: CommunityFilterState,
+): CommunityPresetSection[] {
   const sections: CommunityPresetSection[] = [];
-  const popular = watchlists.filter((watchlist) => watchlist.popularThisWeek).slice(0, 3);
+  const popular = !filters.popularOnly
+    ? watchlists.filter((watchlist) => watchlist.popularThisWeek).slice(0, 3)
+    : [];
   if (popular.length > 0) {
     sections.push({
       title: "Popular this week",
@@ -550,9 +555,11 @@ export function listCommunityPresetSections(watchlists: PublicWatchlistSummary[]
     });
   }
 
-  const ai = watchlists
-    .filter((watchlist) => (watchlist.categories ?? []).includes("ai-machine-learning"))
-    .slice(0, 3);
+  const ai = filters.category !== "ai-machine-learning"
+    ? watchlists
+        .filter((watchlist) => (watchlist.categories ?? []).includes("ai-machine-learning"))
+        .slice(0, 3)
+    : [];
   if (ai.length > 0) {
     sections.push({
       title: "AI watchlists",
@@ -561,9 +568,11 @@ export function listCommunityPresetSections(watchlists: PublicWatchlistSummary[]
     });
   }
 
-  const developer = watchlists
-    .filter((watchlist) => (watchlist.categories ?? []).includes("developer-tools"))
-    .slice(0, 3);
+  const developer = filters.category !== "developer-tools"
+    ? watchlists
+        .filter((watchlist) => (watchlist.categories ?? []).includes("developer-tools"))
+        .slice(0, 3)
+    : [];
   if (developer.length > 0) {
     sections.push({
       title: "Developer watchlists",

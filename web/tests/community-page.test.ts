@@ -378,7 +378,15 @@ test("community preset sections surface popular and topical slices", () => {
     },
   ];
 
-  const sections = listCommunityPresetSections(watchlists);
+  const sections = listCommunityPresetSections(watchlists, {
+    query: "",
+    sort: "recent",
+    category: "",
+    status: "",
+    source: "",
+    location: "",
+    popularOnly: false,
+  });
 
   assert.deepEqual(
     sections.map((section) => section.title),
@@ -387,6 +395,59 @@ test("community preset sections surface popular and topical slices", () => {
   assert.equal(sections[0]?.watchlists[0]?.name, "Popular Robotics");
   assert.equal(sections[1]?.watchlists[0]?.name, "AI Search");
   assert.equal(sections[2]?.watchlists[0]?.name, "Dev Tools");
+});
+
+test("community preset sections hide rails that conflict with the active slice", () => {
+  const watchlists: PublicWatchlistsResponse["watchlists"] = [
+    {
+      id: 1,
+      name: "Popular Robotics",
+      itemCount: 3,
+      shareToken: "popular-robotics",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["hardware-robotics"],
+      statuses: ["breakout"],
+      popularThisWeek: true,
+    },
+    {
+      id: 2,
+      name: "AI Search",
+      itemCount: 2,
+      shareToken: "ai-search",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["ai-machine-learning"],
+      statuses: ["rising"],
+      popularThisWeek: false,
+    },
+    {
+      id: 3,
+      name: "Dev Tools",
+      itemCount: 2,
+      shareToken: "dev-tools",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["developer-tools"],
+      statuses: ["steady"],
+      popularThisWeek: false,
+    },
+  ];
+
+  const sections = listCommunityPresetSections(watchlists, {
+    query: "",
+    sort: "recent",
+    category: "ai-machine-learning",
+    status: "",
+    source: "",
+    location: "",
+    popularOnly: true,
+  });
+
+  assert.deepEqual(
+    sections.map((section) => section.title),
+    ["Developer watchlists"],
+  );
 });
 
 test("pagination slices community watchlists and builds preserved URLs", () => {
