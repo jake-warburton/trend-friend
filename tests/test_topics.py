@@ -28,6 +28,34 @@ class TopicNormalizationTests(unittest.TestCase):
         )
         self.assertLessEqual(len(topics), 3)
 
+    def test_extract_candidate_topics_prefers_repository_topic_for_github_titles(self) -> None:
+        topics = extract_candidate_topics(
+            "PostHog/posthog PostHog is an all-in-one developer platform for building successful products."
+        )
+        self.assertEqual(topics, ["posthog"])
+        self.assertEqual(
+            extract_candidate_topics("elixir-lang/elixir Elixir is a dynamic, functional language"),
+            ["elixir"],
+        )
+
+    def test_extract_candidate_topics_skips_low_signal_leading_bigrams(self) -> None:
+        topics = extract_candidate_topics(
+            "Ireland shuts last coal plant, becomes 15th coal-free country in Europe (2025)"
+        )
+        self.assertEqual(topics[0], "coal plant")
+
+    def test_extract_candidate_topics_skips_numeric_and_wrapper_bigrams(self) -> None:
+        self.assertEqual(extract_candidate_topics("2026 Iran war"), ["iran war"])
+        self.assertEqual(extract_candidate_topics("List of Muppets"), ["muppets"])
+        self.assertEqual(extract_candidate_topics("Men's T20 World Cup")[0], "world cup")
+
+    def test_extract_candidate_topics_finds_stronger_trailing_phrase_in_question_titles(self) -> None:
+        topics = extract_candidate_topics(
+            "Is legal the same as legitimate: AI reimplementation and the erosion of copyleft"
+        )
+        self.assertIn("ai reimplementation", topics)
+        self.assertIn("copyleft erosion", topics)
+
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [
@@ -48,6 +76,31 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(aggregate.topic, "battery recycling")
         self.assertEqual(aggregate.source_counts, {"reddit": 1, "wikipedia": 1})
         self.assertEqual(aggregate.signal_counts, {"social": 1, "knowledge": 1})
+
+    def test_aggregate_topic_signals_merges_overlapping_same_headline_variants(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = [
+            NormalizedSignal(
+                "coal plant",
+                "hacker_news",
+                "social",
+                100.0,
+                timestamp,
+                "Ireland shuts last coal plant, becomes 15th coal-free country in Europe (2025)",
+            ),
+            NormalizedSignal(
+                "coal free",
+                "hacker_news",
+                "social",
+                100.0,
+                timestamp,
+                "Ireland shuts last coal plant, becomes 15th coal-free country in Europe (2025)",
+            ),
+        ]
+        aggregates = aggregate_topic_signals(signals)
+        self.assertEqual(len(aggregates), 1)
+        self.assertEqual(aggregates[0].topic, "coal plant")
+        self.assertEqual(aggregates[0].signal_counts, {"social": 2})
 
 
 if __name__ == "__main__":

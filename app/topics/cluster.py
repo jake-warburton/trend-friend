@@ -14,7 +14,42 @@ def merge_similar_topics(signals: list[NormalizedSignal]) -> dict[str, list[Norm
     clusters: dict[str, list[NormalizedSignal]] = defaultdict(list)
     for signal in signals:
         clusters[normalize_topic_name(signal.topic)].append(signal)
-    return dict(clusters)
+    return merge_related_evidence_topics(dict(clusters))
+
+
+def merge_related_evidence_topics(
+    clusters: dict[str, list[NormalizedSignal]],
+) -> dict[str, list[NormalizedSignal]]:
+    """Collapse same-headline variants when topics substantially overlap."""
+
+    merged_clusters: dict[str, list[NormalizedSignal]] = {}
+    for topic_name, topic_signals in clusters.items():
+        matching_topic = find_matching_cluster_topic(topic_name, topic_signals, merged_clusters)
+        if matching_topic is None:
+            merged_clusters[topic_name] = list(topic_signals)
+            continue
+        merged_clusters[matching_topic].extend(topic_signals)
+    return merged_clusters
+
+
+def find_matching_cluster_topic(
+    topic_name: str,
+    topic_signals: list[NormalizedSignal],
+    merged_clusters: dict[str, list[NormalizedSignal]],
+) -> str | None:
+    """Return an existing cluster name when the topic is a likely duplicate variant."""
+
+    topic_tokens = set(topic_name.split())
+    topic_evidence = {signal.evidence for signal in topic_signals}
+    for existing_topic, existing_signals in merged_clusters.items():
+        existing_tokens = set(existing_topic.split())
+        shared_tokens = topic_tokens & existing_tokens
+        if not shared_tokens:
+            continue
+        existing_evidence = {signal.evidence for signal in existing_signals}
+        if topic_evidence & existing_evidence:
+            return existing_topic
+    return None
 
 
 def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggregate]:

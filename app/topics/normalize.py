@@ -26,6 +26,7 @@ STOP_WORDS = {
     "internal",
     "in",
     "into",
+    "list",
     "milestone",
     "new",
     "office",
@@ -63,6 +64,7 @@ ALIASES = {
     "ai": "ai agents",
     "artificial intelligence": "ai agents",
 }
+SHORT_MEANINGFUL_TOKENS = {"ai"}
 
 
 def clean_text(text: str) -> str:
@@ -82,7 +84,11 @@ def tokenize_text(text: str) -> list[str]:
 def remove_stop_words(tokens: list[str]) -> list[str]:
     """Filter out low-value stop words."""
 
-    return [token for token in tokens if token not in STOP_WORDS and len(token) > 2]
+    return [
+        token
+        for token in tokens
+        if token not in STOP_WORDS and (len(token) > 2 or token in SHORT_MEANINGFUL_TOKENS)
+    ]
 
 
 def normalize_topic_name(topic_name: str) -> str:
@@ -90,6 +96,12 @@ def normalize_topic_name(topic_name: str) -> str:
 
     normalized = clean_text(topic_name)
     normalized = normalized.replace("github", "").strip()
+    tokens = [token for token in normalized.split() if token]
+    deduplicated_tokens: list[str] = []
+    for token in tokens:
+        if token not in deduplicated_tokens:
+            deduplicated_tokens.append(token)
+    normalized = " ".join(deduplicated_tokens)
     return ALIASES.get(normalized, normalized)
 
 
