@@ -51,6 +51,10 @@ class APITests(unittest.TestCase):
         self.app.dependency_overrides[get_db] = override_db
         self.client = TestClient(self.app)
 
+        # Clear global caches between tests
+        from app.api.rate_limit import response_cache
+        response_cache.clear()
+
     def tearDown(self) -> None:
         self.connection.close()
 

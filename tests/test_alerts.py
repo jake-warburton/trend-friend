@@ -290,6 +290,9 @@ class AlertAPITests(unittest.TestCase):
         self.app.dependency_overrides[get_db] = override_db
         self.client = TestClient(self.app)
 
+        from app.api.rate_limit import response_cache
+        response_cache.clear()
+
     def tearDown(self) -> None:
         self.connection.close()
 
