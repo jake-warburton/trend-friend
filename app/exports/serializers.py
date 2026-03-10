@@ -27,6 +27,7 @@ from app.exports.contracts import (
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
     TrendEvidenceItemPayload,
+    TrendGeoSummaryPayload,
     TrendExplorerPayload,
     TrendExplorerRecordPayload,
     TrendHistoryPointPayload,
@@ -305,6 +306,18 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                 latest_signal_at=to_timestamp(item.latest_signal_at),
             )
             for item in trend.source_breakdown
+        ],
+        geo_summary=[
+            TrendGeoSummaryPayload(
+                label=item.label,
+                country_code=item.country_code,
+                region=item.region,
+                signal_count=item.signal_count,
+                explicit_count=item.explicit_count,
+                inferred_count=item.inferred_count,
+                average_confidence=item.average_confidence,
+            )
+            for item in trend.geo_summary
         ],
         evidence_items=[
             TrendEvidenceItemPayload(

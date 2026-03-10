@@ -141,6 +141,38 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
         </section>
 
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Geo</p>
+              <h2>Where it is showing up</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {trend.geoSummary.length === 0 ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>No location signals yet</strong>
+                  <span>Current sources do not expose reliable geography for this trend.</span>
+                </div>
+              </article>
+            ) : (
+              trend.geoSummary.map((item: TrendDetailRecord["geoSummary"][number]) => (
+                <article className="detail-list-item" key={`${item.label}-${item.countryCode ?? "none"}`}>
+                  <div>
+                    <strong>{item.label}</strong>
+                    <span>
+                      {item.signalCount} signals · {item.explicitCount} explicit · {item.inferredCount} inferred
+                    </span>
+                  </div>
+                  <small>{Math.round(item.averageConfidence * 100)}% avg confidence</small>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+
         <section className="detail-panel detail-panel-wide">
           <div className="section-heading">
             <div>

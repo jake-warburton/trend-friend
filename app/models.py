@@ -148,6 +148,19 @@ class TrendEvidenceItem:
 
 
 @dataclass(frozen=True)
+class TrendGeoSummary:
+    """Aggregated location coverage for a trend."""
+
+    label: str
+    country_code: str | None
+    region: str | None
+    signal_count: int
+    explicit_count: int
+    inferred_count: int
+    average_confidence: float
+
+
+@dataclass(frozen=True)
 class RelatedTrend:
     """Compact related-trend recommendation."""
 
@@ -179,6 +192,7 @@ class TrendDetailRecord:
     sources: list[str]
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
+    geo_summary: list[TrendGeoSummary]
     evidence_items: list[TrendEvidenceItem]
     related_trends: list[RelatedTrend]
 

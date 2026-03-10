@@ -215,7 +215,19 @@ class RepositoryTests(unittest.TestCase):
 
         signal_repository.replace_signals(
             [
-                NormalizedSignal("ai agents", "reddit", "social", 12.0, latest_captured_at, "Reddit evidence"),
+                NormalizedSignal(
+                    "ai agents",
+                    "reddit",
+                    "social",
+                    12.0,
+                    latest_captured_at,
+                    "Reddit evidence",
+                    geo_flags=("geo:inferred", "geo:country:GB", "geo:region:London"),
+                    geo_country_code="GB",
+                    geo_region="London",
+                    geo_detection_mode="inferred",
+                    geo_confidence=0.65,
+                ),
                 NormalizedSignal("ai agents", "github", "developer", 9.0, previous_captured_at, "GitHub evidence"),
             ]
         )
@@ -235,6 +247,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].status, "breakout")
         self.assertEqual(records[0].category, "ai-machine-learning")
         self.assertEqual(records[0].volatility, "spiking")
+        self.assertEqual(records[0].geo_summary[0].country_code, "GB")
+        self.assertEqual(records[0].geo_summary[0].signal_count, 1)
         self.assertEqual(records[0].source_breakdown[0].source, "github")
         self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
 

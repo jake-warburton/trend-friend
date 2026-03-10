@@ -196,6 +196,16 @@ export type TrendEvidenceItem = {
   geoConfidence: number;
 };
 
+export type TrendGeoSummary = {
+  label: string;
+  countryCode: string | null;
+  region: string | null;
+  signalCount: number;
+  explicitCount: number;
+  inferredCount: number;
+  averageConfidence: number;
+};
+
 export type RelatedTrend = {
   id: string;
   name: string;
@@ -221,6 +231,7 @@ export type TrendDetailRecord = {
   sources: string[];
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
+  geoSummary: TrendGeoSummary[];
   evidenceItems: TrendEvidenceItem[];
   relatedTrends: RelatedTrend[];
 };

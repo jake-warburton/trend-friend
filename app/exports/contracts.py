@@ -168,6 +168,19 @@ class TrendEvidenceItemPayload:
 
 
 @dataclass(frozen=True)
+class TrendGeoSummaryPayload:
+    """Aggregated geo footprint for a trend."""
+
+    label: str
+    country_code: str | None
+    region: str | None
+    signal_count: int
+    explicit_count: int
+    inferred_count: int
+    average_confidence: float
+
+
+@dataclass(frozen=True)
 class RelatedTrendPayload:
     """Compact related trend entry for detail pages."""
 
@@ -198,6 +211,7 @@ class TrendDetailRecordPayload:
     sources: list[str]
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
+    geo_summary: list[TrendGeoSummaryPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     related_trends: list[RelatedTrendPayload]
 
@@ -517,6 +531,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
+    payload["geoSummary"] = payload.pop("geo_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["relatedTrends"] = payload.pop("related_trends")
     for point in payload["history"]:
@@ -525,6 +540,12 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     for source in payload["sourceBreakdown"]:
         source["signalCount"] = source.pop("signal_count")
         source["latestSignalAt"] = source.pop("latest_signal_at")
+    for geo in payload["geoSummary"]:
+        geo["countryCode"] = geo.pop("country_code")
+        geo["signalCount"] = geo.pop("signal_count")
+        geo["explicitCount"] = geo.pop("explicit_count")
+        geo["inferredCount"] = geo.pop("inferred_count")
+        geo["averageConfidence"] = geo.pop("average_confidence")
     for item in payload["evidenceItems"]:
         item["signalType"] = item.pop("signal_type")
         item["geoFlags"] = item.pop("geo_flags")

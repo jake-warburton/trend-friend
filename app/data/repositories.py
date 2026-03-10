@@ -17,6 +17,7 @@ from app.models import (
     TrendDetailRecord,
     TrendEvidenceItem,
     TrendExplorerRecord,
+    TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
     TrendSourceBreakdown,
@@ -841,6 +842,7 @@ class TrendScoreRepository:
                     sources=sorted(score.source_counts),
                     history=history,
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
+                    geo_summary=self.get_topic_geo_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
                     related_trends=[],
                 )
@@ -897,6 +899,42 @@ class TrendScoreRepository:
                 geo_confidence=row["geo_confidence"],
             )
             for row in rows
+        ]
+
+    def get_topic_geo_summary(self, topic: str, limit: int = 5) -> list[TrendGeoSummary]:
+        """Return aggregated location coverage for a topic."""
+
+        rows = self.connection.execute(
+            """
+            SELECT
+                COALESCE(geo_region, geo_country_code) AS geo_label,
+                geo_country_code,
+                geo_region,
+                COUNT(*) AS signal_count,
+                SUM(CASE WHEN geo_detection_mode = 'explicit' THEN 1 ELSE 0 END) AS explicit_count,
+                SUM(CASE WHEN geo_detection_mode = 'inferred' THEN 1 ELSE 0 END) AS inferred_count,
+                AVG(geo_confidence) AS average_confidence
+            FROM signals
+            WHERE topic = ?
+              AND (geo_country_code IS NOT NULL OR geo_region IS NOT NULL)
+            GROUP BY geo_country_code, geo_region
+            ORDER BY signal_count DESC, average_confidence DESC, geo_label ASC
+            LIMIT ?
+            """,
+            (topic, limit),
+        ).fetchall()
+        return [
+            TrendGeoSummary(
+                label=row["geo_label"],
+                country_code=row["geo_country_code"],
+                region=row["geo_region"],
+                signal_count=row["signal_count"],
+                explicit_count=row["explicit_count"],
+                inferred_count=row["inferred_count"],
+                average_confidence=round(row["average_confidence"] or 0.0, 2),
+            )
+            for row in rows
+            if row["geo_label"]
         ]
 
     @staticmethod
@@ -1039,6 +1077,7 @@ class TrendScoreRepository:
                 sources=record.sources,
                 history=record.history,
                 source_breakdown=record.source_breakdown,
+                geo_summary=record.geo_summary,
                 evidence_items=record.evidence_items,
                 related_trends=related_map.get(record.id, []),
             )

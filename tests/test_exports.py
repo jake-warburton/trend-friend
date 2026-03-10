@@ -21,6 +21,7 @@ from app.models import (
     TrendDetailRecord,
     TrendEvidenceItem,
     TrendExplorerRecord,
+    TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
     NormalizedSignal,
@@ -147,6 +148,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
+        self.assertEqual(payload["trends"][0]["geoSummary"][0]["countryCode"], "US")
+        self.assertEqual(payload["trends"][0]["geoSummary"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["geoCountryCode"], "US")
         self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
@@ -310,6 +313,17 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 source="reddit",
                 signal_count=1,
                 latest_signal_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            )
+        ],
+        geo_summary=[
+            TrendGeoSummary(
+                label="US",
+                country_code="US",
+                region="US",
+                signal_count=1,
+                explicit_count=1,
+                inferred_count=0,
+                average_confidence=0.95,
             )
         ],
         evidence_items=[
