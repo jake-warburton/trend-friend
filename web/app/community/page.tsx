@@ -17,7 +17,7 @@ type CommunityFilterOption = {
   label: string;
 };
 type ActiveCommunityFilter = {
-  key: "q" | "category" | "status" | "source" | "location" | "popular";
+  key: "q" | "sort" | "category" | "status" | "source" | "location" | "popular";
   label: string;
   value: string;
 };
@@ -58,12 +58,14 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   });
   const activeFilters = listActiveCommunityFilters({
     query,
+    sort,
     category,
     status,
     source,
     location,
     popularOnly,
   });
+  const emptyStateSuggestions = buildCommunityEmptyStateSuggestions(activeFilters);
 
   return (
     <main className="community-page">
@@ -199,7 +201,9 @@ export default async function CommunityPage({ searchParams }: PageProps) {
           <div className="empty-state">
             <h3>No public watchlists match</h3>
             <p className="source-summary-copy">
-              Try a broader query or remove one of the active filters.
+              {emptyStateSuggestions.length > 0
+                ? emptyStateSuggestions.join(" ")
+                : "Try a broader query or remove one of the active filters."}
             </p>
           </div>
         ) : (
@@ -478,6 +482,7 @@ export function createCommunityUrlBuilder(filters: {
 
 export function listActiveCommunityFilters(filters: {
   query: string;
+  sort: CommunitySort;
   category: string;
   status: string;
   source: string;
@@ -487,6 +492,9 @@ export function listActiveCommunityFilters(filters: {
   const result: ActiveCommunityFilter[] = [];
   if (filters.query) {
     result.push({ key: "q", label: "Search", value: filters.query });
+  }
+  if (filters.sort !== "recent") {
+    result.push({ key: "sort", label: "Sort", value: formatSortLabel(filters.sort) });
   }
   if (filters.category) {
     result.push({ key: "category", label: "Category", value: formatCategory(filters.category) });
@@ -521,12 +529,34 @@ export function buildCommunityFilterRemovalUrl(
   return createCommunityUrlBuilder({
     ...filters,
     q: filterKey === "q" ? "" : filters.q,
+    sort: filterKey === "sort" ? "recent" : filters.sort,
     category: filterKey === "category" ? "" : filters.category,
     status: filterKey === "status" ? "" : filters.status,
     source: filterKey === "source" ? "" : filters.source,
     location: filterKey === "location" ? "" : filters.location,
     popular: filterKey === "popular" ? false : filters.popular,
   })(1);
+}
+
+export function buildCommunityEmptyStateSuggestions(activeFilters: ActiveCommunityFilter[]) {
+  if (activeFilters.length === 0) {
+    return [];
+  }
+
+  const suggestions = activeFilters.map((filter) => {
+    if (filter.key === "q") {
+      return `Clear the search for "${filter.value}".`;
+    }
+    if (filter.key === "popular") {
+      return "Turn off Popular this week only.";
+    }
+    if (filter.key === "sort") {
+      return `Switch sorting back from ${filter.value}.`;
+    }
+    return `Remove the ${filter.label.toLowerCase()} filter for ${filter.value}.`;
+  });
+
+  return suggestions.slice(0, 2);
 }
 
 function readSearchParam(value: string | string[] | undefined) {
@@ -576,6 +606,16 @@ function formatCategory(category: string) {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatSortLabel(sort: CommunitySort) {
+  if (sort === "total") {
+    return "Total opens";
+  }
+  if (sort === "newest") {
+    return "Newest";
+  }
+  return "Recent opens";
 }
 
 function formatStatusLabel(status: string) {

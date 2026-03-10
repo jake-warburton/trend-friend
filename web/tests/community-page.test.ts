@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import CommunityPage, {
   buildCommunityFilterRemovalUrl,
+  buildCommunityEmptyStateSuggestions,
   createCommunityUrlBuilder,
   filterAndSortCommunityWatchlists,
   listCommunityCategoryOptions,
@@ -238,6 +239,7 @@ test("pagination slices community watchlists and builds preserved URLs", () => {
 test("community active filters expose readable labels and removal URLs", () => {
   const filters = listActiveCommunityFilters({
     query: "robot",
+    sort: "total",
     category: "hardware-robotics",
     status: "breakout",
     source: "github",
@@ -247,6 +249,7 @@ test("community active filters expose readable labels and removal URLs", () => {
 
   assert.deepEqual(filters, [
     { key: "q", label: "Search", value: "robot" },
+    { key: "sort", label: "Sort", value: "Total opens" },
     { key: "category", label: "Category", value: "Hardware Robotics" },
     { key: "status", label: "Status", value: "Breakout" },
     { key: "source", label: "Source", value: "GitHub" },
@@ -269,6 +272,35 @@ test("community active filters expose readable labels and removal URLs", () => {
     ),
     "/community?q=robot&sort=total&category=hardware-robotics&source=github&location=United+Kingdom&popular=true",
   );
+
+  assert.equal(
+    buildCommunityFilterRemovalUrl(
+      {
+        q: "robot",
+        sort: "total",
+        category: "hardware-robotics",
+        status: "breakout",
+        source: "github",
+        location: "United Kingdom",
+        popular: true,
+      },
+      "sort",
+    ),
+    "/community?q=robot&category=hardware-robotics&status=breakout&source=github&location=United+Kingdom&popular=true",
+  );
+});
+
+test("community empty state suggestions reflect the active filters", () => {
+  const suggestions = buildCommunityEmptyStateSuggestions([
+    { key: "q", label: "Search", value: "robot" },
+    { key: "popular", label: "Popularity", value: "Popular this week" },
+    { key: "source", label: "Source", value: "GitHub" },
+  ]);
+
+  assert.deepEqual(suggestions, [
+    'Clear the search for "robot".',
+    "Turn off Popular this week only.",
+  ]);
 });
 
 test("loadCommunityWatchlists returns the fetched directory payload", async () => {
@@ -391,6 +423,47 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Search: robot/);
   assert.match(html, /Category: Hardware Robotics/);
   assert.match(html, /Clear all/);
+});
+
+test("community page empty state suggests how to loosen active filters", async () => {
+  process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
+  const payload: PublicWatchlistsResponse = {
+    watchlists: [
+      {
+        id: 1,
+        name: "Popular Robotics",
+        itemCount: 3,
+        shareToken: "popular-robotics",
+        createdAt: "2026-03-10T12:00:00Z",
+        updatedAt: "2026-03-10T12:00:00Z",
+        recentOpenCount: 6,
+        accessCount: 12,
+        popularThisWeek: true,
+        categories: ["hardware-robotics"],
+        statuses: ["breakout"],
+      },
+    ],
+  };
+
+  global.fetch = (async () =>
+    new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })) as typeof fetch;
+
+  const element = await CommunityPage({
+    searchParams: Promise.resolve({
+      q: "climate",
+      sort: "total",
+      category: "hardware-robotics",
+      popular: "true",
+    }),
+  });
+  const html = renderToStaticMarkup(element);
+
+  assert.match(html, /No public watchlists match/);
+  assert.match(html, /Clear the search for &quot;climate&quot;\./);
+  assert.match(html, /Switch sorting back from Total opens\./);
 });
 
 test.afterEach(() => {
