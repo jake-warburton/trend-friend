@@ -2,7 +2,7 @@ import type { TrendForecast } from "@/lib/types";
 
 export function getExplorerForecastBadge(
   forecastDirection: string | null | undefined,
-): { label: string; tone: "high" | "medium" } | null {
+): { label: string; tone: "high" | "medium" | "low" } | null {
   if (forecastDirection === "accelerating") {
     return {
       label: "Predicted breakout",
@@ -13,6 +13,12 @@ export function getExplorerForecastBadge(
     return {
       label: "Cooling ahead",
       tone: "medium",
+    };
+  }
+  if (forecastDirection === "stable") {
+    return {
+      label: "Holding steady",
+      tone: "low",
     };
   }
   return null;

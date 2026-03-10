@@ -1311,6 +1311,12 @@ input {
   color: #ffd29d;
 }
 
+.forecast-badge-low {
+  border: 1px solid rgba(140, 160, 190, 0.22);
+  background: rgba(140, 160, 190, 0.12);
+  color: #7a8494;
+}
+
 .seasonality-badge {
   display: inline-flex;
   align-items: center;

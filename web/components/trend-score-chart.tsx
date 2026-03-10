@@ -107,7 +107,7 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
             }}
             formatter={(value, name) => {
               if (name === "score") return [Number(value).toFixed(1), "Score"];
-              if (name === "forecast") return [Number(value).toFixed(1), "Forecast"];
+              if (name === "forecast") return [Number(value).toFixed(1), "Forecast (projected)"];
               return [String(value), String(name)];
             }}
           />

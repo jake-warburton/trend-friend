@@ -17,6 +17,10 @@ test("forecast UI helpers expose explorer badge and readable labels", () => {
     label: "Cooling ahead",
     tone: "medium",
   });
+  assert.deepEqual(getExplorerForecastBadge("stable"), {
+    label: "Holding steady",
+    tone: "low",
+  });
   assert.equal(getExplorerForecastBadge("steady"), null);
   assert.equal(formatForecastConfidence("medium"), "Medium");
   assert.equal(formatForecastMethod("holt"), "Holt trend");
