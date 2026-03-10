@@ -22,6 +22,7 @@ from app.data.repositories import NotificationRepository, WatchlistRepository
 from app.models import TrendScoreResult
 from app.notifications.deliver import (
     build_pipeline_notification_payload,
+    compute_signature,
     deliver_post_run_notifications,
 )
 from app.notifications.digest import build_run_digest
@@ -217,6 +218,97 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(len(logs), 1)
         self.assertIsNone(logs[0].status_code)
         self.assertIsNotNone(logs[0].error)
+
+
+class SignatureTests(unittest.TestCase):
+    def test_compute_signature_produces_hex_digest(self) -> None:
+        body = b'{"event":"notification_test"}'
+        sig = compute_signature(body, "my-secret")
+        self.assertEqual(len(sig), 64)
+        # Deterministic: same inputs produce same output
+        self.assertEqual(sig, compute_signature(body, "my-secret"))
+
+    def test_compute_signature_differs_with_different_secret(self) -> None:
+        body = b'{"event":"notification_test"}'
+        sig_a = compute_signature(body, "secret-a")
+        sig_b = compute_signature(body, "secret-b")
+        self.assertNotEqual(sig_a, sig_b)
+
+
+class RetryTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.connection = sqlite3.connect(":memory:", check_same_thread=False)
+        self.connection.row_factory = sqlite3.Row
+        initialize_database(self.connection)
+        self.watchlist_repo = WatchlistRepository(self.connection)
+        self.notification_repo = NotificationRepository(self.connection)
+        self.watchlist = self.watchlist_repo.create_watchlist("Core")
+        self.channel = self.notification_repo.create_channel(
+            channel_type="webhook",
+            destination="http://127.0.0.1:0",
+            label="Retry-Test",
+        )
+
+    def tearDown(self) -> None:
+        self.connection.close()
+
+    def test_delivery_retries_on_transient_failure(self) -> None:
+        call_count = 0
+
+        def flaky_post(url: str, payload: dict, timeout: int) -> int:
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise RuntimeError("Connection refused")
+            return 200
+
+        with patch("app.notifications.deliver.RETRY_BACKOFF_SECONDS", [0, 0]):
+            deliver_post_run_notifications(
+                connection=self.connection,
+                run_at=datetime(2026, 3, 10, tzinfo=timezone.utc),
+                alert_events=[],
+                digest=build_run_digest(
+                    current_scores=[_score("ai agents", 52.3)],
+                    previous_scores=[],
+                    current_ranks={"ai agents": 1},
+                    previous_ranks={},
+                    statuses={"ai agents": "breakout"},
+                ),
+                post_json=flaky_post,
+            )
+
+        self.assertEqual(call_count, 3)
+        logs = self.notification_repo.list_recent_logs(self.channel.id)
+        self.assertEqual(logs[0].status_code, 200)
+        self.assertIsNone(logs[0].error)
+
+    def test_delivery_gives_up_after_max_retries(self) -> None:
+        call_count = 0
+
+        def always_fail(url: str, payload: dict, timeout: int) -> int:
+            nonlocal call_count
+            call_count += 1
+            raise RuntimeError("Connection refused")
+
+        with patch("app.notifications.deliver.RETRY_BACKOFF_SECONDS", [0, 0]):
+            deliver_post_run_notifications(
+                connection=self.connection,
+                run_at=datetime(2026, 3, 10, tzinfo=timezone.utc),
+                alert_events=[],
+                digest=build_run_digest(
+                    current_scores=[_score("ai agents", 52.3)],
+                    previous_scores=[],
+                    current_ranks={"ai agents": 1},
+                    previous_ranks={},
+                    statuses={"ai agents": "breakout"},
+                ),
+                post_json=always_fail,
+            )
+
+        self.assertEqual(call_count, 3)  # 1 initial + 2 retries
+        logs = self.notification_repo.list_recent_logs(self.channel.id)
+        self.assertIsNone(logs[0].status_code)
+        self.assertIn("Connection refused", logs[0].error)
 
 
 class NotificationCliPayloadTests(unittest.TestCase):

@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import logging
+import os
 import sqlite3
+import time
+import uuid
 from datetime import datetime, timezone
 from typing import Callable
 from urllib import error, request
@@ -17,6 +22,9 @@ LOGGER = logging.getLogger(__name__)
 
 CHANNEL_TYPE_WEBHOOK = "webhook"
 WEBHOOK_TIMEOUT_SECONDS = 10
+MAX_RETRIES = 2
+RETRY_BACKOFF_SECONDS = [1, 3]
+USER_AGENT = "TrendFriend/1.0"
 
 PostJson = Callable[[str, dict, int], int]
 
@@ -111,6 +119,12 @@ def build_pipeline_notification_payload(
     }
 
 
+def compute_signature(body: bytes, secret: str) -> str:
+    """Compute HMAC-SHA256 hex digest for webhook payload signing."""
+
+    return hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+
+
 def _deliver_channel(
     notification_repo: NotificationRepository,
     channel: NotificationChannel,
@@ -122,10 +136,19 @@ def _deliver_channel(
     status_code: int | None = None
     error_message: str | None = None
 
-    try:
-        status_code = post_json(channel.destination, payload, WEBHOOK_TIMEOUT_SECONDS)
-    except Exception as exc:  # pragma: no cover - error branch validated through tests
-        error_message = str(exc)
+    last_error: str | None = None
+    for attempt in range(1 + MAX_RETRIES):
+        try:
+            status_code = post_json(channel.destination, payload, WEBHOOK_TIMEOUT_SECONDS)
+            last_error = None
+            break
+        except Exception as exc:
+            last_error = str(exc)
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_BACKOFF_SECONDS[attempt])
+
+    if last_error is not None:
+        error_message = last_error
         LOGGER.warning("Notification delivery failed for channel %s: %s", channel.id, error_message)
 
     notification_repo.append_log(
@@ -140,15 +163,19 @@ def _deliver_channel(
 
 def _post_json(url: str, payload: dict, timeout_seconds: int) -> int:
     body = json.dumps(payload).encode("utf-8")
-    req = request.Request(
-        url,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Content-Length": str(len(body)),
-        },
-        method="POST",
-    )
+    delivery_id = uuid.uuid4().hex[:16]
+    headers = {
+        "Content-Type": "application/json",
+        "Content-Length": str(len(body)),
+        "User-Agent": USER_AGENT,
+        "X-TrendFriend-Delivery": delivery_id,
+    }
+
+    webhook_secret = os.environ.get("WEBHOOK_SECRET", "")
+    if webhook_secret:
+        headers["X-TrendFriend-Signature"] = compute_signature(body, webhook_secret)
+
+    req = request.Request(url, data=body, headers=headers, method="POST")
     try:
         with request.urlopen(req, timeout=timeout_seconds) as response:
             return int(response.status)
