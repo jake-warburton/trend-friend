@@ -206,6 +206,7 @@ def signal_type_for_source(source_name: str) -> str:
 
     return {
         "github": "developer",
+        "google_trends": "search",
         "hacker_news": "social",
         "reddit": "social",
         "wikipedia": "knowledge",

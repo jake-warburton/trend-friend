@@ -9,6 +9,7 @@ from time import perf_counter
 from app.config import Settings
 from app.models import RawSourceItem, SourceIngestionRun
 from app.sources.github import GitHubSourceAdapter
+from app.sources.google_trends import GoogleTrendsSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
@@ -24,6 +25,7 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         HackerNewsSourceAdapter(settings),
         GitHubSourceAdapter(settings),
         WikipediaSourceAdapter(settings),
+        GoogleTrendsSourceAdapter(settings),
     ]
     all_items: list[RawSourceItem] = []
     source_runs: list[SourceIngestionRun] = []
