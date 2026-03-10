@@ -597,6 +597,27 @@ input {
   color: #ffca6e;
 }
 
+.alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 6px;
+  border-radius: 8px;
+  background: #ff5e5e;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.snapshot-card-alert {
+  border-left: 2px solid #ffca6e;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.35fr) minmax(190px, 0.52fr);

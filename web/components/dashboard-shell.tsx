@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import type { DashboardData, WatchlistResponse } from "@/lib/types";
+import type { AlertEvent, AlertEventsResponse, DashboardData, WatchlistResponse } from "@/lib/types";
 
 type DashboardShellProps = {
   initialData: DashboardData;
@@ -46,6 +46,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [watchlistError, setWatchlistError] = useState<string | null>(null);
   const [watchlistName, setWatchlistName] = useState("");
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
+  const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
+  const [alertCount, setAlertCount] = useState(0);
   const deferredKeyword = useDeferredValue(keyword);
 
   const filteredTrends = useMemo(() => {
@@ -101,6 +103,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
   useEffect(() => {
     void loadWatchlists();
+    void loadAlertEvents();
   }, []);
 
   async function loadWatchlists() {
@@ -175,6 +178,34 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       return;
     }
     setWatchlistError("Could not create alert");
+  }
+
+  async function loadAlertEvents() {
+    try {
+      const response = await fetch("/api/alerts?unread_only=true");
+      if (!response.ok) return;
+      const data = (await response.json()) as AlertEventsResponse;
+      setAlertEvents(data.alerts ?? []);
+      setAlertCount(data.alerts?.length ?? 0);
+    } catch {
+      // silently ignore — alerts are non-critical
+    }
+  }
+
+  async function handleMarkAlertsRead() {
+    const unreadIds = alertEvents.filter((e) => !e.read).map((e) => e.id);
+    if (unreadIds.length === 0) return;
+    try {
+      await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark-read", eventIds: unreadIds }),
+      });
+      setAlertEvents([]);
+      setAlertCount(0);
+    } catch {
+      // silently ignore
+    }
   }
 
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
@@ -587,7 +618,44 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </section>
           </div>
 
-          <div className="section-heading">
+          <div className="section-heading section-heading-spaced">
+            <h2>
+              Alerts
+              {alertCount > 0 ? (
+                <span className="alert-badge">{alertCount}</span>
+              ) : null}
+            </h2>
+            {alertCount > 0 ? (
+              <button className="mini-action-button" onClick={() => void handleMarkAlertsRead()} type="button">
+                Mark read
+              </button>
+            ) : null}
+          </div>
+
+          <div className="snapshot-list">
+            {alertEvents.length === 0 ? (
+              <p className="source-summary-copy">No unread alerts.</p>
+            ) : (
+              alertEvents.slice(0, 8).map((event) => (
+                <section className="snapshot-card snapshot-card-alert" key={event.id}>
+                  <header>
+                    <strong>
+                      <Link className="trend-link" href={`/trends/${event.trendId}`}>
+                        {event.trendName}
+                      </Link>
+                    </strong>
+                    <span className="trend-status-pill trend-status-pill-breakout">
+                      {formatAlertRuleType(event.ruleType)}
+                    </span>
+                  </header>
+                  <p className="source-summary-copy">{event.message}</p>
+                  <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
+                </section>
+              ))
+            )}
+          </div>
+
+          <div className="section-heading section-heading-spaced">
             <h2>Runs</h2>
           </div>
 
@@ -841,6 +909,16 @@ function formatPercent(value: number, dataset: { value: number }[]) {
     return "0%";
   }
   return `${Math.round((value / total) * 100)}%`;
+}
+
+function formatAlertRuleType(ruleType: string) {
+  const labels: Record<string, string> = {
+    score_above: "Score",
+    rank_change: "Rank",
+    new_breakout: "Breakout",
+    new_trend: "New",
+  };
+  return labels[ruleType] ?? ruleType;
 }
 
 function buildConicGradient(dataset: { value: number }[]) {

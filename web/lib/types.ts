@@ -301,3 +301,21 @@ export type WatchlistResponse = {
   alerts: AlertRule[];
   matches: AlertMatch[];
 };
+
+export type AlertEvent = {
+  id: number;
+  ruleId: number;
+  watchlistId: number;
+  trendId: string;
+  trendName: string;
+  ruleType: string;
+  threshold: number;
+  currentValue: number;
+  message: string;
+  triggeredAt: string;
+  read: boolean;
+};
+
+export type AlertEventsResponse = {
+  alerts: AlertEvent[];
+};
