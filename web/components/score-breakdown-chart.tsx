@@ -41,21 +41,21 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, bottom: 4, left: 60 }}>
-          <XAxis type="number" tick={{ fill: "#8892b0", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <XAxis type="number" tick={{ fill: "#7a8494", fontSize: 11 }} axisLine={false} tickLine={false} />
           <YAxis
             type="category"
             dataKey="label"
-            tick={{ fill: "#8892b0", fontSize: 12 }}
+            tick={{ fill: "#7a8494", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
             width={70}
           />
           <Tooltip
             contentStyle={{
-              background: "#0d1b2a",
-              border: "1px solid #1e2d4d",
+              background: "#0e1420",
+              border: "1px solid #1e2838",
               borderRadius: 8,
-              color: "#e0e6f0",
+              color: "#e0e4ea",
               fontSize: 12,
             }}
             formatter={(value) => [Number(value).toFixed(1), "Score"]}

@@ -60,33 +60,33 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e2d4d" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1e2838" />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#8892b0", fontSize: 11 }}
-            axisLine={{ stroke: "#1e2d4d" }}
+            tick={{ fill: "#7a8494", fontSize: 11 }}
+            axisLine={{ stroke: "#1e2838" }}
             tickLine={false}
           />
           <YAxis
             domain={[0, Math.ceil(maxScore * 1.1)]}
-            tick={{ fill: "#8892b0", fontSize: 11 }}
+            tick={{ fill: "#7a8494", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={40}
           />
           <Tooltip
             contentStyle={{
-              background: "#0d1b2a",
-              border: "1px solid #1e2d4d",
+              background: "#0e1420",
+              border: "1px solid #1e2838",
               borderRadius: 8,
-              color: "#e0e6f0",
+              color: "#e0e4ea",
               fontSize: 12,
             }}
             formatter={(value) => [Number(value).toFixed(1), "Score"]}
             labelFormatter={(label) => String(label)}
           />
           <Legend
-            wrapperStyle={{ fontSize: 11, color: "#8892b0" }}
+            wrapperStyle={{ fontSize: 11, color: "#7a8494" }}
             iconType="plainline"
           />
           {topTrends.map((trend, i) => (
