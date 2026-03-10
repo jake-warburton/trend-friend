@@ -1405,6 +1405,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
           <div className="section-heading section-heading-spaced">
             <h2>Public watchlists</h2>
+            <Link className="mini-action-button community-link-button" href="/community">
+              Browse all
+            </Link>
           </div>
 
           <div className="snapshot-list">
