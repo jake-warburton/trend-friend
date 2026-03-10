@@ -12,6 +12,7 @@ import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { hasOverviewChanged } from "@/lib/auto-refresh";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { buildSourceWatchlist } from "@/lib/source-health";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
@@ -108,6 +109,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const communitySpotlights = useMemo(
     () => buildCommunitySpotlights(publicWatchlists),
     [publicWatchlists],
+  );
+  const sourceWatchlist = useMemo(
+    () => buildSourceWatchlist(initialData.overview.sources),
+    [initialData.overview.sources],
   );
 
   function showActionNotice(message: string) {
@@ -1788,6 +1793,29 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </summary>
 
             <div className="snapshot-list">
+              {sourceWatchlist.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source watch</strong>
+                    <span className="source-health-pill source-health-pill-degraded">Needs attention</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceWatchlist.map((item) => (
+                      <article className="detail-list-item" key={item.source}>
+                        <div>
+                          <strong>
+                            <Link className="trend-link" href={`/sources/${item.source}`}>
+                              {item.title}
+                            </Link>
+                          </strong>
+                          <span>{item.detail}</span>
+                        </div>
+                        <small>{formatWatchSeverity(item.severity)}</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
               {initialData.overview.sources.map((source) => (
                 <section className="snapshot-card" key={source.source}>
                   <header>
@@ -2027,6 +2055,16 @@ function sourceHealthClassName(status: string) {
     return "source-health-pill source-health-pill-degraded";
   }
   return "source-health-pill source-health-pill-stale";
+}
+
+function formatWatchSeverity(severity: "critical" | "warning" | "info") {
+  if (severity === "critical") {
+    return "Critical";
+  }
+  if (severity === "warning") {
+    return "Warning";
+  }
+  return "Watch";
 }
 
 function formatDuration(durationMs: number) {
