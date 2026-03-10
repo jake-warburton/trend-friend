@@ -1,99 +1,55 @@
 # Implementation Backlog
 
-This file captures remaining engineering work after the current branch reached:
-- local-first watchlist/share/alerts support
-- route and smoke-test coverage for the main local workflows
-- per-signal geo tagging
-- trend-level geo summary on detail pages
+This file captures remaining engineering work. Items marked DONE were completed
+on the develop branch and are listed for traceability.
 
-## Immediate
+## Completed
 
-### Propagate Geo Summary Beyond Trend Detail
+### Propagate Geo Summary Beyond Trend Detail — DONE
+- Added geo summary to watchlist, shared, and community payloads
+- Aggregated location context at collection level
+- Updated web types and rendering
 
-Why:
-- The backend now computes `geo_summary` for detail records only.
-- Watchlists, shared watchlists, and community payloads still lack aggregated location context.
+### Python Tests For CLI Fallback Commands — DONE
+- 18 tests covering share, public lists, shared-watchlist, alerts, mark-read
+- Validated output contracts and exit behavior
 
-Work:
-- Add geo summary fields to watchlist/community/share payload contracts
-- Reuse one aggregation path instead of duplicating SQL per route
-- Add serializer coverage
-- Add web types and rendering for these payloads
+### Production API Boundary Cleanup — DONE
+- Timestamp normalization across FastAPI and CLI fallback
+- Error status propagation (was always 500, now typed)
+- Consistent shapes between modes
 
-Tests:
-- Python repository/export tests for collection-level geo rollups
-- Next route/page tests for shared and community geo rendering
+### Google Trends Adapter — DONE (already existed)
+- Adapter, fallback, and sample payload were already implemented
 
-### Python Tests For CLI Fallback Commands
+### Historical Chart Data Extensions — DONE
+- Added `recentHistory` to explorer payloads
+- Sparkline rendering in explorer cards
 
-Why:
-- The web fallback relies on `scripts/watchlists_api.py` for alert and share behavior.
-- Current coverage is strongest at the Next route/service layer, not at the Python CLI layer itself.
+### Scheduler And Freshness Plumbing — DONE
+- Scheduler was already fully implemented
+- Added stale-data warning badge to dashboard
 
-Work:
-- Add direct tests for:
-  - `share-watchlist`
-  - `list-public-watchlists`
-  - `get-shared-watchlist`
-  - `list-alerts`
-  - `mark-alerts-read`
-- Validate output contracts and exit behavior
+### Interaction-State UX Support — DONE
+- Loading states for async actions (share, alert, watchlist mutations)
+- Success notices with auto-dismiss
+- Better empty states for alerts and community sections
+- Error messages include status codes
 
-### Production API Boundary Cleanup
+### Geo Quality Controls — DONE
+- Centralized confidence constants in `app/topics/geo.py`
+- Minimum confidence filter on geo summary SQL query
+- 8 test fixtures covering false positives, confidence ordering, ambiguous text
 
-Why:
-- The app intentionally supports both local subprocess fallback and direct backend API usage.
-- That boundary works, but it should be more explicit before further product expansion.
+### Shared Watchlist Enrichment — DONE
+- Items show rank, status, category, sources, rank change
+- Reuses existing status pill and movement pill CSS
 
-Work:
-- Audit the server helpers under `web/lib/server/`
-- Ensure fallback and API modes return the same shapes and status semantics
-- Keep injectable route handlers for testability
-- Document which paths are local-only versus production API-ready
-
-## Near Term
-
-### Google Trends Adapter
-
-Why:
-- The scoring model already has a `search` component waiting for a real source.
-
-Work:
-- Implement a Google Trends adapter
-- Add deterministic fallback behavior
-- Rebalance score weights only after signal quality is acceptable
-
-Tests:
-- Adapter normalization fixtures
-- Fallback-path tests
-- End-to-end export verification
-
-### Historical Chart Data Extensions
-
-Why:
-- The frontend can render charts today, but explorer and overview views still need chart-ready payload shapes.
-
-Work:
-- Add compact recent history to explorer payloads
-- Keep detail history payloads stable
-- Avoid moving historical calculations into the frontend
-
-### Scheduler And Freshness Plumbing
-
-Why:
-- Manual refresh exists, but automated ingestion and explicit freshness signaling are still missing.
-
-Work:
-- Add a scheduler entrypoint
-- Emit last-run health metadata
-- Surface stale-data warnings in web payloads
+### Category Improvements — DONE
+- Meta trend cards are now interactive (click to filter explorer)
+- Cards show trend count and average score
 
 ## Ongoing Cleanup
-
-### Interaction-State UX Support
-
-Engineering angle:
-- Ensure routes return enough structured error information for the web app to distinguish conflicts, not-found states, fallback failures, and generic errors.
 
 ### Contract Consolidation
 
@@ -104,16 +60,6 @@ Engineering angle:
   - JSON exports
   - CLI fallback payloads
   - Next.js server helper contracts
-
-### Geo Quality Controls
-
-Why:
-- Geo is now partially inferred, which is useful but easy to overstate.
-
-Work:
-- Centralize geo confidence thresholds
-- Keep origin claims separate from "currently trending in"
-- Add fixtures for ambiguous geo text and non-geo false positives
 
 ## Deferred
 
@@ -129,13 +75,3 @@ Work:
 Work:
 - Move more frontend reads from generated/exported JSON or local helpers to dedicated backend endpoints where appropriate
 - Preserve the current contract shapes during migration
-
-## Suggested Execution Order
-
-1. Geo summary propagation to watchlists/shared/community
-2. Python CLI fallback tests
-3. Production API boundary cleanup
-4. Google Trends adapter
-5. Historical chart payload extensions
-6. Scheduler and freshness plumbing
-7. Auth and full production API evolution
