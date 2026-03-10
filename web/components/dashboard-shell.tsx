@@ -67,6 +67,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [authDisplayName, setAuthDisplayName] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [authPending, setAuthPending] = useState(false);
+  const [shareExpiryPreset, setShareExpiryPreset] = useState<string>("none");
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
@@ -429,7 +430,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       const response = await fetch(`/api/watchlists/${targetWatchlist.id}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ public: isPublic, showCreator: false }),
+        body: JSON.stringify({
+          public: isPublic,
+          showCreator: false,
+          expiresAt: shareExpiryPreset === "none" ? null : buildShareExpiryIso(shareExpiryPreset),
+        }),
       });
 
       if (!response.ok) {
@@ -511,6 +516,30 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         return;
       }
       showActionNotice(!showCreator ? "Creator name will be shown" : "Creator name hidden");
+      await loadWatchlists();
+      await loadPublicWatchlists();
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleSetShareExpiry(targetWatchlist: Watchlist, shareId: number, preset: string) {
+    setShareNotice(null);
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/shares/${shareId}/expiration`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expiresAt: preset === "none" ? null : buildShareExpiryIso(preset),
+        }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not update share expiry");
+        return;
+      }
+      showActionNotice(preset === "none" ? "Share expiry removed" : "Share expiry updated");
       await loadWatchlists();
       await loadPublicWatchlists();
     } finally {
@@ -992,6 +1021,27 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 </Button>
               </div>
               {defaultWatchlist ? (
+                <>
+                <div className="watchlist-form">
+                  <Select.Root value={shareExpiryPreset} onValueChange={(value) => setShareExpiryPreset(value ?? "none")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            <Select.Item className="select-item" value="none"><Select.ItemText>No expiry</Select.ItemText></Select.Item>
+                            <Select.Item className="select-item" value="24h"><Select.ItemText>24 hours</Select.ItemText></Select.Item>
+                            <Select.Item className="select-item" value="7d"><Select.ItemText>7 days</Select.ItemText></Select.Item>
+                            <Select.Item className="select-item" value="30d"><Select.ItemText>30 days</Select.ItemText></Select.Item>
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </div>
                 <div className="watchlist-form">
                   <Button
                     className="mini-action-button"
@@ -1008,6 +1058,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     {actionPending ? "Sharing..." : "Public link"}
                   </Button>
                 </div>
+                </>
               ) : null}
               {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
               {actionNotice ? <p className="action-success-notice">{actionNotice}</p> : null}
@@ -1028,7 +1079,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           <span>{share.public ? "Public share" : "Private share"}</span>
                         </Link>
                         <small className="source-summary-copy">
-                          {share.public ? "Listed in community directory" : "Only works via direct link"} · {share.showCreator ? "Shows your name" : "Anonymous"} · {formatCompactTimestamp(share.createdAt)}
+                          {share.public ? "Listed in community directory" : "Only works via direct link"} · {share.showCreator ? "Shows your name" : "Anonymous"} · {formatShareExpirySummary(share.expiresAt)} · {formatCompactTimestamp(share.createdAt)}
                         </small>
                       </div>
                       <div className="watchlist-item-share-actions">
@@ -1047,6 +1098,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           type="button"
                         >
                           {share.public ? "Make private" : "Make public"}
+                        </button>
+                        <button
+                          className="mini-action-button"
+                          disabled={actionPending || watchlistsRequireAuth}
+                          onClick={() => void handleSetShareExpiry(defaultWatchlist, share.id, share.expiresAt ? "none" : "7d")}
+                          type="button"
+                        >
+                          {share.expiresAt ? "Clear expiry" : "Expire in 7d"}
                         </button>
                         <button
                           className="mini-action-button"
@@ -1217,6 +1276,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   {watchlist.ownerDisplayName ? (
                     <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
                   ) : null}
+                  <p className="source-summary-copy">{formatShareExpirySummary(watchlist.expiresAt ?? null)}</p>
                   {watchlist.geoSummary?.length ? (
                     <p className="source-summary-copy">
                       {watchlist.geoSummary.map((geo) => geo.label).join(", ")}
@@ -1444,6 +1504,30 @@ function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSumm
     return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}%`;
   }
   return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
+}
+
+function buildShareExpiryIso(preset: string) {
+  const now = new Date();
+  const next = new Date(now);
+  if (preset === "24h") {
+    next.setHours(next.getHours() + 24);
+  } else if (preset === "7d") {
+    next.setDate(next.getDate() + 7);
+  } else if (preset === "30d") {
+    next.setDate(next.getDate() + 30);
+  }
+  return next.toISOString();
+}
+
+function formatShareExpirySummary(value: string | null) {
+  if (value == null) {
+    return "No expiry";
+  }
+  const timestamp = new Date(value);
+  if (timestamp.getTime() <= Date.now()) {
+    return "Expired";
+  }
+  return `Expires ${formatCompactTimestamp(value)}`;
 }
 
 function isDataStale(lastRunAt: string | null): boolean {

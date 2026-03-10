@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import secrets
 import sqlite3
-from datetime import timezone
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -36,6 +36,7 @@ def share_watchlist(
         raise HTTPException(status_code=404, detail="Watchlist not found")
 
     is_public = body.get("public", False)
+    expires_at = _parse_expires_at(body.get("expiresAt"))
     token = secrets.token_urlsafe(16)
     share = repo.create_share(
         watchlist_id=watchlist_id,
@@ -43,12 +44,14 @@ def share_watchlist(
         created_by=user.id if auth_enabled() else None,
         is_public=is_public,
         show_creator=body.get("showCreator") is True,
+        expires_at=expires_at,
     )
 
     return {
         "shareToken": share.share_token,
         "public": share.is_public,
         "showCreator": share.show_creator,
+        "expiresAt": _to_utc_iso_or_none(share.expires_at),
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -101,6 +104,7 @@ def update_watchlist_share_visibility(
         "shareToken": share.share_token,
         "public": share.is_public,
         "showCreator": share.show_creator,
+        "expiresAt": _to_utc_iso_or_none(share.expires_at),
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -132,6 +136,37 @@ def update_watchlist_share_attribution(
         "shareToken": share.share_token,
         "public": share.is_public,
         "showCreator": share.show_creator,
+        "expiresAt": _to_utc_iso_or_none(share.expires_at),
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+
+@router.post("/watchlists/{watchlist_id}/shares/{share_id}/expiration")
+def update_watchlist_share_expiration(
+    watchlist_id: int,
+    share_id: int,
+    body: dict,
+    user: User = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Update expiration time for a share."""
+
+    expires_at = _parse_expires_at(body.get("expiresAt"))
+    repo = WatchlistRepository(db)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
+    if watchlist is None:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    share = repo.update_share_expiration(share_id, user.id if auth_enabled() else None, expires_at)
+    if share is None:
+        raise HTTPException(status_code=404, detail="Share link not found")
+
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "showCreator": share.show_creator,
+        "expiresAt": _to_utc_iso_or_none(share.expires_at),
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -143,6 +178,14 @@ def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_
     repo = WatchlistRepository(db)
     share = repo.get_share_by_token(share_token)
     if share is None:
+        direct_row = db.execute(
+            "SELECT expires_at FROM watchlist_shares WHERE share_token = ?",
+            (share_token,),
+        ).fetchone()
+        if direct_row is not None and direct_row["expires_at"]:
+            expires_at = datetime.fromisoformat(direct_row["expires_at"])
+            if expires_at <= datetime.now(expires_at.tzinfo):
+                raise HTTPException(status_code=410, detail="Share link has expired")
         raise HTTPException(status_code=404, detail="Share link not found")
 
     watchlist = repo.get_watchlist(share.watchlist_id)
@@ -238,3 +281,23 @@ def _resolve_owner_display_names(db: sqlite3.Connection, shares: list) -> dict[i
         if user is not None:
             resolved[share.id] = user.display_name
     return resolved
+
+
+def _parse_expires_at(value: object) -> datetime | None:
+    if value in (None, ""):
+        return None
+    if not isinstance(value, str):
+        raise HTTPException(status_code=422, detail="expiresAt must be an ISO timestamp or null")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="expiresAt must be an ISO timestamp or null") from exc
+    if parsed <= datetime.now(parsed.tzinfo):
+        raise HTTPException(status_code=422, detail="expiresAt must be in the future")
+    return parsed
+
+
+def _to_utc_iso_or_none(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")

@@ -94,6 +94,25 @@ test("mutateWatchlists maps share attribution updates to CLI arguments", async (
   });
 });
 
+test("mutateWatchlists maps share expiration updates to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "set-share-expiration",
+      watchlistId: 7,
+      shareId: 12,
+      expiresAt: "2026-03-20T12:00:00Z",
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: ["set-share-expiration", "--share-id", "12", "--expires-at", "2026-03-20T12:00:00Z"],
+  });
+});
+
 test("shareWatchlist maps public shares to the CLI fallback", async () => {
   const payload = await shareWatchlist(3, true, {
     apiEnabled: false,

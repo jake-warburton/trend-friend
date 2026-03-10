@@ -119,6 +119,16 @@ class ShareWatchlistTests(unittest.TestCase):
         self.assertGreaterEqual(len(events), 2)
         self.assertEqual(events[0]["eventType"], "visibility_updated")
 
+    def test_expiration_update_changes_expires_at(self) -> None:
+        from scripts.watchlists_api import update_share_expiration_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Expiry List")
+        share = self.watchlist_repo.create_share(watchlist.id, "expiry-token", is_public=True)
+
+        result = update_share_expiration_payload(self.watchlist_repo, share.id, expires_at="2026-03-20T12:00:00Z")
+
+        self.assertEqual(result["expiresAt"], "2026-03-20T12:00:00Z")
+
 
 class GetSharedWatchlistTests(unittest.TestCase):
     """Test get_shared_payload from the CLI layer."""

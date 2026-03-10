@@ -17,6 +17,20 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
   if (payload == null) {
     notFound();
   }
+  if (payload === "expired") {
+    return (
+      <main className="shared-page">
+        <section className="shared-hero">
+          <p className="eyebrow">Shared Watchlist</p>
+          <h1>Link expired</h1>
+          <p className="source-summary-copy">This share link is no longer available.</p>
+          <Link className="refresh-button shared-back-link" href="/">
+            Back to dashboard
+          </Link>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="shared-page">
@@ -29,6 +43,9 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
         {payload.ownerDisplayName ? (
           <p className="source-summary-copy">Shared by {payload.ownerDisplayName}</p>
         ) : null}
+        <p className="source-summary-copy">
+          {payload.expiresAt ? `Expires ${formatTimestamp(payload.expiresAt)}` : "No expiry"}
+        </p>
         <p className="source-summary-copy">Created {formatTimestamp(payload.createdAt)}</p>
         <Link className="refresh-button shared-back-link" href="/">
           Back to dashboard
@@ -82,13 +99,16 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
   );
 }
 
-export async function loadSharedWatchlist(token: string): Promise<SharedWatchlistResponse | null> {
+export async function loadSharedWatchlist(token: string): Promise<SharedWatchlistResponse | "expired" | null> {
   const response = await fetch(`${await getBaseUrl()}/api/shared/${token}`, {
     cache: "no-store",
   });
 
   if (response.status === 404) {
     return null;
+  }
+  if (response.status === 410) {
+    return "expired";
   }
   if (!response.ok) {
     throw new Error("Could not load shared watchlist");

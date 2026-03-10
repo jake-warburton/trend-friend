@@ -326,6 +326,7 @@ export type WatchlistShare = {
   shareToken: string;
   public: boolean;
   showCreator: boolean;
+  expiresAt: string | null;
   createdAt: string;
 };
 
@@ -399,6 +400,7 @@ export type SharedWatchlistResponse = {
   public: boolean;
   showCreator?: boolean;
   ownerDisplayName?: string | null;
+  expiresAt?: string | null;
   createdAt: string;
 };
 
@@ -409,6 +411,7 @@ export type PublicWatchlistSummary = {
   shareToken: string;
   showCreator?: boolean;
   ownerDisplayName?: string | null;
+  expiresAt?: string | null;
   createdAt: string;
   updatedAt: string;
   geoSummary?: TrendGeoSummary[];

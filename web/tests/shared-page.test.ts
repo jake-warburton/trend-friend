@@ -17,6 +17,15 @@ test("loadSharedWatchlist returns null for a 404 response", async () => {
   assert.equal(payload, null);
 });
 
+test("loadSharedWatchlist returns expired for a 410 response", async () => {
+  process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
+  global.fetch = (async () => new Response(null, { status: 410 })) as typeof fetch;
+
+  const payload = await loadSharedWatchlist("expired-token");
+
+  assert.equal(payload, "expired");
+});
+
 test("shared page renders the fetched watchlist", async () => {
   process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
   const responsePayload: SharedWatchlistResponse = {

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import unittest
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -238,6 +239,40 @@ class CommunityAPITests(unittest.TestCase):
         public_resp = self.client.get("/api/v1/community/watchlists")
         self.assertEqual(public_resp.status_code, 200)
         self.assertEqual(public_resp.json()["watchlists"][0]["ownerDisplayName"], "Owner One")
+
+    def test_expired_share_returns_gone(self) -> None:
+        wl_id = self._create_watchlist("Expiring List")
+        expired_at = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+        self.connection.execute(
+            """
+            INSERT INTO watchlist_shares (watchlist_id, share_token, is_public, show_creator, expires_at, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (wl_id, "expired-token", 1, 0, expired_at, "2026-03-09T00:00:00"),
+        )
+        self.connection.commit()
+
+        resp = self.client.get("/api/v1/shared/expired-token")
+        self.assertEqual(resp.status_code, 410)
+
+    def test_share_expiration_toggle_removes_public_watchlist_when_expired(self) -> None:
+        wl_id = self._create_watchlist("Expiry Toggle")
+        share_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/share",
+            json={"public": True},
+        )
+        share_id = self.connection.execute(
+            "SELECT id FROM watchlist_shares WHERE share_token = ?",
+            (share_resp.json()["shareToken"],),
+        ).fetchone()[0]
+        expired_at = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat().replace("+00:00", "Z")
+
+        update_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/shares/{share_id}/expiration",
+            json={"expiresAt": expired_at},
+        )
+        self.assertEqual(update_resp.status_code, 200)
+        self.assertEqual(update_resp.json()["expiresAt"], expired_at)
 
     # -- Public trend page --
 

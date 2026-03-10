@@ -581,15 +581,23 @@ class WatchlistRepository:
         created_by: int | None = None,
         is_public: bool = False,
         show_creator: bool = False,
+        expires_at: datetime | None = None,
     ) -> WatchlistShare:
         """Create a share link for a watchlist."""
 
         cursor = self.connection.execute(
             """
-            INSERT INTO watchlist_shares (watchlist_id, share_token, created_by, is_public, show_creator)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO watchlist_shares (watchlist_id, share_token, created_by, is_public, show_creator, expires_at)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (watchlist_id, share_token, created_by, int(is_public), int(show_creator)),
+            (
+                watchlist_id,
+                share_token,
+                created_by,
+                int(is_public),
+                int(show_creator),
+                expires_at.isoformat() if expires_at is not None else None,
+            ),
         )
         self.connection.commit()
         share = self.get_share_by_id(int(cursor.lastrowid))  # type: ignore[assignment]
@@ -609,7 +617,7 @@ class WatchlistRepository:
         """Return a share by id."""
 
         row = self.connection.execute(
-            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, created_at FROM watchlist_shares WHERE id = ?",
+            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, created_at FROM watchlist_shares WHERE id = ?",
             (share_id,),
         ).fetchone()
         if row is None:
@@ -620,19 +628,22 @@ class WatchlistRepository:
         """Return a share by its token."""
 
         row = self.connection.execute(
-            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, created_at FROM watchlist_shares WHERE share_token = ?",
+            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, created_at FROM watchlist_shares WHERE share_token = ?",
             (token,),
         ).fetchone()
         if row is None:
             return None
-        return self._share_from_row(row)
+        share = self._share_from_row(row)
+        if self._is_share_expired(share):
+            return None
+        return share
 
     def list_public_watchlists(self) -> list[tuple[Watchlist, WatchlistShare]]:
         """Return all watchlists that have a public share link."""
 
         rows = self.connection.execute(
             """
-            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.show_creator, ws.created_at
+            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.show_creator, ws.expires_at, ws.created_at
             FROM watchlist_shares ws
             WHERE ws.is_public = 1
             ORDER BY ws.created_at DESC
@@ -641,6 +652,8 @@ class WatchlistRepository:
         results: list[tuple[Watchlist, WatchlistShare]] = []
         for row in rows:
             share = self._share_from_row(row)
+            if self._is_share_expired(share):
+                continue
             watchlist = self.get_watchlist(share.watchlist_id)
             if watchlist is not None:
                 results.append((watchlist, share))
@@ -651,7 +664,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, created_at
+            SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, created_at
             FROM watchlist_shares
             WHERE watchlist_id = ?
             ORDER BY created_at DESC
@@ -796,6 +809,62 @@ class WatchlistRepository:
             )
         return share
 
+    def update_share_expiration(
+        self,
+        share_id: int,
+        owner_user_id: int | None,
+        expires_at: datetime | None,
+    ) -> WatchlistShare | None:
+        """Update expiration for a share when it belongs to the given owner."""
+
+        expires_value = expires_at.isoformat() if expires_at is not None else None
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET expires_at = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (expires_value, share_id),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET expires_at = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (expires_value, share_id, owner_user_id),
+            )
+        self.connection.commit()
+        if cursor.rowcount == 0:
+            return None
+        share = self.get_share_by_id(share_id)
+        if share is not None:
+            detail = (
+                f"Set share expiry to {expires_at.isoformat()}"
+                if expires_at is not None
+                else "Removed share expiry"
+            )
+            self.record_share_event(
+                share_id=share.id,
+                watchlist_id=share.watchlist_id,
+                actor_user_id=owner_user_id,
+                event_type="expiration_updated",
+                detail=detail,
+            )
+        return share
+
     def record_share_event(
         self,
         share_id: int | None,
@@ -859,6 +928,7 @@ class WatchlistRepository:
             created_by=row["created_by"],
             is_public=bool(row["is_public"]),
             show_creator=bool(row["show_creator"]),
+            expires_at=datetime.fromisoformat(row["expires_at"]) if row["expires_at"] else None,
             created_at=datetime.fromisoformat(row["created_at"]),
         )
 
@@ -873,6 +943,10 @@ class WatchlistRepository:
             detail=row["detail"],
             created_at=datetime.fromisoformat(row["created_at"]),
         )
+
+    @staticmethod
+    def _is_share_expired(share: WatchlistShare) -> bool:
+        return share.expires_at is not None and share.expires_at <= datetime.now(share.expires_at.tzinfo)
 
     def get_watchlist_trend_ids(self) -> dict[int, set[str]]:
         """Return a mapping of watchlist_id -> set of trend_ids."""

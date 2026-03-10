@@ -10,7 +10,8 @@ export type WatchlistMutationBody =
   | { action: "remove-item"; watchlistId: number; trendId: string }
   | { action: "revoke-share"; watchlistId: number; shareId: number }
   | { action: "set-share-visibility"; watchlistId: number; shareId: number; public: boolean }
-  | { action: "set-share-attribution"; watchlistId: number; shareId: number; showCreator: boolean };
+  | { action: "set-share-attribution"; watchlistId: number; shareId: number; showCreator: boolean }
+  | { action: "set-share-expiration"; watchlistId: number; shareId: number; expiresAt: string | null };
 
 export type AlertMutationBody =
   | { action: "mark-read"; eventIds: number[] }
@@ -98,6 +99,13 @@ export async function mutateWatchlists(
         { headers: dependencies.apiHeaders },
       );
     }
+    if (body.action === "set-share-expiration") {
+      return apiPost(
+        `/watchlists/${body.watchlistId}/shares/${body.shareId}/expiration`,
+        { expiresAt: body.expiresAt },
+        { headers: dependencies.apiHeaders },
+      );
+    }
     return apiPost("/watchlists/items", {
       action: "remove",
       watchlistId: body.watchlistId,
@@ -137,6 +145,14 @@ export async function mutateWatchlists(
       "--share-id",
       String(body.shareId),
       ...(body.showCreator ? ["--show-creator"] : []),
+    ));
+  }
+  if (body.action === "set-share-expiration") {
+    return ensureSuccessPayload(await runScript(
+      "set-share-expiration",
+      "--share-id",
+      String(body.shareId),
+      ...(body.expiresAt ? ["--expires-at", body.expiresAt] : []),
     ));
   }
   return runScript(
@@ -201,11 +217,13 @@ export async function shareWatchlist(
   isPublic: boolean,
   dependencies: ServiceDependencies = {},
   showCreator = false,
+  expiresAt: string | null = null,
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
     return (dependencies.apiPost ?? defaultApiPost)(`/watchlists/${watchlistId}/share`, {
       public: isPublic,
       showCreator,
+      expiresAt,
     }, {
       headers: dependencies.apiHeaders,
     });
@@ -216,6 +234,7 @@ export async function shareWatchlist(
     String(watchlistId),
     ...(isPublic ? ["--public"] : []),
     ...(showCreator ? ["--show-creator"] : []),
+    ...(expiresAt ? ["--expires-at", expiresAt] : []),
   ));
 }
 

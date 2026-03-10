@@ -102,6 +102,7 @@ def build_shared_watchlist_payload(
         "public": share.is_public,
         "showCreator": share.show_creator,
         "ownerDisplayName": owner_display_name if share.show_creator else None,
+        "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
         "createdAt": _to_utc_iso(share.created_at),
     }
 
@@ -146,6 +147,7 @@ def _serialize_public_watchlist_summary(
         "shareToken": share.share_token,
         "showCreator": share.show_creator,
         "ownerDisplayName": owner_display_name if share.show_creator else None,
+        "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
@@ -333,6 +335,7 @@ def _serialize_watchlist(
                 "shareToken": share.share_token,
                 "public": share.is_public,
                 "showCreator": share.show_creator,
+                "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
                 "createdAt": _to_utc_iso(share.created_at),
             }
             for share in shares

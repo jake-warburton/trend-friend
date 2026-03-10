@@ -311,6 +311,7 @@ class WatchlistShare:
     created_by: int | None
     is_public: bool
     show_creator: bool
+    expires_at: datetime | None
     created_at: datetime
 
 

@@ -122,6 +122,7 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             created_by INTEGER NULL,
             is_public INTEGER NOT NULL DEFAULT 0,
             show_creator INTEGER NOT NULL DEFAULT 0,
+            expires_at TEXT NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE,
             FOREIGN KEY (created_by) REFERENCES users (id)
@@ -206,6 +207,12 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         table_name="watchlist_shares",
         column_name="show_creator",
         column_sql="INTEGER NOT NULL DEFAULT 0",
+    )
+    ensure_column(
+        connection,
+        table_name="watchlist_shares",
+        column_name="expires_at",
+        column_sql="TEXT NULL",
     )
     ensure_column(
         connection,

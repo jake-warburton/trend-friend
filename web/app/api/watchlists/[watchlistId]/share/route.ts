@@ -18,7 +18,7 @@ export async function handleShareWatchlistPost(
   dependencies: ShareRouteDependencies = { shareWatchlist },
 ) {
   try {
-    const body = (await request.json()) as { public?: boolean; showCreator?: boolean };
+    const body = (await request.json()) as { public?: boolean; showCreator?: boolean; expiresAt?: string | null };
     const { watchlistId } = await context.params;
     const payload = await dependencies.shareWatchlist(
       Number(watchlistId),
@@ -27,6 +27,7 @@ export async function handleShareWatchlistPost(
         apiHeaders: buildForwardedAuthHeaders(request),
       },
       body.showCreator === true,
+      body.expiresAt ?? null,
     );
     return NextResponse.json(payload);
   } catch (error) {
