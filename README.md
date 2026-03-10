@@ -117,6 +117,35 @@ python3 scripts/run_scheduler.py
 
 The scheduler runs ingestion every 30 minutes until stopped.
 
+## Running Codex Autopilot
+
+If you want Codex to make repeated small improvement passes while you are away, use the local wrapper:
+
+```bash
+./scripts/codex_autopilot.sh 3
+```
+
+That runs up to `3` non-interactive Codex passes in a row. Each pass is instructed to:
+
+- make one small coherent improvement
+- run tests before finishing
+- commit only if tests pass
+- stop if blocked
+
+Useful variants:
+
+```bash
+GOAL="Improve dashboard usability and commit after each green pass." ./scripts/codex_autopilot.sh 4
+USE_DANGEROUS_MODE=1 nohup ./scripts/codex_autopilot.sh 8 > autopilot.out 2>&1 &
+```
+
+Notes:
+
+- default mode uses `codex exec --full-auto`
+- unattended runs are more reliable with `USE_DANGEROUS_MODE=1`, but that is materially riskier because it bypasses approvals and sandboxing
+- per-pass logs are written to `.codex-autopilot/`
+- use `tmux` or `nohup` if you want the process to keep running after you disconnect
+
 ## Running The Browser Dashboard
 
 Generate fresh data for the browser UI:
