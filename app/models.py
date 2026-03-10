@@ -98,6 +98,7 @@ class TrendExplorerRecord:
 
     id: str
     name: str
+    category: str
     status: str
     volatility: str
     rank: int
@@ -148,6 +149,7 @@ class TrendDetailRecord:
 
     id: str
     name: str
+    category: str
     status: str
     volatility: str
     rank: int

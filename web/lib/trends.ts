@@ -66,6 +66,7 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       topTrends: [],
       breakoutTrends: [],
       risingTrends: [],
+      metaTrends: [],
     },
     operations: {
       lastRunAt: null,
@@ -109,6 +110,7 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       topTrends: (payload.sections?.topTrends ?? []).map((trend) => ({
         id: trend.id,
         name: trend.name,
+        category: trend.category ?? "general-tech",
         status: trend.status ?? "steady",
         rank: trend.rank ?? 0,
         scoreTotal: trend.scoreTotal ?? 0,
@@ -116,6 +118,7 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       breakoutTrends: (payload.sections?.breakoutTrends ?? []).map((trend) => ({
         id: trend.id,
         name: trend.name,
+        category: trend.category ?? "general-tech",
         status: trend.status ?? "breakout",
         rank: trend.rank ?? 0,
         scoreTotal: trend.scoreTotal ?? 0,
@@ -123,9 +126,17 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       risingTrends: (payload.sections?.risingTrends ?? []).map((trend) => ({
         id: trend.id,
         name: trend.name,
+        category: trend.category ?? "general-tech",
         status: trend.status ?? "rising",
         rank: trend.rank ?? 0,
         scoreTotal: trend.scoreTotal ?? 0,
+      })),
+      metaTrends: (payload.sections?.metaTrends ?? []).map((trend) => ({
+        category: trend.category ?? "general-tech",
+        trendCount: trend.trendCount ?? 0,
+        averageScore: trend.averageScore ?? 0,
+        topTrendId: trend.topTrendId ?? "",
+        topTrendName: trend.topTrendName ?? "",
       })),
     },
     operations: {
@@ -174,6 +185,7 @@ async function readTrendExplorer(): Promise<TrendExplorerResponse> {
     generatedAt: payload.generatedAt,
     trends: payload.trends.map((trend) => ({
       ...trend,
+      category: trend.category ?? "general-tech",
       status: trend.status ?? "steady",
       volatility: trend.volatility ?? "stable",
       previousRank: trend.previousRank ?? null,
@@ -218,6 +230,7 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
     generatedAt: payload.generatedAt,
     trends: payload.trends.map((trend) => ({
       ...trend,
+      category: trend.category ?? "general-tech",
       status: trend.status ?? "steady",
       volatility: trend.volatility ?? "stable",
       previousRank: trend.previousRank ?? null,

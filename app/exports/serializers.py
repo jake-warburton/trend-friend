@@ -13,6 +13,7 @@ from app.exports.contracts import (
     DashboardOverviewPayload,
     DashboardOverviewRunPayload,
     DashboardOverviewSectionsPayload,
+    DashboardOverviewMetaTrendPayload,
     DashboardOverviewSourcePayload,
     DashboardOverviewSummaryPayload,
     DashboardOverviewTrendItemPayload,
@@ -225,6 +226,7 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
     return TrendExplorerRecordPayload(
         id=trend.id,
         name=trend.name,
+        category=trend.category,
         status=trend.status,
         volatility=trend.volatility,
         rank=trend.rank,
@@ -261,6 +263,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
     return TrendDetailRecordPayload(
         id=trend.id,
         name=trend.name,
+        category=trend.category,
         status=trend.status,
         volatility=trend.volatility,
         rank=trend.rank,
@@ -469,6 +472,7 @@ def build_dashboard_sections_payload(
             for trend in trends
             if trend.status == "rising"
         ][:5],
+        meta_trends=build_meta_trend_payloads(trends),
     )
 
 
@@ -478,10 +482,33 @@ def serialize_overview_trend_item(trend: TrendDetailRecord) -> DashboardOverview
     return DashboardOverviewTrendItemPayload(
         id=trend.id,
         name=trend.name,
+        category=trend.category,
         status=trend.status,
         rank=trend.rank,
         score_total=round(trend.score.total_score, 1),
     )
+
+
+def build_meta_trend_payloads(trends: list[TrendDetailRecord]) -> list[DashboardOverviewMetaTrendPayload]:
+    """Summarize the current ranked set into category-level meta trends."""
+
+    grouped: dict[str, list[TrendDetailRecord]] = {}
+    for trend in trends:
+        grouped.setdefault(trend.category, []).append(trend)
+
+    payloads = [
+        # Top-ranked trend acts as the anchor label for each meta trend bucket.
+        DashboardOverviewMetaTrendPayload(
+            category=category,
+            trend_count=len(items),
+            average_score=round(sum(item.score.total_score for item in items) / len(items), 1),
+            top_trend_id=sorted(items, key=lambda item: item.rank)[0].id,
+            top_trend_name=sorted(items, key=lambda item: item.rank)[0].name,
+        )
+        for category, items in grouped.items()
+    ]
+    payloads.sort(key=lambda item: (-item.average_score, -item.trend_count, item.category))
+    return payloads[:6]
 
 
 def build_dashboard_operations_payload(

@@ -126,6 +126,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["trends"][0]["id"], "ai-agents")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
+        self.assertEqual(payload["trends"][0]["category"], "artificial-intelligence")
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
@@ -142,6 +143,7 @@ class ExportPayloadTests(unittest.TestCase):
         ).to_dict()
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
+        self.assertEqual(payload["trends"][0]["category"], "artificial-intelligence")
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
@@ -175,6 +177,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["charts"]["sourceShare"][0]["label"], "Reddit")
         self.assertEqual(payload["charts"]["statusBreakdown"][0]["label"], "Breakout")
         self.assertEqual(payload["sections"]["topTrends"][0]["name"], "AI Agents")
+        self.assertEqual(payload["sections"]["metaTrends"][0]["category"], "artificial-intelligence")
         self.assertEqual(payload["sources"][0]["signalCount"], 2)
         self.assertEqual(payload["sources"][0]["trendCount"], 2)
         self.assertEqual(payload["sources"][0]["status"], "healthy")
@@ -244,6 +247,7 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
     return TrendExplorerRecord(
         id="ai-agents",
         name="AI Agents",
+        category="artificial-intelligence",
         status="breakout",
         volatility="spiking",
         rank=1,
@@ -269,6 +273,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
     return TrendDetailRecord(
         id="ai-agents",
         name="AI Agents",
+        category="artificial-intelligence",
         status="breakout",
         volatility="spiking",
         rank=1,

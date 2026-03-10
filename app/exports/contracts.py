@@ -102,6 +102,7 @@ class TrendExplorerRecordPayload:
 
     id: str
     name: str
+    category: str
     status: str
     volatility: str
     rank: int
@@ -178,6 +179,7 @@ class TrendDetailRecordPayload:
 
     id: str
     name: str
+    category: str
     status: str
     volatility: str
     rank: int
@@ -256,9 +258,21 @@ class DashboardOverviewTrendItemPayload:
 
     id: str
     name: str
+    category: str
     status: str
     rank: int
     score_total: float
+
+
+@dataclass(frozen=True)
+class DashboardOverviewMetaTrendPayload:
+    """Compact category summary for the overview page."""
+
+    category: str
+    trend_count: int
+    average_score: float
+    top_trend_id: str
+    top_trend_name: str
 
 
 @dataclass(frozen=True)
@@ -268,6 +282,7 @@ class DashboardOverviewSectionsPayload:
     top_trends: list[DashboardOverviewTrendItemPayload]
     breakout_trends: list[DashboardOverviewTrendItemPayload]
     rising_trends: list[DashboardOverviewTrendItemPayload]
+    meta_trends: list[DashboardOverviewMetaTrendPayload]
 
 
 @dataclass(frozen=True)
@@ -346,9 +361,15 @@ class DashboardOverviewPayload:
         payload["sections"]["topTrends"] = payload["sections"].pop("top_trends")
         payload["sections"]["breakoutTrends"] = payload["sections"].pop("breakout_trends")
         payload["sections"]["risingTrends"] = payload["sections"].pop("rising_trends")
+        payload["sections"]["metaTrends"] = payload["sections"].pop("meta_trends")
         for section_name in ("topTrends", "breakoutTrends", "risingTrends"):
             for trend in payload["sections"][section_name]:
                 trend["scoreTotal"] = trend.pop("score_total")
+        for trend in payload["sections"]["metaTrends"]:
+            trend["trendCount"] = trend.pop("trend_count")
+            trend["averageScore"] = trend.pop("average_score")
+            trend["topTrendId"] = trend.pop("top_trend_id")
+            trend["topTrendName"] = trend.pop("top_trend_name")
         payload["operations"]["lastRunAt"] = payload["operations"].pop("last_run_at")
         payload["operations"]["successRate"] = payload["operations"].pop("success_rate")
         payload["operations"]["averageDurationMs"] = payload["operations"].pop("average_duration_ms")

@@ -31,6 +31,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </Link>
           <p className="eyebrow">Trend detail</p>
           <div className="detail-pill-row">
+            <span className="trend-date-chip">{formatCategory(trend.category)}</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
             <span className={volatilityClassName(trend.volatility)}>{formatVolatility(trend.volatility)}</span>
           </div>
@@ -210,6 +211,13 @@ function formatDateOnly(value: string) {
 function formatSourceLabel(source: string) {
   return source
     .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatCategory(category: string) {
+  return category
+    .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }

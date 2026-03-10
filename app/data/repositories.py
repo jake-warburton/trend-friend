@@ -599,6 +599,7 @@ class TrendScoreRepository:
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
                     name=self._format_trend_name(score.topic),
+                    category=self._build_category(score.topic, score.source_counts),
                     status=self._build_trend_status(momentum),
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -634,6 +635,7 @@ class TrendScoreRepository:
                 TrendDetailRecord(
                     id=self._slugify_topic(score.topic),
                     name=self._format_trend_name(score.topic),
+                    category=self._build_category(score.topic, score.source_counts),
                     status=self._build_trend_status(momentum),
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -766,6 +768,32 @@ class TrendScoreRepository:
         return "stable"
 
     @staticmethod
+    def _build_category(topic: str, source_counts: dict[str, int]) -> str:
+        """Assign a simple product-facing category to a trend."""
+
+        normalized = topic.lower()
+        category_keywords = (
+            ("artificial-intelligence", ("ai", "llm", "agent", "inference", "model", "prompt")),
+            ("developer-tools", ("github", "sdk", "cli", "compiler", "framework", "typescript", "python", "devtool")),
+            ("data-analytics", ("data", "database", "analytics", "warehouse", "metadata")),
+            ("infrastructure", ("cloud", "infra", "kubernetes", "server", "hosting", "compute")),
+            ("security", ("security", "auth", "identity", "vulnerability", "encryption")),
+            ("commerce-fintech", ("payment", "checkout", "commerce", "market", "crypto", "fintech")),
+            ("media-social", ("creator", "social", "video", "content", "stream", "podcast")),
+            ("productivity-saas", ("calendar", "meeting", "workflow", "project", "automation", "saas")),
+            ("hardware-robotics", ("robot", "battery", "chip", "drone", "hardware", "semiconductor")),
+            ("knowledge-reference", ("wiki", "wikipedia", "reference", "education", "research")),
+        )
+        for category, keywords in category_keywords:
+            if any(keyword in normalized for keyword in keywords):
+                return category
+        if "github" in source_counts:
+            return "developer-tools"
+        if "wikipedia" in source_counts:
+            return "knowledge-reference"
+        return "general-tech"
+
+    @staticmethod
     def _slugify_topic(topic: str) -> str:
         """Convert a topic to a stable slug identifier."""
 
@@ -819,6 +847,7 @@ class TrendScoreRepository:
             TrendDetailRecord(
                 id=record.id,
                 name=record.name,
+                category=record.category,
                 status=record.status,
                 volatility=record.volatility,
                 rank=record.rank,

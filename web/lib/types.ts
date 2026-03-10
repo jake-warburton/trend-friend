@@ -71,15 +71,25 @@ export type DashboardOverviewCharts = {
 export type DashboardOverviewTrendItem = {
   id: string;
   name: string;
+  category: string;
   status: string;
   rank: number;
   scoreTotal: number;
+};
+
+export type DashboardOverviewMetaTrend = {
+  category: string;
+  trendCount: number;
+  averageScore: number;
+  topTrendId: string;
+  topTrendName: string;
 };
 
 export type DashboardOverviewSections = {
   topTrends: DashboardOverviewTrendItem[];
   breakoutTrends: DashboardOverviewTrendItem[];
   risingTrends: DashboardOverviewTrendItem[];
+  metaTrends: DashboardOverviewMetaTrend[];
 };
 
 export type DashboardOverviewSource = {
@@ -141,6 +151,7 @@ export type TrendCoverage = {
 export type TrendExplorerRecord = {
   id: string;
   name: string;
+  category: string;
   status: string;
   volatility: string;
   rank: number;
@@ -191,6 +202,7 @@ export type RelatedTrend = {
 export type TrendDetailRecord = {
   id: string;
   name: string;
+  category: string;
   status: string;
   volatility: string;
   rank: number;

@@ -22,6 +22,8 @@ const SOURCE_FILTER_OPTIONS = [
   { label: "Wikipedia", value: "wikipedia" },
 ] as const;
 
+const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;
+
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
   { label: "Score", value: "score" },
@@ -34,6 +36,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [isPending, startTransition] = useTransition();
   const [keyword, setKeyword] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -49,12 +52,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     const trends = initialData.explorer.trends.filter((trend) => {
       const matchesSource =
         selectedSource === "all" || trend.sources.includes(selectedSource);
+      const matchesCategory =
+        selectedCategory === "all" || trend.category === selectedCategory;
       const matchesKeyword =
         normalizedKeyword.length === 0 ||
         trend.name.toLowerCase().includes(normalizedKeyword) ||
         trend.evidencePreview.some((item) => item.toLowerCase().includes(normalizedKeyword));
       const matchesScore = trend.score.total >= minimum;
-      return matchesSource && matchesKeyword && matchesScore;
+      return matchesSource && matchesCategory && matchesKeyword && matchesScore;
     });
 
     return [...trends].sort((left, right) => {
@@ -69,7 +74,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, initialData.explorer.trends, minimumScore, selectedSource, sortBy]);
+  }, [deferredKeyword, initialData.explorer.trends, minimumScore, selectedCategory, selectedSource, sortBy]);
+
+  const categoryOptions = useMemo(() => {
+    const categories = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.category))).sort();
+    return [
+      DEFAULT_CATEGORY_OPTION,
+      ...categories.map((category) => ({ label: formatCategory(category), value: category })),
+    ];
+  }, [initialData.explorer.trends]);
 
   function handleRefresh() {
     setRefreshError(null);
@@ -243,6 +256,29 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         </label>
 
         <label className="filter-field">
+          <span>Category</span>
+          <Select.Root value={selectedCategory} onValueChange={(value) => setSelectedCategory(value ?? "all")}>
+            <Select.Trigger className="select-trigger">
+              <Select.Value />
+              <Select.Icon className="select-icon">+</Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Positioner className="select-positioner" sideOffset={8}>
+                <Select.Popup className="select-popup">
+                  <Select.List className="select-list">
+                    {categoryOptions.map((option) => (
+                      <Select.Item className="select-item" key={option.value} value={option.value}>
+                        <Select.ItemText>{option.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.List>
+                </Select.Popup>
+              </Select.Positioner>
+            </Select.Portal>
+          </Select.Root>
+        </label>
+
+        <label className="filter-field">
           <span>Sort</span>
           <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
             <Select.Trigger className="select-trigger">
@@ -349,6 +385,20 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       <section className="curated-strip">
         <article className="analytics-card">
           <div className="section-heading">
+            <h2>Meta trends</h2>
+          </div>
+          <div className="curated-list">
+            {initialData.overview.sections.metaTrends.slice(0, 4).map((trend) => (
+              <Link className="curated-item" href={`/trends/${trend.topTrendId}`} key={trend.category}>
+                <span>{formatCategory(trend.category)}</span>
+                <strong>{trend.trendCount}</strong>
+              </Link>
+            ))}
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="section-heading">
             <h2>Breakout</h2>
           </div>
           <div className="curated-list">
@@ -375,19 +425,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           </div>
         </article>
 
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Top list</h2>
-          </div>
-          <div className="curated-list">
-            {initialData.overview.sections.topTrends.slice(0, 4).map((trend) => (
-              <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
-                <span>{trend.name}</span>
-                <strong>#{trend.rank}</strong>
-              </Link>
-            ))}
-          </div>
-        </article>
       </section>
 
       <section className="content-grid">
@@ -438,6 +475,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         <span className={volatilityClassName(trend.volatility)}>
                           {formatVolatility(trend.volatility)}
                         </span>
+                        <span className="trend-date-chip">{formatCategory(trend.category)}</span>
                         <span className="trend-date-chip">
                           {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
                         </span>
@@ -703,6 +741,13 @@ function formatSourceStatus(status: string) {
     return "Degraded";
   }
   return "Stale";
+}
+
+function formatCategory(category: string) {
+  return category
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function sourceHealthClassName(status: string) {
