@@ -143,6 +143,20 @@ export type TrendMomentum = {
   percentDelta: number | null;
 };
 
+export type BreakoutPrediction = {
+  confidence: number;
+  predictedDirection: string;
+  signals: string[];
+};
+
+export type OpportunitySummary = {
+  composite: number;
+  content: number;
+  product: number;
+  investment: number;
+  reasoning: string[];
+};
+
 export type TrendCoverage = {
   sourceCount: number;
   signalCount: number;
@@ -237,6 +251,8 @@ export type TrendDetailRecord = {
   latestSignalAt: string;
   score: TrendScore;
   momentum: TrendMomentum;
+  breakoutPrediction: BreakoutPrediction;
+  opportunity: OpportunitySummary;
   coverage: TrendCoverage;
   sources: string[];
   history: TrendHistoryPoint[];

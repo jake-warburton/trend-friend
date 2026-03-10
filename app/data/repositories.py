@@ -10,7 +10,9 @@ from app.topics.categorize import categorize_topic
 from app.models import (
     AlertEventRecord,
     AlertRule,
+    BreakoutPredictionSummary,
     NormalizedSignal,
+    OpportunitySummary,
     PipelineRun,
     RelatedTrend,
     SourceIngestionRun,
@@ -821,24 +823,79 @@ class TrendScoreRepository:
         if latest_captured_at is None:
             return []
 
-        records: list[TrendDetailRecord] = []
+        from app.scoring.opportunity import score_opportunities
+        from app.scoring.predictor import predict_breakouts
+
+        history_by_topic: dict[str, list[TrendHistoryPoint]] = {}
+        first_seen_by_topic: dict[str, datetime | None] = {}
+        momentum_by_topic: dict[str, TrendMomentum] = {}
+        status_by_topic: dict[str, str] = {}
+        ranks_by_topic: dict[str, int] = {}
+
         for rank, score in enumerate(latest_scores, start=1):
             history = list(reversed(self.get_topic_history(score.topic, limit_runs=history_limit)))
             momentum = self._build_momentum(score.total_score, list(reversed(history)))
+            history_by_topic[score.topic] = history
+            first_seen_by_topic[score.topic] = self.get_first_seen_at(score.topic)
+            momentum_by_topic[score.topic] = momentum
+            status_by_topic[score.topic] = self._build_trend_status(momentum)
+            ranks_by_topic[score.topic] = rank
+
+        opportunities = {
+            item.trend_id: item
+            for item in score_opportunities(
+                scores=latest_scores,
+                ranks=ranks_by_topic,
+                momenta=momentum_by_topic,
+                statuses=status_by_topic,
+            )
+        }
+        predictions = {
+            item.trend_id: item
+            for item in predict_breakouts(
+                current_scores=latest_scores,
+                histories=history_by_topic,
+                current_ranks=ranks_by_topic,
+                first_seen=first_seen_by_topic,
+                now=latest_captured_at,
+            )
+        }
+
+        records: list[TrendDetailRecord] = []
+        for rank, score in enumerate(latest_scores, start=1):
+            history = history_by_topic[score.topic]
+            momentum = momentum_by_topic[score.topic]
+            slug = self._slugify_topic(score.topic)
+            opportunity = opportunities.get(slug)
+            prediction = predictions.get(slug)
             records.append(
                 TrendDetailRecord(
-                    id=self._slugify_topic(score.topic),
+                    id=slug,
                     name=self._format_trend_name(score.topic),
                     category=self._build_category(score.topic, score.source_counts),
-                    status=self._build_trend_status(momentum),
+                    status=status_by_topic[score.topic],
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
                     previous_rank=momentum.previous_rank,
                     rank_change=momentum.rank_change,
-                    first_seen_at=self.get_first_seen_at(score.topic),
+                    first_seen_at=first_seen_by_topic[score.topic],
                     latest_signal_at=score.latest_timestamp,
                     score=score,
                     momentum=momentum,
+                    breakout_prediction=BreakoutPredictionSummary(
+                        confidence=prediction.confidence if prediction is not None else 0.0,
+                        predicted_direction=(
+                            prediction.predicted_direction if prediction is not None else "stable"
+                        ),
+                        signals=prediction.signals if prediction is not None else ["No strong momentum signals"],
+                    ),
+                    opportunity=OpportunitySummary(
+                        composite=opportunity.composite if opportunity is not None else 0.0,
+                        content=opportunity.content if opportunity is not None else 0.0,
+                        product=opportunity.product if opportunity is not None else 0.0,
+                        investment=opportunity.investment if opportunity is not None else 0.0,
+                        reasoning=opportunity.reasoning if opportunity is not None else ["Limited actionability signals"],
+                    ),
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
                     sources=sorted(score.source_counts),
@@ -1164,6 +1221,8 @@ class TrendScoreRepository:
                 latest_signal_at=record.latest_signal_at,
                 score=record.score,
                 momentum=record.momentum,
+                breakout_prediction=record.breakout_prediction,
+                opportunity=record.opportunity,
                 source_count=record.source_count,
                 signal_count=record.signal_count,
                 sources=record.sources,

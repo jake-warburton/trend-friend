@@ -253,6 +253,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].source_contributions[0].source, "reddit")
         self.assertEqual(records[0].source_contributions[0].score_share_percent, 36.7)
         self.assertEqual(records[0].source_contributions[0].social_score, 10.0)
+        self.assertEqual(records[0].breakout_prediction.predicted_direction, "breakout")
+        self.assertGreater(records[0].opportunity.composite, 0.0)
         self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
 
     def test_watchlist_repository_round_trip(self) -> None:

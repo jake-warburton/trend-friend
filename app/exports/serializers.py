@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timezone
 
 from app.exports.contracts import (
+    BreakoutPredictionPayload,
     DashboardOverviewChartDatumPayload,
     DashboardOverviewChartsPayload,
     DashboardOverviewHighlightsPayload,
@@ -22,6 +23,7 @@ from app.exports.contracts import (
     SourceSummaryPayload,
     SourceSummaryRecordPayload,
     SourceSummaryTrendPayload,
+    OpportunityPayload,
     RelatedTrendPayload,
     TrendCoveragePayload,
     TrendDetailIndexPayload,
@@ -294,6 +296,18 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             rank_change=trend.momentum.rank_change,
             absolute_delta=trend.momentum.absolute_delta,
             percent_delta=trend.momentum.percent_delta,
+        ),
+        breakout_prediction=BreakoutPredictionPayload(
+            confidence=trend.breakout_prediction.confidence,
+            predicted_direction=trend.breakout_prediction.predicted_direction,
+            signals=trend.breakout_prediction.signals,
+        ),
+        opportunity=OpportunityPayload(
+            composite=trend.opportunity.composite,
+            content=trend.opportunity.content,
+            product=trend.opportunity.product,
+            investment=trend.opportunity.investment,
+            reasoning=trend.opportunity.reasoning,
         ),
         coverage=TrendCoveragePayload(
             source_count=trend.source_count,

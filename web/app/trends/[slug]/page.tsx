@@ -95,6 +95,61 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
+              <p className="eyebrow">Opportunity</p>
+              <h2>What you can do with it</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            <article className="detail-list-item">
+              <div>
+                <strong>Composite {formatOpportunityScore(trend.opportunity.composite)}</strong>
+                <span>
+                  Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
+                  {formatOpportunityScore(trend.opportunity.product)} · Investment{" "}
+                  {formatOpportunityScore(trend.opportunity.investment)}
+                </span>
+              </div>
+              <small>{formatPredictionDirection(trend.breakoutPrediction.predictedDirection)}</small>
+            </article>
+            {trend.opportunity.reasoning.map((reason) => (
+              <article className="detail-list-item" key={reason}>
+                <div>
+                  <strong>{reason}</strong>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Prediction</p>
+              <h2>Breakout outlook</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            <article className="detail-list-item">
+              <div>
+                <strong>
+                  {formatPredictionDirection(trend.breakoutPrediction.predictedDirection)} ·{" "}
+                  {Math.round(trend.breakoutPrediction.confidence * 100)}% confidence
+                </strong>
+                <span>
+                  {trend.breakoutPrediction.signals.length > 0
+                    ? trend.breakoutPrediction.signals.join(" · ")
+                    : "No strong momentum signals"}
+                </span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
               <p className="eyebrow">Sources</p>
               <h2>What is driving this rank</h2>
             </div>
@@ -242,6 +297,14 @@ function formatCategory(category: string) {
 
 function formatSignalType(signalType: string) {
   return signalType.charAt(0).toUpperCase() + signalType.slice(1);
+}
+
+function formatOpportunityScore(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatPredictionDirection(direction: string) {
+  return direction.charAt(0).toUpperCase() + direction.slice(1);
 }
 
 function formatContributionMix(source: TrendDetailRecord["sourceContributions"][number]) {

@@ -103,6 +103,26 @@ class TrendMomentum:
 
 
 @dataclass(frozen=True)
+class BreakoutPredictionSummary:
+    """Compact breakout prediction data for a trend."""
+
+    confidence: float
+    predicted_direction: str
+    signals: list[str]
+
+
+@dataclass(frozen=True)
+class OpportunitySummary:
+    """Actionability scoring for a trend."""
+
+    composite: float
+    content: float
+    product: float
+    investment: float
+    reasoning: list[str]
+
+
+@dataclass(frozen=True)
 class TrendExplorerRecord:
     """Richer read model for the explorer dashboard."""
 
@@ -204,6 +224,8 @@ class TrendDetailRecord:
     latest_signal_at: datetime
     score: TrendScoreResult
     momentum: TrendMomentum
+    breakout_prediction: BreakoutPredictionSummary
+    opportunity: OpportunitySummary
     source_count: int
     signal_count: int
     sources: list[str]

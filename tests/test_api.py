@@ -112,6 +112,8 @@ class APITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], "ai-agents")
+        self.assertIn("breakoutPrediction", data)
+        self.assertIn("opportunity", data)
         self.assertIn("sourceContributions", data)
         self.assertEqual(data["sourceContributions"][0]["source"], "reddit")
 

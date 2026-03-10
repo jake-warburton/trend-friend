@@ -89,6 +89,26 @@ class TrendMomentumPayload:
 
 
 @dataclass(frozen=True)
+class BreakoutPredictionPayload:
+    """Breakout prediction exposed on detail pages."""
+
+    confidence: float
+    predicted_direction: str
+    signals: list[str]
+
+
+@dataclass(frozen=True)
+class OpportunityPayload:
+    """Opportunity scoring exposed on detail pages."""
+
+    composite: float
+    content: float
+    product: float
+    investment: float
+    reasoning: list[str]
+
+
+@dataclass(frozen=True)
 class TrendCoveragePayload:
     """Public coverage metrics for a trend."""
 
@@ -220,6 +240,8 @@ class TrendDetailRecordPayload:
     latest_signal_at: str
     score: TrendScoreComponents
     momentum: TrendMomentumPayload
+    breakout_prediction: BreakoutPredictionPayload
+    opportunity: OpportunityPayload
     coverage: TrendCoveragePayload
     sources: list[str]
     history: list[TrendHistoryPointPayload]
@@ -546,6 +568,8 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["momentum"]["rankChange"] = payload["momentum"].pop("rank_change")
     payload["momentum"]["absoluteDelta"] = payload["momentum"].pop("absolute_delta")
     payload["momentum"]["percentDelta"] = payload["momentum"].pop("percent_delta")
+    payload["breakoutPrediction"] = payload.pop("breakout_prediction")
+    payload["breakoutPrediction"]["predictedDirection"] = payload["breakoutPrediction"].pop("predicted_direction")
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")

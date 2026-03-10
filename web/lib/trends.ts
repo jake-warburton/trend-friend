@@ -327,6 +327,18 @@ function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord
       absoluteDelta: trend.momentum?.absoluteDelta ?? null,
       percentDelta: trend.momentum?.percentDelta ?? null,
     },
+    breakoutPrediction: {
+      confidence: trend.breakoutPrediction?.confidence ?? 0,
+      predictedDirection: trend.breakoutPrediction?.predictedDirection ?? "stable",
+      signals: trend.breakoutPrediction?.signals ?? [],
+    },
+    opportunity: {
+      composite: trend.opportunity?.composite ?? 0,
+      content: trend.opportunity?.content ?? 0,
+      product: trend.opportunity?.product ?? 0,
+      investment: trend.opportunity?.investment ?? 0,
+      reasoning: trend.opportunity?.reasoning ?? [],
+    },
     coverage: {
       sourceCount: trend.coverage?.sourceCount ?? trend.sources?.length ?? 0,
       signalCount: trend.coverage?.signalCount ?? 0,

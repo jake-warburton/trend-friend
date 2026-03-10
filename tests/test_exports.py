@@ -18,6 +18,7 @@ from app.exports.serializers import (
     build_trend_history_payload,
 )
 from app.models import (
+    BreakoutPredictionSummary,
     TrendDetailRecord,
     TrendEvidenceItem,
     TrendExplorerRecord,
@@ -25,6 +26,7 @@ from app.models import (
     TrendHistoryPoint,
     TrendMomentum,
     NormalizedSignal,
+    OpportunitySummary,
     PipelineRun,
     RelatedTrend,
     SourceIngestionRun,
@@ -155,6 +157,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["geoCountryCode"], "US")
         self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
+        self.assertEqual(payload["trends"][0]["breakoutPrediction"]["predictedDirection"], "breakout")
+        self.assertGreater(payload["trends"][0]["opportunity"]["composite"], 0.0)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
@@ -308,6 +312,18 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
             rank_change=3,
             absolute_delta=12.3,
             percent_delta=40.2,
+        ),
+        breakout_prediction=BreakoutPredictionSummary(
+            confidence=0.78,
+            predicted_direction="breakout",
+            signals=["Score accelerating (+3.0/run)", "High base score (42.4)"],
+        ),
+        opportunity=OpportunitySummary(
+            composite=0.72,
+            content=0.69,
+            product=0.74,
+            investment=0.71,
+            reasoning=["Strong content play (social 18, 1 evidence items)", "Product opportunity (dev 16, rank #1)"],
         ),
         source_count=2,
         signal_count=2,
