@@ -134,6 +134,14 @@ input {
   margin-top: 14px;
 }
 
+.community-active-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
 .community-results-bar {
   flex-wrap: wrap;
 }
@@ -165,6 +173,19 @@ input {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.community-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid rgba(100, 201, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(13, 30, 56, 0.72);
+  color: var(--text);
+  font-size: 0.72rem;
+  text-decoration: none;
 }
 
 .community-meta {
@@ -1569,6 +1590,11 @@ input {
 
   .community-pagination {
     flex-direction: column;
+  }
+
+  .community-active-filters {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .explorer-card-bottom {

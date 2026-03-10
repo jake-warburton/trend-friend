@@ -3,9 +3,11 @@ import test from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import CommunityPage, {
+  buildCommunityFilterRemovalUrl,
   createCommunityUrlBuilder,
   filterAndSortCommunityWatchlists,
   listCommunityCategoryOptions,
+  listActiveCommunityFilters,
   loadCommunityWatchlists,
   listCommunityLocationOptions,
   listCommunitySourceOptions,
@@ -233,6 +235,42 @@ test("pagination slices community watchlists and builds preserved URLs", () => {
   );
 });
 
+test("community active filters expose readable labels and removal URLs", () => {
+  const filters = listActiveCommunityFilters({
+    query: "robot",
+    category: "hardware-robotics",
+    status: "breakout",
+    source: "github",
+    location: "United Kingdom",
+    popularOnly: true,
+  });
+
+  assert.deepEqual(filters, [
+    { key: "q", label: "Search", value: "robot" },
+    { key: "category", label: "Category", value: "Hardware Robotics" },
+    { key: "status", label: "Status", value: "Breakout" },
+    { key: "source", label: "Source", value: "GitHub" },
+    { key: "location", label: "Location", value: "United Kingdom" },
+    { key: "popular", label: "Popularity", value: "Popular this week" },
+  ]);
+
+  assert.equal(
+    buildCommunityFilterRemovalUrl(
+      {
+        q: "robot",
+        sort: "total",
+        category: "hardware-robotics",
+        status: "breakout",
+        source: "github",
+        location: "United Kingdom",
+        popular: true,
+      },
+      "status",
+    ),
+    "/community?q=robot&sort=total&category=hardware-robotics&source=github&location=United+Kingdom&popular=true",
+  );
+});
+
 test("loadCommunityWatchlists returns the fetched directory payload", async () => {
   process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
   const payload: PublicWatchlistsResponse = {
@@ -350,6 +388,9 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Top driver: GitHub drove 66.7%/);
   assert.match(html, /Shared by Owner One/);
   assert.match(html, /Showing 1-1 of 1 public watchlists/);
+  assert.match(html, /Search: robot/);
+  assert.match(html, /Category: Hardware Robotics/);
+  assert.match(html, /Clear all/);
 });
 
 test.afterEach(() => {

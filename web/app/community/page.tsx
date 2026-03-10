@@ -16,6 +16,11 @@ type CommunityFilterOption = {
   value: string;
   label: string;
 };
+type ActiveCommunityFilter = {
+  key: "q" | "category" | "status" | "source" | "location" | "popular";
+  label: string;
+  value: string;
+};
 
 export default async function CommunityPage({ searchParams }: PageProps) {
   const params = searchParams ? await searchParams : {};
@@ -50,6 +55,14 @@ export default async function CommunityPage({ searchParams }: PageProps) {
     source,
     location,
     popular: popularOnly,
+  });
+  const activeFilters = listActiveCommunityFilters({
+    query,
+    category,
+    status,
+    source,
+    location,
+    popularOnly,
   });
 
   return (
@@ -150,6 +163,36 @@ export default async function CommunityPage({ searchParams }: PageProps) {
           </p>
         ) : null}
       </section>
+
+      {activeFilters.length > 0 ? (
+        <section className="community-active-filters" aria-label="Active community filters">
+          <div className="community-chip-group">
+            {activeFilters.map((filter) => (
+              <Link
+                className="community-filter-chip"
+                href={buildCommunityFilterRemovalUrl(
+                  {
+                    q: query,
+                    sort,
+                    category,
+                    status,
+                    source,
+                    location,
+                    popular: popularOnly,
+                  },
+                  filter.key,
+                )}
+                key={filter.key}
+              >
+                {filter.label}: {filter.value} <span aria-hidden="true">x</span>
+              </Link>
+            ))}
+          </div>
+          <Link className="source-summary-copy" href="/community">
+            Clear all
+          </Link>
+        </section>
+      ) : null}
 
       <section className="community-grid">
         {pagination.pageItems.length === 0 ? (
@@ -431,6 +474,59 @@ export function createCommunityUrlBuilder(filters: {
     const query = params.toString();
     return query.length > 0 ? `/community?${query}` : "/community";
   };
+}
+
+export function listActiveCommunityFilters(filters: {
+  query: string;
+  category: string;
+  status: string;
+  source: string;
+  location: string;
+  popularOnly: boolean;
+}): ActiveCommunityFilter[] {
+  const result: ActiveCommunityFilter[] = [];
+  if (filters.query) {
+    result.push({ key: "q", label: "Search", value: filters.query });
+  }
+  if (filters.category) {
+    result.push({ key: "category", label: "Category", value: formatCategory(filters.category) });
+  }
+  if (filters.status) {
+    result.push({ key: "status", label: "Status", value: formatStatusLabel(filters.status) });
+  }
+  if (filters.source) {
+    result.push({ key: "source", label: "Source", value: formatSourceLabel(filters.source) });
+  }
+  if (filters.location) {
+    result.push({ key: "location", label: "Location", value: filters.location });
+  }
+  if (filters.popularOnly) {
+    result.push({ key: "popular", label: "Popularity", value: "Popular this week" });
+  }
+  return result;
+}
+
+export function buildCommunityFilterRemovalUrl(
+  filters: {
+    q: string;
+    sort: CommunitySort;
+    category: string;
+    status: string;
+    source: string;
+    location: string;
+    popular: boolean;
+  },
+  filterKey: ActiveCommunityFilter["key"],
+) {
+  return createCommunityUrlBuilder({
+    ...filters,
+    q: filterKey === "q" ? "" : filters.q,
+    category: filterKey === "category" ? "" : filters.category,
+    status: filterKey === "status" ? "" : filters.status,
+    source: filterKey === "source" ? "" : filters.source,
+    location: filterKey === "location" ? "" : filters.location,
+    popular: filterKey === "popular" ? false : filters.popular,
+  })(1);
 }
 
 function readSearchParam(value: string | string[] | undefined) {
