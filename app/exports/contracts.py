@@ -115,6 +115,7 @@ class TrendExplorerRecordPayload:
     coverage: TrendCoveragePayload
     sources: list[str]
     evidence_preview: list[str]
+    recent_history: list[TrendHistoryPointPayload]
 
 
 @dataclass(frozen=True)
@@ -513,6 +514,10 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["evidencePreview"] = payload.pop("evidence_preview")
+    payload["recentHistory"] = payload.pop("recent_history")
+    for point in payload["recentHistory"]:
+        point["capturedAt"] = point.pop("captured_at")
+        point["scoreTotal"] = point.pop("score_total")
     return payload
 
 

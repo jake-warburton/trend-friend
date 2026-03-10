@@ -7,6 +7,7 @@ import { Select } from "@base-ui/react/select";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Sparkline } from "@/components/sparkline";
 
 import type {
   AlertEvent,
@@ -590,6 +591,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                       <div className="explorer-metric explorer-metric-inline">
                         <strong>{trend.coverage.signalCount}</strong>
+                      </div>
+
+                      <div className="explorer-metric explorer-metric-inline">
+                        <Sparkline data={(trend.recentHistory ?? []).map((p) => p.scoreTotal)} />
                       </div>
                     </div>
                   </div>

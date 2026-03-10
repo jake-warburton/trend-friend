@@ -255,6 +255,14 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
         ),
         sources=sorted(trend.score.source_counts),
         evidence_preview=trend.score.evidence[:2],
+        recent_history=[
+            TrendHistoryPointPayload(
+                captured_at=to_timestamp(point.captured_at),
+                rank=point.rank,
+                score_total=round(point.score_total, 1),
+            )
+            for point in trend.recent_history
+        ],
     )
 
 

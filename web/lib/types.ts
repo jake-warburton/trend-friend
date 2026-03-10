@@ -164,6 +164,7 @@ export type TrendExplorerRecord = {
   coverage: TrendCoverage;
   sources: string[];
   evidencePreview: string[];
+  recentHistory?: TrendHistoryPoint[];
 };
 
 export type TrendExplorerResponse = {

@@ -120,6 +120,7 @@ class TrendExplorerRecord:
     momentum: TrendMomentum
     source_count: int
     signal_count: int
+    recent_history: list[TrendHistoryPoint]
 
 
 @dataclass(frozen=True)

@@ -803,6 +803,7 @@ class TrendScoreRepository:
                     momentum=momentum,
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
+                    recent_history=history,
                 )
             )
         return records

@@ -269,6 +269,18 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
         ),
         source_count=2,
         signal_count=2,
+        recent_history=[
+            TrendHistoryPoint(
+                captured_at=datetime(2026, 3, 7, tzinfo=timezone.utc),
+                rank=7,
+                score_total=20.4,
+            ),
+            TrendHistoryPoint(
+                captured_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                rank=4,
+                score_total=31.1,
+            ),
+        ],
     )
 
 
