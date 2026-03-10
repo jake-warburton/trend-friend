@@ -43,9 +43,9 @@ export function buildTrendScoreChartData(
   }
 
   // Include the last two actual points in the forecast series so the
-  // monotone spline has enough context to enter the forecast smoothly
-  // instead of creating a sharp corner at the junction.
-  const tailCount = Math.min(2, data.length);
+  // monotone spline has enough slope context to smoothly continue
+  // the trajectory of the real line into the forecast.
+  const tailCount = Math.min(3, data.length);
   for (let i = data.length - tailCount; i < data.length; i++) {
     data[i].forecast = data[i].score;
   }
@@ -73,13 +73,6 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
     currentScore,
   );
 
-  // Clip the forecast line so the overlap tail is invisible.
-  // The last actual point is at index (history.length - 1). With equal
-  // spacing the visible forecast starts at that fraction of total width.
-  const forecastClipX = data.length > 1
-    ? `${((history.length - 1) / (data.length - 1)) * 100}%`
-    : "0%";
-
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={260}>
@@ -89,9 +82,6 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               <stop offset="5%" stopColor="#5e6bff" stopOpacity={0.3} />
               <stop offset="95%" stopColor="#5e6bff" stopOpacity={0} />
             </linearGradient>
-            <clipPath id="forecastClip">
-              <rect x={forecastClipX} y="0" width="100%" height="100%" />
-            </clipPath>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e2838" />
           <XAxis
@@ -121,6 +111,18 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               return [String(value), String(name)];
             }}
           />
+          {forecast && forecast.predictedScores.length > 0 ? (
+            <Line
+              type="monotone"
+              dataKey="forecast"
+              stroke={forecastLineColor(forecast.confidence)}
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls
+            />
+          ) : null}
           <Area
             type="monotone"
             dataKey="score"
@@ -133,14 +135,14 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
           {forecast && forecast.predictedScores.length > 0 ? (
             <Line
               type="monotone"
-              dataKey="forecast"
-              stroke={forecastLineColor(forecast.confidence)}
-              strokeWidth={2}
-              strokeDasharray="6 4"
+              dataKey="score"
+              stroke="#5e6bff"
+              strokeWidth={3}
               dot={false}
-              activeDot={{ r: 4 }}
-              connectNulls
-              style={{ clipPath: "url(#forecastClip)" }}
+              activeDot={false}
+              connectNulls={false}
+              legendType="none"
+              tooltipType="none"
             />
           ) : null}
         </AreaChart>
