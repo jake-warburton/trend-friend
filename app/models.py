@@ -131,6 +131,17 @@ class TrendEvidenceItem:
 
 
 @dataclass(frozen=True)
+class RelatedTrend:
+    """Compact related-trend recommendation."""
+
+    id: str
+    name: str
+    status: str
+    rank: int
+    score_total: float
+
+
+@dataclass(frozen=True)
 class TrendDetailRecord:
     """Detailed read model for a single trend page."""
 
@@ -150,6 +161,7 @@ class TrendDetailRecord:
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
     evidence_items: list[TrendEvidenceItem]
+    related_trends: list[RelatedTrend]
 
 
 @dataclass(frozen=True)

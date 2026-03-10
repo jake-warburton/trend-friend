@@ -25,6 +25,7 @@ from app.models import (
     TrendMomentum,
     NormalizedSignal,
     PipelineRun,
+    RelatedTrend,
     SourceIngestionRun,
     SourceSummaryRecord,
     SourceSummaryTrend,
@@ -145,6 +146,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
+        self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
 
     def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -306,6 +308,15 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
                 value=12.0,
                 evidence="AI agents evidence",
+            )
+        ],
+        related_trends=[
+            RelatedTrend(
+                id="agentic-workflows",
+                name="Agentic Workflows",
+                status="rising",
+                rank=6,
+                score_total=28.1,
             )
         ],
     )

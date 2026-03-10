@@ -106,6 +106,29 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
         </section>
 
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Related</p>
+              <h2>Adjacent trends</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {trend.relatedTrends.map((item) => (
+              <Link className="detail-list-item" href={`/trends/${item.id}`} key={item.id}>
+                <div>
+                  <strong>{item.name}</strong>
+                  <span>{formatTrendStatus(item.status)}</span>
+                </div>
+                <small>
+                  #{item.rank} · {item.scoreTotal.toFixed(1)}
+                </small>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section className="detail-panel detail-panel-wide">
           <div className="section-heading">
             <div>

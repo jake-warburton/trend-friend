@@ -21,6 +21,7 @@ from app.exports.contracts import (
     SourceSummaryPayload,
     SourceSummaryRecordPayload,
     SourceSummaryTrendPayload,
+    RelatedTrendPayload,
     TrendCoveragePayload,
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
@@ -38,6 +39,7 @@ from app.exports.contracts import (
 from app.models import (
     NormalizedSignal,
     PipelineRun,
+    RelatedTrend,
     SourceIngestionRun,
     SourceSummaryRecord,
     SourceSummaryTrend,
@@ -309,6 +311,22 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             )
             for item in trend.evidence_items
         ],
+        related_trends=[
+            serialize_related_trend(item)
+            for item in trend.related_trends
+        ],
+    )
+
+
+def serialize_related_trend(trend: RelatedTrend) -> RelatedTrendPayload:
+    """Convert a related-trend recommendation into the public contract."""
+
+    return RelatedTrendPayload(
+        id=trend.id,
+        name=trend.name,
+        status=trend.status,
+        rank=trend.rank,
+        score_total=round(trend.score_total, 1),
     )
 
 

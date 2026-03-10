@@ -235,6 +235,7 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
       history: trend.history ?? [],
       sourceBreakdown: trend.sourceBreakdown ?? [],
       evidenceItems: trend.evidenceItems ?? [],
+      relatedTrends: trend.relatedTrends ?? [],
     })),
   };
 }

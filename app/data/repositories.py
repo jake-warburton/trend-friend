@@ -9,6 +9,7 @@ from datetime import datetime
 from app.models import (
     NormalizedSignal,
     PipelineRun,
+    RelatedTrend,
     SourceIngestionRun,
     TrendDetailRecord,
     TrendEvidenceItem,
@@ -474,9 +475,10 @@ class TrendScoreRepository:
                     history=history,
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
+                    related_trends=[],
                 )
             )
-        return records
+        return self._attach_related_trends(records)
 
     def get_topic_source_breakdown(self, topic: str) -> list[TrendSourceBreakdown]:
         """Return source-level signal coverage for a topic."""
@@ -588,3 +590,72 @@ class TrendScoreRepository:
         """Return a display-friendly topic name."""
 
         return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in topic.split())
+
+    def _attach_related_trends(self, records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
+        """Attach compact related-trend recommendations to each detail record."""
+
+        if not records:
+            return []
+
+        related_map: dict[str, list[RelatedTrend]] = {}
+        for current in records:
+            candidates: list[tuple[int, TrendDetailRecord]] = []
+            current_tokens = self._topic_tokens(current.name)
+            current_sources = set(current.sources)
+            for candidate in records:
+                if candidate.id == current.id:
+                    continue
+                score = 0
+                if current_sources.intersection(candidate.sources):
+                    score += 2
+                if current.status == candidate.status:
+                    score += 1
+                if current_tokens.intersection(self._topic_tokens(candidate.name)):
+                    score += 2
+                if score > 0:
+                    candidates.append((score, candidate))
+
+            candidates.sort(key=lambda item: (-item[0], item[1].rank, -item[1].score.total_score, item[1].name))
+            related_map[current.id] = [
+                RelatedTrend(
+                    id=item.id,
+                    name=item.name,
+                    status=item.status,
+                    rank=item.rank,
+                    score_total=item.score.total_score,
+                )
+                for _, item in candidates[:4]
+            ]
+
+        return [
+            TrendDetailRecord(
+                id=record.id,
+                name=record.name,
+                status=record.status,
+                rank=record.rank,
+                previous_rank=record.previous_rank,
+                rank_change=record.rank_change,
+                first_seen_at=record.first_seen_at,
+                latest_signal_at=record.latest_signal_at,
+                score=record.score,
+                momentum=record.momentum,
+                source_count=record.source_count,
+                signal_count=record.signal_count,
+                sources=record.sources,
+                history=record.history,
+                source_breakdown=record.source_breakdown,
+                evidence_items=record.evidence_items,
+                related_trends=related_map.get(record.id, []),
+            )
+            for record in records
+        ]
+
+    @staticmethod
+    def _topic_tokens(value: str) -> set[str]:
+        """Return simple normalized tokens for related-trend matching."""
+
+        return {
+            token
+            for token in "".join(character.lower() if character.isalnum() else " " for character in value).split()
+            if len(token) > 2
+        }

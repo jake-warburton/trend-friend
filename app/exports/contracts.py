@@ -161,6 +161,17 @@ class TrendEvidenceItemPayload:
 
 
 @dataclass(frozen=True)
+class RelatedTrendPayload:
+    """Compact related trend entry for detail pages."""
+
+    id: str
+    name: str
+    status: str
+    rank: int
+    score_total: float
+
+
+@dataclass(frozen=True)
 class TrendDetailRecordPayload:
     """Detailed trend record consumed by trend detail pages."""
 
@@ -179,6 +190,7 @@ class TrendDetailRecordPayload:
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
     evidence_items: list[TrendEvidenceItemPayload]
+    related_trends: list[RelatedTrendPayload]
 
 
 @dataclass(frozen=True)
@@ -478,6 +490,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
     payload["evidenceItems"] = payload.pop("evidence_items")
+    payload["relatedTrends"] = payload.pop("related_trends")
     for point in payload["history"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")
@@ -486,4 +499,6 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         source["latestSignalAt"] = source.pop("latest_signal_at")
     for item in payload["evidenceItems"]:
         item["signalType"] = item.pop("signal_type")
+    for item in payload["relatedTrends"]:
+        item["scoreTotal"] = item.pop("score_total")
     return payload

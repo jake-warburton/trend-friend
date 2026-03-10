@@ -179,6 +179,14 @@ export type TrendEvidenceItem = {
   evidence: string;
 };
 
+export type RelatedTrend = {
+  id: string;
+  name: string;
+  status: string;
+  rank: number;
+  scoreTotal: number;
+};
+
 export type TrendDetailRecord = {
   id: string;
   name: string;
@@ -195,6 +203,7 @@ export type TrendDetailRecord = {
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
   evidenceItems: TrendEvidenceItem[];
+  relatedTrends: RelatedTrend[];
 };
 
 export type TrendDetailIndexResponse = {
