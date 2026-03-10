@@ -6,6 +6,8 @@ import re
 from datetime import datetime, timezone
 
 from app.exports.contracts import (
+    DashboardOverviewChartDatumPayload,
+    DashboardOverviewChartsPayload,
     DashboardOverviewHighlightsPayload,
     DashboardOverviewOperationsPayload,
     DashboardOverviewPayload,
@@ -139,6 +141,7 @@ def build_dashboard_overview_payload(
             newest_trend_id=newest_trend.id if newest_trend is not None else None,
             newest_trend_name=newest_trend.name if newest_trend is not None else None,
         ),
+        charts=build_dashboard_charts_payload(ordered_trends, source_summaries),
         operations=build_dashboard_operations_payload(pipeline_runs),
         sources=source_summaries,
     )
@@ -388,6 +391,42 @@ def build_source_status(run: SourceIngestionRun | None) -> str:
     if run.used_fallback:
         return "degraded"
     return "healthy"
+
+
+def build_dashboard_charts_payload(
+    trends: list[TrendDetailRecord],
+    source_summaries: list[DashboardOverviewSourcePayload],
+) -> DashboardOverviewChartsPayload:
+    """Return compact chart datasets for the homepage."""
+
+    status_counts: dict[str, int] = {}
+    for trend in trends:
+        status_counts[trend.status] = status_counts.get(trend.status, 0) + 1
+
+    return DashboardOverviewChartsPayload(
+        top_trend_scores=[
+            DashboardOverviewChartDatumPayload(
+                label=trend.name,
+                value=round(trend.score.total_score, 1),
+            )
+            for trend in trends[:8]
+        ],
+        source_share=[
+            DashboardOverviewChartDatumPayload(
+                label=source.source.replace("_", " ").title(),
+                value=float(source.signal_count),
+            )
+            for source in source_summaries[:6]
+            if source.signal_count > 0
+        ],
+        status_breakdown=[
+            DashboardOverviewChartDatumPayload(
+                label=format_trend_name(status),
+                value=float(count),
+            )
+            for status, count in sorted(status_counts.items(), key=lambda item: (-item[1], item[0]))
+        ],
+    )
 
 
 def build_dashboard_operations_payload(

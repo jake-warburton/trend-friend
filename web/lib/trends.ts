@@ -57,6 +57,11 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       newestTrendId: null,
       newestTrendName: null,
     },
+    charts: {
+      topTrendScores: [],
+      sourceShare: [],
+      statusBreakdown: [],
+    },
     operations: {
       lastRunAt: null,
       successRate: 0,
@@ -80,6 +85,20 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       biggestMoverName: payload.highlights?.biggestMoverName ?? null,
       newestTrendId: payload.highlights?.newestTrendId ?? null,
       newestTrendName: payload.highlights?.newestTrendName ?? null,
+    },
+    charts: {
+      topTrendScores: (payload.charts?.topTrendScores ?? []).map((datum) => ({
+        label: datum.label,
+        value: datum.value ?? 0,
+      })),
+      sourceShare: (payload.charts?.sourceShare ?? []).map((datum) => ({
+        label: datum.label,
+        value: datum.value ?? 0,
+      })),
+      statusBreakdown: (payload.charts?.statusBreakdown ?? []).map((datum) => ({
+        label: datum.label,
+        value: datum.value ?? 0,
+      })),
     },
     operations: {
       lastRunAt: payload.operations?.lastRunAt ?? null,
@@ -114,6 +133,10 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
   };
 }
 
+export async function loadDashboardOverview(): Promise<DashboardOverviewResponse> {
+  return readDashboardOverview();
+}
+
 async function readTrendExplorer(): Promise<TrendExplorerResponse> {
   const payload = await readJsonFile<TrendExplorerResponse>("trend-explorer.v2.json", {
     generatedAt: new Date(0).toISOString(),
@@ -141,6 +164,10 @@ async function readTrendExplorer(): Promise<TrendExplorerResponse> {
       evidencePreview: trend.evidencePreview ?? [],
     })),
   };
+}
+
+export async function loadTrendExplorer(): Promise<TrendExplorerResponse> {
+  return readTrendExplorer();
 }
 
 export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord | null> {
@@ -184,6 +211,10 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
   };
 }
 
+export async function loadTrendDetails(): Promise<TrendDetailIndexResponse> {
+  return readTrendDetailIndex();
+}
+
 async function readSourceSummary(): Promise<SourceSummaryResponse> {
   const payload = await readJsonFile<SourceSummaryResponse>("source-summary.v2.json", {
     generatedAt: new Date(0).toISOString(),
@@ -206,6 +237,10 @@ async function readSourceSummary(): Promise<SourceSummaryResponse> {
       topTrends: source.topTrends ?? [],
     })),
   };
+}
+
+export async function loadSourceSummaries(): Promise<SourceSummaryResponse> {
+  return readSourceSummary();
 }
 
 async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {

@@ -376,6 +376,94 @@ input {
   font-size: 0.8rem;
 }
 
+.analytics-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.analytics-card {
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.mini-bar-list {
+  display: grid;
+  gap: 5px;
+}
+
+.mini-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 92px) minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.mini-bar-row span,
+.pie-legend-row span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mini-bar-row strong,
+.pie-legend-row strong {
+  font-size: 0.66rem;
+}
+
+.mini-bar-track {
+  overflow: hidden;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(124, 157, 216, 0.1);
+}
+
+.mini-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4c58ff 0%, #00c4ff 100%);
+}
+
+.mini-bar-fill-muted {
+  background: linear-gradient(90deg, #7fe0a7 0%, #5e6bff 100%);
+}
+
+.pie-chart-wrap {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.pie-chart {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 14px rgba(8, 18, 35, 0.88);
+}
+
+.pie-chart-legend {
+  display: grid;
+  gap: 5px;
+}
+
+.pie-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.35fr) minmax(190px, 0.52fr);
@@ -924,6 +1012,7 @@ input {
 @media (max-width: 1040px) {
   .hero-panel,
   .content-grid,
+  .analytics-strip,
   .filters-panel,
   .detail-grid,
   .detail-hero {

@@ -57,6 +57,17 @@ export type DashboardOverviewHighlights = {
   newestTrendName: string | null;
 };
 
+export type DashboardChartDatum = {
+  label: string;
+  value: number;
+};
+
+export type DashboardOverviewCharts = {
+  topTrendScores: DashboardChartDatum[];
+  sourceShare: DashboardChartDatum[];
+  statusBreakdown: DashboardChartDatum[];
+};
+
 export type DashboardOverviewSource = {
   source: string;
   signalCount: number;
@@ -95,6 +106,7 @@ export type DashboardOverviewResponse = {
   generatedAt: string;
   summary: DashboardOverviewSummary;
   highlights: DashboardOverviewHighlights;
+  charts: DashboardOverviewCharts;
   operations: DashboardOverviewOperations;
   sources: DashboardOverviewSource[];
 };

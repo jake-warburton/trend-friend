@@ -220,6 +220,23 @@ class DashboardOverviewHighlightsPayload:
 
 
 @dataclass(frozen=True)
+class DashboardOverviewChartDatumPayload:
+    """Chart-ready label/value pair for overview visualizations."""
+
+    label: str
+    value: float
+
+
+@dataclass(frozen=True)
+class DashboardOverviewChartsPayload:
+    """Compact chart datasets exposed to the homepage."""
+
+    top_trend_scores: list[DashboardOverviewChartDatumPayload]
+    source_share: list[DashboardOverviewChartDatumPayload]
+    status_breakdown: list[DashboardOverviewChartDatumPayload]
+
+
+@dataclass(frozen=True)
 class DashboardOverviewSourcePayload:
     """Source-level aggregate for overview and source health summary."""
 
@@ -269,6 +286,7 @@ class DashboardOverviewPayload:
     generated_at: str
     summary: DashboardOverviewSummaryPayload
     highlights: DashboardOverviewHighlightsPayload
+    charts: DashboardOverviewChartsPayload
     operations: DashboardOverviewOperationsPayload
     sources: list[DashboardOverviewSourcePayload]
 
@@ -287,6 +305,9 @@ class DashboardOverviewPayload:
         payload["highlights"]["biggestMoverName"] = payload["highlights"].pop("biggest_mover_name")
         payload["highlights"]["newestTrendId"] = payload["highlights"].pop("newest_trend_id")
         payload["highlights"]["newestTrendName"] = payload["highlights"].pop("newest_trend_name")
+        payload["charts"]["topTrendScores"] = payload["charts"].pop("top_trend_scores")
+        payload["charts"]["sourceShare"] = payload["charts"].pop("source_share")
+        payload["charts"]["statusBreakdown"] = payload["charts"].pop("status_breakdown")
         payload["operations"]["lastRunAt"] = payload["operations"].pop("last_run_at")
         payload["operations"]["successRate"] = payload["operations"].pop("success_rate")
         payload["operations"]["averageDurationMs"] = payload["operations"].pop("average_duration_ms")

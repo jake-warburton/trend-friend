@@ -200,6 +200,68 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
       {refreshError ? <p className="error-banner">{refreshError}</p> : null}
 
+      <section className="analytics-strip">
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Top scores</h2>
+          </div>
+          <div className="mini-bar-list">
+            {initialData.overview.charts.topTrendScores.slice(0, 6).map((datum) => (
+              <div className="mini-bar-row" key={datum.label}>
+                <span>{datum.label}</span>
+                <div className="mini-bar-track">
+                  <div
+                    className="mini-bar-fill"
+                    style={{ width: `${scaleValue(datum.value, initialData.overview.charts.topTrendScores)}%` }}
+                  />
+                </div>
+                <strong>{datum.value.toFixed(1)}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="analytics-card analytics-card-pie">
+          <div className="section-heading">
+            <h2>Source share</h2>
+          </div>
+          <div className="pie-chart-wrap">
+            <div
+              className="pie-chart"
+              style={{ background: buildConicGradient(initialData.overview.charts.sourceShare) }}
+            />
+            <div className="pie-chart-legend">
+              {initialData.overview.charts.sourceShare.slice(0, 5).map((datum) => (
+                <div className="pie-legend-row" key={datum.label}>
+                  <span>{datum.label}</span>
+                  <strong>{formatPercent(datum.value, initialData.overview.charts.sourceShare)}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Status mix</h2>
+          </div>
+          <div className="mini-bar-list">
+            {initialData.overview.charts.statusBreakdown.map((datum) => (
+              <div className="mini-bar-row" key={datum.label}>
+                <span>{datum.label}</span>
+                <div className="mini-bar-track">
+                  <div
+                    className="mini-bar-fill mini-bar-fill-muted"
+                    style={{ width: `${scaleValue(datum.value, initialData.overview.charts.statusBreakdown)}%` }}
+                  />
+                </div>
+                <strong>{datum.value.toFixed(0)}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
       <section className="content-grid">
         <div className="ranking-panel">
           <div className="section-heading">
@@ -495,4 +557,38 @@ function trendStatusClassName(status: string) {
     return "trend-status-pill trend-status-pill-new";
   }
   return "trend-status-pill";
+}
+
+function scaleValue(value: number, dataset: { value: number }[]) {
+  const maxValue = dataset.reduce((currentMax, item) => Math.max(currentMax, item.value), 0);
+  if (maxValue <= 0) {
+    return 0;
+  }
+  return Math.max((value / maxValue) * 100, 8);
+}
+
+function formatPercent(value: number, dataset: { value: number }[]) {
+  const total = dataset.reduce((sum, item) => sum + item.value, 0);
+  if (total <= 0) {
+    return "0%";
+  }
+  return `${Math.round((value / total) * 100)}%`;
+}
+
+function buildConicGradient(dataset: { value: number }[]) {
+  const total = dataset.reduce((sum, item) => sum + item.value, 0);
+  if (total <= 0) {
+    return "conic-gradient(#182947 0deg 360deg)";
+  }
+
+  const palette = ["#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#ff8b8b", "#9b8cff"];
+  let currentAngle = 0;
+  const segments = dataset.slice(0, 6).map((item, index) => {
+    const segmentAngle = (item.value / total) * 360;
+    const color = palette[index % palette.length];
+    const segment = `${color} ${currentAngle}deg ${currentAngle + segmentAngle}deg`;
+    currentAngle += segmentAngle;
+    return segment;
+  });
+  return `conic-gradient(${segments.join(", ")})`;
 }

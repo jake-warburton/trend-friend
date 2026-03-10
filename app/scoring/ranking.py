@@ -7,7 +7,7 @@ from app.models import TrendScoreResult
 
 def rank_topics_by_score(
     scores: list[TrendScoreResult],
-    limit: int = 10,
+    limit: int = 25,
 ) -> list[TrendScoreResult]:
     """Return deterministically sorted trend results."""
 
