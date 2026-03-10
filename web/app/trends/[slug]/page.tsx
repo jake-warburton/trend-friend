@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import type { TrendDetailRecord } from "@/lib/types";
 import { loadTrendDetail } from "@/lib/trends";
 
 type TrendDetailPageProps = {
@@ -81,6 +82,27 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 </div>
                 <strong>{point.scoreTotal.toFixed(1)}</strong>
               </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Score</p>
+              <h2>Component mix</h2>
+            </div>
+          </div>
+
+          <div className="mini-bar-list">
+            {buildScoreMix(trend).map((item) => (
+              <div className="mini-bar-row" key={item.label}>
+                <span>{item.label}</span>
+                <div className="mini-bar-track">
+                  <div className="mini-bar-fill" style={{ width: `${(item.value / trend.score.total) * 100}%` }} />
+                </div>
+                <strong>{item.value.toFixed(1)}</strong>
+              </div>
             ))}
           </div>
         </section>
@@ -231,4 +253,14 @@ function trendStatusClassName(status: string) {
     return "trend-status-pill trend-status-pill-new";
   }
   return "trend-status-pill";
+}
+
+function buildScoreMix(trend: TrendDetailRecord) {
+  return [
+    { label: "Social", value: trend.score.social },
+    { label: "Developer", value: trend.score.developer },
+    { label: "Knowledge", value: trend.score.knowledge },
+    { label: "Diversity", value: trend.score.diversity },
+    { label: "Search", value: trend.score.search },
+  ].filter((item) => item.value > 0);
 }
