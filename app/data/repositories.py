@@ -18,6 +18,7 @@ from app.models import (
     SourceIngestionRun,
     TrendDetailRecord,
     TrendEvidenceItem,
+    TrendForecast,
     TrendExplorerRecord,
     TrendGeoSummary,
     TrendHistoryPoint,
@@ -1327,10 +1328,14 @@ class TrendScoreRepository:
         if latest_captured_at is None:
             return []
 
+        from app.scoring.forecast import describe_forecast_direction, forecast_trend
+
         records: list[TrendExplorerRecord] = []
         for rank, score in enumerate(latest_scores, start=1):
-            history = self.get_topic_history(score.topic, limit_runs=history_limit)
-            momentum = self._build_momentum(score.total_score, history)
+            recent_history = self.get_topic_history(score.topic, limit_runs=history_limit)
+            full_history = list(reversed(self.get_topic_history(score.topic, limit_runs=max(history_limit, 6))))
+            momentum = self._build_momentum(score.total_score, recent_history)
+            forecast = forecast_trend(full_history)
             records.append(
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
@@ -1347,7 +1352,8 @@ class TrendScoreRepository:
                     momentum=momentum,
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
-                    recent_history=history,
+                    recent_history=recent_history,
+                    forecast_direction=describe_forecast_direction(forecast, score.total_score),
                 )
             )
         return records
@@ -1364,12 +1370,14 @@ class TrendScoreRepository:
         if latest_captured_at is None:
             return []
 
+        from app.scoring.forecast import forecast_trend
         from app.scoring.opportunity import score_opportunities
         from app.scoring.predictor import predict_breakouts
 
         history_by_topic: dict[str, list[TrendHistoryPoint]] = {}
         first_seen_by_topic: dict[str, datetime | None] = {}
         momentum_by_topic: dict[str, TrendMomentum] = {}
+        forecast_by_topic: dict[str, TrendForecast | None] = {}
         status_by_topic: dict[str, str] = {}
         ranks_by_topic: dict[str, int] = {}
 
@@ -1379,6 +1387,7 @@ class TrendScoreRepository:
             history_by_topic[score.topic] = history
             first_seen_by_topic[score.topic] = self.get_first_seen_at(score.topic)
             momentum_by_topic[score.topic] = momentum
+            forecast_by_topic[score.topic] = forecast_trend(history)
             status_by_topic[score.topic] = self._build_trend_status(momentum)
             ranks_by_topic[score.topic] = rank
 
@@ -1430,6 +1439,7 @@ class TrendScoreRepository:
                         ),
                         signals=prediction.signals if prediction is not None else ["No strong momentum signals"],
                     ),
+                    forecast=forecast_by_topic[score.topic],
                     opportunity=OpportunitySummary(
                         composite=opportunity.composite if opportunity is not None else 0.0,
                         content=opportunity.content if opportunity is not None else 0.0,
@@ -1763,6 +1773,7 @@ class TrendScoreRepository:
                 score=record.score,
                 momentum=record.momentum,
                 breakout_prediction=record.breakout_prediction,
+                forecast=record.forecast,
                 opportunity=record.opportunity,
                 source_count=record.source_count,
                 signal_count=record.signal_count,

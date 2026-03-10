@@ -29,6 +29,7 @@ from app.exports.contracts import (
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
     TrendEvidenceItemPayload,
+    TrendForecastPayload,
     TrendGeoSummaryPayload,
     TrendExplorerPayload,
     TrendExplorerRecordPayload,
@@ -266,6 +267,7 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
             )
             for point in trend.recent_history
         ],
+        forecast_direction=trend.forecast_direction,
     )
 
 
@@ -301,6 +303,16 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             confidence=trend.breakout_prediction.confidence,
             predicted_direction=trend.breakout_prediction.predicted_direction,
             signals=trend.breakout_prediction.signals,
+        ),
+        forecast=(
+            TrendForecastPayload(
+                predicted_scores=[round(score, 2) for score in trend.forecast.predicted_scores],
+                confidence=trend.forecast.confidence,
+                mape=trend.forecast.mape,
+                method=trend.forecast.method,
+            )
+            if trend.forecast is not None
+            else None
         ),
         opportunity=OpportunityPayload(
             composite=trend.opportunity.composite,

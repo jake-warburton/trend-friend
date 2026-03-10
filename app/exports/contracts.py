@@ -98,6 +98,16 @@ class BreakoutPredictionPayload:
 
 
 @dataclass(frozen=True)
+class TrendForecastPayload:
+    """Short-horizon forecast exposed on trend detail pages."""
+
+    predicted_scores: list[float]
+    confidence: str
+    mape: float
+    method: str
+
+
+@dataclass(frozen=True)
 class OpportunityPayload:
     """Opportunity scoring exposed on detail pages."""
 
@@ -136,6 +146,7 @@ class TrendExplorerRecordPayload:
     sources: list[str]
     evidence_preview: list[str]
     recent_history: list[TrendHistoryPointPayload]
+    forecast_direction: str | None = None
 
 
 @dataclass(frozen=True)
@@ -241,6 +252,7 @@ class TrendDetailRecordPayload:
     score: TrendScoreComponents
     momentum: TrendMomentumPayload
     breakout_prediction: BreakoutPredictionPayload
+    forecast: TrendForecastPayload | None
     opportunity: OpportunityPayload
     coverage: TrendCoveragePayload
     sources: list[str]
@@ -550,6 +562,7 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["evidencePreview"] = payload.pop("evidence_preview")
     payload["recentHistory"] = payload.pop("recent_history")
+    payload["forecastDirection"] = payload.pop("forecast_direction")
     for point in payload["recentHistory"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")
@@ -570,6 +583,8 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["momentum"]["percentDelta"] = payload["momentum"].pop("percent_delta")
     payload["breakoutPrediction"] = payload.pop("breakout_prediction")
     payload["breakoutPrediction"]["predictedDirection"] = payload["breakoutPrediction"].pop("predicted_direction")
+    if payload["forecast"] is not None:
+        payload["forecast"]["predictedScores"] = payload["forecast"].pop("predicted_scores")
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")

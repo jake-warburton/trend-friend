@@ -22,6 +22,7 @@ from app.models import (
     TrendDetailRecord,
     TrendEvidenceItem,
     TrendExplorerRecord,
+    TrendForecast,
     TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
@@ -138,6 +139,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["momentum"]["percentDelta"], 40.2)
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["evidencePreview"][0], "ai agents evidence")
+        self.assertEqual(payload["trends"][0]["forecastDirection"], "accelerating")
 
     def test_build_trend_detail_index_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -158,6 +160,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["breakoutPrediction"]["predictedDirection"], "breakout")
+        self.assertEqual(payload["trends"][0]["forecast"]["method"], "holt")
+        self.assertEqual(payload["trends"][0]["forecast"]["confidence"], "high")
+        self.assertEqual(payload["trends"][0]["forecast"]["predictedScores"][0], 47.2)
         self.assertGreater(payload["trends"][0]["opportunity"]["composite"], 0.0)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
@@ -289,6 +294,7 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
                 score_total=31.1,
             ),
         ],
+        forecast_direction="accelerating",
     )
 
 
@@ -317,6 +323,12 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
             confidence=0.78,
             predicted_direction="breakout",
             signals=["Score accelerating (+3.0/run)", "High base score (42.4)"],
+        ),
+        forecast=TrendForecast(
+            predicted_scores=[47.2, 51.6, 56.0, 60.4, 64.8],
+            confidence="high",
+            mape=8.4,
+            method="holt",
         ),
         opportunity=OpportunitySummary(
             composite=0.72,

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from app.data.database import connect_database, initialize_database
@@ -254,8 +254,27 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].source_contributions[0].score_share_percent, 36.7)
         self.assertEqual(records[0].source_contributions[0].social_score, 10.0)
         self.assertEqual(records[0].breakout_prediction.predicted_direction, "breakout")
+        self.assertIsNone(records[0].forecast)
         self.assertGreater(records[0].opportunity.composite, 0.0)
         self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
+
+    def test_trend_score_repository_builds_forecasts_for_longer_histories(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        base_captured_at = datetime(2026, 3, 4, tzinfo=timezone.utc)
+
+        for day_offset, score_total in enumerate([10.0, 15.0, 21.0, 28.0, 36.0, 45.0]):
+            repository.append_snapshot(
+                [build_score(topic="ai agents", total_score=score_total)],
+                captured_at=base_captured_at + timedelta(days=day_offset),
+            )
+
+        detail_records = repository.list_trend_detail_records(limit=5)
+        explorer_records = repository.list_trend_explorer_records(limit=5)
+
+        self.assertEqual(detail_records[0].forecast.method, "holt")
+        self.assertEqual(detail_records[0].forecast.confidence, "medium")
+        self.assertEqual(len(detail_records[0].forecast.predicted_scores), 5)
+        self.assertEqual(explorer_records[0].forecast_direction, "accelerating")
 
     def test_watchlist_repository_round_trip(self) -> None:
         repository = WatchlistRepository(self.connection)

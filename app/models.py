@@ -112,6 +112,16 @@ class BreakoutPredictionSummary:
 
 
 @dataclass(frozen=True)
+class TrendForecast:
+    """Short-horizon score projection derived from recent history."""
+
+    predicted_scores: list[float]
+    confidence: str
+    mape: float
+    method: str
+
+
+@dataclass(frozen=True)
 class OpportunitySummary:
     """Actionability scoring for a trend."""
 
@@ -141,6 +151,7 @@ class TrendExplorerRecord:
     source_count: int
     signal_count: int
     recent_history: list[TrendHistoryPoint]
+    forecast_direction: str | None = None
 
 
 @dataclass(frozen=True)
@@ -225,6 +236,7 @@ class TrendDetailRecord:
     score: TrendScoreResult
     momentum: TrendMomentum
     breakout_prediction: BreakoutPredictionSummary
+    forecast: TrendForecast | None
     opportunity: OpportunitySummary
     source_count: int
     signal_count: int
