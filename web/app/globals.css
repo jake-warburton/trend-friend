@@ -1241,3 +1241,28 @@ input {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Chart components */
+
+.chart-container {
+  width: 100%;
+  min-height: 200px;
+  padding: 8px 0;
+}
+
+.chart-empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.sparkline-wrap {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.sparkline-empty {
+  color: var(--muted);
+  font-size: 0.75rem;
+}

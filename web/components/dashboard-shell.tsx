@@ -20,6 +20,7 @@ const SOURCE_FILTER_OPTIONS = [
   { label: "Hacker News", value: "hacker_news" },
   { label: "GitHub", value: "github" },
   { label: "Wikipedia", value: "wikipedia" },
+  { label: "Google Trends", value: "google_trends" },
 ] as const;
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;

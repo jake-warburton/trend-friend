@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import type { TrendDetailRecord } from "@/lib/types";
 import { loadTrendDetail } from "@/lib/trends";
+import { TrendScoreChart } from "@/components/trend-score-chart";
+import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 
 type TrendDetailPageProps = {
   params: Promise<{
@@ -19,8 +21,6 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   if (trend === null) {
     notFound();
   }
-
-  const topHistoryScore = Math.max(...trend.history.map((point) => point.scoreTotal), trend.score.total);
 
   return (
     <main className="detail-page">
@@ -68,52 +68,26 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
       </section>
 
       <section className="detail-grid">
-        <section className="detail-panel">
+        <section className="detail-panel detail-panel-wide">
           <div className="section-heading">
             <div>
               <p className="eyebrow">History</p>
-              <h2>Score and rank progression</h2>
+              <h2>Score trajectory</h2>
             </div>
           </div>
 
-          <div className="history-bars">
-            {trend.history.map((point) => (
-              <article className="history-bar-card" key={point.capturedAt}>
-                <header>
-                  <strong>{formatDateOnly(point.capturedAt)}</strong>
-                  <span>Rank #{point.rank}</span>
-                </header>
-                <div className="history-bar-track">
-                  <div
-                    className="history-bar-fill"
-                    style={{ width: `${(point.scoreTotal / topHistoryScore) * 100}%` }}
-                  />
-                </div>
-                <strong>{point.scoreTotal.toFixed(1)}</strong>
-              </article>
-            ))}
-          </div>
+          <TrendScoreChart history={trend.history} currentScore={trend.score.total} />
         </section>
 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
               <p className="eyebrow">Score</p>
-              <h2>Component mix</h2>
+              <h2>Component breakdown</h2>
             </div>
           </div>
 
-          <div className="mini-bar-list">
-            {buildScoreMix(trend).map((item) => (
-              <div className="mini-bar-row" key={item.label}>
-                <span>{item.label}</span>
-                <div className="mini-bar-track">
-                  <div className="mini-bar-fill" style={{ width: `${(item.value / trend.score.total) * 100}%` }} />
-                </div>
-                <strong>{item.value.toFixed(1)}</strong>
-              </div>
-            ))}
-          </div>
+          <ScoreBreakdownChart score={trend.score} />
         </section>
 
         <section className="detail-panel">
@@ -304,12 +278,3 @@ function volatilityClassName(volatility: string) {
   return "volatility-pill";
 }
 
-function buildScoreMix(trend: TrendDetailRecord) {
-  return [
-    { label: "Social", value: trend.score.social },
-    { label: "Developer", value: trend.score.developer },
-    { label: "Knowledge", value: trend.score.knowledge },
-    { label: "Diversity", value: trend.score.diversity },
-    { label: "Search", value: trend.score.search },
-  ].filter((item) => item.value > 0);
-}
