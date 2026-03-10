@@ -189,7 +189,9 @@ export default async function CommunityPage({ searchParams }: PageProps) {
                 </div>
               </div>
               {watchlist.categories?.length ? (
-                <p className="source-summary-copy">Categories: {watchlist.categories.join(", ")}</p>
+                <p className="source-summary-copy">
+                  Categories: {watchlist.categories.map(formatCategory).join(", ")}
+                </p>
               ) : null}
               {watchlist.statuses?.length ? (
                 <p className="source-summary-copy">Statuses: {watchlist.statuses.map(formatStatusLabel).join(", ")}</p>
@@ -332,7 +334,7 @@ export function listCommunityCategoryOptions(watchlists: PublicWatchlistSummary[
     new Set(watchlists.flatMap((watchlist) => watchlist.categories ?? [])),
   )
     .sort((left, right) => left.localeCompare(right))
-    .map((value) => ({ value, label: value }));
+    .map((value) => ({ value, label: formatCategory(value) }));
 }
 
 export function listCommunityStatusOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
@@ -458,6 +460,13 @@ function formatSourceLabel(source: string) {
     twitter: "Twitter/X",
   };
   return labels[source] ?? source;
+}
+
+function formatCategory(category: string) {
+  return category
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function formatStatusLabel(status: string) {
