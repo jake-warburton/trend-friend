@@ -68,6 +68,20 @@ export type DashboardOverviewCharts = {
   statusBreakdown: DashboardChartDatum[];
 };
 
+export type DashboardOverviewTrendItem = {
+  id: string;
+  name: string;
+  status: string;
+  rank: number;
+  scoreTotal: number;
+};
+
+export type DashboardOverviewSections = {
+  topTrends: DashboardOverviewTrendItem[];
+  breakoutTrends: DashboardOverviewTrendItem[];
+  risingTrends: DashboardOverviewTrendItem[];
+};
+
 export type DashboardOverviewSource = {
   source: string;
   signalCount: number;
@@ -107,6 +121,7 @@ export type DashboardOverviewResponse = {
   summary: DashboardOverviewSummary;
   highlights: DashboardOverviewHighlights;
   charts: DashboardOverviewCharts;
+  sections: DashboardOverviewSections;
   operations: DashboardOverviewOperations;
   sources: DashboardOverviewSource[];
 };

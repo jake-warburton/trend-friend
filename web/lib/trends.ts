@@ -62,6 +62,11 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       sourceShare: [],
       statusBreakdown: [],
     },
+    sections: {
+      topTrends: [],
+      breakoutTrends: [],
+      risingTrends: [],
+    },
     operations: {
       lastRunAt: null,
       successRate: 0,
@@ -98,6 +103,29 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       statusBreakdown: (payload.charts?.statusBreakdown ?? []).map((datum) => ({
         label: datum.label,
         value: datum.value ?? 0,
+      })),
+    },
+    sections: {
+      topTrends: (payload.sections?.topTrends ?? []).map((trend) => ({
+        id: trend.id,
+        name: trend.name,
+        status: trend.status ?? "steady",
+        rank: trend.rank ?? 0,
+        scoreTotal: trend.scoreTotal ?? 0,
+      })),
+      breakoutTrends: (payload.sections?.breakoutTrends ?? []).map((trend) => ({
+        id: trend.id,
+        name: trend.name,
+        status: trend.status ?? "breakout",
+        rank: trend.rank ?? 0,
+        scoreTotal: trend.scoreTotal ?? 0,
+      })),
+      risingTrends: (payload.sections?.risingTrends ?? []).map((trend) => ({
+        id: trend.id,
+        name: trend.name,
+        status: trend.status ?? "rising",
+        rank: trend.rank ?? 0,
+        scoreTotal: trend.scoreTotal ?? 0,
       })),
     },
     operations: {

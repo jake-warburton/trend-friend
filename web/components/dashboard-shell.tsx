@@ -262,6 +262,50 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         </article>
       </section>
 
+      <section className="curated-strip">
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Breakout</h2>
+          </div>
+          <div className="curated-list">
+            {initialData.overview.sections.breakoutTrends.slice(0, 4).map((trend) => (
+              <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                <span>{trend.name}</span>
+                <strong>#{trend.rank}</strong>
+              </Link>
+            ))}
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Rising</h2>
+          </div>
+          <div className="curated-list">
+            {initialData.overview.sections.risingTrends.slice(0, 4).map((trend) => (
+              <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                <span>{trend.name}</span>
+                <strong>{trend.scoreTotal.toFixed(1)}</strong>
+              </Link>
+            ))}
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Top list</h2>
+          </div>
+          <div className="curated-list">
+            {initialData.overview.sections.topTrends.slice(0, 4).map((trend) => (
+              <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                <span>{trend.name}</span>
+                <strong>#{trend.rank}</strong>
+              </Link>
+            ))}
+          </div>
+        </article>
+      </section>
+
       <section className="content-grid">
         <div className="ranking-panel">
           <div className="section-heading">

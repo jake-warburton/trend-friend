@@ -383,6 +383,13 @@ input {
   margin-top: 6px;
 }
 
+.curated-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+
 .analytics-card {
   padding: 7px;
   border: 1px solid var(--border);
@@ -462,6 +469,44 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+}
+
+.curated-list {
+  display: grid;
+  gap: 5px;
+}
+
+.curated-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 7px;
+  border: 1px solid rgba(124, 157, 216, 0.08);
+  border-radius: 10px;
+  background: rgba(8, 18, 35, 0.36);
+  color: inherit;
+  text-decoration: none;
+}
+
+.curated-item:hover {
+  border-color: rgba(124, 157, 216, 0.16);
+  background: rgba(12, 24, 45, 0.54);
+}
+
+.curated-item span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.curated-item strong {
+  font-size: 0.68rem;
 }
 
 .content-grid {
@@ -1013,6 +1058,7 @@ input {
   .hero-panel,
   .content-grid,
   .analytics-strip,
+  .curated-strip,
   .filters-panel,
   .detail-grid,
   .detail-hero {

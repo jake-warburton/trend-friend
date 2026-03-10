@@ -12,8 +12,10 @@ from app.exports.contracts import (
     DashboardOverviewOperationsPayload,
     DashboardOverviewPayload,
     DashboardOverviewRunPayload,
+    DashboardOverviewSectionsPayload,
     DashboardOverviewSourcePayload,
     DashboardOverviewSummaryPayload,
+    DashboardOverviewTrendItemPayload,
     LatestTrendsPayload,
     SourceRunPayload,
     SourceSummaryPayload,
@@ -142,6 +144,7 @@ def build_dashboard_overview_payload(
             newest_trend_name=newest_trend.name if newest_trend is not None else None,
         ),
         charts=build_dashboard_charts_payload(ordered_trends, source_summaries),
+        sections=build_dashboard_sections_payload(ordered_trends),
         operations=build_dashboard_operations_payload(pipeline_runs),
         sources=source_summaries,
     )
@@ -426,6 +429,38 @@ def build_dashboard_charts_payload(
             )
             for status, count in sorted(status_counts.items(), key=lambda item: (-item[1], item[0]))
         ],
+    )
+
+
+def build_dashboard_sections_payload(
+    trends: list[TrendDetailRecord],
+) -> DashboardOverviewSectionsPayload:
+    """Return curated overview sections similar to dedicated trend products."""
+
+    return DashboardOverviewSectionsPayload(
+        top_trends=[serialize_overview_trend_item(trend) for trend in trends[:5]],
+        breakout_trends=[
+            serialize_overview_trend_item(trend)
+            for trend in trends
+            if trend.status == "breakout"
+        ][:5],
+        rising_trends=[
+            serialize_overview_trend_item(trend)
+            for trend in trends
+            if trend.status == "rising"
+        ][:5],
+    )
+
+
+def serialize_overview_trend_item(trend: TrendDetailRecord) -> DashboardOverviewTrendItemPayload:
+    """Convert a detail record into a compact overview trend item."""
+
+    return DashboardOverviewTrendItemPayload(
+        id=trend.id,
+        name=trend.name,
+        status=trend.status,
+        rank=trend.rank,
+        score_total=round(trend.score.total_score, 1),
     )
 
 
