@@ -93,6 +93,14 @@ class TopicNormalizationTests(unittest.TestCase):
             "english words",
         )
 
+    def test_extract_candidate_topics_prefers_domain_phrase_over_discussion_framing(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics(
+                "If a startup asks you to build them a sales strategy during the interview process, walk away immediately"
+            )[0],
+            "sales strategy",
+        )
+
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [
