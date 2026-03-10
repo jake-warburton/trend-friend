@@ -20,6 +20,8 @@ class Settings:
     ranking_limit: int
     github_token: Optional[str]
     reddit_user_agent: str
+    poll_interval_minutes: int
+    health_file_path: Path
 
 
 def load_settings() -> Settings:
@@ -35,6 +37,8 @@ def load_settings() -> Settings:
         ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "25")),
         github_token=os.getenv("GITHUB_TOKEN"),
         reddit_user_agent=os.getenv("TREND_FRIEND_REDDIT_USER_AGENT", "trend-friend-mvp/1.0"),
+        poll_interval_minutes=int(os.getenv("TREND_FRIEND_POLL_INTERVAL_MINUTES", "30")),
+        health_file_path=Path(os.getenv("TREND_FRIEND_HEALTH_FILE_PATH", "data/last_run.json")),
     )
 
 
