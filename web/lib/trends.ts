@@ -243,6 +243,7 @@ function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExplorerRe
       },
       sources: trend.sources ?? [],
       evidencePreview: trend.evidencePreview ?? [],
+      forecastDirection: trend.forecastDirection ?? null,
     })),
   };
 }
@@ -332,6 +333,14 @@ function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord
       predictedDirection: trend.breakoutPrediction?.predictedDirection ?? "stable",
       signals: trend.breakoutPrediction?.signals ?? [],
     },
+    forecast: trend.forecast
+      ? {
+          predictedScores: trend.forecast.predictedScores ?? [],
+          confidence: trend.forecast.confidence ?? "low",
+          mape: trend.forecast.mape ?? 100,
+          method: trend.forecast.method ?? "ses",
+        }
+      : null,
     opportunity: {
       composite: trend.opportunity?.composite ?? 0,
       content: trend.opportunity?.content ?? 0,

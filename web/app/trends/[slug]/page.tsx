@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import type { TrendDetailRecord } from "@/lib/types";
 import { loadTrendDetail } from "@/lib/trends";
+import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 
@@ -78,7 +79,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
           </div>
 
-          <TrendScoreChart history={trend.history} currentScore={trend.score.total} />
+          <TrendScoreChart history={trend.history} currentScore={trend.score.total} forecast={trend.forecast} />
         </section>
 
         <section className="detail-panel">
@@ -144,6 +145,20 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 </span>
               </div>
             </article>
+            {trend.forecast ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>{summarizeForecastWindow(trend.forecast)}</strong>
+                  <span>
+                    {formatForecastMethod(trend.forecast.method)} · {trend.forecast.mape.toFixed(1)}% backtest error
+                  </span>
+                </div>
+                <small>
+                  {trend.forecast.predictedScores[0]?.toFixed(1)} to{" "}
+                  {trend.forecast.predictedScores[trend.forecast.predictedScores.length - 1]?.toFixed(1)} projected
+                </small>
+              </article>
+            ) : null}
           </div>
         </section>
 

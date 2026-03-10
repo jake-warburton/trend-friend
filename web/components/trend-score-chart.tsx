@@ -4,31 +4,71 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
-import type { TrendHistoryPoint } from "@/lib/types";
+import type { TrendForecast, TrendHistoryPoint } from "@/lib/types";
+import { formatForecastConfidence } from "@/lib/forecast-ui";
 
 type TrendScoreChartProps = {
   history: TrendHistoryPoint[];
   currentScore: number;
+  forecast?: TrendForecast | null;
 };
 
-export function TrendScoreChart({ history, currentScore }: TrendScoreChartProps) {
+type TrendScoreChartDatum = {
+  date: string;
+  score: number | null;
+  forecast: number | null;
+  rank: number | null;
+};
+
+export function buildTrendScoreChartData(
+  history: TrendHistoryPoint[],
+  forecast?: TrendForecast | null,
+): TrendScoreChartDatum[] {
+  const data: TrendScoreChartDatum[] = history.map((point) => ({
+    date: formatShortDate(point.capturedAt),
+    score: point.scoreTotal,
+    forecast: null,
+    rank: point.rank,
+  }));
+
+  if (!forecast || forecast.predictedScores.length === 0 || data.length === 0) {
+    return data;
+  }
+
+  const lastActualPoint = data[data.length - 1];
+  if (lastActualPoint) {
+    lastActualPoint.forecast = lastActualPoint.score;
+  }
+
+  forecast.predictedScores.forEach((score, index) => {
+    data.push({
+      date: `Run +${index + 1}`,
+      score: null,
+      forecast: score,
+      rank: null,
+    });
+  });
+
+  return data;
+}
+
+export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreChartProps) {
   if (history.length === 0) {
     return <p className="chart-empty">No historical data yet. Scores will appear after multiple pipeline runs.</p>;
   }
 
-  const data = history.map((point) => ({
-    date: formatShortDate(point.capturedAt),
-    score: point.scoreTotal,
-    rank: point.rank,
-  }));
-
-  const maxScore = Math.max(...data.map((d) => d.score), currentScore);
+  const data = buildTrendScoreChartData(history, forecast);
+  const maxScore = Math.max(
+    ...data.flatMap((datum) => [datum.score ?? 0, datum.forecast ?? 0]),
+    currentScore,
+  );
 
   return (
     <div className="chart-container">
@@ -64,6 +104,7 @@ export function TrendScoreChart({ history, currentScore }: TrendScoreChartProps)
             }}
             formatter={(value, name) => {
               if (name === "score") return [Number(value).toFixed(1), "Score"];
+              if (name === "forecast") return [Number(value).toFixed(1), "Forecast"];
               return [String(value), String(name)];
             }}
           />
@@ -76,10 +117,38 @@ export function TrendScoreChart({ history, currentScore }: TrendScoreChartProps)
             dot={{ fill: "#5e6bff", r: 3 }}
             activeDot={{ r: 5, fill: "#7e8aff" }}
           />
+          {forecast && forecast.predictedScores.length > 0 ? (
+            <Line
+              type="monotone"
+              dataKey="forecast"
+              stroke={forecastLineColor(forecast.confidence)}
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls
+            />
+          ) : null}
         </AreaChart>
       </ResponsiveContainer>
+      {forecast && forecast.predictedScores.length > 0 ? (
+        <p className={`forecast-note forecast-note-${forecast.confidence}`}>
+          Dashed line shows a {formatForecastConfidence(forecast.confidence).toLowerCase()}-confidence{" "}
+          projection using {forecast.method === "holt" ? "Holt trend" : "SES smoothing"}.
+        </p>
+      ) : null}
     </div>
   );
+}
+
+function forecastLineColor(confidence: string) {
+  if (confidence === "high") {
+    return "#3ddc97";
+  }
+  if (confidence === "medium") {
+    return "#ffbf69";
+  }
+  return "#7c8aa5";
 }
 
 function formatShortDate(value: string) {

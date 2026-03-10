@@ -14,6 +14,7 @@ import {
   formatAutoRefreshStatus,
   hasOverviewChanged,
 } from "@/lib/auto-refresh";
+import { getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
 
@@ -943,7 +944,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <span>Score</span>
                 <span>Signals</span>
               </div>
-              {filteredTrends.map((trend) => (
+              {filteredTrends.map((trend) => {
+                const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
+                return (
                 <article className="explorer-card" key={trend.id}>
                   <div className="explorer-card-top">
                     <div className="trend-cell">
@@ -970,6 +973,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         <span className={volatilityClassName(trend.volatility)}>
                           {formatVolatility(trend.volatility)}
                         </span>
+                        {forecastBadge ? (
+                          <span className={`forecast-badge forecast-badge-${forecastBadge.tone}`}>
+                            {forecastBadge.label}
+                          </span>
+                        ) : null}
                         <span className="trend-date-chip">{formatCategory(trend.category)}</span>
                         <span className="trend-date-chip">
                           {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
@@ -1154,7 +1162,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     </div>
                   </div>
                 </article>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

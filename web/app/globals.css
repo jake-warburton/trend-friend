@@ -1211,6 +1211,29 @@ input {
   text-transform: uppercase;
 }
 
+.forecast-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.forecast-badge-high {
+  border: 1px solid rgba(61, 220, 151, 0.22);
+  background: rgba(61, 220, 151, 0.12);
+  color: #9bf0c9;
+}
+
+.forecast-badge-medium {
+  border: 1px solid rgba(255, 191, 105, 0.22);
+  background: rgba(255, 191, 105, 0.12);
+  color: #ffd29d;
+}
+
 .trend-cell span,
 .score-cell span,
 .explorer-metric span,
@@ -1280,6 +1303,20 @@ input {
   gap: 4px;
   align-items: center;
   margin-top: 4px;
+}
+
+.forecast-note {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.forecast-note-high {
+  color: #9bf0c9;
+}
+
+.forecast-note-medium {
+  color: #ffd29d;
 }
 
 .source-row-compact {

@@ -149,6 +149,13 @@ export type BreakoutPrediction = {
   signals: string[];
 };
 
+export type TrendForecast = {
+  predictedScores: number[];
+  confidence: string;
+  mape: number;
+  method: string;
+};
+
 export type OpportunitySummary = {
   composite: number;
   content: number;
@@ -179,6 +186,7 @@ export type TrendExplorerRecord = {
   sources: string[];
   evidencePreview: string[];
   recentHistory?: TrendHistoryPoint[];
+  forecastDirection?: string | null;
 };
 
 export type TrendExplorerResponse = {
@@ -252,6 +260,7 @@ export type TrendDetailRecord = {
   score: TrendScore;
   momentum: TrendMomentum;
   breakoutPrediction: BreakoutPrediction;
+  forecast?: TrendForecast | null;
   opportunity: OpportunitySummary;
   coverage: TrendCoverage;
   sources: string[];
