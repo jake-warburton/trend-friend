@@ -38,6 +38,7 @@ type ActiveCommunityFilter = {
 };
 type CommunityPresetSection = {
   title: string;
+  description: string;
   href: string | null;
   watchlists: PublicWatchlistSummary[];
 };
@@ -232,7 +233,10 @@ export default async function CommunityPage({ searchParams }: PageProps) {
           {presetSections.map((section) => (
             <section className="snapshot-card community-rail-card" key={section.title}>
               <div className="section-heading section-heading-spaced">
-                <h2>{section.title}</h2>
+                <div>
+                  <h2>{section.title}</h2>
+                  <p className="source-summary-copy">{section.description}</p>
+                </div>
                 {section.href ? (
                   <Link className="mini-action-button community-link-button" href={section.href}>
                     Open
@@ -553,6 +557,7 @@ export function listCommunityPresetSections(
   if (popular.length > 0) {
     sections.push({
       title: "Popular this week",
+      description: "Watchlists with the strongest recent open activity.",
       href: "/community?popular=true",
       watchlists: popular,
     });
@@ -566,6 +571,7 @@ export function listCommunityPresetSections(
   if (ai.length > 0) {
     sections.push({
       title: "AI watchlists",
+      description: "Collections centered on AI and machine learning topics.",
       href: "/community?category=ai-machine-learning",
       watchlists: ai,
     });
@@ -579,6 +585,7 @@ export function listCommunityPresetSections(
   if (developer.length > 0) {
     sections.push({
       title: "Developer watchlists",
+      description: "Collections with a strong developer-tools angle.",
       href: "/community?category=developer-tools",
       watchlists: developer,
     });
@@ -594,6 +601,7 @@ export function listCommunityPresetSections(
   if (searchDriven.length > 0) {
     sections.push({
       title: "Search-driven watchlists",
+      description: "Driven mostly by Google Trends and search demand signals.",
       href: "/community?source=google_trends",
       watchlists: searchDriven,
     });
@@ -605,6 +613,7 @@ export function listCommunityPresetSections(
   if (globalInterest.length > 0) {
     sections.push({
       title: "Global interest",
+      description: "Showing up across multiple regions at the same time.",
       href: null,
       watchlists: globalInterest,
     });

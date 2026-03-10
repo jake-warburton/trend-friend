@@ -439,6 +439,9 @@ test("community preset sections surface popular and topical slices", () => {
       "Global interest",
     ],
   );
+  assert.equal(sections[0]?.description, "Watchlists with the strongest recent open activity.");
+  assert.equal(sections[3]?.description, "Driven mostly by Google Trends and search demand signals.");
+  assert.equal(sections[4]?.description, "Showing up across multiple regions at the same time.");
   assert.equal(sections[0]?.watchlists[0]?.name, "Popular Robotics");
   assert.equal(sections[1]?.watchlists[0]?.name, "AI Search");
   assert.equal(sections[2]?.watchlists[0]?.name, "Dev Tools");
@@ -797,6 +800,8 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /AI watchlists/);
   assert.match(html, /Developer watchlists/);
   assert.match(html, /Search-driven watchlists/);
+  assert.match(html, /Driven mostly by Google Trends and search demand signals\./);
+  assert.match(html, /Collections centered on AI and machine learning topics\./);
   assert.match(html, /Popular Robotics/);
   assert.match(html, /Popular this week/);
   assert.match(html, /Category/);
