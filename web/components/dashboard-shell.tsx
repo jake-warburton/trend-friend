@@ -1146,12 +1146,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <strong>{shareUsageSummary.totalOpens}</strong>
                   </article>
                   <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Active in 7d</span>
-                    <strong>{shareUsageSummary.activeShares}</strong>
+                    <span className="watchlist-share-label">Last 7 days</span>
+                    <strong>{shareUsageSummary.recentOpens}</strong>
                   </article>
                   <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Dormant</span>
-                    <strong>{shareUsageSummary.dormantShares}</strong>
+                    <span className="watchlist-share-label">Active in 7d</span>
+                    <strong>{shareUsageSummary.activeShares}</strong>
                   </article>
                   <article className="watchlist-share-analytics-card">
                     <span className="watchlist-share-label">Top link</span>
@@ -1160,6 +1160,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         ? `${formatShareTokenLabel(shareUsageSummary.topShare.shareToken)} · ${shareUsageSummary.topShare.accessCount} opens`
                         : "No link usage yet"}
                     </strong>
+                  </article>
+                  <article className="watchlist-share-analytics-card">
+                    <span className="watchlist-share-label">Dormant</span>
+                    <strong>{shareUsageSummary.dormantShares}</strong>
                   </article>
                 </div>
               ) : null}
@@ -1201,6 +1205,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         <div className="watchlist-share-cell">
                           <span className="watchlist-share-label">Opens</span>
                           <strong>{share.accessCount}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">7 day trend</span>
+                          <Sparkline
+                            data={fillShareHistory(share.accessHistory).map((point) => point.count)}
+                            color={wasOpenedRecently(share.lastAccessedAt) ? "#7fe0a7" : "#ffca6e"}
+                            width={96}
+                            height={28}
+                          />
                         </div>
                         <div className="watchlist-share-cell">
                           <span className="watchlist-share-label">Last opened</span>
@@ -1737,6 +1750,22 @@ function formatShareDefaultOptionLabel(days: number | null) {
     return "Watchlist default (none)";
   }
   return `Watchlist default (${formatShareDurationLabel(days)})`;
+}
+
+function fillShareHistory(history: Array<{ date: string; count: number }>) {
+  const byDate = new Map(history.map((point) => [point.date, point.count]));
+  const points: Array<{ date: string; count: number }> = [];
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    date.setUTCDate(date.getUTCDate() - offset);
+    const key = date.toISOString().slice(0, 10);
+    points.push({
+      date: key,
+      count: byDate.get(key) ?? 0,
+    });
+  }
+  return points;
 }
 
 function formatShareExpirySummary(value: string | null) {

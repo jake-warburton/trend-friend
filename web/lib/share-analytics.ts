@@ -4,6 +4,7 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type ShareAnalyticsSummary = {
   totalOpens: number;
+  recentOpens: number;
   activeShares: number;
   dormantShares: number;
   topShare: WatchlistShare | null;
@@ -14,6 +15,7 @@ export function summarizeShareUsage(
   now = Date.now(),
 ): ShareAnalyticsSummary {
   const totalOpens = shares.reduce((sum, share) => sum + share.accessCount, 0);
+  const recentOpens = shares.reduce((sum, share) => sum + sumRecentShareHistory(share), 0);
   const activeShares = shares.filter((share) => wasOpenedRecently(share.lastAccessedAt, now)).length;
   const dormantShares = shares.filter((share) => share.accessCount === 0 || !wasOpenedRecently(share.lastAccessedAt, now)).length;
   const topShare = [...shares].sort((left, right) => {
@@ -22,6 +24,7 @@ export function summarizeShareUsage(
 
   return {
     totalOpens,
+    recentOpens,
     activeShares,
     dormantShares,
     topShare,
@@ -46,4 +49,8 @@ function compareAccessDates(left: string | null, right: string | null) {
     return -1;
   }
   return new Date(left).getTime() - new Date(right).getTime();
+}
+
+export function sumRecentShareHistory(share: WatchlistShare) {
+  return share.accessHistory.reduce((sum, point) => sum + point.count, 0);
 }

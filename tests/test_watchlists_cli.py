@@ -241,6 +241,8 @@ class GetSharedWatchlistTests(unittest.TestCase):
         share = payload["watchlists"][0]["shares"][0]
         self.assertEqual(share["accessCount"], 1)
         self.assertIsNotNone(share["lastAccessedAt"])
+        self.assertEqual(len(share["accessHistory"]), 1)
+        self.assertEqual(share["accessHistory"][0]["count"], 1)
 
     def test_get_shared_item_without_score_has_null(self) -> None:
         from scripts.watchlists_api import share_payload, get_shared_payload

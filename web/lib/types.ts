@@ -329,6 +329,10 @@ export type WatchlistShare = {
   expiresAt: string | null;
   accessCount: number;
   lastAccessedAt: string | null;
+  accessHistory: Array<{
+    date: string;
+    count: number;
+  }>;
   createdAt: string;
 };
 

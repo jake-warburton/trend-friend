@@ -55,6 +55,7 @@ def build_watchlist_payload(
         "currentUser": current_user,
         "watchlists": [
             _serialize_watchlist(
+                watchlist_repo,
                 watchlist,
                 watchlist_repo.list_shares_for_watchlist(watchlist.id),
                 watchlist_repo.list_share_events_for_watchlist(
@@ -311,6 +312,7 @@ def _build_alert_matches(
 
 
 def _serialize_watchlist(
+    watchlist_repo: WatchlistRepository,
     watchlist: Watchlist,
     shares: list[WatchlistShare],
     share_events: list[WatchlistShareEvent],
@@ -331,16 +333,7 @@ def _serialize_watchlist(
             for item in watchlist.items
         ],
         "shares": [
-            {
-                "id": share.id,
-                "shareToken": share.share_token,
-                "public": share.is_public,
-                "showCreator": share.show_creator,
-                "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
-                "accessCount": share.access_count,
-                "lastAccessedAt": _to_utc_iso(share.last_accessed_at) if share.last_accessed_at is not None else None,
-                "createdAt": _to_utc_iso(share.created_at),
-            }
+            _serialize_watchlist_share(watchlist_repo, share)
             for share in shares
         ],
         "shareEvents": [
@@ -369,6 +362,30 @@ def _serialize_watchlist_item(
         "trendName": item.trend_name,
         "addedAt": _to_utc_iso(item.added_at),
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
+    }
+
+
+def _serialize_watchlist_share(
+    watchlist_repo: WatchlistRepository,
+    share: WatchlistShare,
+) -> dict[str, object]:
+    history = watchlist_repo.list_share_access_history(share.id, days=7)
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "showCreator": share.show_creator,
+        "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
+        "accessCount": share.access_count,
+        "lastAccessedAt": _to_utc_iso(share.last_accessed_at) if share.last_accessed_at is not None else None,
+        "accessHistory": [
+            {
+                "date": point.access_date.date().isoformat(),
+                "count": point.access_count,
+            }
+            for point in reversed(history)
+        ],
+        "createdAt": _to_utc_iso(share.created_at),
     }
 
 

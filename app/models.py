@@ -332,6 +332,14 @@ class WatchlistShareEvent:
 
 
 @dataclass(frozen=True)
+class WatchlistShareAccessPoint:
+    """Daily access count for a share link."""
+
+    access_date: datetime
+    access_count: int
+
+
+@dataclass(frozen=True)
 class AlertRule:
     """Simple alert condition attached to a watchlist."""
 

@@ -15,6 +15,7 @@ function buildShare(overrides: Partial<WatchlistShare> = {}): WatchlistShare {
     expiresAt: null,
     accessCount: 0,
     lastAccessedAt: null,
+    accessHistory: [],
     createdAt: "2026-03-01T12:00:00Z",
     ...overrides,
   };
@@ -28,12 +29,30 @@ test("wasOpenedRecently returns true only for opens within seven days", () => {
 
 test("summarizeShareUsage returns total opens and activity breakdown", () => {
   const summary = summarizeShareUsage([
-    buildShare({ id: 1, shareToken: "share-1", accessCount: 9, lastAccessedAt: "2026-03-09T12:00:00Z" }),
-    buildShare({ id: 2, shareToken: "share-2", accessCount: 2, lastAccessedAt: "2026-03-03T12:00:00Z" }),
+    buildShare({
+      id: 1,
+      shareToken: "share-1",
+      accessCount: 9,
+      lastAccessedAt: "2026-03-09T12:00:00Z",
+      accessHistory: [
+        { date: "2026-03-08", count: 4 },
+        { date: "2026-03-09", count: 5 },
+      ],
+    }),
+    buildShare({
+      id: 2,
+      shareToken: "share-2",
+      accessCount: 2,
+      lastAccessedAt: "2026-03-03T12:00:00Z",
+      accessHistory: [
+        { date: "2026-03-03", count: 2 },
+      ],
+    }),
     buildShare({ id: 3, shareToken: "share-3", accessCount: 0, lastAccessedAt: null }),
   ], NOW);
 
   assert.equal(summary.totalOpens, 11);
+  assert.equal(summary.recentOpens, 11);
   assert.equal(summary.activeShares, 2);
   assert.equal(summary.dormantShares, 1);
   assert.equal(summary.topShare?.shareToken, "share-1");

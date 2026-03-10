@@ -144,6 +144,15 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             FOREIGN KEY (actor_user_id) REFERENCES users (id) ON DELETE SET NULL
         );
 
+        CREATE TABLE IF NOT EXISTS watchlist_share_daily_access (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            share_id INTEGER NOT NULL,
+            access_date TEXT NOT NULL,
+            access_count INTEGER NOT NULL DEFAULT 0,
+            UNIQUE (share_id, access_date),
+            FOREIGN KEY (share_id) REFERENCES watchlist_shares (id) ON DELETE CASCADE
+        );
+
         CREATE TABLE IF NOT EXISTS alert_rules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             watchlist_id INTEGER NOT NULL,

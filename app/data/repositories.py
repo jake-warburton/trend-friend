@@ -26,6 +26,7 @@ from app.models import (
     TrendSourceBreakdown,
     TrendScoreResult,
     Watchlist,
+    WatchlistShareAccessPoint,
     WatchlistItem,
     WatchlistShareEvent,
     WatchlistShare,
@@ -758,17 +759,53 @@ class WatchlistRepository:
         ).fetchall()
         return [self._share_from_row(row) for row in rows]
 
+    def list_share_access_history(
+        self,
+        share_id: int,
+        *,
+        days: int = 7,
+    ) -> list[WatchlistShareAccessPoint]:
+        """Return trailing daily access counts for one share."""
+
+        rows = self.connection.execute(
+            """
+            SELECT access_date, access_count
+            FROM watchlist_share_daily_access
+            WHERE share_id = ?
+            ORDER BY access_date DESC
+            LIMIT ?
+            """,
+            (share_id, days),
+        ).fetchall()
+        return [
+            WatchlistShareAccessPoint(
+                access_date=datetime.fromisoformat(row["access_date"]).replace(tzinfo=timezone.utc),
+                access_count=row["access_count"],
+            )
+            for row in rows
+        ]
+
     def record_share_access(self, share_id: int) -> WatchlistShare | None:
         """Increment access counters for one share."""
 
-        accessed_at = datetime.now(timezone.utc).isoformat()
+        accessed_at = datetime.now(timezone.utc)
         cursor = self.connection.execute(
             """
             UPDATE watchlist_shares
             SET access_count = access_count + 1, last_accessed_at = ?
             WHERE id = ?
             """,
-            (accessed_at, share_id),
+            (accessed_at.isoformat(), share_id),
+        )
+        access_date = accessed_at.date().isoformat()
+        self.connection.execute(
+            """
+            INSERT INTO watchlist_share_daily_access (share_id, access_date, access_count)
+            VALUES (?, ?, 1)
+            ON CONFLICT(share_id, access_date)
+            DO UPDATE SET access_count = access_count + 1
+            """,
+            (share_id, access_date),
         )
         self.connection.commit()
         if cursor.rowcount == 0:

@@ -287,3 +287,5 @@ class APITests(unittest.TestCase):
         stored_share = payload["watchlists"][0]["shares"][0]
         self.assertEqual(stored_share["accessCount"], 1)
         self.assertIsNotNone(stored_share["lastAccessedAt"])
+        self.assertEqual(len(stored_share["accessHistory"]), 1)
+        self.assertEqual(stored_share["accessHistory"][0]["count"], 1)
