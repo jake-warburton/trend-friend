@@ -14,6 +14,8 @@ WORKERS="${WORKERS:-}"
 WORKTREE_BASE="${WORKTREE_BASE:-$ROOT_DIR/.codex-worktrees}"
 WORKER_GOALS="${WORKER_GOALS:-}"
 WORKER_BRANCH_PREFIX="${WORKER_BRANCH_PREFIX:-autopilot}"
+AUTO_CLEAN="${AUTO_CLEAN:-0}"
+RUN_SUMMARY_FILE="${RUN_SUMMARY_FILE:-}"
 
 usage() {
   cat <<'EOF'
@@ -28,6 +30,8 @@ Environment variables:
   WORKTREE_BASE       Base directory for auto-created worktrees
   WORKER_GOALS        Semicolon-separated worker-specific goals: worker=goal;worker=goal
   WORKER_BRANCH_PREFIX Branch prefix for per-worker branches
+  AUTO_CLEAN          Set to 1 to remove generated worktrees/logs before a run
+  RUN_SUMMARY_FILE    Optional path for a run summary file; defaults to LOG_DIR/run-summary.txt
 
 Examples:
   ./scripts/codex_autopilot.sh 3
@@ -35,6 +39,7 @@ Examples:
   USE_DANGEROUS_MODE=1 nohup ./scripts/codex_autopilot.sh 8 > autopilot.out 2>&1 &
   WORKERS="topics,scoring" ./scripts/codex_autopilot.sh 2
   WORKERS="topics,scoring" WORKER_GOALS="topics=Improve topic extraction quality.;scoring=Improve scoring quality." ./scripts/codex_autopilot.sh 2
+  AUTO_CLEAN=1 WORKERS="topics,scoring" ./scripts/codex_autopilot.sh 2
 EOF
 }
 
@@ -164,18 +169,51 @@ sanitize_worker_name() {
   printf '%s\n' "$worker"
 }
 
+cleanup_generated_paths() {
+  if [[ "$AUTO_CLEAN" != "1" ]]; then
+    return 0
+  fi
+
+  echo "Cleaning generated autopilot directories"
+  rm -rf "$LOG_DIR" "$WORKTREE_BASE"
+}
+
+write_multi_worker_summary() {
+  local summary_file="$1"
+  shift
+  local exit_code="$1"
+  shift
+  local -a summary_lines=("$@")
+
+  mkdir -p "$(dirname "$summary_file")"
+  {
+    echo "Codex autopilot summary"
+    echo "root_dir=$ROOT_DIR"
+    echo "iterations=$ITERATIONS"
+    echo "workers=$WORKERS"
+    echo "worktree_base=$WORKTREE_BASE"
+    echo "log_dir=$LOG_DIR"
+    echo "exit_code=$exit_code"
+    echo "generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo
+    printf '%s\n' "${summary_lines[@]}"
+  } >"$summary_file"
+}
+
 run_multi_worker_mode() {
   local current_branch timestamp
   current_branch="$(git branch --show-current)"
   timestamp="$(date +%Y%m%d%H%M%S)"
+  cleanup_generated_paths
   mkdir -p "$WORKTREE_BASE" "$LOG_DIR"
   local worker_execution_mode="dangerous"
   if [[ "$USE_DANGEROUS_MODE" == "1" ]]; then
     worker_execution_mode="dangerous"
   fi
+  local summary_file="${RUN_SUMMARY_FILE:-$LOG_DIR/run-summary.txt}"
 
   local worker
-  local -a workers worker_pids worker_names worker_dirs
+  local -a workers worker_pids worker_names worker_dirs worker_branches worker_statuses summary_lines
   IFS=',' read -r -a workers <<<"$WORKERS"
 
   echo "Starting multi-worker Codex autopilot in $ROOT_DIR"
@@ -214,6 +252,7 @@ run_multi_worker_mode() {
     worker_pids+=("$!")
     worker_names+=("$worker")
     worker_dirs+=("$worker_dir")
+    worker_branches+=("$worker_branch")
     echo "Started worker '$worker' in $worker_dir on branch $worker_branch"
   done
 
@@ -221,16 +260,27 @@ run_multi_worker_mode() {
   for index in "${!worker_pids[@]}"; do
     if wait "${worker_pids[$index]}"; then
       echo "Worker '${worker_names[$index]}' finished successfully"
+      worker_statuses+=("success")
     else
       echo "Worker '${worker_names[$index]}' failed" >&2
       exit_code=1
+      worker_statuses+=("failed")
     fi
     echo "Worker dir: ${worker_dirs[$index]}"
     echo "Worker log: $LOG_DIR/${worker_names[$index]}/runner.out"
+    summary_lines+=("worker=${worker_names[$index]}")
+    summary_lines+=("branch=${worker_branches[$index]}")
+    summary_lines+=("worktree=${worker_dirs[$index]}")
+    summary_lines+=("log=$LOG_DIR/${worker_names[$index]}/runner.out")
+    summary_lines+=("status=${worker_statuses[$index]}")
+    summary_lines+=("")
   done
+
+  write_multi_worker_summary "$summary_file" "$exit_code" "${summary_lines[@]}"
 
   echo
   echo "Multi-worker autopilot finished."
+  echo "Summary: $summary_file"
   echo "Review branches and cherry-pick or merge the worker branches you want."
   return "$exit_code"
 }

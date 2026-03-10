@@ -139,6 +139,7 @@ GOAL="Improve dashboard usability and commit after each green pass." ./scripts/c
 USE_DANGEROUS_MODE=1 nohup ./scripts/codex_autopilot.sh 8 > autopilot.out 2>&1 &
 WORKERS="topics,scoring" ./scripts/codex_autopilot.sh 2
 WORKERS="topics,scoring" WORKER_GOALS="topics=Improve topic extraction quality.;scoring=Improve scoring quality." ./scripts/codex_autopilot.sh 2
+AUTO_CLEAN=1 WORKERS="topics,scoring" ./scripts/codex_autopilot.sh 2
 ```
 
 Notes:
@@ -150,6 +151,8 @@ Notes:
 - `WORKERS="topics,scoring"` creates separate git worktrees under `.codex-worktrees/` and runs one Codex worker per worktree on its own branch
 - worker branches are left in place so you can inspect, cherry-pick, or merge them manually afterward
 - multi-worker mode currently forces dangerous execution for the worker runs so commits and worktree Git operations are less likely to stall on sandbox restrictions
+- `AUTO_CLEAN=1` removes the previous `.codex-autopilot/` and `.codex-worktrees/` directories before starting a new run
+- multi-worker runs write a summary file to `.codex-autopilot/run-summary.txt` by default
 
 ## Running The Browser Dashboard
 
