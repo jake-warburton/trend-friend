@@ -156,6 +156,14 @@ input {
   letter-spacing: 0.02em;
 }
 
+.refresh-status-copy {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
 .refresh-button,
 .number-button {
   border: 0;

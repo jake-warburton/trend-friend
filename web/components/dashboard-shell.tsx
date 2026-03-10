@@ -5,9 +5,14 @@ import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkline } from "@/components/sparkline";
+import {
+  AUTO_REFRESH_INTERVAL_MS,
+  formatAutoRefreshStatus,
+  hasOverviewChanged,
+} from "@/lib/auto-refresh";
 
 import type {
   AlertEvent,
@@ -62,7 +67,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [actionPending, setActionPending] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(true);
   const [publicWatchlists, setPublicWatchlists] = useState<PublicWatchlistSummary[]>([]);
+  const [autoRefreshState, setAutoRefreshState] = useState<"idle" | "checking" | "refreshing" | "updated" | "error">("idle");
+  const [overviewMeta, setOverviewMeta] = useState({
+    generatedAt: initialData.overview.generatedAt,
+    lastRunAt: initialData.overview.operations.lastRunAt,
+  });
+  const [lastBackgroundUpdateAt, setLastBackgroundUpdateAt] = useState<number | null>(null);
   const deferredKeyword = useDeferredValue(keyword);
+  const isPollingRef = useRef(false);
+  const hasMountedRef = useRef(false);
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -117,6 +130,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         setRefreshError(payload.error ?? "Refresh failed");
         return;
       }
+      setAutoRefreshState("refreshing");
       router.refresh();
     });
   }
@@ -126,6 +140,76 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     void loadAlertEvents();
     void loadPublicWatchlists();
   }, []);
+
+  useEffect(() => {
+    const currentOverview = {
+      generatedAt: overviewMeta.generatedAt,
+      operations: {
+        ...initialData.overview.operations,
+        lastRunAt: overviewMeta.lastRunAt,
+      },
+    };
+    const changed = hasOverviewChanged(currentOverview, initialData.overview);
+    setOverviewMeta({
+      generatedAt: initialData.overview.generatedAt,
+      lastRunAt: initialData.overview.operations.lastRunAt,
+    });
+    if (hasMountedRef.current && changed) {
+      setAutoRefreshState("updated");
+      setLastBackgroundUpdateAt(Date.now());
+    } else {
+      hasMountedRef.current = true;
+    }
+  }, [initialData.overview, overviewMeta.generatedAt, overviewMeta.lastRunAt]);
+
+  useEffect(() => {
+    async function pollOverview() {
+      if (isPollingRef.current || actionPending || isPending || document.hidden) {
+        return;
+      }
+
+      isPollingRef.current = true;
+      setAutoRefreshState((current) => (current === "refreshing" ? current : "checking"));
+      try {
+        const response = await fetch("/api/dashboard/overview", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Dashboard overview unavailable");
+        }
+        const nextOverview = (await response.json()) as DashboardData["overview"];
+        const currentOverview = {
+          generatedAt: overviewMeta.generatedAt,
+          operations: {
+            ...nextOverview.operations,
+            lastRunAt: overviewMeta.lastRunAt,
+          },
+        };
+        if (hasOverviewChanged(currentOverview, nextOverview)) {
+          setOverviewMeta({
+            generatedAt: nextOverview.generatedAt,
+            lastRunAt: nextOverview.operations.lastRunAt,
+          });
+          setAutoRefreshState("refreshing");
+          startTransition(() => {
+            router.refresh();
+          });
+          return;
+        }
+        setAutoRefreshState((current) => (current === "updated" ? current : "idle"));
+      } catch {
+        setAutoRefreshState("error");
+      } finally {
+        isPollingRef.current = false;
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void pollOverview();
+    }, AUTO_REFRESH_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [actionPending, isPending, overviewMeta.generatedAt, overviewMeta.lastRunAt, router, startTransition]);
 
   async function loadWatchlists() {
     try {
@@ -311,13 +395,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           <article className="hero-summary-card">
             <span>Last run</span>
             <strong>
-              {initialData.overview.operations.lastRunAt
-                ? formatCompactTimestamp(initialData.overview.operations.lastRunAt)
+              {overviewMeta.lastRunAt
+                ? formatCompactTimestamp(overviewMeta.lastRunAt)
                 : "No data"}
             </strong>
-            {isDataStale(initialData.overview.operations.lastRunAt) && (
+            {isDataStale(overviewMeta.lastRunAt) && (
               <span className="stale-warning">Data may be stale</span>
             )}
+            <span className="refresh-status-copy">
+              {formatAutoRefreshStatus(autoRefreshState, lastBackgroundUpdateAt)}
+            </span>
           </article>
           <div className="stat-card">
             <span>Tracked</span>
