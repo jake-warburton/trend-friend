@@ -149,6 +149,7 @@ Notes:
 - use `tmux` or `nohup` if you want the process to keep running after you disconnect
 - `WORKERS="topics,scoring"` creates separate git worktrees under `.codex-worktrees/` and runs one Codex worker per worktree on its own branch
 - worker branches are left in place so you can inspect, cherry-pick, or merge them manually afterward
+- multi-worker mode currently forces dangerous execution for the worker runs so commits and worktree Git operations are less likely to stall on sandbox restrictions
 
 ## Running The Browser Dashboard
 

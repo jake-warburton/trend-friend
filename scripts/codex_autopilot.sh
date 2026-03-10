@@ -64,6 +64,7 @@ run_codex_pass() {
   local workdir="$2"
   local goal="$3"
   local pass_log="$4"
+  local execution_mode="$5"
   local branch
   branch="$(git -C "$workdir" branch --show-current)"
   local codex_args=(
@@ -78,7 +79,7 @@ run_codex_pass() {
     codex_args+=(--model "$MODEL")
   fi
 
-  if [[ "$USE_DANGEROUS_MODE" == "1" ]]; then
+  if [[ "$execution_mode" == "dangerous" ]]; then
     codex_args+=(--dangerously-bypass-approvals-and-sandbox)
   else
     codex_args+=(--full-auto)
@@ -98,6 +99,7 @@ Constraints:
 - Do not rewrite history.
 - Stop if you are blocked by missing credentials, unclear repo state, or failing tests.
 - Leave a concise final message summarizing what changed, what was verified, and whether a commit was created.
+- Prefer `python3` over `python` for scripts and tests in this repository.
 
 Focus on the next highest-leverage improvement based on the current repository state.
 EOF
@@ -107,12 +109,13 @@ run_single_worker_loop() {
   local workdir="$1"
   local goal="$2"
   local log_dir="$3"
+  local execution_mode="${4:-$([[ "$USE_DANGEROUS_MODE" == "1" ]] && echo dangerous || echo full-auto)}"
   mkdir -p "$log_dir"
 
   echo "Starting Codex autopilot in $workdir"
   echo "Iterations: $ITERATIONS"
   echo "Logs: $log_dir"
-  echo "Mode: $([[ "$USE_DANGEROUS_MODE" == "1" ]] && echo "dangerous" || echo "full-auto")"
+  echo "Mode: $execution_mode"
 
   for ((pass=1; pass<=ITERATIONS; pass++)); do
     echo
@@ -121,7 +124,7 @@ run_single_worker_loop() {
     before_status="$(git -C "$workdir" status --short)"
     local pass_log="$log_dir/pass-${pass}.log"
 
-    if ! run_codex_pass "$pass" "$workdir" "$goal" "$pass_log"; then
+    if ! run_codex_pass "$pass" "$workdir" "$goal" "$pass_log" "$execution_mode"; then
       echo "Codex pass $pass failed. Stopping."
       return 1
     fi
@@ -166,6 +169,10 @@ run_multi_worker_mode() {
   current_branch="$(git branch --show-current)"
   timestamp="$(date +%Y%m%d%H%M%S)"
   mkdir -p "$WORKTREE_BASE" "$LOG_DIR"
+  local worker_execution_mode="dangerous"
+  if [[ "$USE_DANGEROUS_MODE" == "1" ]]; then
+    worker_execution_mode="dangerous"
+  fi
 
   local worker
   local -a workers worker_pids worker_names worker_dirs
@@ -176,6 +183,7 @@ run_multi_worker_mode() {
   echo "Workers: $WORKERS"
   echo "Worktrees: $WORKTREE_BASE"
   echo "Logs: $LOG_DIR"
+  echo "Worker mode: $worker_execution_mode"
 
   for worker in "${workers[@]}"; do
     worker="$(sanitize_worker_name "$worker")"
@@ -199,7 +207,7 @@ run_multi_worker_mode() {
       WORKERS="" \
       ITERATIONS="$ITERATIONS" \
       MODEL="$MODEL" \
-      USE_DANGEROUS_MODE="$USE_DANGEROUS_MODE" \
+      USE_DANGEROUS_MODE="1" \
       "$0" "$ITERATIONS"
     ) >"$worker_log_dir/runner.out" 2>&1 &
 
