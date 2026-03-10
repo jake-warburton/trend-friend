@@ -510,11 +510,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <h2>Meta trends</h2>
           </div>
           <div className="curated-list">
-            {initialData.overview.sections.metaTrends.slice(0, 4).map((trend) => (
-              <Link className="curated-item" href={`/trends/${trend.topTrendId}`} key={trend.category}>
+            {initialData.overview.sections.metaTrends.slice(0, 6).map((trend) => (
+              <button
+                className="curated-item curated-item-button"
+                key={trend.category}
+                onClick={() => setSelectedCategory(trend.category)}
+                type="button"
+              >
                 <span>{formatCategory(trend.category)}</span>
-                <strong>{trend.trendCount}</strong>
-              </Link>
+                <small>{trend.trendCount} trends · avg {trend.averageScore.toFixed(1)}</small>
+              </button>
             ))}
           </div>
         </article>

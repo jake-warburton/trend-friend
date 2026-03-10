@@ -572,6 +572,17 @@ input {
   font-size: 0.68rem;
 }
 
+.curated-item small {
+  color: var(--muted);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+.curated-item-button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .watch-toggle,
 .mini-action-button {
   border: 1px solid rgba(124, 157, 216, 0.14);
