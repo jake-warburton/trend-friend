@@ -137,6 +137,8 @@ Useful variants:
 ```bash
 GOAL="Improve dashboard usability and commit after each green pass." ./scripts/codex_autopilot.sh 4
 USE_DANGEROUS_MODE=1 nohup ./scripts/codex_autopilot.sh 8 > autopilot.out 2>&1 &
+WORKERS="topics,scoring" ./scripts/codex_autopilot.sh 2
+WORKERS="topics,scoring" WORKER_GOALS="topics=Improve topic extraction quality.;scoring=Improve scoring quality." ./scripts/codex_autopilot.sh 2
 ```
 
 Notes:
@@ -145,6 +147,8 @@ Notes:
 - unattended runs are more reliable with `USE_DANGEROUS_MODE=1`, but that is materially riskier because it bypasses approvals and sandboxing
 - per-pass logs are written to `.codex-autopilot/`
 - use `tmux` or `nohup` if you want the process to keep running after you disconnect
+- `WORKERS="topics,scoring"` creates separate git worktrees under `.codex-worktrees/` and runs one Codex worker per worktree on its own branch
+- worker branches are left in place so you can inspect, cherry-pick, or merge them manually afterward
 
 ## Running The Browser Dashboard
 
