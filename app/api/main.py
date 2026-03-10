@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import dashboard, trends, sources, refresh
+from app.api.routers import alerts, dashboard, trends, sources, refresh
 
 
 def create_app() -> FastAPI:
@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    application.include_router(alerts.router, prefix="/api/v1")
     application.include_router(dashboard.router, prefix="/api/v1")
     application.include_router(trends.router, prefix="/api/v1")
     application.include_router(sources.router, prefix="/api/v1")

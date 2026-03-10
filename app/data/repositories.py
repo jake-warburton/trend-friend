@@ -8,6 +8,7 @@ from datetime import datetime
 
 from app.topics.categorize import categorize_topic
 from app.models import (
+    AlertEventRecord,
     AlertRule,
     NormalizedSignal,
     PipelineRun,
@@ -372,6 +373,92 @@ class WatchlistRepository:
             enabled=bool(row["enabled"]),
             created_at=datetime.fromisoformat(row["created_at"]),
         )
+
+    def save_alert_events(self, events: list) -> None:
+        """Persist triggered alert events."""
+
+        from app.alerts.evaluate import AlertEvent
+
+        self.connection.executemany(
+            """
+            INSERT INTO alert_events (
+                rule_id, watchlist_id, trend_id, trend_name, rule_type,
+                threshold, current_value, message, triggered_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    event.rule_id,
+                    event.watchlist_id,
+                    event.trend_id,
+                    event.trend_name,
+                    event.rule_type,
+                    event.threshold,
+                    event.current_value,
+                    event.message,
+                    event.triggered_at.isoformat(),
+                )
+                for event in events
+            ],
+        )
+        self.connection.commit()
+
+    def list_alert_events(self, unread_only: bool = False, limit: int = 50) -> list[AlertEventRecord]:
+        """Return recent alert events, optionally filtered to unread only."""
+
+        where_clause = "WHERE read = 0" if unread_only else ""
+        rows = self.connection.execute(
+            f"""
+            SELECT id, rule_id, watchlist_id, trend_id, trend_name, rule_type,
+                   threshold, current_value, message, triggered_at, read
+            FROM alert_events
+            {where_clause}
+            ORDER BY triggered_at DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [
+            AlertEventRecord(
+                id=row["id"],
+                rule_id=row["rule_id"],
+                watchlist_id=row["watchlist_id"],
+                trend_id=row["trend_id"],
+                trend_name=row["trend_name"],
+                rule_type=row["rule_type"],
+                threshold=row["threshold"],
+                current_value=row["current_value"],
+                message=row["message"],
+                triggered_at=datetime.fromisoformat(row["triggered_at"]),
+                read=bool(row["read"]),
+            )
+            for row in rows
+        ]
+
+    def mark_alerts_read(self, event_ids: list[int]) -> int:
+        """Mark alert events as read. Returns the number of rows updated."""
+
+        if not event_ids:
+            return 0
+        placeholders = ",".join("?" for _ in event_ids)
+        cursor = self.connection.execute(
+            f"UPDATE alert_events SET read = 1 WHERE id IN ({placeholders})",
+            event_ids,
+        )
+        self.connection.commit()
+        return cursor.rowcount
+
+    def get_watchlist_trend_ids(self) -> dict[int, set[str]]:
+        """Return a mapping of watchlist_id -> set of trend_ids."""
+
+        rows = self.connection.execute(
+            "SELECT watchlist_id, trend_id FROM watchlist_items"
+        ).fetchall()
+        result: dict[int, set[str]] = {}
+        for row in rows:
+            result.setdefault(row["watchlist_id"], set()).add(row["trend_id"])
+        return result
 
     def _watchlist_from_row(self, row: sqlite3.Row) -> Watchlist:
         """Build a watchlist model with nested items."""

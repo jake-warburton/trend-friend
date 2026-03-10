@@ -118,6 +118,21 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS alert_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            rule_id INTEGER NOT NULL,
+            watchlist_id INTEGER NOT NULL,
+            trend_id TEXT NOT NULL,
+            trend_name TEXT NOT NULL,
+            rule_type TEXT NOT NULL,
+            threshold REAL NOT NULL,
+            current_value REAL NOT NULL,
+            message TEXT NOT NULL,
+            triggered_at TEXT NOT NULL,
+            read INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (rule_id) REFERENCES alert_rules (id) ON DELETE CASCADE
+        );
         """
     )
     ensure_column(

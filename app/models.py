@@ -242,3 +242,20 @@ class AlertRule:
     threshold: float
     enabled: bool
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class AlertEventRecord:
+    """Persisted alert event from a triggered rule."""
+
+    id: int
+    rule_id: int
+    watchlist_id: int
+    trend_id: str
+    trend_name: str
+    rule_type: str
+    threshold: float
+    current_value: float
+    message: str
+    triggered_at: datetime
+    read: bool
