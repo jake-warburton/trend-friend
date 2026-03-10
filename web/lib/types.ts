@@ -475,3 +475,24 @@ export type AuthStatusResponse = {
   authEnabled: boolean;
   user: AuthUser | null;
 };
+
+export type NotificationLogEntry = {
+  id: number;
+  sentAt: string;
+  statusCode: number | null;
+  error: string | null;
+};
+
+export type NotificationChannel = {
+  id: number;
+  channelType: string;
+  destination: string;
+  label: string;
+  enabled: boolean;
+  createdAt: string;
+  recentLogs: NotificationLogEntry[];
+};
+
+export type NotificationChannelsResponse = {
+  channels: NotificationChannel[];
+};

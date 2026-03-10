@@ -11,6 +11,7 @@ import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { hasOverviewChanged } from "@/lib/auto-refresh";
 import { getExplorerForecastBadge } from "@/lib/forecast-ui";
+import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
@@ -20,6 +21,8 @@ import type {
   AlertEventsResponse,
   AuthStatusResponse,
   DashboardData,
+  NotificationChannel,
+  NotificationChannelsResponse,
   PublicWatchlistSummary,
   PublicWatchlistsResponse,
   TrendDetailRecord,
@@ -75,6 +78,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
+  const [notificationNotice, setNotificationNotice] = useState<string | null>(null);
+  const [notificationError, setNotificationError] = useState<string | null>(null);
+  const [notificationChannels, setNotificationChannels] = useState<NotificationChannel[]>([]);
+  const [notificationDestination, setNotificationDestination] = useState("");
+  const [notificationLabel, setNotificationLabel] = useState("");
+  const [notificationPending, setNotificationPending] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(true);
@@ -173,6 +182,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     void loadWatchlists();
     void loadAlertEvents();
     void loadPublicWatchlists();
+    void loadNotificationChannels();
   }, []);
 
   useEffect(() => {
@@ -374,6 +384,96 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       setPublicWatchlists(data.watchlists ?? []);
     } catch {
       // ignore non-critical public directory failures
+    }
+  }
+
+  async function loadNotificationChannels() {
+    try {
+      const response = await fetch("/api/notifications/channels", { cache: "no-store" });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(payload.error ?? `Notification channels unavailable (${response.status})`);
+      }
+      const data = (await response.json()) as NotificationChannelsResponse;
+      setNotificationChannels(data.channels ?? []);
+      setNotificationError(null);
+    } catch (error) {
+      setNotificationError(error instanceof Error ? error.message : "Notification channels unavailable");
+    }
+  }
+
+  async function handleCreateNotificationChannel() {
+    if (notificationDestination.trim().length === 0) {
+      setNotificationError("Webhook URL is required");
+      return;
+    }
+    setNotificationPending(true);
+    setNotificationError(null);
+    setNotificationNotice(null);
+    try {
+      const response = await fetch("/api/notifications/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          destination: notificationDestination.trim(),
+          label: notificationLabel.trim(),
+        }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({})) as { error?: string };
+        setNotificationError(payload.error ?? "Could not create webhook");
+        return;
+      }
+      setNotificationDestination("");
+      setNotificationLabel("");
+      setNotificationNotice("Webhook added");
+      await loadNotificationChannels();
+    } finally {
+      setNotificationPending(false);
+    }
+  }
+
+  async function handleTestNotificationChannel(channelId: number) {
+    setNotificationPending(true);
+    setNotificationError(null);
+    setNotificationNotice(null);
+    try {
+      const response = await fetch(`/api/notifications/channels/${channelId}/test`, {
+        method: "POST",
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string; statusCode?: number };
+      if (!response.ok) {
+        setNotificationError(payload.error ?? "Could not send test notification");
+        return;
+      }
+      setNotificationNotice(
+        payload.statusCode != null
+          ? `Test sent (${payload.statusCode})`
+          : "Test sent",
+      );
+      await loadNotificationChannels();
+    } finally {
+      setNotificationPending(false);
+    }
+  }
+
+  async function handleDeleteNotificationChannel(channelId: number) {
+    setNotificationPending(true);
+    setNotificationError(null);
+    setNotificationNotice(null);
+    try {
+      const response = await fetch(`/api/notifications/channels/${channelId}`, {
+        method: "DELETE",
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) {
+        setNotificationError(payload.error ?? "Could not delete webhook");
+        return;
+      }
+      setNotificationNotice("Webhook removed");
+      await loadNotificationChannels();
+    } finally {
+      setNotificationPending(false);
     }
   }
 
@@ -1426,6 +1526,101 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   </div>
                 </div>
               ) : null}
+            </section>
+
+            <section className="snapshot-card">
+              <header>
+                <strong>Notifications</strong>
+                <span>
+                  {notificationChannels.length > 0
+                    ? `${notificationChannels.length} webhook${notificationChannels.length === 1 ? "" : "s"}`
+                    : "None"}
+                </span>
+              </header>
+              <p className="empty-state-hint">
+                Send post-run alerts and digest summaries to Slack, Discord, or your own webhook endpoint.
+              </p>
+              <div className="watchlist-form watchlist-form-stack">
+                <Input
+                  className="text-input"
+                  placeholder="https://hooks.example.com/..."
+                  value={notificationDestination}
+                  onChange={(event) => setNotificationDestination(event.target.value)}
+                  disabled={watchlistsRequireAuth || notificationPending}
+                />
+                <Input
+                  className="text-input"
+                  placeholder="Optional label"
+                  value={notificationLabel}
+                  onChange={(event) => setNotificationLabel(event.target.value)}
+                  disabled={watchlistsRequireAuth || notificationPending}
+                />
+              </div>
+              <div className="watchlist-form">
+                <Button
+                  className="mini-action-button"
+                  disabled={watchlistsRequireAuth || notificationPending}
+                  onClick={() => void handleCreateNotificationChannel()}
+                >
+                  {notificationPending ? "Saving..." : "Add webhook"}
+                </Button>
+              </div>
+              {watchlistsRequireAuth ? (
+                <p className="empty-state-hint">Sign in to manage webhook notifications.</p>
+              ) : null}
+              <div aria-live="polite">
+                {notificationError ? <p className="source-error-copy">{notificationError}</p> : null}
+                {notificationNotice ? <p className="action-success-notice">{notificationNotice}</p> : null}
+              </div>
+              {notificationChannels.length === 0 ? (
+                <p className="empty-state-hint">No webhooks configured yet.</p>
+              ) : (
+                <div className="watchlist-items">
+                  {notificationChannels.map((channel) => (
+                    <section className="watchlist-item watchlist-item-notification" key={channel.id}>
+                      <div className="notification-channel-row">
+                        <div>
+                          <strong>{channel.label || "Webhook"}</strong>
+                          <small className="source-summary-copy">{maskWebhookDestination(channel.destination)}</small>
+                        </div>
+                        <div className="notification-channel-actions">
+                          <button
+                            className="mini-action-button"
+                            disabled={watchlistsRequireAuth || notificationPending}
+                            onClick={() => void handleTestNotificationChannel(channel.id)}
+                            type="button"
+                          >
+                            Test
+                          </button>
+                          <button
+                            className="mini-action-button"
+                            disabled={watchlistsRequireAuth || notificationPending}
+                            onClick={() => void handleDeleteNotificationChannel(channel.id)}
+                            type="button"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      <small className="source-summary-copy">
+                        Created {formatCompactTimestamp(channel.createdAt)}
+                      </small>
+                      <div className="notification-log-list">
+                        {channel.recentLogs.length === 0 ? (
+                          <small className="source-summary-copy">No deliveries yet</small>
+                        ) : (
+                          channel.recentLogs.slice(0, 5).map((log) => (
+                            <div className="notification-log-row" key={log.id}>
+                              <span>{summarizeNotificationDelivery(log)}</span>
+                              <small className="source-summary-copy">{formatCompactTimestamp(log.sentAt)}</small>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              )}
             </section>
           </div>
 

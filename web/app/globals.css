@@ -995,6 +995,37 @@ input {
   gap: 10px;
 }
 
+.watchlist-item-notification {
+  display: grid;
+  gap: 8px;
+}
+
+.notification-channel-row,
+.notification-log-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.notification-channel-row > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.notification-channel-actions,
+.notification-log-list {
+  display: grid;
+  gap: 6px;
+}
+
+.notification-channel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .watchlist-item-share-link {
   color: inherit;
   text-decoration: none;
@@ -1018,6 +1049,16 @@ input {
 
   .watchlist-share-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .notification-channel-row,
+  .notification-log-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .notification-channel-actions {
+    justify-content: flex-start;
   }
 }
 
