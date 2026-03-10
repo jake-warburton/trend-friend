@@ -105,6 +105,20 @@ class ShareWatchlistTests(unittest.TestCase):
 
         self.assertTrue(result["showCreator"])
 
+    def test_list_payload_includes_share_activity(self) -> None:
+        from scripts.watchlists_api import build_payload, share_payload, update_share_visibility_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Activity List")
+        share = share_payload(self.watchlist_repo, watchlist.id, public=True)
+        stored_share = self.watchlist_repo.get_share_by_token(share["shareToken"])
+        update_share_visibility_payload(self.watchlist_repo, stored_share.id, public=False)
+
+        result = build_payload(self.watchlist_repo, self.score_repo)
+
+        events = result["watchlists"][0]["shareEvents"]
+        self.assertGreaterEqual(len(events), 2)
+        self.assertEqual(events[0]["eventType"], "visibility_updated")
+
 
 class GetSharedWatchlistTests(unittest.TestCase):
     """Test get_shared_payload from the CLI layer."""

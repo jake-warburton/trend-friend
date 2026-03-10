@@ -658,6 +658,17 @@ input {
   justify-content: flex-end;
 }
 
+.watchlist-share-history {
+  margin-top: 10px;
+}
+
+.watchlist-item-share-event {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .watchlist-item-share-link {
   color: inherit;
   text-decoration: none;

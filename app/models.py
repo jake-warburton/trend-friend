@@ -315,6 +315,19 @@ class WatchlistShare:
 
 
 @dataclass(frozen=True)
+class WatchlistShareEvent:
+    """Audit event for a watchlist share lifecycle change."""
+
+    id: int
+    share_id: int | None
+    watchlist_id: int
+    actor_user_id: int | None
+    event_type: str
+    detail: str
+    created_at: datetime
+
+
+@dataclass(frozen=True)
 class AlertRule:
     """Simple alert condition attached to a watchlist."""
 

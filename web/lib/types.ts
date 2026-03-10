@@ -329,6 +329,14 @@ export type WatchlistShare = {
   createdAt: string;
 };
 
+export type WatchlistShareEvent = {
+  id: number;
+  shareId: number | null;
+  eventType: string;
+  detail: string;
+  createdAt: string;
+};
+
 export type AuthUser = {
   id: number;
   username: string;
@@ -346,6 +354,7 @@ export type Watchlist = {
   updatedAt: string;
   items: WatchlistItem[];
   shares: WatchlistShare[];
+  shareEvents: WatchlistShareEvent[];
 };
 
 export type AlertRule = {

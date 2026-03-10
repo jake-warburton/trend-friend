@@ -13,6 +13,7 @@ from app.models import (
     TrendSourceContribution,
     Watchlist,
     WatchlistItem,
+    WatchlistShareEvent,
     WatchlistShare,
 )
 from app.topics.categorize import categorize_topic
@@ -56,6 +57,10 @@ def build_watchlist_payload(
             _serialize_watchlist(
                 watchlist,
                 watchlist_repo.list_shares_for_watchlist(watchlist.id),
+                watchlist_repo.list_share_events_for_watchlist(
+                    watchlist.id,
+                    owner_user_id=current_user["id"] if current_user is not None else None,
+                ),
                 score_repo,
                 score_by_slug,
                 current_user_id=current_user["id"] if current_user is not None else None,
@@ -306,6 +311,7 @@ def _build_alert_matches(
 def _serialize_watchlist(
     watchlist: Watchlist,
     shares: list[WatchlistShare],
+    share_events: list[WatchlistShareEvent],
     score_repo: TrendScoreRepository,
     score_by_slug: dict[str, object],
     current_user_id: int | None,
@@ -330,6 +336,16 @@ def _serialize_watchlist(
                 "createdAt": _to_utc_iso(share.created_at),
             }
             for share in shares
+        ],
+        "shareEvents": [
+            {
+                "id": event.id,
+                "shareId": event.share_id,
+                "eventType": event.event_type,
+                "detail": event.detail,
+                "createdAt": _to_utc_iso(event.created_at),
+            }
+            for event in share_events
         ],
     }
 

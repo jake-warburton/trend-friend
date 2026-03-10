@@ -1070,6 +1070,19 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   </div>
                 ))}
               </div>
+              {defaultWatchlist && defaultWatchlist.shareEvents.length > 0 ? (
+                <div className="watchlist-share-history">
+                  <p className="source-summary-copy">Share activity</p>
+                  <div className="watchlist-items">
+                    {defaultWatchlist.shareEvents.slice(0, 5).map((event) => (
+                      <div className="watchlist-item watchlist-item-share-event" key={event.id}>
+                        <span>{event.detail}</span>
+                        <small className="source-summary-copy">{formatCompactTimestamp(event.createdAt)}</small>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </section>
           </div>
 

@@ -230,3 +230,17 @@ class APITests(unittest.TestCase):
         )
         self.assertEqual(update_response.status_code, 200)
         self.assertTrue(update_response.json()["showCreator"])
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_watchlist_payload_includes_share_activity(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+        client.post(f"/api/v1/watchlists/{watchlist_id}/share", json={"public": True})
+        share_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["shares"][0]["id"]
+        client.post(f"/api/v1/watchlists/{watchlist_id}/shares/{share_id}/visibility", json={"public": False})
+
+        payload = client.get("/api/v1/watchlists").json()
+        events = payload["watchlists"][0]["shareEvents"]
+        self.assertGreaterEqual(len(events), 2)
+        self.assertEqual(events[0]["eventType"], "visibility_updated")

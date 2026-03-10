@@ -127,6 +127,19 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             FOREIGN KEY (created_by) REFERENCES users (id)
         );
 
+        CREATE TABLE IF NOT EXISTS watchlist_share_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            share_id INTEGER NULL,
+            watchlist_id INTEGER NOT NULL,
+            actor_user_id INTEGER NULL,
+            event_type TEXT NOT NULL,
+            detail TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (share_id) REFERENCES watchlist_shares (id) ON DELETE SET NULL,
+            FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE,
+            FOREIGN KEY (actor_user_id) REFERENCES users (id) ON DELETE SET NULL
+        );
+
         CREATE TABLE IF NOT EXISTS alert_rules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             watchlist_id INTEGER NOT NULL,

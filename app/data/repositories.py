@@ -27,6 +27,7 @@ from app.models import (
     TrendScoreResult,
     Watchlist,
     WatchlistItem,
+    WatchlistShareEvent,
     WatchlistShare,
 )
 
@@ -591,7 +592,18 @@ class WatchlistRepository:
             (watchlist_id, share_token, created_by, int(is_public), int(show_creator)),
         )
         self.connection.commit()
-        return self.get_share_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
+        share = self.get_share_by_id(int(cursor.lastrowid))  # type: ignore[assignment]
+        if share is not None:
+            visibility_label = "public" if share.is_public else "private"
+            creator_label = "with attribution" if share.show_creator else "anonymous"
+            self.record_share_event(
+                share_id=share.id,
+                watchlist_id=share.watchlist_id,
+                actor_user_id=created_by,
+                event_type="created",
+                detail=f"Created {visibility_label} share ({creator_label})",
+            )
+        return share  # type: ignore[return-value]
 
     def get_share_by_id(self, share_id: int) -> WatchlistShare | None:
         """Return a share by id."""
@@ -651,6 +663,7 @@ class WatchlistRepository:
     def revoke_share(self, share_id: int, owner_user_id: int | None) -> bool:
         """Delete a share link only when it belongs to the given owner."""
 
+        share = self.get_share_by_id(share_id)
         if owner_user_id is None:
             cursor = self.connection.execute(
                 """
@@ -678,6 +691,14 @@ class WatchlistRepository:
                 (share_id, owner_user_id),
             )
         self.connection.commit()
+        if cursor.rowcount > 0 and share is not None:
+            self.record_share_event(
+                share_id=None,
+                watchlist_id=share.watchlist_id,
+                actor_user_id=owner_user_id,
+                event_type="revoked",
+                detail="Revoked share link",
+            )
         return cursor.rowcount > 0
 
     def update_share_visibility(self, share_id: int, owner_user_id: int | None, is_public: bool) -> WatchlistShare | None:
@@ -714,7 +735,16 @@ class WatchlistRepository:
         self.connection.commit()
         if cursor.rowcount == 0:
             return None
-        return self.get_share_by_id(share_id)
+        share = self.get_share_by_id(share_id)
+        if share is not None:
+            self.record_share_event(
+                share_id=share.id,
+                watchlist_id=share.watchlist_id,
+                actor_user_id=owner_user_id,
+                event_type="visibility_updated",
+                detail=f"Set share to {'public' if share.is_public else 'private'}",
+            )
+        return share
 
     def update_share_creator_visibility(
         self,
@@ -755,7 +785,70 @@ class WatchlistRepository:
         self.connection.commit()
         if cursor.rowcount == 0:
             return None
-        return self.get_share_by_id(share_id)
+        share = self.get_share_by_id(share_id)
+        if share is not None:
+            self.record_share_event(
+                share_id=share.id,
+                watchlist_id=share.watchlist_id,
+                actor_user_id=owner_user_id,
+                event_type="attribution_updated",
+                detail=f"{'Enabled' if share.show_creator else 'Disabled'} creator attribution",
+            )
+        return share
+
+    def record_share_event(
+        self,
+        share_id: int | None,
+        watchlist_id: int,
+        actor_user_id: int | None,
+        event_type: str,
+        detail: str,
+    ) -> WatchlistShareEvent:
+        """Persist and return a share audit event."""
+
+        cursor = self.connection.execute(
+            """
+            INSERT INTO watchlist_share_events (share_id, watchlist_id, actor_user_id, event_type, detail)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (share_id, watchlist_id, actor_user_id, event_type, detail),
+        )
+        self.connection.commit()
+        row = self.connection.execute(
+            """
+            SELECT id, share_id, watchlist_id, actor_user_id, event_type, detail, created_at
+            FROM watchlist_share_events
+            WHERE id = ?
+            """,
+            (int(cursor.lastrowid),),
+        ).fetchone()
+        return self._share_event_from_row(row)
+
+    def list_share_events_for_watchlist(
+        self,
+        watchlist_id: int,
+        owner_user_id: int | None,
+        limit: int = 10,
+    ) -> list[WatchlistShareEvent]:
+        """Return recent share audit events for a watchlist owned by the given user."""
+
+        if owner_user_id is None:
+            watchlist = self.get_watchlist_for_owner(watchlist_id, None)
+        else:
+            watchlist = self.get_watchlist_for_owner(watchlist_id, owner_user_id)
+        if watchlist is None:
+            return []
+        rows = self.connection.execute(
+            """
+            SELECT id, share_id, watchlist_id, actor_user_id, event_type, detail, created_at
+            FROM watchlist_share_events
+            WHERE watchlist_id = ?
+            ORDER BY created_at DESC, id DESC
+            LIMIT ?
+            """,
+            (watchlist_id, limit),
+        ).fetchall()
+        return [self._share_event_from_row(row) for row in rows]
 
     @staticmethod
     def _share_from_row(row: sqlite3.Row) -> WatchlistShare:
@@ -766,6 +859,18 @@ class WatchlistRepository:
             created_by=row["created_by"],
             is_public=bool(row["is_public"]),
             show_creator=bool(row["show_creator"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
+
+    @staticmethod
+    def _share_event_from_row(row: sqlite3.Row) -> WatchlistShareEvent:
+        return WatchlistShareEvent(
+            id=row["id"],
+            share_id=row["share_id"],
+            watchlist_id=row["watchlist_id"],
+            actor_user_id=row["actor_user_id"],
+            event_type=row["event_type"],
+            detail=row["detail"],
             created_at=datetime.fromisoformat(row["created_at"]),
         )
 
