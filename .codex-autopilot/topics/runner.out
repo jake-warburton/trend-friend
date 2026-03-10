@@ -1,0 +1,11 @@
+Starting Codex autopilot in /Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees/topics
+Iterations: 0
+Logs: /Users/jakewarburton/Documents/repos/trend-friend/.codex-autopilot/topics
+Mode: dangerous
+
+Autopilot finished. Recent commits:
+c0dcfcb Add autopilot cleanup and run summaries
+08cadaa Harden multi-worker autopilot defaults
+c79012f Add multi-worker autopilot mode
+8e574e9 Add Codex autopilot wrapper
+2039090 Increase cross-source trend weighting

@@ -85,6 +85,81 @@ class TrendScoringTests(unittest.TestCase):
         self.assertGreater(cross_source_score.diversity_score, single_source_score.diversity_score)
         self.assertGreater(cross_source_score.total_score, single_source_score.total_score)
 
+    def test_calculate_trend_scores_rewards_unique_evidence_corroboration(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        corroborated = TopicAggregate(
+            topic="battery recycling",
+            source_counts={"reddit": 2},
+            signal_counts={"social": 2},
+            total_signal_value=500.0,
+            average_signal_value=250.0,
+            latest_timestamp=timestamp,
+            evidence=[
+                "Battery recycling startup expands black mass recovery",
+                "Battery recycling capacity rises as EV waste grows",
+            ],
+        )
+        single_mention = TopicAggregate(
+            topic="battery recycling",
+            source_counts={"reddit": 2},
+            signal_counts={"social": 2},
+            total_signal_value=500.0,
+            average_signal_value=250.0,
+            latest_timestamp=timestamp,
+            evidence=["Battery recycling startup expands black mass recovery"],
+        )
+        corroborated_score, single_mention_score = calculate_trend_scores([corroborated, single_mention])
+        self.assertGreater(corroborated_score.total_score, single_mention_score.total_score)
+
+    def test_calculate_trend_scores_ignores_duplicate_evidence_corroboration(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        duplicated = TopicAggregate(
+            topic="battery recycling",
+            source_counts={"reddit": 2},
+            signal_counts={"social": 2},
+            total_signal_value=500.0,
+            average_signal_value=250.0,
+            latest_timestamp=timestamp,
+            evidence=[
+                "Battery recycling startup expands black mass recovery",
+                "battery recycling startup expands black mass recovery",
+            ],
+        )
+        single_mention = TopicAggregate(
+            topic="battery recycling",
+            source_counts={"reddit": 2},
+            signal_counts={"social": 2},
+            total_signal_value=500.0,
+            average_signal_value=250.0,
+            latest_timestamp=timestamp,
+            evidence=["Battery recycling startup expands black mass recovery"],
+        )
+        duplicated_score, single_mention_score = calculate_trend_scores([duplicated, single_mention])
+        self.assertEqual(duplicated_score.total_score, single_mention_score.total_score)
+
+    def test_calculate_trend_scores_requires_exact_phrase_boundaries_for_bonus(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        exact_phrase = TopicAggregate(
+            topic="robot",
+            source_counts={"reddit": 1},
+            signal_counts={"social": 1},
+            total_signal_value=200.0,
+            average_signal_value=200.0,
+            latest_timestamp=timestamp,
+            evidence=["Warehouse robot pilots spread across retail logistics"],
+        )
+        substring_only = TopicAggregate(
+            topic="robot",
+            source_counts={"reddit": 1},
+            signal_counts={"social": 1},
+            total_signal_value=200.0,
+            average_signal_value=200.0,
+            latest_timestamp=timestamp,
+            evidence=["Microbot research improves targeted drug delivery"],
+        )
+        exact_score, substring_score = calculate_trend_scores([exact_phrase, substring_only])
+        self.assertGreater(exact_score.total_score, substring_score.total_score)
+
 
 if __name__ == "__main__":
     unittest.main()

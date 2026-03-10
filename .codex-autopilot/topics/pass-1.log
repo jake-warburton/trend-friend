@@ -1,0 +1,5 @@
+Improved GitHub repository topic extraction so generic repo-name suffixes like `-sdk`, `-cli`, and `-app` are stripped before normalization in [app/topics/extract.py](/Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees/topics/app/topics/extract.py). This prevents fragmented topics like `agents sdk` and lets titles such as `openai/agents-sdk ...` collapse to the canonical `ai agents`. I added a regression test in [tests/test_topics.py](/Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees/topics/tests/test_topics.py).
+
+Verified with `python3 -m unittest tests.test_topics -v` and `python3 -m unittest discover -s tests -v`; both passed, 34 tests total in the full suite.
+
+Created a normal commit on the current branch: `4f5c6b9` (`Improve GitHub repository topic normalization`).
