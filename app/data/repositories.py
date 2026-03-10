@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from app.topics.categorize import categorize_topic
 from app.models import (
@@ -273,7 +273,7 @@ class WatchlistRepository:
     def list_watchlists(self, owner_user_id: int | None = None) -> list[Watchlist]:
         """Return all watchlists with nested items."""
 
-        query = "SELECT id, name, owner_user_id, created_at, updated_at FROM watchlists"
+        query = "SELECT id, name, owner_user_id, default_share_duration_days, created_at, updated_at FROM watchlists"
         parameters: tuple[object, ...] = ()
         if owner_user_id is None:
             query += " WHERE owner_user_id IS NULL"
@@ -288,7 +288,7 @@ class WatchlistRepository:
         """Return a watchlist by id when present."""
 
         row = self.connection.execute(
-            "SELECT id, name, owner_user_id, created_at, updated_at FROM watchlists WHERE id = ?",
+            "SELECT id, name, owner_user_id, default_share_duration_days, created_at, updated_at FROM watchlists WHERE id = ?",
             (watchlist_id,),
         ).fetchone()
         if row is None:
@@ -302,6 +302,7 @@ class WatchlistRepository:
             row = self.connection.execute(
                 """
                 SELECT id, name, owner_user_id, created_at, updated_at
+                , default_share_duration_days
                 FROM watchlists
                 WHERE id = ? AND owner_user_id IS NULL
                 """,
@@ -311,6 +312,7 @@ class WatchlistRepository:
             row = self.connection.execute(
                 """
                 SELECT id, name, owner_user_id, created_at, updated_at
+                , default_share_duration_days
                 FROM watchlists
                 WHERE id = ? AND owner_user_id = ?
                 """,
@@ -327,6 +329,7 @@ class WatchlistRepository:
             row = self.connection.execute(
                 """
                 SELECT id, name, owner_user_id, created_at, updated_at
+                , default_share_duration_days
                 FROM watchlists
                 WHERE name = ? AND owner_user_id IS NULL
                 """,
@@ -336,6 +339,7 @@ class WatchlistRepository:
             row = self.connection.execute(
                 """
                 SELECT id, name, owner_user_id, created_at, updated_at
+                , default_share_duration_days
                 FROM watchlists
                 WHERE name = ? AND owner_user_id = ?
                 """,
@@ -349,11 +353,42 @@ class WatchlistRepository:
         """Create and return a watchlist."""
 
         self.connection.execute(
-            "INSERT INTO watchlists (name, owner_user_id) VALUES (?, ?)",
+            "INSERT INTO watchlists (name, owner_user_id, default_share_duration_days) VALUES (?, ?, NULL)",
             (name, owner_user_id),
         )
         self.connection.commit()
         return self.get_watchlist_by_name(name, owner_user_id=owner_user_id)  # type: ignore[return-value]
+
+    def update_default_share_duration(
+        self,
+        watchlist_id: int,
+        owner_user_id: int | None,
+        default_share_duration_days: int | None,
+    ) -> Watchlist | None:
+        """Persist the default share expiry policy for a watchlist."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlists
+                SET default_share_duration_days = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND owner_user_id IS NULL
+                """,
+                (default_share_duration_days, watchlist_id),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlists
+                SET default_share_duration_days = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND owner_user_id = ?
+                """,
+                (default_share_duration_days, watchlist_id, owner_user_id),
+            )
+        self.connection.commit()
+        if cursor.rowcount == 0:
+            return None
+        return self.get_watchlist(watchlist_id)
 
     def add_item(self, watchlist_id: int, trend_id: str, trend_name: str) -> Watchlist:
         """Add a trend to a watchlist and return the updated watchlist."""
@@ -582,8 +617,13 @@ class WatchlistRepository:
         is_public: bool = False,
         show_creator: bool = False,
         expires_at: datetime | None = None,
+        use_watchlist_default_expiry: bool = False,
     ) -> WatchlistShare:
         """Create a share link for a watchlist."""
+
+        if expires_at is None and use_watchlist_default_expiry:
+            watchlist = self.get_watchlist(watchlist_id)
+            expires_at = self._resolve_default_share_expiry(watchlist)
 
         cursor = self.connection.execute(
             """
@@ -612,6 +652,51 @@ class WatchlistRepository:
                 detail=f"Created {visibility_label} share ({creator_label})",
             )
         return share  # type: ignore[return-value]
+
+    def rotate_share_token(self, share_id: int, owner_user_id: int | None, next_share_token: str) -> WatchlistShare | None:
+        """Replace a share token in place when the share belongs to the given owner."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET share_token = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (next_share_token, share_id),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET share_token = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (next_share_token, share_id, owner_user_id),
+            )
+        self.connection.commit()
+        if cursor.rowcount == 0:
+            return None
+        share = self.get_share_by_id(share_id)
+        if share is not None:
+            self.record_share_event(
+                share_id=share.id,
+                watchlist_id=share.watchlist_id,
+                actor_user_id=owner_user_id,
+                event_type="rotated",
+                detail="Rotated share link",
+            )
+        return share
 
     def get_share_by_id(self, share_id: int) -> WatchlistShare | None:
         """Return a share by id."""
@@ -975,6 +1060,7 @@ class WatchlistRepository:
             id=row["id"],
             name=row["name"],
             owner_user_id=row["owner_user_id"],
+            default_share_duration_days=row["default_share_duration_days"],
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
             items=[
@@ -986,6 +1072,12 @@ class WatchlistRepository:
                 for item in item_rows
             ],
         )
+
+    @staticmethod
+    def _resolve_default_share_expiry(watchlist: Watchlist | None) -> datetime | None:
+        if watchlist is None or watchlist.default_share_duration_days is None:
+            return None
+        return datetime.now(timezone.utc) + timedelta(days=watchlist.default_share_duration_days)
 
 
 class TrendScoreRepository:

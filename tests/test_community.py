@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 from app.api.main import create_app
 from app.api.dependencies import get_db
-from app.api.rate_limit import response_cache
+from app.api.rate_limit import rate_limiter, response_cache
 from app.data.database import initialize_database
 
 
@@ -21,6 +21,7 @@ class CommunityAPITests(unittest.TestCase):
 
     def setUp(self) -> None:
         response_cache.clear()
+        rate_limiter.clear()
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
         initialize_database(self.connection)
@@ -273,6 +274,40 @@ class CommunityAPITests(unittest.TestCase):
         )
         self.assertEqual(update_resp.status_code, 200)
         self.assertEqual(update_resp.json()["expiresAt"], expired_at)
+
+    def test_default_share_expiry_is_used_when_requested(self) -> None:
+        wl_id = self._create_watchlist("Default Expiry")
+        defaults_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/share-defaults",
+            json={"defaultExpiryDays": 7},
+        )
+        self.assertEqual(defaults_resp.status_code, 200)
+
+        share_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/share",
+            json={"public": True, "useDefaultExpiry": True},
+        )
+        self.assertEqual(share_resp.status_code, 200)
+        self.assertIsNotNone(share_resp.json()["expiresAt"])
+
+    def test_rotate_share_invalidates_previous_token(self) -> None:
+        wl_id = self._create_watchlist("Rotate List")
+        share_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/share",
+            json={"public": True},
+        )
+        original_token = share_resp.json()["shareToken"]
+        share_id = self.connection.execute(
+            "SELECT id FROM watchlist_shares WHERE share_token = ?",
+            (original_token,),
+        ).fetchone()[0]
+
+        rotate_resp = self.client.post(f"/api/v1/watchlists/{wl_id}/shares/{share_id}/rotate")
+        self.assertEqual(rotate_resp.status_code, 200)
+        rotated_token = rotate_resp.json()["shareToken"]
+        self.assertNotEqual(rotated_token, original_token)
+        self.assertEqual(self.client.get(f"/api/v1/shared/{original_token}").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/v1/shared/{rotated_token}").status_code, 200)
 
     # -- Public trend page --
 

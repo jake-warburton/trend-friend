@@ -56,6 +56,12 @@ class RateLimiter:
             for key in expired_keys:
                 del self._buckets[key]
 
+    def clear(self) -> None:
+        """Remove all tracked buckets."""
+
+        with self._lock:
+            self._buckets.clear()
+
 
 @dataclass
 class _CacheEntry:

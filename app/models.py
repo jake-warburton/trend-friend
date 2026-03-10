@@ -296,6 +296,7 @@ class Watchlist:
     id: int
     name: str
     owner_user_id: int | None
+    default_share_duration_days: int | None
     created_at: datetime
     updated_at: datetime
     items: list[WatchlistItem]

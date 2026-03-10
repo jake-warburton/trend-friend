@@ -129,6 +129,53 @@ class ShareWatchlistTests(unittest.TestCase):
 
         self.assertEqual(result["expiresAt"], "2026-03-20T12:00:00Z")
 
+    def test_rotate_share_replaces_token(self) -> None:
+        from scripts.watchlists_api import rotate_share_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Rotate List")
+        share = self.watchlist_repo.create_share(watchlist.id, "rotate-token", is_public=True)
+
+        result = rotate_share_payload(self.watchlist_repo, share.id)
+
+        self.assertNotEqual(result["shareToken"], "rotate-token")
+        self.assertIsNone(self.watchlist_repo.get_share_by_token("rotate-token"))
+
+    def test_default_share_expiry_is_applied_when_requested(self) -> None:
+        from scripts.watchlists_api import share_payload, update_share_default_expiry_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Default Expiry List")
+        update_share_default_expiry_payload(
+            self.watchlist_repo,
+            self.score_repo,
+            watchlist.id,
+            default_expiry_days=7,
+        )
+
+        result = share_payload(
+            self.watchlist_repo,
+            watchlist.id,
+            public=True,
+            use_default_expiry=True,
+        )
+
+        self.assertIsNotNone(result["expiresAt"])
+
+    def test_default_share_expiry_update_is_reflected_in_payload(self) -> None:
+        from scripts.watchlists_api import build_payload, update_share_default_expiry_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Default Payload List")
+        result = update_share_default_expiry_payload(
+            self.watchlist_repo,
+            self.score_repo,
+            watchlist.id,
+            default_expiry_days=30,
+        )
+
+        self.assertEqual(result["watchlists"][0]["defaultShareExpiryDays"], 30)
+
+        refreshed = build_payload(self.watchlist_repo, self.score_repo)
+        self.assertEqual(refreshed["watchlists"][0]["defaultShareExpiryDays"], 30)
+
 
 class GetSharedWatchlistTests(unittest.TestCase):
     """Test get_shared_payload from the CLI layer."""

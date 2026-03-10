@@ -56,6 +56,24 @@ test("mutateWatchlists maps revoke-share requests to CLI arguments", async () =>
   });
 });
 
+test("mutateWatchlists maps rotate-share requests to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "rotate-share",
+      watchlistId: 7,
+      shareId: 12,
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: ["rotate-share", "--share-id", "12"],
+  });
+});
+
 test("mutateWatchlists maps share visibility updates to CLI arguments", async () => {
   const payload = await mutateWatchlists(
     {
@@ -113,6 +131,24 @@ test("mutateWatchlists maps share expiration updates to CLI arguments", async ()
   });
 });
 
+test("mutateWatchlists maps default share expiry updates to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "set-share-default-expiry",
+      watchlistId: 7,
+      defaultExpiryDays: 30,
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: ["set-share-default-expiry", "--watchlist-id", "7", "--days", "30"],
+  });
+});
+
 test("shareWatchlist maps public shares to the CLI fallback", async () => {
   const payload = await shareWatchlist(3, true, {
     apiEnabled: false,
@@ -121,6 +157,17 @@ test("shareWatchlist maps public shares to the CLI fallback", async () => {
 
   assert.deepEqual(payload, {
     args: ["share-watchlist", "--watchlist-id", "3", "--public"],
+  });
+});
+
+test("shareWatchlist can request the watchlist default expiry", async () => {
+  const payload = await shareWatchlist(3, true, {
+    apiEnabled: false,
+    runScript: async (...args) => ({ args }),
+  }, false, null, true);
+
+  assert.deepEqual(payload, {
+    args: ["share-watchlist", "--watchlist-id", "3", "--public", "--use-default-expiry"],
   });
 });
 

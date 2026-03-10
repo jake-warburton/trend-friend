@@ -323,6 +323,7 @@ def _serialize_watchlist(
         "name": watchlist.name,
         "ownerUserId": watchlist.owner_user_id,
         "ownedByCurrentUser": current_user_id is not None and watchlist.owner_user_id == current_user_id,
+        "defaultShareExpiryDays": watchlist.default_share_duration_days,
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
         "items": [

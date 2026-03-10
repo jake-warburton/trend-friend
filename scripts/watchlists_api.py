@@ -40,6 +40,11 @@ def main() -> None:
     share_watchlist.add_argument("--public", action="store_true")
     share_watchlist.add_argument("--show-creator", action="store_true")
     share_watchlist.add_argument("--expires-at")
+    share_watchlist.add_argument("--use-default-expiry", action="store_true")
+
+    update_share_defaults = subparsers.add_parser("set-share-default-expiry")
+    update_share_defaults.add_argument("--watchlist-id", type=int, required=True)
+    update_share_defaults.add_argument("--days", type=int)
 
     revoke_share = subparsers.add_parser("revoke-share")
     revoke_share.add_argument("--share-id", type=int, required=True)
@@ -55,6 +60,9 @@ def main() -> None:
     update_share_expiration = subparsers.add_parser("set-share-expiration")
     update_share_expiration.add_argument("--share-id", type=int, required=True)
     update_share_expiration.add_argument("--expires-at")
+
+    rotate_share = subparsers.add_parser("rotate-share")
+    rotate_share.add_argument("--share-id", type=int, required=True)
 
     get_shared = subparsers.add_parser("get-shared")
     get_shared.add_argument("--token", required=True)
@@ -112,6 +120,14 @@ def main() -> None:
             public=args.public,
             show_creator=args.show_creator,
             expires_at=args.expires_at,
+            use_default_expiry=args.use_default_expiry,
+        )
+    elif args.command == "set-share-default-expiry":
+        payload = update_share_default_expiry_payload(
+            watchlist_repository=watchlist_repository,
+            score_repository=score_repository,
+            watchlist_id=args.watchlist_id,
+            default_expiry_days=args.days,
         )
     elif args.command == "get-shared":
         payload = get_shared_payload(
@@ -141,6 +157,11 @@ def main() -> None:
             watchlist_repository=watchlist_repository,
             share_id=args.share_id,
             expires_at=args.expires_at,
+        )
+    elif args.command == "rotate-share":
+        payload = rotate_share_payload(
+            watchlist_repository=watchlist_repository,
+            share_id=args.share_id,
         )
     elif args.command == "list-public":
         payload = list_public_payload(watchlist_repository, score_repository)
@@ -187,6 +208,7 @@ def share_payload(
     public: bool,
     show_creator: bool = False,
     expires_at: str | None = None,
+    use_default_expiry: bool = False,
 ) -> dict[str, object]:
     """Create and return a share payload."""
 
@@ -202,14 +224,30 @@ def share_payload(
         is_public=public,
         show_creator=show_creator,
         expires_at=datetime.fromisoformat(expires_at.replace("Z", "+00:00")) if expires_at else None,
+        use_watchlist_default_expiry=use_default_expiry,
     )
-    return {
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": share.expires_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if share.expires_at else None,
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
+
+
+def update_share_default_expiry_payload(
+    watchlist_repository: WatchlistRepository,
+    score_repository: TrendScoreRepository,
+    watchlist_id: int,
+    default_expiry_days: int | None,
+) -> dict[str, object]:
+    """Persist the default share expiry for one watchlist."""
+
+    if default_expiry_days is not None and default_expiry_days <= 0:
+        return {"error": "defaultExpiryDays must be a positive integer or null"}
+
+    watchlist = watchlist_repository.update_default_share_duration(
+        watchlist_id,
+        owner_user_id=None,
+        default_share_duration_days=default_expiry_days,
+    )
+    if watchlist is None:
+        return {"error": "Watchlist not found"}
+    return build_payload(watchlist_repository, score_repository)
 
 
 def get_shared_payload(
@@ -242,6 +280,24 @@ def revoke_share_payload(
     return {"ok": True}
 
 
+def rotate_share_payload(
+    watchlist_repository: WatchlistRepository,
+    share_id: int,
+) -> dict[str, object]:
+    """Rotate a local share token in place."""
+
+    import secrets
+
+    share = watchlist_repository.rotate_share_token(
+        share_id,
+        owner_user_id=None,
+        next_share_token=secrets.token_urlsafe(16),
+    )
+    if share is None:
+        return {"error": "Share link not found"}
+    return _serialize_share_payload(share)
+
+
 def update_share_visibility_payload(
     watchlist_repository: WatchlistRepository,
     share_id: int,
@@ -252,14 +308,7 @@ def update_share_visibility_payload(
     share = watchlist_repository.update_share_visibility(share_id, owner_user_id=None, is_public=public)
     if share is None:
         return {"error": "Share link not found"}
-    return {
-        "id": share.id,
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": share.expires_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if share.expires_at else None,
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
 
 
 def update_share_attribution_payload(
@@ -272,14 +321,7 @@ def update_share_attribution_payload(
     share = watchlist_repository.update_share_creator_visibility(share_id, owner_user_id=None, show_creator=show_creator)
     if share is None:
         return {"error": "Share link not found"}
-    return {
-        "id": share.id,
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": share.expires_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if share.expires_at else None,
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
 
 
 def update_share_expiration_payload(
@@ -293,14 +335,7 @@ def update_share_expiration_payload(
     share = watchlist_repository.update_share_expiration(share_id, owner_user_id=None, expires_at=parsed)
     if share is None:
         return {"error": "Share link not found"}
-    return {
-        "id": share.id,
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": share.expires_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if share.expires_at else None,
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
 
 
 def list_public_payload(
@@ -352,6 +387,17 @@ def mark_alerts_read_payload(
     """Mark alert events read and return the API response shape."""
 
     return {"updated": watchlist_repository.mark_alerts_read(event_ids)}
+
+
+def _serialize_share_payload(share) -> dict[str, object]:
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "showCreator": share.show_creator,
+        "expiresAt": share.expires_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z") if share.expires_at else None,
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
 
 
 if __name__ == "__main__":

@@ -9,9 +9,11 @@ export type WatchlistMutationBody =
   | { action: "add-item"; watchlistId: number; trendId: string; trendName: string }
   | { action: "remove-item"; watchlistId: number; trendId: string }
   | { action: "revoke-share"; watchlistId: number; shareId: number }
+  | { action: "rotate-share"; watchlistId: number; shareId: number }
   | { action: "set-share-visibility"; watchlistId: number; shareId: number; public: boolean }
   | { action: "set-share-attribution"; watchlistId: number; shareId: number; showCreator: boolean }
-  | { action: "set-share-expiration"; watchlistId: number; shareId: number; expiresAt: string | null };
+  | { action: "set-share-expiration"; watchlistId: number; shareId: number; expiresAt: string | null }
+  | { action: "set-share-default-expiry"; watchlistId: number; defaultExpiryDays: number | null };
 
 export type AlertMutationBody =
   | { action: "mark-read"; eventIds: number[] }
@@ -85,6 +87,13 @@ export async function mutateWatchlists(
         { headers: dependencies.apiHeaders },
       );
     }
+    if (body.action === "rotate-share") {
+      return apiPost(
+        `/watchlists/${body.watchlistId}/shares/${body.shareId}/rotate`,
+        {},
+        { headers: dependencies.apiHeaders },
+      );
+    }
     if (body.action === "set-share-visibility") {
       return apiPost(
         `/watchlists/${body.watchlistId}/shares/${body.shareId}/visibility`,
@@ -103,6 +112,13 @@ export async function mutateWatchlists(
       return apiPost(
         `/watchlists/${body.watchlistId}/shares/${body.shareId}/expiration`,
         { expiresAt: body.expiresAt },
+        { headers: dependencies.apiHeaders },
+      );
+    }
+    if (body.action === "set-share-default-expiry") {
+      return apiPost(
+        `/watchlists/${body.watchlistId}/share-defaults`,
+        { defaultExpiryDays: body.defaultExpiryDays },
         { headers: dependencies.apiHeaders },
       );
     }
@@ -131,6 +147,9 @@ export async function mutateWatchlists(
   if (body.action === "revoke-share") {
     return ensureSuccessPayload(await runScript("revoke-share", "--share-id", String(body.shareId)));
   }
+  if (body.action === "rotate-share") {
+    return ensureSuccessPayload(await runScript("rotate-share", "--share-id", String(body.shareId)));
+  }
   if (body.action === "set-share-visibility") {
     return ensureSuccessPayload(await runScript(
       "set-share-visibility",
@@ -153,6 +172,14 @@ export async function mutateWatchlists(
       "--share-id",
       String(body.shareId),
       ...(body.expiresAt ? ["--expires-at", body.expiresAt] : []),
+    ));
+  }
+  if (body.action === "set-share-default-expiry") {
+    return ensureSuccessPayload(await runScript(
+      "set-share-default-expiry",
+      "--watchlist-id",
+      String(body.watchlistId),
+      ...(body.defaultExpiryDays == null ? [] : ["--days", String(body.defaultExpiryDays)]),
     ));
   }
   return runScript(
@@ -218,12 +245,14 @@ export async function shareWatchlist(
   dependencies: ServiceDependencies = {},
   showCreator = false,
   expiresAt: string | null = null,
+  useDefaultExpiry = false,
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
     return (dependencies.apiPost ?? defaultApiPost)(`/watchlists/${watchlistId}/share`, {
       public: isPublic,
       showCreator,
       expiresAt,
+      useDefaultExpiry,
     }, {
       headers: dependencies.apiHeaders,
     });
@@ -235,6 +264,7 @@ export async function shareWatchlist(
     ...(isPublic ? ["--public"] : []),
     ...(showCreator ? ["--show-creator"] : []),
     ...(expiresAt ? ["--expires-at", expiresAt] : []),
+    ...(useDefaultExpiry ? ["--use-default-expiry"] : []),
   ));
 }
 

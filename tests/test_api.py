@@ -244,3 +244,31 @@ class APITests(unittest.TestCase):
         events = payload["watchlists"][0]["shareEvents"]
         self.assertGreaterEqual(len(events), 2)
         self.assertEqual(events[0]["eventType"], "visibility_updated")
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_user_can_set_default_share_expiry(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+
+        update_response = client.post(
+            f"/api/v1/watchlists/{watchlist_id}/share-defaults",
+            json={"defaultExpiryDays": 7},
+        )
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(update_response.json()["watchlists"][0]["defaultShareExpiryDays"], 7)
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_user_can_rotate_share_token(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+        original_share = client.post(f"/api/v1/watchlists/{watchlist_id}/share", json={"public": True}).json()
+        share_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["shares"][0]["id"]
+
+        rotate_response = client.post(f"/api/v1/watchlists/{watchlist_id}/shares/{share_id}/rotate")
+        self.assertEqual(rotate_response.status_code, 200)
+        self.assertNotEqual(rotate_response.json()["shareToken"], original_share["shareToken"])
+
+        payload = client.get("/api/v1/watchlists").json()
+        self.assertEqual(payload["watchlists"][0]["shareEvents"][0]["eventType"], "rotated")

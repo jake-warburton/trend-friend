@@ -351,6 +351,7 @@ export type Watchlist = {
   name: string;
   ownerUserId: number | null;
   ownedByCurrentUser: boolean;
+  defaultShareExpiryDays: number | null;
   createdAt: string;
   updatedAt: string;
   items: WatchlistItem[];

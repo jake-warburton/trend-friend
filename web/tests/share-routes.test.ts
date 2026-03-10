@@ -3,9 +3,11 @@ import test from "node:test";
 
 import { WatchlistServiceError } from "@/lib/server/watchlist-service";
 import { handleShareWatchlistPost } from "@/app/api/watchlists/[watchlistId]/share/route";
+import { handleShareDefaultsPost } from "@/app/api/watchlists/[watchlistId]/share-defaults/route";
 import { handleRevokeSharePost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/revoke/route";
 import { handleShareAttributionPost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/attribution/route";
 import { handleShareExpirationPost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/expiration/route";
+import { handleRotateSharePost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/rotate/route";
 import { handleShareVisibilityPost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/visibility/route";
 import { handleSharedWatchlistGet } from "@/app/api/shared/[token]/route";
 
@@ -110,6 +112,33 @@ test("revoke share route returns ok payload", async () => {
   assert.deepEqual(await response.json(), { ok: true });
 });
 
+test("rotate share route returns updated share payload", async () => {
+  const request = new Request("http://localhost/api/watchlists/12/shares/3/rotate", {
+    method: "POST",
+  });
+
+  const response = await handleRotateSharePost(
+    request,
+    { params: Promise.resolve({ watchlistId: "12", shareId: "3" }) },
+    {
+      mutateWatchlists: async () => ({
+        id: 3,
+        shareToken: "share-rotated",
+        public: true,
+        createdAt: "2026-03-10T12:00:00Z",
+      }),
+    },
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    id: 3,
+    shareToken: "share-rotated",
+    public: true,
+    createdAt: "2026-03-10T12:00:00Z",
+  });
+});
+
 test("share visibility route returns updated share payload", async () => {
   const request = new Request("http://localhost/api/watchlists/12/shares/3/visibility", {
     method: "POST",
@@ -200,5 +229,40 @@ test("share expiration route returns updated share payload", async () => {
     showCreator: false,
     expiresAt: "2026-03-20T12:00:00Z",
     createdAt: "2026-03-10T12:00:00Z",
+  });
+});
+
+test("share defaults route returns updated watchlist payload", async () => {
+  const request = new Request("http://localhost/api/watchlists/12/share-defaults", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ defaultExpiryDays: 7 }),
+  });
+
+  const response = await handleShareDefaultsPost(
+    request,
+    { params: Promise.resolve({ watchlistId: "12" }) },
+    {
+      mutateWatchlists: async () => ({
+        watchlists: [
+          {
+            id: 12,
+            name: "Core Watchlist",
+            defaultShareExpiryDays: 7,
+          },
+        ],
+      }),
+    },
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    watchlists: [
+      {
+        id: 12,
+        name: "Core Watchlist",
+        defaultShareExpiryDays: 7,
+      },
+    ],
   });
 });

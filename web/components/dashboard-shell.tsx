@@ -82,6 +82,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     lastRunAt: initialData.overview.operations.lastRunAt,
   });
   const [lastBackgroundUpdateAt, setLastBackgroundUpdateAt] = useState<number | null>(null);
+  const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
+  const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
+  const shareActivityById = buildShareActivityMap(defaultWatchlist);
   const deferredKeyword = useDeferredValue(keyword);
   const isPollingRef = useRef(false);
   const hasMountedRef = useRef(false);
@@ -220,6 +223,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       window.clearInterval(intervalId);
     };
   }, [actionPending, isPending, overviewMeta.generatedAt, overviewMeta.lastRunAt, router, startTransition]);
+
+  useEffect(() => {
+    setShareExpiryPreset(defaultShareExpiryPreset(defaultWatchlist));
+  }, [defaultWatchlist]);
 
   async function loadWatchlists() {
     try {
@@ -433,7 +440,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         body: JSON.stringify({
           public: isPublic,
           showCreator: false,
-          expiresAt: shareExpiryPreset === "none" ? null : buildShareExpiryIso(shareExpiryPreset),
+          expiresAt: resolveShareExpiryIso(shareExpiryPreset),
+          useDefaultExpiry: shareExpiryPreset === "default",
         }),
       });
 
@@ -454,6 +462,33 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       if (isPublic) {
         await loadPublicWatchlists();
       }
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleSaveDefaultShareExpiry(targetWatchlist: Watchlist) {
+    const defaultExpiryDays = resolveDefaultShareExpiryDays(shareExpiryPreset, targetWatchlist);
+    setShareNotice(null);
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/share-defaults`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultExpiryDays }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not save default share expiry");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      showActionNotice(
+        defaultExpiryDays == null
+          ? "Default share expiry cleared"
+          : `Default share expiry set to ${formatShareDurationLabel(defaultExpiryDays)}`,
+      );
+      await loadPublicWatchlists();
     } finally {
       setActionPending(false);
     }
@@ -532,7 +567,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          expiresAt: preset === "none" ? null : buildShareExpiryIso(preset),
+          expiresAt: resolveShareExpiryIso(preset),
         }),
       });
       if (!response.ok) {
@@ -547,9 +582,33 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     }
   }
 
-  const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
-  const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
-  const shareActivityById = buildShareActivityMap(defaultWatchlist);
+  async function handleRotateShare(targetWatchlist: Watchlist, shareId: number) {
+    setShareNotice(null);
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/shares/${shareId}/rotate`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not rotate share link");
+        return;
+      }
+      const payload = (await response.json()) as { shareToken: string };
+      const shareUrl = `${window.location.origin}/shared/${payload.shareToken}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareNotice("Rotated link copied");
+      } catch {
+        setShareNotice(shareUrl);
+      }
+      showActionNotice("Share link rotated");
+      await loadWatchlists();
+      await loadPublicWatchlists();
+    } finally {
+      setActionPending(false);
+    }
+  }
 
   return (
     <main className="dashboard-page">
@@ -1033,6 +1092,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       <Select.Positioner className="select-positioner" sideOffset={8}>
                         <Select.Popup className="select-popup">
                           <Select.List className="select-list">
+                            <Select.Item className="select-item" value="default"><Select.ItemText>{formatShareDefaultOptionLabel(defaultWatchlist.defaultShareExpiryDays)}</Select.ItemText></Select.Item>
                             <Select.Item className="select-item" value="none"><Select.ItemText>No expiry</Select.ItemText></Select.Item>
                             <Select.Item className="select-item" value="24h"><Select.ItemText>24 hours</Select.ItemText></Select.Item>
                             <Select.Item className="select-item" value="7d"><Select.ItemText>7 days</Select.ItemText></Select.Item>
@@ -1042,7 +1102,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </Select.Positioner>
                     </Select.Portal>
                   </Select.Root>
+                  <Button
+                    className="mini-action-button"
+                    disabled={actionPending || watchlistsRequireAuth || shareExpiryPreset === "default"}
+                    onClick={() => void handleSaveDefaultShareExpiry(defaultWatchlist)}
+                  >
+                    Save default
+                  </Button>
                 </div>
+                <p className="source-summary-copy">
+                  Default for new links: {formatWatchlistDefaultShareExpiry(defaultWatchlist.defaultShareExpiryDays)}
+                </p>
                 <div className="watchlist-form">
                   <Button
                     className="mini-action-button"
@@ -1120,6 +1190,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           type="button"
                         >
                           {share.showCreator ? "Hide name" : "Show name"}
+                        </button>
+                        <button
+                          className="mini-action-button"
+                          disabled={actionPending || watchlistsRequireAuth}
+                          onClick={() => void handleRotateShare(defaultWatchlist, share.id)}
+                          type="button"
+                        >
+                          Rotate
                         </button>
                         <button
                           className="mini-action-button"
@@ -1561,6 +1639,64 @@ function buildShareExpiryIso(preset: string) {
     next.setDate(next.getDate() + 30);
   }
   return next.toISOString();
+}
+
+function defaultShareExpiryPreset(watchlist: Watchlist | null) {
+  if (watchlist?.defaultShareExpiryDays != null) {
+    return "default";
+  }
+  return "none";
+}
+
+function resolveShareExpiryIso(preset: string) {
+  if (preset === "none" || preset === "default") {
+    return null;
+  }
+  return buildShareExpiryIso(preset);
+}
+
+function resolveDefaultShareExpiryDays(preset: string, watchlist: Watchlist) {
+  if (preset === "default") {
+    return watchlist.defaultShareExpiryDays;
+  }
+  if (preset === "none") {
+    return null;
+  }
+  return sharePresetToDays(preset);
+}
+
+function sharePresetToDays(preset: string) {
+  if (preset === "24h") {
+    return 1;
+  }
+  if (preset === "7d") {
+    return 7;
+  }
+  if (preset === "30d") {
+    return 30;
+  }
+  return null;
+}
+
+function formatShareDurationLabel(days: number) {
+  if (days === 1) {
+    return "24 hours";
+  }
+  return `${days} days`;
+}
+
+function formatWatchlistDefaultShareExpiry(days: number | null) {
+  if (days == null) {
+    return "No default expiry";
+  }
+  return `${formatShareDurationLabel(days)} for new links`;
+}
+
+function formatShareDefaultOptionLabel(days: number | null) {
+  if (days == null) {
+    return "Watchlist default (none)";
+  }
+  return `Watchlist default (${formatShareDurationLabel(days)})`;
 }
 
 function formatShareExpirySummary(value: string | null) {

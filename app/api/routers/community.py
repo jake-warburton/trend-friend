@@ -14,6 +14,7 @@ from app.auth.repository import UserRepository
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
 from app.models import User
 from app.watchlists_payloads import (
+    build_watchlist_payload,
     build_public_watchlists_payload,
     build_shared_watchlist_payload,
 )
@@ -45,15 +46,10 @@ def share_watchlist(
         is_public=is_public,
         show_creator=body.get("showCreator") is True,
         expires_at=expires_at,
+        use_watchlist_default_expiry=body.get("useDefaultExpiry") is True,
     )
 
-    return {
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": _to_utc_iso_or_none(share.expires_at),
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
 
 
 @router.post("/watchlists/{watchlist_id}/shares/{share_id}/revoke")
@@ -99,14 +95,7 @@ def update_watchlist_share_visibility(
     if share is None:
         raise HTTPException(status_code=404, detail="Share link not found")
 
-    return {
-        "id": share.id,
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": _to_utc_iso_or_none(share.expires_at),
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
 
 
 @router.post("/watchlists/{watchlist_id}/shares/{share_id}/attribution")
@@ -131,14 +120,7 @@ def update_watchlist_share_attribution(
     if share is None:
         raise HTTPException(status_code=404, detail="Share link not found")
 
-    return {
-        "id": share.id,
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": _to_utc_iso_or_none(share.expires_at),
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
 
 
 @router.post("/watchlists/{watchlist_id}/shares/{share_id}/expiration")
@@ -161,14 +143,62 @@ def update_watchlist_share_expiration(
     if share is None:
         raise HTTPException(status_code=404, detail="Share link not found")
 
-    return {
-        "id": share.id,
-        "shareToken": share.share_token,
-        "public": share.is_public,
-        "showCreator": share.show_creator,
-        "expiresAt": _to_utc_iso_or_none(share.expires_at),
-        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+    return _serialize_share_payload(share)
+
+
+@router.post("/watchlists/{watchlist_id}/shares/{share_id}/rotate")
+def rotate_watchlist_share(
+    watchlist_id: int,
+    share_id: int,
+    user: User = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Rotate the token for an existing share."""
+
+    repo = WatchlistRepository(db)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
+    if watchlist is None:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    share = repo.rotate_share_token(
+        share_id,
+        user.id if auth_enabled() else None,
+        secrets.token_urlsafe(16),
+    )
+    if share is None:
+        raise HTTPException(status_code=404, detail="Share link not found")
+    return _serialize_share_payload(share)
+
+
+@router.post("/watchlists/{watchlist_id}/share-defaults")
+def update_watchlist_share_defaults(
+    watchlist_id: int,
+    body: dict,
+    user: User = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Persist default share settings for one watchlist."""
+
+    raw_days = body.get("defaultExpiryDays")
+    if raw_days is not None and (not isinstance(raw_days, int) or raw_days <= 0):
+        raise HTTPException(status_code=422, detail="defaultExpiryDays must be a positive integer or null")
+
+    watchlist_repo = WatchlistRepository(db)
+    score_repo = TrendScoreRepository(db)
+    owner_user_id = user.id if auth_enabled() else None
+    updated_watchlist = watchlist_repo.update_default_share_duration(
+        watchlist_id,
+        owner_user_id,
+        raw_days,
+    )
+    if updated_watchlist is None:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+    return build_watchlist_payload(
+        watchlist_repo,
+        score_repo,
+        current_user=_serialize_current_user(user) if auth_enabled() else None,
+        auth_enabled=auth_enabled(),
+    )
 
 
 @router.get("/shared/{share_token}")
@@ -301,3 +331,24 @@ def _to_utc_iso_or_none(value: datetime | None) -> str | None:
     if value is None:
         return None
     return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _serialize_share_payload(share) -> dict[str, object]:
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "showCreator": share.show_creator,
+        "expiresAt": _to_utc_iso_or_none(share.expires_at),
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+
+def _serialize_current_user(user: User) -> dict[str, object]:
+    return {
+        "id": user.id,
+        "username": user.username,
+        "displayName": user.display_name,
+        "isAdmin": user.is_admin,
+        "createdAt": user.created_at.isoformat(),
+    }

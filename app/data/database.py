@@ -100,6 +100,7 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             owner_user_id INTEGER NULL,
+            default_share_duration_days INTEGER NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -220,6 +221,12 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         column_name="owner_user_id",
         column_sql="INTEGER NULL REFERENCES users(id) ON DELETE CASCADE",
     )
+    ensure_column(
+        connection,
+        table_name="watchlists",
+        column_name="default_share_duration_days",
+        column_sql="INTEGER NULL",
+    )
     migrate_watchlists_table(connection)
     ensure_column(
         connection,
@@ -296,6 +303,8 @@ def migrate_watchlists_table(connection: sqlite3.Connection) -> None:
     column_rows = connection.execute("PRAGMA table_info(watchlists)").fetchall()
     has_owner_column = any(row["name"] == "owner_user_id" for row in column_rows)
     owner_select = "owner_user_id" if has_owner_column else "NULL"
+    has_default_duration_column = any(row["name"] == "default_share_duration_days" for row in column_rows)
+    default_duration_select = "default_share_duration_days" if has_default_duration_column else "NULL"
 
     connection.execute("PRAGMA foreign_keys = OFF")
     connection.execute("ALTER TABLE watchlists RENAME TO watchlists_legacy")
@@ -305,6 +314,7 @@ def migrate_watchlists_table(connection: sqlite3.Connection) -> None:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             owner_user_id INTEGER NULL,
+            default_share_duration_days INTEGER NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -313,8 +323,8 @@ def migrate_watchlists_table(connection: sqlite3.Connection) -> None:
     )
     connection.execute(
         f"""
-        INSERT INTO watchlists (id, name, owner_user_id, created_at, updated_at)
-        SELECT id, name, {owner_select}, created_at, updated_at
+        INSERT INTO watchlists (id, name, owner_user_id, default_share_duration_days, created_at, updated_at)
+        SELECT id, name, {owner_select}, {default_duration_select}, created_at, updated_at
         FROM watchlists_legacy
         """
     )
