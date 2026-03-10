@@ -39,9 +39,17 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
   }
   const dates = [...dateSet].sort();
 
+  // Determine the maximum number of forecast points across all trends
+  let maxForecastLen = 0;
+  for (const trend of topTrends) {
+    if (trend.forecast && trend.forecast.predictedScores.length > 0) {
+      maxForecastLen = Math.max(maxForecastLen, trend.forecast.predictedScores.length);
+    }
+  }
+
   // Build chart data: one row per date, one key per trend
-  const data = dates.map((date) => {
-    const row: Record<string, string | number> = { date: formatShortDate(date) };
+  const data: Record<string, string | number | undefined>[] = dates.map((date) => {
+    const row: Record<string, string | number | undefined> = { date: formatShortDate(date) };
     for (const trend of topTrends) {
       const point = trend.history.find((p) => p.capturedAt.slice(0, 10) === date);
       if (point) {
@@ -51,8 +59,46 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
     return row;
   });
 
+  // For each trend with a forecast, set the last actual point on the forecast
+  // series so the dashed line connects seamlessly to the solid line
+  if (maxForecastLen > 0 && data.length > 0) {
+    const lastRow = data[data.length - 1];
+    for (const trend of topTrends) {
+      if (trend.forecast && trend.forecast.predictedScores.length > 0) {
+        const forecastKey = `${trend.name} forecast`;
+        const lastScore = lastRow[trend.name];
+        if (lastScore !== undefined) {
+          lastRow[forecastKey] = lastScore;
+        }
+      }
+    }
+
+    // Append forecast rows
+    for (let i = 0; i < maxForecastLen; i++) {
+      const row: Record<string, string | number | undefined> = { date: `Run +${i + 1}` };
+      for (const trend of topTrends) {
+        if (
+          trend.forecast &&
+          trend.forecast.predictedScores.length > i
+        ) {
+          const forecastKey = `${trend.name} forecast`;
+          row[forecastKey] = trend.forecast.predictedScores[i];
+        }
+      }
+      data.push(row);
+    }
+  }
+
+  // Determine which trends have forecasts for rendering
+  const trendsWithForecast = topTrends.filter(
+    (t) => t.forecast && t.forecast.predictedScores.length > 0,
+  );
+
   const maxScore = Math.max(
     ...topTrends.flatMap((t) => t.history.map((p) => p.scoreTotal)),
+    ...topTrends.flatMap((t) =>
+      t.forecast ? t.forecast.predictedScores : [],
+    ),
     1,
   );
 
@@ -82,7 +128,13 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
               color: "#e0e4ea",
               fontSize: 12,
             }}
-            formatter={(value) => [Number(value).toFixed(1), "Score"]}
+            formatter={(value, name) => {
+              const label = String(name);
+              if (label.endsWith(" forecast")) {
+                return [Number(value).toFixed(1), `${label.replace(/ forecast$/, "")} (forecast)`];
+              }
+              return [Number(value).toFixed(1), label];
+            }}
             labelFormatter={(label) => String(label)}
           />
           <Legend
@@ -101,6 +153,24 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
               connectNulls
             />
           ))}
+          {trendsWithForecast.map((trend) => {
+            const colorIndex = topTrends.indexOf(trend);
+            const color = PALETTE[colorIndex % PALETTE.length];
+            return (
+              <Line
+                key={`${trend.id}-forecast`}
+                type="monotone"
+                dataKey={`${trend.name} forecast`}
+                stroke={color}
+                strokeWidth={1.5}
+                strokeDasharray="6 4"
+                dot={false}
+                activeDot={{ r: 3 }}
+                connectNulls
+                legendType="none"
+              />
+            );
+          })}
         </LineChart>
       </ResponsiveContainer>
     </div>
