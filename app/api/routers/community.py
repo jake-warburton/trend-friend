@@ -67,9 +67,10 @@ def list_public_watchlists(db: sqlite3.Connection = Depends(get_db)) -> dict:
     """List all publicly shared watchlists."""
 
     repo = WatchlistRepository(db)
+    score_repo = TrendScoreRepository(db)
     public = repo.list_public_watchlists()
 
-    return build_public_watchlists_payload(public)
+    return build_public_watchlists_payload(public, score_repo=score_repo)
 
 
 @router.get("/community/trends/{trend_id}")

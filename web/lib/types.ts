@@ -281,6 +281,7 @@ export type WatchlistItem = {
   trendId: string;
   trendName: string;
   addedAt: string;
+  geoSummary?: TrendGeoSummary[];
 };
 
 export type SharedWatchlistItem = WatchlistItem & {
@@ -351,6 +352,7 @@ export type PublicWatchlistSummary = {
   shareToken: string;
   createdAt: string;
   updatedAt: string;
+  geoSummary?: TrendGeoSummary[];
 };
 
 export type PublicWatchlistsResponse = {

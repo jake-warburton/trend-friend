@@ -101,7 +101,7 @@ def main() -> None:
             token=args.token,
         )
     elif args.command == "list-public":
-        payload = list_public_payload(watchlist_repository)
+        payload = list_public_payload(watchlist_repository, score_repository)
     elif args.command == "list-alerts":
         payload = list_alerts_payload(
             watchlist_repository=watchlist_repository,
@@ -182,12 +182,18 @@ def get_shared_payload(
     return build_shared_watchlist_payload(score_repository, share, watchlist)
 
 
-def list_public_payload(watchlist_repository: WatchlistRepository) -> dict[str, object]:
+def list_public_payload(
+    watchlist_repository: WatchlistRepository,
+    score_repository: TrendScoreRepository,
+) -> dict[str, object]:
     """Return the public watchlist directory payload."""
 
     from app.watchlists_payloads import build_public_watchlists_payload
 
-    return build_public_watchlists_payload(watchlist_repository.list_public_watchlists())
+    return build_public_watchlists_payload(
+        watchlist_repository.list_public_watchlists(),
+        score_repo=score_repository,
+    )
 
 
 def list_alerts_payload(

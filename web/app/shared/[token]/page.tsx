@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import type { SharedWatchlistResponse } from "@/lib/types";
+import type { SharedWatchlistResponse, TrendGeoSummary } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -33,19 +33,27 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
       </section>
 
       <section className="shared-grid">
-        {payload.watchlist.items.map((item) => (
-          <article className="snapshot-card shared-item-card" key={item.trendId}>
-            <header>
-              <strong>
-                <Link className="trend-link" href={`/trends/${item.trendId}`}>
-                  {item.trendName}
-                </Link>
-              </strong>
-              <span>{item.currentScore != null ? item.currentScore.toFixed(1) : "No score"}</span>
-            </header>
-            <p className="source-summary-copy">Added {formatTimestamp(item.addedAt)}</p>
-          </article>
-        ))}
+        {payload.watchlist.items.map((item) => {
+          const geo = item.geoSummary ?? [];
+          return (
+            <article className="snapshot-card shared-item-card" key={item.trendId}>
+              <header>
+                <strong>
+                  <Link className="trend-link" href={`/trends/${item.trendId}`}>
+                    {item.trendName}
+                  </Link>
+                </strong>
+                <span>{item.currentScore != null ? item.currentScore.toFixed(1) : "No score"}</span>
+              </header>
+              <p className="source-summary-copy">Added {formatTimestamp(item.addedAt)}</p>
+              {geo.length > 0 && (
+                <p className="source-summary-copy">
+                  {geo.map((g: TrendGeoSummary) => g.label).join(", ")}
+                </p>
+              )}
+            </article>
+          );
+        })}
       </section>
     </main>
   );
