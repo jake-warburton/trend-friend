@@ -8,7 +8,15 @@ import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import type { AlertEvent, AlertEventsResponse, DashboardData, WatchlistResponse } from "@/lib/types";
+import type {
+  AlertEvent,
+  AlertEventsResponse,
+  DashboardData,
+  PublicWatchlistSummary,
+  PublicWatchlistsResponse,
+  Watchlist,
+  WatchlistResponse,
+} from "@/lib/types";
 
 type DashboardShellProps = {
   initialData: DashboardData;
@@ -48,6 +56,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
+  const [publicWatchlists, setPublicWatchlists] = useState<PublicWatchlistSummary[]>([]);
   const deferredKeyword = useDeferredValue(keyword);
 
   const filteredTrends = useMemo(() => {
@@ -104,6 +114,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   useEffect(() => {
     void loadWatchlists();
     void loadAlertEvents();
+    void loadPublicWatchlists();
   }, []);
 
   async function loadWatchlists() {
@@ -192,6 +203,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     }
   }
 
+  async function loadPublicWatchlists() {
+    try {
+      const response = await fetch("/api/community/watchlists");
+      if (!response.ok) return;
+      const data = (await response.json()) as PublicWatchlistsResponse;
+      setPublicWatchlists(data.watchlists ?? []);
+    } catch {
+      // ignore non-critical public directory failures
+    }
+  }
+
   async function handleMarkAlertsRead() {
     const unreadIds = alertEvents.filter((e) => !e.read).map((e) => e.id);
     if (unreadIds.length === 0) return;
@@ -205,6 +227,33 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       setAlertCount(0);
     } catch {
       // silently ignore
+    }
+  }
+
+  async function handleCreateShare(targetWatchlist: Watchlist, isPublic: boolean) {
+    setShareNotice(null);
+    const response = await fetch(`/api/watchlists/${targetWatchlist.id}/share`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ public: isPublic }),
+    });
+
+    if (!response.ok) {
+      setWatchlistError("Could not create share link");
+      return;
+    }
+
+    const payload = (await response.json()) as { shareToken: string };
+    const shareUrl = `${window.location.origin}/shared/${payload.shareToken}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareNotice(`${isPublic ? "Public" : "Private"} link copied`);
+    } catch {
+      setShareNotice(shareUrl);
+    }
+    await loadWatchlists();
+    if (isPublic) {
+      await loadPublicWatchlists();
     }
   }
 
@@ -598,11 +647,35 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   Alert
                 </Button>
               </div>
+              {defaultWatchlist ? (
+                <div className="watchlist-form">
+                  <Button
+                    className="mini-action-button"
+                    onClick={() => void handleCreateShare(defaultWatchlist, false)}
+                  >
+                    Private link
+                  </Button>
+                  <Button
+                    className="mini-action-button"
+                    onClick={() => void handleCreateShare(defaultWatchlist, true)}
+                  >
+                    Public link
+                  </Button>
+                </div>
+              ) : null}
               {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
+              {shareNotice ? <p className="source-summary-copy">{shareNotice}</p> : null}
               <div className="watchlist-items">
                 {(defaultWatchlist?.items ?? []).slice(0, 5).map((item) => (
                   <Link className="watchlist-item" href={`/trends/${item.trendId}`} key={item.trendId}>
                     <span>{item.trendName}</span>
+                  </Link>
+                ))}
+              </div>
+              <div className="watchlist-items">
+                {(defaultWatchlist?.shares ?? []).slice(0, 3).map((share) => (
+                  <Link className="watchlist-item" href={`/shared/${share.shareToken}`} key={share.id}>
+                    <span>{share.public ? "Public share" : "Private share"}</span>
                   </Link>
                 ))}
               </div>
@@ -721,6 +794,30 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 ) : null}
               </section>
             ))}
+          </div>
+
+          <div className="section-heading section-heading-spaced">
+            <h2>Public watchlists</h2>
+          </div>
+
+          <div className="snapshot-list">
+            {publicWatchlists.length === 0 ? (
+              <p className="source-summary-copy">No public watchlists yet.</p>
+            ) : (
+              publicWatchlists.slice(0, 6).map((watchlist) => (
+                <section className="snapshot-card" key={watchlist.shareToken}>
+                  <header>
+                    <strong>
+                      <Link className="trend-link" href={`/shared/${watchlist.shareToken}`}>
+                        {watchlist.name}
+                      </Link>
+                    </strong>
+                    <span>{watchlist.itemCount} tracked</span>
+                  </header>
+                  <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
+                </section>
+              ))
+            )}
           </div>
         </aside>
       </section>

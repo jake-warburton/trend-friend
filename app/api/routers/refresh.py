@@ -25,7 +25,7 @@ def trigger_refresh() -> dict:
     already in progress.
     """
 
-    if not _refresh_lock.acquire(blocking=False):
+    if not acquire_refresh_lock():
         raise HTTPException(status_code=409, detail="A refresh is already in progress")
 
     try:
@@ -41,6 +41,19 @@ def trigger_refresh() -> dict:
         LOGGER.exception("Refresh failed: %s", error)
         raise HTTPException(status_code=500, detail=str(error)) from error
     finally:
+        release_refresh_lock()
+
+
+def acquire_refresh_lock() -> bool:
+    """Acquire the global refresh lock without blocking."""
+
+    return _refresh_lock.acquire(blocking=False)
+
+
+def release_refresh_lock() -> None:
+    """Release the global refresh lock when held."""
+
+    if _refresh_lock.locked():
         _refresh_lock.release()
 
 

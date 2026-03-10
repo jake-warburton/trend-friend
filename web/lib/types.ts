@@ -267,12 +267,24 @@ export type WatchlistItem = {
   addedAt: string;
 };
 
+export type SharedWatchlistItem = WatchlistItem & {
+  currentScore: number | null;
+};
+
+export type WatchlistShare = {
+  id: number;
+  shareToken: string;
+  public: boolean;
+  createdAt: string;
+};
+
 export type Watchlist = {
   id: number;
   name: string;
   createdAt: string;
   updatedAt: string;
   items: WatchlistItem[];
+  shares: WatchlistShare[];
 };
 
 export type AlertRule = {
@@ -300,6 +312,33 @@ export type WatchlistResponse = {
   watchlists: Watchlist[];
   alerts: AlertRule[];
   matches: AlertMatch[];
+};
+
+export type SharedWatchlistResponse = {
+  watchlist: {
+    id: number;
+    name: string;
+    itemCount: number;
+    createdAt: string;
+    updatedAt: string;
+    items: SharedWatchlistItem[];
+  };
+  shareToken: string;
+  public: boolean;
+  createdAt: string;
+};
+
+export type PublicWatchlistSummary = {
+  id: number;
+  name: string;
+  itemCount: number;
+  shareToken: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PublicWatchlistsResponse = {
+  watchlists: PublicWatchlistSummary[];
 };
 
 export type AlertEvent = {

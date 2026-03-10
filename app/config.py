@@ -35,7 +35,7 @@ def load_settings() -> Settings:
         web_data_path=Path(os.getenv("TREND_FRIEND_WEB_DATA_PATH", "web/data")),
         request_timeout_seconds=int(os.getenv("TREND_FRIEND_REQUEST_TIMEOUT_SECONDS", "10")),
         max_items_per_source=int(os.getenv("TREND_FRIEND_MAX_ITEMS_PER_SOURCE", "30")),
-        ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "1000")),
+        ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "100")),
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
         reddit_user_agent=os.getenv("TREND_FRIEND_REDDIT_USER_AGENT", "trend-friend-mvp/1.0"),

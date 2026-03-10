@@ -79,7 +79,7 @@ Supported environment variables:
 - `TREND_FRIEND_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
 - `TREND_FRIEND_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
 - `TREND_FRIEND_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
-- `TREND_FRIEND_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `10`
+- `TREND_FRIEND_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
 - `TREND_FRIEND_REDDIT_USER_AGENT`: User agent for Reddit requests
 - `GITHUB_TOKEN`: Optional token for higher GitHub API rate limits
 
@@ -187,11 +187,21 @@ PORT=3001 npm run dev
 
 The dashboard reads `web/data/latest-trends.json` and `web/data/trend-history.json`.
 The refresh button triggers the local Python ingestion and export scripts through a Next.js server route.
+The dashboard can also generate private or public watchlist share links, and shared watchlists render at `/shared/<token>`.
 
 ## Running Tests
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/pycache python3 -m unittest discover -s tests -v
+```
+
+For the web app quality gates:
+
+```bash
+cd web
+npm run lint
+npx tsc --noEmit
+npm test
 ```
 
 The test suite covers:

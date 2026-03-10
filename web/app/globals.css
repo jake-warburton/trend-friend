@@ -576,6 +576,10 @@ input {
   margin-top: 8px;
 }
 
+.watchlist-form .mini-action-button + .mini-action-button {
+  margin-left: 6px;
+}
+
 .watchlist-items {
   display: grid;
   gap: 5px;
@@ -629,6 +633,43 @@ input {
 .history-panel {
   padding: 7px;
   border-radius: 14px;
+}
+
+.shared-page {
+  width: min(960px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.shared-hero {
+  margin-bottom: 12px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.shared-hero h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.shared-back-link {
+  display: inline-flex;
+  margin-top: 8px;
+  text-decoration: none;
+}
+
+.shared-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.shared-item-card {
+  padding: 14px;
 }
 
 .section-heading {

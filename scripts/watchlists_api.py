@@ -35,6 +35,15 @@ def main() -> None:
     remove_item.add_argument("--watchlist-id", type=int, required=True)
     remove_item.add_argument("--trend-id", required=True)
 
+    share_watchlist = subparsers.add_parser("share-watchlist")
+    share_watchlist.add_argument("--watchlist-id", type=int, required=True)
+    share_watchlist.add_argument("--public", action="store_true")
+
+    get_shared = subparsers.add_parser("get-shared")
+    get_shared.add_argument("--token", required=True)
+
+    subparsers.add_parser("list-public")
+
     create_alert = subparsers.add_parser("create-alert")
     create_alert.add_argument("--watchlist-id", type=int, required=True)
     create_alert.add_argument("--name", required=True)
@@ -72,6 +81,20 @@ def main() -> None:
             watchlist_repository=watchlist_repository,
             score_repository=score_repository,
         )
+    elif args.command == "share-watchlist":
+        payload = share_payload(
+            watchlist_repository=watchlist_repository,
+            watchlist_id=args.watchlist_id,
+            public=args.public,
+        )
+    elif args.command == "get-shared":
+        payload = get_shared_payload(
+            watchlist_repository=watchlist_repository,
+            score_repository=score_repository,
+            token=args.token,
+        )
+    elif args.command == "list-public":
+        payload = list_public_payload(watchlist_repository)
     else:
         watchlist_repository.create_alert_rule(
             watchlist_id=args.watchlist_id,
@@ -93,83 +116,60 @@ def build_payload(
     score_repository: TrendScoreRepository,
 ) -> dict[str, object]:
     """Build the JSON payload used by the web API."""
+    from app.watchlists_payloads import build_watchlist_payload
 
-    latest_scores = score_repository.list_scores(limit=100)
-    score_by_slug = {
-        slugify(score.topic): score for score in latest_scores
-    }
-    watchlists = watchlist_repository.list_watchlists()
-    alerts = watchlist_repository.list_alert_rules()
+    return build_watchlist_payload(watchlist_repository, score_repository)
 
-    alert_matches = []
-    for alert in alerts:
-        watchlist = next((item for item in watchlists if item.id == alert.watchlist_id), None)
-        if watchlist is None or not alert.enabled:
-            continue
-        for item in watchlist.items:
-            score = score_by_slug.get(item.trend_id)
-            if score is None:
-                continue
-            if alert.rule_type == "score_above" and score.total_score >= alert.threshold:
-                alert_matches.append(
-                    {
-                        "alertId": alert.id,
-                        "alertName": alert.name,
-                        "watchlistId": watchlist.id,
-                        "trendId": item.trend_id,
-                        "trendName": item.trend_name,
-                        "ruleType": alert.rule_type,
-                        "threshold": alert.threshold,
-                        "currentValue": round(score.total_score, 1),
-                    }
-                )
 
+def share_payload(
+    watchlist_repository: WatchlistRepository,
+    watchlist_id: int,
+    public: bool,
+) -> dict[str, object]:
+    """Create and return a share payload."""
+
+    import secrets
+
+    watchlist = watchlist_repository.get_watchlist(watchlist_id)
+    if watchlist is None:
+        return {"error": "Watchlist not found"}
+
+    share = watchlist_repository.create_share(
+        watchlist_id=watchlist_id,
+        share_token=secrets.token_urlsafe(16),
+        is_public=public,
+    )
     return {
-        "watchlists": [
-            {
-                "id": watchlist.id,
-                "name": watchlist.name,
-                "createdAt": to_timestamp(watchlist.created_at),
-                "updatedAt": to_timestamp(watchlist.updated_at),
-                "items": [
-                    {
-                        "trendId": item.trend_id,
-                        "trendName": item.trend_name,
-                        "addedAt": to_timestamp(item.added_at),
-                    }
-                    for item in watchlist.items
-                ],
-            }
-            for watchlist in watchlists
-        ],
-        "alerts": [
-            {
-                "id": alert.id,
-                "watchlistId": alert.watchlist_id,
-                "name": alert.name,
-                "ruleType": alert.rule_type,
-                "threshold": alert.threshold,
-                "enabled": alert.enabled,
-                "createdAt": to_timestamp(alert.created_at),
-            }
-            for alert in alerts
-        ],
-        "matches": alert_matches,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
 
-def to_timestamp(value) -> str:
-    """Return a UTC ISO-8601 timestamp."""
+def get_shared_payload(
+    watchlist_repository: WatchlistRepository,
+    score_repository: TrendScoreRepository,
+    token: str,
+) -> dict[str, object]:
+    """Return a shared watchlist payload."""
 
-    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    from app.watchlists_payloads import build_shared_watchlist_payload
+
+    share = watchlist_repository.get_share_by_token(token)
+    if share is None:
+        return {"error": "Share link not found"}
+    watchlist = watchlist_repository.get_watchlist(share.watchlist_id)
+    if watchlist is None:
+        return {"error": "Watchlist not found"}
+    return build_shared_watchlist_payload(score_repository, share, watchlist)
 
 
-def slugify(topic: str) -> str:
-    """Convert a topic to a stable slug identifier."""
+def list_public_payload(watchlist_repository: WatchlistRepository) -> dict[str, object]:
+    """Return the public watchlist directory payload."""
 
-    normalized = "".join(character.lower() if character.isalnum() else "-" for character in topic)
-    compact = "-".join(part for part in normalized.split("-") if part)
-    return compact or "trend"
+    from app.watchlists_payloads import build_public_watchlists_payload
+
+    return build_public_watchlists_payload(watchlist_repository.list_public_watchlists())
 
 
 if __name__ == "__main__":
