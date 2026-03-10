@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import alerts, dashboard, trends, sources, refresh
+from app.api.routers import alerts, dashboard, trends, sources, refresh, watchlists
 
 
 def create_app() -> FastAPI:
@@ -37,6 +37,7 @@ def create_app() -> FastAPI:
     application.include_router(trends.router, prefix="/api/v1")
     application.include_router(sources.router, prefix="/api/v1")
     application.include_router(refresh.router, prefix="/api/v1")
+    application.include_router(watchlists.router, prefix="/api/v1")
 
     @application.get("/api/v1/health")
     def health_check() -> dict[str, str]:

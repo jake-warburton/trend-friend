@@ -1,22 +1,16 @@
-import { execFile } from "node:child_process";
-import path from "node:path";
-import { promisify } from "node:util";
 import { NextResponse } from "next/server";
 
-const execFileAsync = promisify(execFile);
-
-async function runWatchlistCommand(args: string[]) {
-  const projectRoot = path.resolve(process.cwd(), "..");
-  const { stdout } = await execFileAsync("python3", ["scripts/watchlists_api.py", ...args], {
-    cwd: projectRoot,
-    timeout: 30_000,
-  });
-  return JSON.parse(stdout) as object;
-}
+import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 
 export async function GET() {
-  const payload = await runWatchlistCommand(["list"]);
-  return NextResponse.json(payload);
+  try {
+    const payload = await apiGet<object>("/watchlists");
+    return NextResponse.json(payload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Watchlist request failed";
+    const status = error instanceof ApiError ? error.status : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
 }
 
 export async function POST(request: Request) {
@@ -26,29 +20,23 @@ export async function POST(request: Request) {
       | { action: "add-item"; watchlistId: number; trendId: string; trendName: string }
       | { action: "remove-item"; watchlistId: number; trendId: string };
 
+    let payload: object;
     if (body.action === "create-watchlist") {
-      const payload = await runWatchlistCommand(["create-watchlist", "--name", body.name]);
-      return NextResponse.json(payload);
+      payload = await apiPost<object>("/watchlists", { name: body.name });
+    } else if (body.action === "add-item") {
+      payload = await apiPost<object>("/watchlists/items", {
+        action: "add",
+        watchlistId: body.watchlistId,
+        trendId: body.trendId,
+        trendName: body.trendName,
+      });
+    } else {
+      payload = await apiPost<object>("/watchlists/items", {
+        action: "remove",
+        watchlistId: body.watchlistId,
+        trendId: body.trendId,
+      });
     }
-    if (body.action === "add-item") {
-      const payload = await runWatchlistCommand([
-        "add-item",
-        "--watchlist-id",
-        String(body.watchlistId),
-        "--trend-id",
-        body.trendId,
-        "--trend-name",
-        body.trendName,
-      ]);
-      return NextResponse.json(payload);
-    }
-    const payload = await runWatchlistCommand([
-      "remove-item",
-      "--watchlist-id",
-      String(body.watchlistId),
-      "--trend-id",
-      body.trendId,
-    ]);
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Watchlist request failed";

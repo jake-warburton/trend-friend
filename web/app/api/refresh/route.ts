@@ -1,26 +1,14 @@
-import { execFile } from "node:child_process";
-import path from "node:path";
-import { promisify } from "node:util";
 import { NextResponse } from "next/server";
 
-const execFileAsync = promisify(execFile);
+import { apiPost, ApiError } from "@/lib/api-client";
 
 export async function POST() {
-  const projectRoot = path.resolve(process.cwd(), "..");
-
   try {
-    await execFileAsync("python3", ["scripts/run_ingestion.py"], {
-      cwd: projectRoot,
-      timeout: 120_000,
-    });
-    await execFileAsync("python3", ["scripts/export_web_data.py"], {
-      cwd: projectRoot,
-      timeout: 60_000,
-    });
-
-    return NextResponse.json({ ok: true });
+    const payload = await apiPost<object>("/refresh", {});
+    return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Refresh failed";
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    const status = error instanceof ApiError ? error.status : 500;
+    return NextResponse.json({ ok: false, error: message }, { status });
   }
 }

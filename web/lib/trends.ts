@@ -1,9 +1,11 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { apiGet } from "@/lib/api-client";
 import type {
   DashboardData,
   DashboardOverviewResponse,
+  SourceSummaryRecord,
   SourceSummaryResponse,
   TrendDetailIndexResponse,
   TrendDetailRecord,
@@ -13,6 +15,12 @@ import type {
 } from "@/lib/types";
 
 const DATA_DIRECTORY = path.join(process.cwd(), "data");
+
+/**
+ * Whether to fetch from the Python REST API (true) or fall back to JSON files.
+ * Set TREND_FRIEND_API_URL to enable API mode. Falls back to files on error.
+ */
+const API_ENABLED = !!process.env.TREND_FRIEND_API_URL;
 
 export async function loadDashboardData(): Promise<DashboardData> {
   const [latest, history, overview, explorer, details, sourceSummary] = await Promise.all([
@@ -27,6 +35,11 @@ export async function loadDashboardData(): Promise<DashboardData> {
 }
 
 async function readLatestTrends(): Promise<LatestTrendsResponse> {
+  if (API_ENABLED) {
+    try {
+      return await apiGet<LatestTrendsResponse>("/trends/latest");
+    } catch { /* fall through to file */ }
+  }
   return readJsonFile<LatestTrendsResponse>("latest-trends.json", {
     generatedAt: new Date(0).toISOString(),
     trends: [],
@@ -34,6 +47,11 @@ async function readLatestTrends(): Promise<LatestTrendsResponse> {
 }
 
 async function readTrendHistory(): Promise<TrendHistoryResponse> {
+  if (API_ENABLED) {
+    try {
+      return await apiGet<TrendHistoryResponse>("/trends/history");
+    } catch { /* fall through to file */ }
+  }
   return readJsonFile<TrendHistoryResponse>("trend-history.json", {
     generatedAt: new Date(0).toISOString(),
     snapshots: [],
@@ -41,7 +59,14 @@ async function readTrendHistory(): Promise<TrendHistoryResponse> {
 }
 
 async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
-  const payload = await readJsonFile<DashboardOverviewResponse>("dashboard-overview.v2.json", {
+  let payload: DashboardOverviewResponse;
+  if (API_ENABLED) {
+    try {
+      payload = await apiGet<DashboardOverviewResponse>("/dashboard/overview");
+      return normalizeDashboardOverview(payload);
+    } catch { /* fall through to file */ }
+  }
+  payload = await readJsonFile<DashboardOverviewResponse>("dashboard-overview.v2.json", {
     generatedAt: new Date(0).toISOString(),
     summary: {
       trackedTrends: 0,
@@ -76,6 +101,10 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
     },
     sources: [],
   });
+  return normalizeDashboardOverview(payload);
+}
+
+function normalizeDashboardOverview(payload: DashboardOverviewResponse): DashboardOverviewResponse {
   return {
     generatedAt: payload.generatedAt,
     summary: {
@@ -177,10 +206,21 @@ export async function loadDashboardOverview(): Promise<DashboardOverviewResponse
 }
 
 async function readTrendExplorer(): Promise<TrendExplorerResponse> {
-  const payload = await readJsonFile<TrendExplorerResponse>("trend-explorer.v2.json", {
+  let payload: TrendExplorerResponse;
+  if (API_ENABLED) {
+    try {
+      payload = await apiGet<TrendExplorerResponse>("/trends");
+      return normalizeTrendExplorer(payload);
+    } catch { /* fall through to file */ }
+  }
+  payload = await readJsonFile<TrendExplorerResponse>("trend-explorer.v2.json", {
     generatedAt: new Date(0).toISOString(),
     trends: [],
   });
+  return normalizeTrendExplorer(payload);
+}
+
+function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExplorerResponse {
   return {
     generatedAt: payload.generatedAt,
     trends: payload.trends.map((trend) => ({
@@ -212,20 +252,59 @@ export async function loadTrendExplorer(): Promise<TrendExplorerResponse> {
 }
 
 export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord | null> {
+  if (API_ENABLED) {
+    try {
+      return await apiGet<TrendDetailRecord>(`/trends/${slug}`);
+    } catch { /* fall through to file */ }
+  }
   const payload = await readTrendDetailIndex();
   return payload.trends.find((trend) => trend.id === slug) ?? null;
 }
 
 export async function loadSourceSummary(sourceId: string) {
+  if (API_ENABLED) {
+    try {
+      const data = await apiGet<SourceSummaryRecord>(`/sources/${sourceId}`);
+      return normalizeSourceRecord(data);
+    } catch { /* fall through to file */ }
+  }
   const payload = await readSourceSummary();
   return payload.sources.find((source) => source.source === sourceId) ?? null;
 }
 
+function normalizeSourceRecord(source: SourceSummaryRecord): SourceSummaryRecord {
+  return {
+    source: source.source,
+    status: source.status ?? "stale",
+    latestFetchAt: source.latestFetchAt ?? null,
+    latestSuccessAt: source.latestSuccessAt ?? null,
+    latestItemCount: source.latestItemCount ?? 0,
+    durationMs: source.durationMs ?? 0,
+    usedFallback: source.usedFallback ?? false,
+    errorMessage: source.errorMessage ?? null,
+    signalCount: source.signalCount ?? 0,
+    trendCount: source.trendCount ?? 0,
+    runHistory: source.runHistory ?? [],
+    topTrends: source.topTrends ?? [],
+  };
+}
+
 async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
-  const payload = await readJsonFile<TrendDetailIndexResponse>("trend-detail-index.v2.json", {
+  let payload: TrendDetailIndexResponse;
+  if (API_ENABLED) {
+    try {
+      // The API doesn't have a detail-index endpoint — we load individual trends
+      // Fall through to file for bulk loading
+    } catch { /* fall through */ }
+  }
+  payload = await readJsonFile<TrendDetailIndexResponse>("trend-detail-index.v2.json", {
     generatedAt: new Date(0).toISOString(),
     trends: [],
   });
+  return normalizeTrendDetailIndex(payload);
+}
+
+function normalizeTrendDetailIndex(payload: TrendDetailIndexResponse): TrendDetailIndexResponse {
   return {
     generatedAt: payload.generatedAt,
     trends: payload.trends.map((trend) => ({
@@ -260,10 +339,21 @@ export async function loadTrendDetails(): Promise<TrendDetailIndexResponse> {
 }
 
 async function readSourceSummary(): Promise<SourceSummaryResponse> {
-  const payload = await readJsonFile<SourceSummaryResponse>("source-summary.v2.json", {
+  let payload: SourceSummaryResponse;
+  if (API_ENABLED) {
+    try {
+      payload = await apiGet<SourceSummaryResponse>("/sources");
+      return normalizeSourceSummary(payload);
+    } catch { /* fall through to file */ }
+  }
+  payload = await readJsonFile<SourceSummaryResponse>("source-summary.v2.json", {
     generatedAt: new Date(0).toISOString(),
     sources: [],
   });
+  return normalizeSourceSummary(payload);
+}
+
+function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSummaryResponse {
   return {
     generatedAt: payload.generatedAt,
     sources: (payload.sources ?? []).map((source) => ({
