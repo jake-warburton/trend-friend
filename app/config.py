@@ -19,6 +19,7 @@ class Settings:
     max_items_per_source: int
     ranking_limit: int
     github_token: Optional[str]
+    twitter_bearer_token: Optional[str]
     reddit_user_agent: str
     poll_interval_minutes: int
     health_file_path: Path
@@ -36,6 +37,7 @@ def load_settings() -> Settings:
         max_items_per_source=int(os.getenv("TREND_FRIEND_MAX_ITEMS_PER_SOURCE", "30")),
         ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "25")),
         github_token=os.getenv("GITHUB_TOKEN"),
+        twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
         reddit_user_agent=os.getenv("TREND_FRIEND_REDDIT_USER_AGENT", "trend-friend-mvp/1.0"),
         poll_interval_minutes=int(os.getenv("TREND_FRIEND_POLL_INTERVAL_MINUTES", "30")),
         health_file_path=Path(os.getenv("TREND_FRIEND_HEALTH_FILE_PATH", "data/last_run.json")),

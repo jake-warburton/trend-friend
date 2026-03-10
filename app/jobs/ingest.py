@@ -12,6 +12,7 @@ from app.sources.github import GitHubSourceAdapter
 from app.sources.google_trends import GoogleTrendsSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
+from app.sources.twitter import TwitterSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
 
 LOGGER = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         GitHubSourceAdapter(settings),
         WikipediaSourceAdapter(settings),
         GoogleTrendsSourceAdapter(settings),
+        TwitterSourceAdapter(settings),
     ]
     all_items: list[RawSourceItem] = []
     source_runs: list[SourceIngestionRun] = []

@@ -21,6 +21,7 @@ const SOURCE_FILTER_OPTIONS = [
   { label: "GitHub", value: "github" },
   { label: "Wikipedia", value: "wikipedia" },
   { label: "Google Trends", value: "google_trends" },
+  { label: "Twitter/X", value: "twitter" },
 ] as const;
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;
