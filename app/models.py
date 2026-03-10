@@ -133,6 +133,22 @@ class TrendSourceBreakdown:
 
 
 @dataclass(frozen=True)
+class TrendSourceContribution:
+    """Estimated contribution of one source to a trend's score."""
+
+    source: str
+    signal_count: int
+    latest_signal_at: datetime
+    estimated_score: float
+    score_share_percent: float
+    social_score: float
+    developer_score: float
+    knowledge_score: float
+    search_score: float
+    diversity_score: float
+
+
+@dataclass(frozen=True)
 class TrendEvidenceItem:
     """Evidence item captured from a normalized signal."""
 
@@ -193,6 +209,7 @@ class TrendDetailRecord:
     sources: list[str]
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
+    source_contributions: list[TrendSourceContribution]
     geo_summary: list[TrendGeoSummary]
     evidence_items: list[TrendEvidenceItem]
     related_trends: list[RelatedTrend]

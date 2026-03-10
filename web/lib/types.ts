@@ -207,6 +207,15 @@ export type TrendGeoSummary = {
   averageConfidence: number;
 };
 
+export type TrendSourceContribution = {
+  source: string;
+  signalCount: number;
+  latestSignalAt: string;
+  estimatedScore: number;
+  scoreSharePercent: number;
+  score: TrendScore;
+};
+
 export type RelatedTrend = {
   id: string;
   name: string;
@@ -232,6 +241,7 @@ export type TrendDetailRecord = {
   sources: string[];
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
+  sourceContributions: TrendSourceContribution[];
   geoSummary: TrendGeoSummary[];
   evidenceItems: TrendEvidenceItem[];
   relatedTrends: RelatedTrend[];

@@ -31,6 +31,7 @@ from app.models import (
     SourceSummaryRecord,
     SourceSummaryTrend,
     TrendScoreResult,
+    TrendSourceContribution,
     TrendSourceBreakdown,
 )
 
@@ -155,6 +156,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
+        self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
+        self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
+        self.assertEqual(payload["trends"][0]["sourceContributions"][0]["score"]["social"], 18.2)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
 
     def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
@@ -325,6 +329,20 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 source="reddit",
                 signal_count=1,
                 latest_signal_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            )
+        ],
+        source_contributions=[
+            TrendSourceContribution(
+                source="reddit",
+                signal_count=1,
+                latest_signal_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                estimated_score=24.15,
+                score_share_percent=57.1,
+                social_score=18.2,
+                developer_score=0.0,
+                knowledge_score=6.0,
+                search_score=0.0,
+                diversity_score=0.0,
             )
         ],
         geo_summary=[

@@ -250,6 +250,9 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].geo_summary[0].country_code, "GB")
         self.assertEqual(records[0].geo_summary[0].signal_count, 1)
         self.assertEqual(records[0].source_breakdown[0].source, "github")
+        self.assertEqual(records[0].source_contributions[0].source, "reddit")
+        self.assertEqual(records[0].source_contributions[0].score_share_percent, 36.7)
+        self.assertEqual(records[0].source_contributions[0].social_score, 10.0)
         self.assertEqual(records[0].evidence_items[0].evidence, "Reddit evidence")
 
     def test_watchlist_repository_round_trip(self) -> None:

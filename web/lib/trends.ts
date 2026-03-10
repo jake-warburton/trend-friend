@@ -334,6 +334,7 @@ function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord
     sources: trend.sources ?? [],
     history: trend.history ?? [],
     sourceBreakdown: trend.sourceBreakdown ?? [],
+    sourceContributions: trend.sourceContributions ?? [],
     geoSummary: trend.geoSummary ?? [],
     evidenceItems: trend.evidenceItems ?? [],
     relatedTrends: trend.relatedTrends ?? [],

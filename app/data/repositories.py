@@ -20,6 +20,7 @@ from app.models import (
     TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
+    TrendSourceContribution,
     TrendSourceBreakdown,
     TrendScoreResult,
     Watchlist,
@@ -843,6 +844,7 @@ class TrendScoreRepository:
                     sources=sorted(score.source_counts),
                     history=history,
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
+                    source_contributions=self.get_topic_source_contributions(score.topic, score),
                     geo_summary=self.get_topic_geo_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
                     related_trends=[],
@@ -871,6 +873,84 @@ class TrendScoreRepository:
             )
             for row in rows
         ]
+
+    def get_topic_source_contributions(
+        self,
+        topic: str,
+        score: TrendScoreResult,
+    ) -> list[TrendSourceContribution]:
+        """Return estimated per-source score contribution for a topic."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, signal_type, COUNT(*) AS signal_count, MAX(timestamp) AS latest_signal_at
+            FROM signals
+            WHERE topic = ?
+            GROUP BY source, signal_type
+            ORDER BY source ASC, signal_type ASC
+            """,
+            (topic,),
+        ).fetchall()
+
+        by_source: dict[str, dict[str, object]] = {}
+        total_counts = {
+            "social": 0,
+            "developer": 0,
+            "knowledge": 0,
+            "search": 0,
+        }
+        for row in rows:
+            signal_type = row["signal_type"]
+            if signal_type not in total_counts:
+                continue
+            total_counts[signal_type] += row["signal_count"]
+            source_entry = by_source.setdefault(
+                row["source"],
+                {
+                    "counts": {"social": 0, "developer": 0, "knowledge": 0, "search": 0},
+                    "signal_count": 0,
+                    "latest_signal_at": datetime.fromisoformat(row["latest_signal_at"]),
+                },
+            )
+            counts = source_entry["counts"]  # type: ignore[assignment]
+            counts[signal_type] = row["signal_count"]  # type: ignore[index]
+            source_entry["signal_count"] = int(source_entry["signal_count"]) + row["signal_count"]  # type: ignore[index]
+            latest_signal_at = datetime.fromisoformat(row["latest_signal_at"])
+            if latest_signal_at > source_entry["latest_signal_at"]:  # type: ignore[operator]
+                source_entry["latest_signal_at"] = latest_signal_at  # type: ignore[index]
+
+        source_total = max(len(score.source_counts), 1)
+        contributions: list[TrendSourceContribution] = []
+        for source, entry in by_source.items():
+            counts = entry["counts"]  # type: ignore[assignment]
+            social_score = self._component_source_share(score.social_score, counts["social"], total_counts["social"])  # type: ignore[index]
+            developer_score = self._component_source_share(score.developer_score, counts["developer"], total_counts["developer"])  # type: ignore[index]
+            knowledge_score = self._component_source_share(score.knowledge_score, counts["knowledge"], total_counts["knowledge"])  # type: ignore[index]
+            search_score = self._component_source_share(score.search_score, counts["search"], total_counts["search"])  # type: ignore[index]
+            diversity_score = round(score.diversity_score / source_total, 2)
+            estimated_score = round(
+                social_score + developer_score + knowledge_score + search_score + diversity_score,
+                2,
+            )
+            score_share_percent = round((estimated_score / score.total_score) * 100, 1) if score.total_score > 0 else 0.0
+            contributions.append(
+                TrendSourceContribution(
+                    source=source,
+                    signal_count=entry["signal_count"],  # type: ignore[arg-type]
+                    latest_signal_at=entry["latest_signal_at"],  # type: ignore[arg-type]
+                    estimated_score=estimated_score,
+                    score_share_percent=score_share_percent,
+                    social_score=social_score,
+                    developer_score=developer_score,
+                    knowledge_score=knowledge_score,
+                    search_score=search_score,
+                    diversity_score=diversity_score,
+                )
+            )
+        return sorted(
+            contributions,
+            key=lambda item: (-item.estimated_score, -item.signal_count, item.source),
+        )
 
     def get_topic_evidence(self, topic: str, limit: int) -> list[TrendEvidenceItem]:
         """Return recent evidence items for a topic ordered newest first."""
@@ -957,6 +1037,14 @@ class TrendScoreRepository:
             evidence=json.loads(row["evidence_json"]),
             latest_timestamp=datetime.fromisoformat(row["latest_timestamp"]),
         )
+
+    @staticmethod
+    def _component_source_share(component_score: float, source_count: int, total_count: int) -> float:
+        """Return the score share attributable to one source for a component."""
+
+        if component_score <= 0 or source_count <= 0 or total_count <= 0:
+            return 0.0
+        return round(component_score * (source_count / total_count), 2)
 
     @staticmethod
     def _build_momentum(latest_total_score: float, history: list[TrendHistoryPoint]) -> TrendMomentum:
@@ -1081,6 +1169,7 @@ class TrendScoreRepository:
                 sources=record.sources,
                 history=record.history,
                 source_breakdown=record.source_breakdown,
+                source_contributions=record.source_contributions,
                 geo_summary=record.geo_summary,
                 evidence_items=record.evidence_items,
                 related_trends=related_map.get(record.id, []),

@@ -95,19 +95,24 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Coverage</p>
-              <h2>Source breakdown</h2>
+              <p className="eyebrow">Sources</p>
+              <h2>What is driving this rank</h2>
             </div>
           </div>
 
           <div className="detail-list">
-            {trend.sourceBreakdown.map((source) => (
+            {trend.sourceContributions.map((source) => (
               <article className="detail-list-item" key={source.source}>
                 <div>
                   <strong>{formatSourceLabel(source.source)}</strong>
-                  <span>{source.signalCount} signals</span>
+                  <span>
+                    {source.signalCount} signals · {source.scoreSharePercent.toFixed(1)}% est. score share
+                  </span>
+                  <span>{formatContributionMix(source)}</span>
                 </div>
-                <small>{formatTimestamp(source.latestSignalAt)}</small>
+                <small>
+                  {source.estimatedScore.toFixed(1)} pts · {formatTimestamp(source.latestSignalAt)}
+                </small>
               </article>
             ))}
           </div>
@@ -237,6 +242,27 @@ function formatCategory(category: string) {
 
 function formatSignalType(signalType: string) {
   return signalType.charAt(0).toUpperCase() + signalType.slice(1);
+}
+
+function formatContributionMix(source: TrendDetailRecord["sourceContributions"][number]) {
+  const componentScores: Array<[string, number]> = [
+    ["Social", source.score.social],
+    ["Developer", source.score.developer],
+    ["Knowledge", source.score.knowledge],
+    ["Search", source.score.search],
+    ["Diversity", source.score.diversity],
+  ];
+
+  const components = componentScores
+    .filter(([, value]) => value > 0)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2)
+    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
+
+  if (components.length === 0) {
+    return "No attributed score contribution";
+  }
+  return components.join(" · ");
 }
 
 function formatGeoLabel(item: {

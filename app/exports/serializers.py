@@ -35,6 +35,7 @@ from app.exports.contracts import (
     TrendMomentumPayload,
     TrendRecord,
     TrendScoreComponents,
+    TrendSourceContributionPayload,
     TrendSourceBreakdownPayload,
     TrendSnapshotPayload,
 )
@@ -314,6 +315,24 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                 latest_signal_at=to_timestamp(item.latest_signal_at),
             )
             for item in trend.source_breakdown
+        ],
+        source_contributions=[
+            TrendSourceContributionPayload(
+                source=item.source,
+                signal_count=item.signal_count,
+                latest_signal_at=to_timestamp(item.latest_signal_at),
+                estimated_score=round(item.estimated_score, 1),
+                score_share_percent=item.score_share_percent,
+                score=TrendScoreComponents(
+                    total=round(item.estimated_score, 1),
+                    social=round(item.social_score, 1),
+                    developer=round(item.developer_score, 1),
+                    knowledge=round(item.knowledge_score, 1),
+                    search=round(item.search_score, 1),
+                    diversity=round(item.diversity_score, 1),
+                ),
+            )
+            for item in trend.source_contributions
         ],
         geo_summary=[
             TrendGeoSummaryPayload(

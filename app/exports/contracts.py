@@ -153,6 +153,18 @@ class TrendSourceBreakdownPayload:
 
 
 @dataclass(frozen=True)
+class TrendSourceContributionPayload:
+    """Estimated score contribution of a source to a trend."""
+
+    source: str
+    signal_count: int
+    latest_signal_at: str
+    estimated_score: float
+    score_share_percent: float
+    score: TrendScoreComponents
+
+
+@dataclass(frozen=True)
 class TrendEvidenceItemPayload:
     """Evidence item exposed on the trend detail page."""
 
@@ -212,6 +224,7 @@ class TrendDetailRecordPayload:
     sources: list[str]
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
+    source_contributions: list[TrendSourceContributionPayload]
     geo_summary: list[TrendGeoSummaryPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     related_trends: list[RelatedTrendPayload]
@@ -536,6 +549,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
+    payload["sourceContributions"] = payload.pop("source_contributions")
     payload["geoSummary"] = payload.pop("geo_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["relatedTrends"] = payload.pop("related_trends")
@@ -545,6 +559,11 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     for source in payload["sourceBreakdown"]:
         source["signalCount"] = source.pop("signal_count")
         source["latestSignalAt"] = source.pop("latest_signal_at")
+    for source in payload["sourceContributions"]:
+        source["signalCount"] = source.pop("signal_count")
+        source["latestSignalAt"] = source.pop("latest_signal_at")
+        source["estimatedScore"] = source.pop("estimated_score")
+        source["scoreSharePercent"] = source.pop("score_share_percent")
     for geo in payload["geoSummary"]:
         geo["countryCode"] = geo.pop("country_code")
         geo["signalCount"] = geo.pop("signal_count")

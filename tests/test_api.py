@@ -112,6 +112,8 @@ class APITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], "ai-agents")
+        self.assertIn("sourceContributions", data)
+        self.assertEqual(data["sourceContributions"][0]["source"], "reddit")
 
     def test_latest_trends(self) -> None:
         self._seed_data()
