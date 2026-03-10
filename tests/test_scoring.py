@@ -38,6 +38,29 @@ class TrendScoringTests(unittest.TestCase):
         ranked = rank_topics_by_score([zeta, lower, alpha], limit=3)
         self.assertEqual([score.topic for score in ranked], ["alpha", "zeta", "battery"])
 
+    def test_calculate_trend_scores_prefers_specific_exact_phrases(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        specific = TopicAggregate(
+            topic="street view",
+            source_counts={"hacker_news": 1},
+            signal_counts={"social": 1},
+            total_signal_value=200.0,
+            average_signal_value=200.0,
+            latest_timestamp=timestamp,
+            evidence=["Show HN: I Was Here – Draw on street view, others can find your drawings"],
+        )
+        generic = TopicAggregate(
+            topic="notes baking",
+            source_counts={"hacker_news": 1},
+            signal_counts={"social": 1},
+            total_signal_value=200.0,
+            average_signal_value=200.0,
+            latest_timestamp=timestamp,
+            evidence=["Notes on Baking at the South Pole"],
+        )
+        specific_score, generic_score = calculate_trend_scores([specific, generic])
+        self.assertGreater(specific_score.total_score, generic_score.total_score)
+
 
 if __name__ == "__main__":
     unittest.main()
