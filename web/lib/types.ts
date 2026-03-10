@@ -142,6 +142,7 @@ export type TrendExplorerRecord = {
   id: string;
   name: string;
   status: string;
+  volatility: string;
   rank: number;
   previousRank: number | null;
   rankChange: number | null;
@@ -191,6 +192,7 @@ export type TrendDetailRecord = {
   id: string;
   name: string;
   status: string;
+  volatility: string;
   rank: number;
   previousRank: number | null;
   rankChange: number | null;

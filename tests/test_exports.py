@@ -126,6 +126,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["trends"][0]["id"], "ai-agents")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
+        self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
         self.assertEqual(payload["trends"][0]["firstSeenAt"], "2026-03-01T00:00:00Z")
@@ -141,6 +142,7 @@ class ExportPayloadTests(unittest.TestCase):
         ).to_dict()
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
+        self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
@@ -243,6 +245,7 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
         id="ai-agents",
         name="AI Agents",
         status="breakout",
+        volatility="spiking",
         rank=1,
         previous_rank=4,
         rank_change=3,
@@ -267,6 +270,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         id="ai-agents",
         name="AI Agents",
         status="breakout",
+        volatility="spiking",
         rank=1,
         previous_rank=4,
         rank_change=3,

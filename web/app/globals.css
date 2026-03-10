@@ -238,6 +238,35 @@ input {
   color: #d6ddff;
 }
 
+.volatility-pill {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(124, 157, 216, 0.1);
+  color: #b8caef;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.volatility-pill-spiking {
+  background: rgba(255, 117, 117, 0.16);
+  color: #ff9b9b;
+}
+
+.volatility-pill-volatile {
+  background: rgba(255, 187, 92, 0.16);
+  color: #ffca6e;
+}
+
+.volatility-pill-emerging {
+  background: rgba(94, 107, 255, 0.16);
+  color: #dce5ff;
+}
+
 .source-health-pill-healthy {
   background: var(--success-soft);
   color: #7fe0a7;
@@ -840,6 +869,12 @@ input {
   max-width: 56ch;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.detail-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .detail-meta-grid {

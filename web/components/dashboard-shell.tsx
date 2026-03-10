@@ -435,6 +435,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         <span className={trendStatusClassName(trend.status)}>
                           {formatTrendStatus(trend.status)}
                         </span>
+                        <span className={volatilityClassName(trend.volatility)}>
+                          {formatVolatility(trend.volatility)}
+                        </span>
                         <span className="trend-date-chip">
                           {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
                         </span>
@@ -749,6 +752,32 @@ function trendStatusClassName(status: string) {
     return "trend-status-pill trend-status-pill-new";
   }
   return "trend-status-pill";
+}
+
+function formatVolatility(volatility: string) {
+  if (volatility === "spiking") {
+    return "Spiking";
+  }
+  if (volatility === "volatile") {
+    return "Volatile";
+  }
+  if (volatility === "emerging") {
+    return "Emerging";
+  }
+  return "Stable";
+}
+
+function volatilityClassName(volatility: string) {
+  if (volatility === "spiking") {
+    return "volatility-pill volatility-pill-spiking";
+  }
+  if (volatility === "volatile") {
+    return "volatility-pill volatility-pill-volatile";
+  }
+  if (volatility === "emerging") {
+    return "volatility-pill volatility-pill-emerging";
+  }
+  return "volatility-pill";
 }
 
 function scaleValue(value: number, dataset: { value: number }[]) {

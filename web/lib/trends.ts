@@ -175,6 +175,7 @@ async function readTrendExplorer(): Promise<TrendExplorerResponse> {
     trends: payload.trends.map((trend) => ({
       ...trend,
       status: trend.status ?? "steady",
+      volatility: trend.volatility ?? "stable",
       previousRank: trend.previousRank ?? null,
       rankChange: trend.rankChange ?? null,
       firstSeenAt: trend.firstSeenAt ?? null,
@@ -218,6 +219,7 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
     trends: payload.trends.map((trend) => ({
       ...trend,
       status: trend.status ?? "steady",
+      volatility: trend.volatility ?? "stable",
       previousRank: trend.previousRank ?? null,
       rankChange: trend.rankChange ?? null,
       firstSeenAt: trend.firstSeenAt ?? null,

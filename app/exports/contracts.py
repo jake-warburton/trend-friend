@@ -103,6 +103,7 @@ class TrendExplorerRecordPayload:
     id: str
     name: str
     status: str
+    volatility: str
     rank: int
     previous_rank: int | None
     rank_change: int | None
@@ -178,6 +179,7 @@ class TrendDetailRecordPayload:
     id: str
     name: str
     status: str
+    volatility: str
     rank: int
     previous_rank: int | None
     rank_change: int | None

@@ -30,7 +30,10 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Back to explorer
           </Link>
           <p className="eyebrow">Trend detail</p>
-          <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
+          <div className="detail-pill-row">
+            <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
+            <span className={volatilityClassName(trend.volatility)}>{formatVolatility(trend.volatility)}</span>
+          </div>
           <h1>{trend.name}</h1>
           <p className="detail-copy">
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
@@ -253,6 +256,32 @@ function trendStatusClassName(status: string) {
     return "trend-status-pill trend-status-pill-new";
   }
   return "trend-status-pill";
+}
+
+function formatVolatility(volatility: string) {
+  if (volatility === "spiking") {
+    return "Spiking";
+  }
+  if (volatility === "volatile") {
+    return "Volatile";
+  }
+  if (volatility === "emerging") {
+    return "Emerging";
+  }
+  return "Stable";
+}
+
+function volatilityClassName(volatility: string) {
+  if (volatility === "spiking") {
+    return "volatility-pill volatility-pill-spiking";
+  }
+  if (volatility === "volatile") {
+    return "volatility-pill volatility-pill-volatile";
+  }
+  if (volatility === "emerging") {
+    return "volatility-pill volatility-pill-emerging";
+  }
+  return "volatility-pill";
 }
 
 function buildScoreMix(trend: TrendDetailRecord) {

@@ -600,6 +600,7 @@ class TrendScoreRepository:
                     id=self._slugify_topic(score.topic),
                     name=self._format_trend_name(score.topic),
                     status=self._build_trend_status(momentum),
+                    volatility=self._build_volatility_label(momentum),
                     rank=rank,
                     previous_rank=momentum.previous_rank,
                     rank_change=momentum.rank_change,
@@ -634,6 +635,7 @@ class TrendScoreRepository:
                     id=self._slugify_topic(score.topic),
                     name=self._format_trend_name(score.topic),
                     status=self._build_trend_status(momentum),
+                    volatility=self._build_volatility_label(momentum),
                     rank=rank,
                     previous_rank=momentum.previous_rank,
                     rank_change=momentum.rank_change,
@@ -750,6 +752,20 @@ class TrendScoreRepository:
         return "steady"
 
     @staticmethod
+    def _build_volatility_label(momentum: TrendMomentum) -> str:
+        """Return a compact stability label for the current movement profile."""
+
+        rank_change = abs(momentum.rank_change or 0)
+        percent_delta = abs(momentum.percent_delta or 0)
+        if momentum.previous_rank is None:
+            return "emerging"
+        if rank_change >= 5 or percent_delta >= 40:
+            return "spiking"
+        if rank_change >= 2 or percent_delta >= 15:
+            return "volatile"
+        return "stable"
+
+    @staticmethod
     def _slugify_topic(topic: str) -> str:
         """Convert a topic to a stable slug identifier."""
 
@@ -804,6 +820,7 @@ class TrendScoreRepository:
                 id=record.id,
                 name=record.name,
                 status=record.status,
+                volatility=record.volatility,
                 rank=record.rank,
                 previous_rank=record.previous_rank,
                 rank_change=record.rank_change,
