@@ -5,9 +5,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import CommunityPage, {
   createCommunityUrlBuilder,
   filterAndSortCommunityWatchlists,
+  listCommunityCategoryOptions,
   loadCommunityWatchlists,
   listCommunityLocationOptions,
   listCommunitySourceOptions,
+  listCommunityStatusOptions,
   paginateCommunityWatchlists,
 } from "@/app/community/page";
 import type { PublicWatchlistsResponse } from "@/lib/types";
@@ -15,7 +17,7 @@ import type { PublicWatchlistsResponse } from "@/lib/types";
 const originalFetch = global.fetch;
 const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-test("filterAndSortCommunityWatchlists supports source, location, and popular filters", () => {
+test("filterAndSortCommunityWatchlists supports category, status, source, location, and popular filters", () => {
   const result = filterAndSortCommunityWatchlists(
     [
       {
@@ -28,6 +30,8 @@ test("filterAndSortCommunityWatchlists supports source, location, and popular fi
         recentOpenCount: 1,
         accessCount: 2,
         popularThisWeek: false,
+        categories: ["general-tech"],
+        statuses: ["steady"],
         sourceContributions: [
           {
             source: "reddit",
@@ -67,6 +71,8 @@ test("filterAndSortCommunityWatchlists supports source, location, and popular fi
         recentOpenCount: 5,
         accessCount: 8,
         popularThisWeek: true,
+        categories: ["hardware-robotics"],
+        statuses: ["breakout"],
         sourceContributions: [
           {
             source: "github",
@@ -100,6 +106,8 @@ test("filterAndSortCommunityWatchlists supports source, location, and popular fi
     {
       query: "robot",
       sort: "recent",
+      category: "hardware-robotics",
+      status: "breakout",
       source: "github",
       location: "United Kingdom",
       popularOnly: true,
@@ -110,7 +118,7 @@ test("filterAndSortCommunityWatchlists supports source, location, and popular fi
   assert.equal(result[0]?.name, "Beta Robotics");
 });
 
-test("community helpers derive source and location option lists", () => {
+test("community helpers derive category, status, source, and location option lists", () => {
   const watchlists: PublicWatchlistsResponse["watchlists"] = [
     {
       id: 1,
@@ -119,6 +127,8 @@ test("community helpers derive source and location option lists", () => {
       shareToken: "robotics",
       createdAt: "2026-03-10T12:00:00Z",
       updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["hardware-robotics"],
+      statuses: ["breakout"],
       sourceContributions: [
         {
           source: "github",
@@ -148,6 +158,8 @@ test("community helpers derive source and location option lists", () => {
       shareToken: "ai-search",
       createdAt: "2026-03-10T12:00:00Z",
       updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["ai-machine-learning"],
+      statuses: ["rising"],
       sourceContributions: [
         {
           source: "google_trends",
@@ -172,6 +184,14 @@ test("community helpers derive source and location option lists", () => {
     },
   ];
 
+  assert.deepEqual(listCommunityCategoryOptions(watchlists), [
+    { value: "ai-machine-learning", label: "ai-machine-learning" },
+    { value: "hardware-robotics", label: "hardware-robotics" },
+  ]);
+  assert.deepEqual(listCommunityStatusOptions(watchlists), [
+    { value: "breakout", label: "Breakout" },
+    { value: "rising", label: "Rising" },
+  ]);
   assert.deepEqual(listCommunitySourceOptions(watchlists), [
     { value: "github", label: "GitHub" },
     { value: "google_trends", label: "Google Trends" },
@@ -196,6 +216,8 @@ test("pagination slices community watchlists and builds preserved URLs", () => {
   const buildUrl = createCommunityUrlBuilder({
     q: "robot",
     sort: "total",
+    category: "hardware-robotics",
+    status: "breakout",
     source: "github",
     location: "United Kingdom",
     popular: true,
@@ -205,7 +227,10 @@ test("pagination slices community watchlists and builds preserved URLs", () => {
   assert.equal(page.totalPages, 2);
   assert.equal(page.pageItems.length, 2);
   assert.equal(page.pageItems[0]?.name, "Watchlist 10");
-  assert.equal(buildUrl(2), "/community?q=robot&sort=total&source=github&location=United+Kingdom&popular=true&page=2");
+  assert.equal(
+    buildUrl(2),
+    "/community?q=robot&sort=total&category=hardware-robotics&status=breakout&source=github&location=United+Kingdom&popular=true&page=2",
+  );
 });
 
 test("loadCommunityWatchlists returns the fetched directory payload", async () => {
@@ -222,6 +247,8 @@ test("loadCommunityWatchlists returns the fetched directory payload", async () =
         recentOpenCount: 4,
         accessCount: 9,
         popularThisWeek: true,
+        categories: ["general-tech"],
+        statuses: ["steady"],
       },
     ],
   };
@@ -253,6 +280,8 @@ test("community page renders public watchlists with analytics copy", async () =>
         accessCount: 12,
         lastAccessedAt: "2026-03-10T12:00:00Z",
         popularThisWeek: true,
+        categories: ["hardware-robotics"],
+        statuses: ["breakout"],
         sourceContributions: [
           {
             source: "github",
@@ -295,6 +324,8 @@ test("community page renders public watchlists with analytics copy", async () =>
     searchParams: Promise.resolve({
       q: "robot",
       sort: "recent",
+      category: "hardware-robotics",
+      status: "breakout",
       source: "github",
       location: "United Kingdom",
       popular: "true",
@@ -306,10 +337,14 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Browse shared watchlists/);
   assert.match(html, /Popular Robotics/);
   assert.match(html, /Popular this week/);
+  assert.match(html, /Category/);
+  assert.match(html, /Status/);
   assert.match(html, /Source/);
   assert.match(html, /Location/);
   assert.match(html, /7 day opens/);
   assert.match(html, /<strong>6<\/strong>/);
+  assert.match(html, /Categories: hardware-robotics/);
+  assert.match(html, /Statuses: Breakout/);
   assert.match(html, /Shared by Owner One/);
   assert.match(html, /Showing 1-1 of 1 public watchlists/);
 });

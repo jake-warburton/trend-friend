@@ -281,6 +281,7 @@ class ListPublicWatchlistsTests(unittest.TestCase):
 
         watchlist = self.watchlist_repo.create_watchlist("Public List")
         self.watchlist_repo.add_item(watchlist.id, "ai-agents", "AI Agents")
+        _insert_trend_score(self.connection, "AI Agents")
         self.watchlist_repo.create_share(watchlist.id, "pub-token", is_public=True)
 
         result = list_public_payload(self.watchlist_repo, self.score_repo)
@@ -290,6 +291,8 @@ class ListPublicWatchlistsTests(unittest.TestCase):
         self.assertEqual(entry["name"], "Public List")
         self.assertIn("shareToken", entry)
         self.assertIn("geoSummary", entry)
+        self.assertEqual(entry["categories"], ["ai-machine-learning"])
+        self.assertEqual(entry["statuses"], ["new"])
 
     def test_excludes_private_shares(self) -> None:
         from scripts.watchlists_api import list_public_payload
@@ -310,7 +313,7 @@ class ListPublicWatchlistsTests(unittest.TestCase):
         result = list_public_payload(self.watchlist_repo, self.score_repo)
         entry = result["watchlists"][0]
 
-        for key in ("id", "name", "itemCount", "shareToken", "createdAt", "updatedAt", "geoSummary"):
+        for key in ("id", "name", "itemCount", "shareToken", "createdAt", "updatedAt", "geoSummary", "categories", "statuses"):
             self.assertIn(key, entry, f"Missing key: {key}")
         for key in ("recentOpenCount", "popularThisWeek"):
             self.assertIn(key, entry, f"Missing key: {key}")

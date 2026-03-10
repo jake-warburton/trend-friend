@@ -164,6 +164,7 @@ class CommunityAPITests(unittest.TestCase):
     def test_list_public_watchlists(self) -> None:
         wl_id = self._create_watchlist("Public List")
         self._add_watchlist_item(wl_id, "ai-agents", "AI Agents")
+        self._insert_trend_score("AI Agents")
         self.client.post(
             f"/api/v1/watchlists/{wl_id}/share",
             json={"public": True},
@@ -178,6 +179,8 @@ class CommunityAPITests(unittest.TestCase):
         self.assertIn("sourceContributions", data["watchlists"][0])
         self.assertIn("recentOpenCount", data["watchlists"][0])
         self.assertIn("popularThisWeek", data["watchlists"][0])
+        self.assertEqual(data["watchlists"][0]["categories"], ["ai-machine-learning"])
+        self.assertEqual(data["watchlists"][0]["statuses"], ["new"])
 
     def test_private_shares_not_listed(self) -> None:
         wl_id = self._create_watchlist("Private List")

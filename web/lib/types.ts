@@ -425,6 +425,8 @@ export type PublicWatchlistSummary = {
   popularThisWeek?: boolean;
   createdAt: string;
   updatedAt: string;
+  categories?: string[];
+  statuses?: string[];
   geoSummary?: TrendGeoSummary[];
   sourceContributions?: TrendSourceContribution[];
 };

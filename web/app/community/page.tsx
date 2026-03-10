@@ -21,16 +21,22 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const params = searchParams ? await searchParams : {};
   const query = readSearchParam(params.q);
   const sort = readSortParam(params.sort);
+  const category = readSearchParam(params.category);
+  const status = readSearchParam(params.status);
   const source = readSearchParam(params.source);
   const location = readSearchParam(params.location);
   const popularOnly = readBooleanParam(params.popular);
   const page = readPageParam(params.page);
   const directory = await loadCommunityWatchlists();
+  const categoryOptions = listCommunityCategoryOptions(directory.watchlists);
+  const statusOptions = listCommunityStatusOptions(directory.watchlists);
   const sourceOptions = listCommunitySourceOptions(directory.watchlists);
   const locationOptions = listCommunityLocationOptions(directory.watchlists);
   const filteredWatchlists = filterAndSortCommunityWatchlists(directory.watchlists, {
     query,
     sort,
+    category,
+    status,
     source,
     location,
     popularOnly,
@@ -39,6 +45,8 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const pageUrlBuilder = createCommunityUrlBuilder({
     q: query,
     sort,
+    category,
+    status,
     source,
     location,
     popular: popularOnly,
@@ -76,6 +84,28 @@ export default async function CommunityPage({ searchParams }: PageProps) {
             <option value="recent">Recent opens</option>
             <option value="total">Total opens</option>
             <option value="newest">Newest</option>
+          </select>
+        </label>
+        <label className="filter-field">
+          <span>Category</span>
+          <select className="select-trigger community-select" defaultValue={category} name="category">
+            <option value="">All categories</option>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="filter-field">
+          <span>Status</span>
+          <select className="select-trigger community-select" defaultValue={status} name="status">
+            <option value="">All statuses</option>
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
         <label className="filter-field">
@@ -158,6 +188,12 @@ export default async function CommunityPage({ searchParams }: PageProps) {
                   <strong>{formatTimestamp(watchlist.createdAt)}</strong>
                 </div>
               </div>
+              {watchlist.categories?.length ? (
+                <p className="source-summary-copy">Categories: {watchlist.categories.join(", ")}</p>
+              ) : null}
+              {watchlist.statuses?.length ? (
+                <p className="source-summary-copy">Statuses: {watchlist.statuses.map(formatStatusLabel).join(", ")}</p>
+              ) : null}
               {watchlist.sourceContributions?.[0] ? (
                 <p className="source-summary-copy">
                   {formatSourceContributionSummary(watchlist.sourceContributions[0])}
@@ -226,17 +262,33 @@ export function filterAndSortCommunityWatchlists(
   options: {
     query: string;
     sort: CommunitySort;
+    category: string;
+    status: string;
     source: string;
     location: string;
     popularOnly: boolean;
   },
 ) {
   const normalizedQuery = options.query.trim().toLowerCase();
+  const normalizedCategory = options.category.trim().toLowerCase();
+  const normalizedStatus = options.status.trim().toLowerCase();
   const normalizedSource = options.source.trim().toLowerCase();
   const normalizedLocation = options.location.trim().toLowerCase();
   return watchlists
     .filter((watchlist) => {
       if (options.popularOnly && !watchlist.popularThisWeek) {
+        return false;
+      }
+      if (
+        normalizedCategory.length > 0 &&
+        !(watchlist.categories ?? []).some((value) => value.toLowerCase() === normalizedCategory)
+      ) {
+        return false;
+      }
+      if (
+        normalizedStatus.length > 0 &&
+        !(watchlist.statuses ?? []).some((value) => value.toLowerCase() === normalizedStatus)
+      ) {
         return false;
       }
       if (
@@ -259,6 +311,8 @@ export function filterAndSortCommunityWatchlists(
       return [
         watchlist.name,
         watchlist.ownerDisplayName ?? "",
+        ...(watchlist.categories ?? []),
+        ...(watchlist.statuses?.map(formatStatusLabel) ?? []),
         ...(watchlist.geoSummary?.map((geo) => geo.label) ?? []),
       ].some((value) => value.toLowerCase().includes(normalizedQuery));
     })
@@ -271,6 +325,22 @@ export function filterAndSortCommunityWatchlists(
       }
       return (right.recentOpenCount ?? 0) - (left.recentOpenCount ?? 0) || (right.accessCount ?? 0) - (left.accessCount ?? 0);
     });
+}
+
+export function listCommunityCategoryOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
+  return Array.from(
+    new Set(watchlists.flatMap((watchlist) => watchlist.categories ?? [])),
+  )
+    .sort((left, right) => left.localeCompare(right))
+    .map((value) => ({ value, label: value }));
+}
+
+export function listCommunityStatusOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
+  return Array.from(
+    new Set(watchlists.flatMap((watchlist) => watchlist.statuses ?? [])),
+  )
+    .sort((left, right) => left.localeCompare(right))
+    .map((value) => ({ value, label: formatStatusLabel(value) }));
 }
 
 export function listCommunitySourceOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
@@ -311,6 +381,8 @@ export function paginateCommunityWatchlists(watchlists: PublicWatchlistSummary[]
 export function createCommunityUrlBuilder(filters: {
   q: string;
   sort: CommunitySort;
+  category: string;
+  status: string;
   source: string;
   location: string;
   popular: boolean;
@@ -322,6 +394,12 @@ export function createCommunityUrlBuilder(filters: {
     }
     if (filters.sort !== "recent") {
       params.set("sort", filters.sort);
+    }
+    if (filters.category) {
+      params.set("category", filters.category);
+    }
+    if (filters.status) {
+      params.set("status", filters.status);
     }
     if (filters.source) {
       params.set("source", filters.source);
@@ -380,6 +458,10 @@ function formatSourceLabel(source: string) {
     twitter: "Twitter/X",
   };
   return labels[source] ?? source;
+}
+
+function formatStatusLabel(status: string) {
+  return status.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSummary["sourceContributions"]>[number]) {

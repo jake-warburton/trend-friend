@@ -154,6 +154,8 @@ def _serialize_public_watchlist_summary(
 ) -> dict[str, object]:
     geo = _aggregate_watchlist_geo(watchlist, score_repo, score_by_slug)
     source_contributions = _aggregate_watchlist_source_contributions(watchlist, score_repo, score_by_slug)
+    categories = _aggregate_watchlist_categories(watchlist, score_by_slug)
+    statuses = _aggregate_watchlist_statuses(watchlist, score_repo, score_by_slug)
     return {
         "id": watchlist.id,
         "name": watchlist.name,
@@ -168,9 +170,58 @@ def _serialize_public_watchlist_summary(
         "popularThisWeek": recent_open_count >= 3,
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
+        "categories": categories,
+        "statuses": statuses,
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
         "sourceContributions": [_serialize_source_contribution(item) for item in source_contributions],
     }
+
+
+def _aggregate_watchlist_categories(
+    watchlist: Watchlist,
+    score_by_slug: dict[str, object],
+    limit: int = 3,
+) -> list[str]:
+    """Return the most common topic categories represented in a watchlist."""
+
+    category_counts: dict[str, int] = {}
+    for item in watchlist.items:
+        score = score_by_slug.get(item.trend_id)
+        if score is not None:
+            category = categorize_topic(score.topic, score.source_counts)
+        else:
+            category = categorize_topic(item.trend_name, {})
+        category_counts[category] = category_counts.get(category, 0) + 1
+
+    return [
+        category
+        for category, _ in sorted(
+            category_counts.items(),
+            key=lambda item: (-item[1], item[0]),
+        )[:limit]
+    ]
+
+
+def _aggregate_watchlist_statuses(
+    watchlist: Watchlist,
+    score_repo: TrendScoreRepository | None,
+    score_by_slug: dict[str, object],
+) -> list[str]:
+    """Return the distinct momentum statuses represented in a watchlist."""
+
+    if score_repo is None:
+        return []
+
+    statuses: set[str] = set()
+    for item in watchlist.items:
+        score = score_by_slug.get(item.trend_id)
+        if score is None:
+            continue
+        history = score_repo.get_topic_history(score.topic, limit_runs=2)
+        momentum = TrendScoreRepository._build_momentum(score.total_score, history)
+        statuses.add(TrendScoreRepository._build_trend_status(momentum))
+
+    return sorted(statuses)
 
 
 def _aggregate_watchlist_geo(
