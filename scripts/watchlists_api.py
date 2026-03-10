@@ -44,6 +44,13 @@ def main() -> None:
 
     subparsers.add_parser("list-public")
 
+    list_alerts = subparsers.add_parser("list-alerts")
+    list_alerts.add_argument("--unread-only", action="store_true")
+    list_alerts.add_argument("--limit", type=int, default=50)
+
+    mark_alerts_read = subparsers.add_parser("mark-alerts-read")
+    mark_alerts_read.add_argument("--event-id", dest="event_ids", action="append", type=int, default=[])
+
     create_alert = subparsers.add_parser("create-alert")
     create_alert.add_argument("--watchlist-id", type=int, required=True)
     create_alert.add_argument("--name", required=True)
@@ -95,6 +102,17 @@ def main() -> None:
         )
     elif args.command == "list-public":
         payload = list_public_payload(watchlist_repository)
+    elif args.command == "list-alerts":
+        payload = list_alerts_payload(
+            watchlist_repository=watchlist_repository,
+            unread_only=args.unread_only,
+            limit=args.limit,
+        )
+    elif args.command == "mark-alerts-read":
+        payload = mark_alerts_read_payload(
+            watchlist_repository=watchlist_repository,
+            event_ids=args.event_ids,
+        )
     else:
         watchlist_repository.create_alert_rule(
             watchlist_id=args.watchlist_id,
@@ -170,6 +188,43 @@ def list_public_payload(watchlist_repository: WatchlistRepository) -> dict[str, 
     from app.watchlists_payloads import build_public_watchlists_payload
 
     return build_public_watchlists_payload(watchlist_repository.list_public_watchlists())
+
+
+def list_alerts_payload(
+    watchlist_repository: WatchlistRepository,
+    unread_only: bool,
+    limit: int,
+) -> dict[str, object]:
+    """Return alert events in the API response shape."""
+
+    events = watchlist_repository.list_alert_events(unread_only=unread_only, limit=limit)
+    return {
+        "alerts": [
+            {
+                "id": event.id,
+                "ruleId": event.rule_id,
+                "watchlistId": event.watchlist_id,
+                "trendId": event.trend_id,
+                "trendName": event.trend_name,
+                "ruleType": event.rule_type,
+                "threshold": event.threshold,
+                "currentValue": event.current_value,
+                "message": event.message,
+                "triggeredAt": event.triggered_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+                "read": event.read,
+            }
+            for event in events
+        ]
+    }
+
+
+def mark_alerts_read_payload(
+    watchlist_repository: WatchlistRepository,
+    event_ids: list[int],
+) -> dict[str, object]:
+    """Mark alert events read and return the API response shape."""
+
+    return {"updated": watchlist_repository.mark_alerts_read(event_ids)}
 
 
 if __name__ == "__main__":

@@ -110,7 +110,10 @@ export async function listAlerts(
     const path = unreadOnly ? "/alerts?unread_only=true" : "/alerts";
     return (dependencies.apiGet ?? defaultApiGet)(path);
   }
-  return { alerts: [], total: 0 };
+  return (dependencies.runScript ?? runWatchlistScript)(
+    "list-alerts",
+    ...(unreadOnly ? ["--unread-only"] : []),
+  );
 }
 
 export async function mutateAlerts(
@@ -126,7 +129,10 @@ export async function mutateAlerts(
   }
 
   if ("action" in body && body.action === "mark-read") {
-    return { ok: true };
+    return (dependencies.runScript ?? runWatchlistScript)(
+      "mark-alerts-read",
+      ...body.eventIds.flatMap((eventId) => ["--event-id", String(eventId)]),
+    );
   }
   const alertRule = body as Exclude<AlertMutationBody, { action: "mark-read"; eventIds: number[] }>;
   return (dependencies.runScript ?? runWatchlistScript)(

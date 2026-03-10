@@ -2,8 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  listAlerts,
   listPublicWatchlists,
   listWatchlists,
+  mutateAlerts,
   mutateWatchlists,
   shareWatchlist,
 } from "@/lib/server/watchlist-service";
@@ -54,4 +56,30 @@ test("listPublicWatchlists uses the API contract when API mode is enabled", asyn
   });
 
   assert.deepEqual(payload, { apiPath: "/community/watchlists" });
+});
+
+test("listAlerts uses the CLI fallback instead of returning an empty list", async () => {
+  const payload = await listAlerts(true, {
+    apiEnabled: false,
+    runScript: async (...args) => ({ args }),
+  });
+
+  assert.deepEqual(payload, { args: ["list-alerts", "--unread-only"] });
+});
+
+test("mutateAlerts maps mark-read requests to the CLI fallback", async () => {
+  const payload = await mutateAlerts(
+    {
+      action: "mark-read",
+      eventIds: [4, 8],
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: ["mark-alerts-read", "--event-id", "4", "--event-id", "8"],
+  });
 });
