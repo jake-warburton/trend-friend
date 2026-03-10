@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import secrets
 import sqlite3
+from datetime import timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -41,7 +42,7 @@ def share_watchlist(
     return {
         "shareToken": share.share_token,
         "public": share.is_public,
-        "createdAt": share.created_at.isoformat(),
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
 

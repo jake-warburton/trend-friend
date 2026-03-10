@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db
 from app.alerts.evaluate import SUPPORTED_RULE_TYPES
 from app.data.repositories import WatchlistRepository
+
+
+def _to_utc_iso(value) -> str:
+    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 router = APIRouter(tags=["alerts"])
 
@@ -35,7 +40,7 @@ def list_alerts(
                 "threshold": event.threshold,
                 "currentValue": event.current_value,
                 "message": event.message,
-                "triggeredAt": event.triggered_at.isoformat(),
+                "triggeredAt": _to_utc_iso(event.triggered_at),
                 "read": event.read,
             }
             for event in events
@@ -73,7 +78,7 @@ def list_alert_rules(db: sqlite3.Connection = Depends(get_db)) -> dict:
                 "ruleType": rule.rule_type,
                 "threshold": rule.threshold,
                 "enabled": rule.enabled,
-                "createdAt": rule.created_at.isoformat(),
+                "createdAt": _to_utc_iso(rule.created_at),
             }
             for rule in rules
         ],
@@ -115,5 +120,5 @@ def create_alert_rule(
         "ruleType": rule.rule_type,
         "threshold": rule.threshold,
         "enabled": rule.enabled,
-        "createdAt": rule.created_at.isoformat(),
+        "createdAt": _to_utc_iso(rule.created_at),
     }

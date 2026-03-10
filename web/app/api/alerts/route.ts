@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { listAlerts, mutateAlerts, type AlertMutationBody } from "@/lib/server/watchlist-service";
+import { ApiError } from "@/lib/api-client";
+import { listAlerts, mutateAlerts, WatchlistServiceError, type AlertMutationBody } from "@/lib/server/watchlist-service";
 
 type AlertRouteDependencies = {
   listAlerts: typeof listAlerts;
@@ -18,7 +19,9 @@ export async function handleAlertsGet(
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Alert request failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status =
+      error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -36,7 +39,9 @@ export async function handleAlertsPost(
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Alert request failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status =
+      error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 

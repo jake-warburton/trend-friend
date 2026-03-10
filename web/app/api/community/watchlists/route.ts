@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { listPublicWatchlists } from "@/lib/server/watchlist-service";
+import { ApiError } from "@/lib/api-client";
+import { listPublicWatchlists, WatchlistServiceError } from "@/lib/server/watchlist-service";
 
 export async function GET() {
   try {
@@ -8,6 +9,8 @@ export async function GET() {
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Community watchlists unavailable";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status =
+      error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
