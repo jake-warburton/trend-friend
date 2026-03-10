@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { hasOverviewChanged } from "@/lib/auto-refresh";
-import { getExplorerForecastBadge } from "@/lib/forecast-ui";
+import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
@@ -1198,6 +1198,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                                     <small>Opportunity</small>
                                     <strong>{detail.opportunity.composite.toFixed(1)}</strong>
                                   </div>
+                                  {detail.forecast && detail.forecast.predictedScores.length > 0 && (
+                                    <div>
+                                      <small>Forecast</small>
+                                      <strong>
+                                        {detail.forecast.predictedScores[detail.forecast.predictedScores.length - 1] >=
+                                        trend.score.total
+                                          ? "\u2191 Up"
+                                          : "\u2193 Down"}
+                                      </strong>
+                                      <small>{formatForecastConfidence(detail.forecast.confidence)} confidence</small>
+                                    </div>
+                                  )}
                                 </div>
                                 {detail.opportunity.reasoning[0] && (
                                   <p className="explorer-expand-reason">{detail.opportunity.reasoning[0]}</p>
