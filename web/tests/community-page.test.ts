@@ -363,6 +363,36 @@ test("community preset sections surface popular and topical slices", () => {
       updatedAt: "2026-03-10T12:00:00Z",
       categories: ["ai-machine-learning"],
       statuses: ["rising"],
+      sourceContributions: [
+        {
+          source: "google_trends",
+          signalCount: 4,
+          latestSignalAt: "2026-03-10T12:00:00Z",
+          estimatedScore: 7,
+          scoreSharePercent: 70,
+          score: { total: 7, social: 0, developer: 0, knowledge: 0, search: 7, diversity: 0 },
+        },
+      ],
+      geoSummary: [
+        {
+          label: "United States",
+          countryCode: "US",
+          region: null,
+          signalCount: 3,
+          explicitCount: 3,
+          inferredCount: 0,
+          averageConfidence: 1,
+        },
+        {
+          label: "United Kingdom",
+          countryCode: "GB",
+          region: null,
+          signalCount: 2,
+          explicitCount: 2,
+          inferredCount: 0,
+          averageConfidence: 0.9,
+        },
+      ],
       popularThisWeek: false,
     },
     {
@@ -374,6 +404,17 @@ test("community preset sections surface popular and topical slices", () => {
       updatedAt: "2026-03-10T12:00:00Z",
       categories: ["developer-tools"],
       statuses: ["steady"],
+      geoSummary: [
+        {
+          label: "United States",
+          countryCode: "US",
+          region: null,
+          signalCount: 1,
+          explicitCount: 1,
+          inferredCount: 0,
+          averageConfidence: 1,
+        },
+      ],
       popularThisWeek: false,
     },
   ];
@@ -390,11 +431,19 @@ test("community preset sections surface popular and topical slices", () => {
 
   assert.deepEqual(
     sections.map((section) => section.title),
-    ["Popular this week", "AI watchlists", "Developer watchlists"],
+    [
+      "Popular this week",
+      "AI watchlists",
+      "Developer watchlists",
+      "Search-driven watchlists",
+      "Global interest",
+    ],
   );
   assert.equal(sections[0]?.watchlists[0]?.name, "Popular Robotics");
   assert.equal(sections[1]?.watchlists[0]?.name, "AI Search");
   assert.equal(sections[2]?.watchlists[0]?.name, "Dev Tools");
+  assert.equal(sections[3]?.watchlists[0]?.name, "AI Search");
+  assert.equal(sections[4]?.watchlists[0]?.name, "AI Search");
 });
 
 test("community preset sections hide rails that conflict with the active slice", () => {
@@ -419,6 +468,36 @@ test("community preset sections hide rails that conflict with the active slice",
       updatedAt: "2026-03-10T12:00:00Z",
       categories: ["ai-machine-learning"],
       statuses: ["rising"],
+      sourceContributions: [
+        {
+          source: "google_trends",
+          signalCount: 4,
+          latestSignalAt: "2026-03-10T12:00:00Z",
+          estimatedScore: 7,
+          scoreSharePercent: 70,
+          score: { total: 7, social: 0, developer: 0, knowledge: 0, search: 7, diversity: 0 },
+        },
+      ],
+      geoSummary: [
+        {
+          label: "United States",
+          countryCode: "US",
+          region: null,
+          signalCount: 3,
+          explicitCount: 3,
+          inferredCount: 0,
+          averageConfidence: 1,
+        },
+        {
+          label: "United Kingdom",
+          countryCode: "GB",
+          region: null,
+          signalCount: 2,
+          explicitCount: 2,
+          inferredCount: 0,
+          averageConfidence: 0.9,
+        },
+      ],
       popularThisWeek: false,
     },
     {
@@ -446,7 +525,7 @@ test("community preset sections hide rails that conflict with the active slice",
 
   assert.deepEqual(
     sections.map((section) => section.title),
-    ["Developer watchlists"],
+    ["Developer watchlists", "Search-driven watchlists", "Global interest"],
   );
 });
 
@@ -638,6 +717,43 @@ test("community page renders public watchlists with analytics copy", async () =>
         popularThisWeek: false,
         categories: ["ai-machine-learning"],
         statuses: ["rising"],
+        sourceContributions: [
+          {
+            source: "google_trends",
+            signalCount: 3,
+            latestSignalAt: "2026-03-10T12:00:00Z",
+            estimatedScore: 6,
+            scoreSharePercent: 60,
+            score: {
+              total: 6,
+              social: 0,
+              developer: 0,
+              knowledge: 0,
+              search: 6,
+              diversity: 0,
+            },
+          },
+        ],
+        geoSummary: [
+          {
+            label: "United States",
+            countryCode: "US",
+            region: null,
+            signalCount: 3,
+            explicitCount: 3,
+            inferredCount: 0,
+            averageConfidence: 1,
+          },
+          {
+            label: "United Kingdom",
+            countryCode: "GB",
+            region: null,
+            signalCount: 2,
+            explicitCount: 2,
+            inferredCount: 0,
+            averageConfidence: 0.9,
+          },
+        ],
       },
       {
         id: 3,
@@ -680,6 +796,7 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Developer tools/);
   assert.match(html, /AI watchlists/);
   assert.match(html, /Developer watchlists/);
+  assert.match(html, /Search-driven watchlists/);
   assert.match(html, /Popular Robotics/);
   assert.match(html, /Popular this week/);
   assert.match(html, /Category/);

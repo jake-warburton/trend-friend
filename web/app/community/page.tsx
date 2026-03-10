@@ -10,6 +10,7 @@ const COMMUNITY_PRESET_LINKS = [
   { label: "Popular this week", href: "/community?popular=true" },
   { label: "AI", href: "/community?category=ai-machine-learning" },
   { label: "Developer tools", href: "/community?category=developer-tools" },
+  { label: "Search-driven", href: "/community?source=google_trends" },
 ] as const;
 
 type PageProps = {
@@ -37,7 +38,7 @@ type ActiveCommunityFilter = {
 };
 type CommunityPresetSection = {
   title: string;
-  href: string;
+  href: string | null;
   watchlists: PublicWatchlistSummary[];
 };
 
@@ -232,9 +233,11 @@ export default async function CommunityPage({ searchParams }: PageProps) {
             <section className="snapshot-card community-rail-card" key={section.title}>
               <div className="section-heading section-heading-spaced">
                 <h2>{section.title}</h2>
-                <Link className="mini-action-button community-link-button" href={section.href}>
-                  Open
-                </Link>
+                {section.href ? (
+                  <Link className="mini-action-button community-link-button" href={section.href}>
+                    Open
+                  </Link>
+                ) : null}
               </div>
               <div className="community-rail-list">
                 {section.watchlists.map((watchlist) => (
@@ -581,6 +584,32 @@ export function listCommunityPresetSections(
     });
   }
 
+  const searchDriven = filters.source !== "google_trends"
+    ? watchlists
+        .filter((watchlist) =>
+          (watchlist.sourceContributions ?? []).some((contribution) => contribution.source === "google_trends"),
+        )
+        .slice(0, 3)
+    : [];
+  if (searchDriven.length > 0) {
+    sections.push({
+      title: "Search-driven watchlists",
+      href: "/community?source=google_trends",
+      watchlists: searchDriven,
+    });
+  }
+
+  const globalInterest = filters.location.length === 0
+    ? watchlists.filter(hasGlobalInterest).slice(0, 3)
+    : [];
+  if (globalInterest.length > 0) {
+    sections.push({
+      title: "Global interest",
+      href: null,
+      watchlists: globalInterest,
+    });
+  }
+
   return sections;
 }
 
@@ -694,6 +723,10 @@ function hasCommunityCardTags(watchlist: PublicWatchlistSummary) {
     (watchlist.sourceContributions?.length ?? 0) > 0 ||
     (watchlist.geoSummary?.length ?? 0) > 0
   );
+}
+
+function hasGlobalInterest(watchlist: PublicWatchlistSummary) {
+  return (watchlist.geoSummary?.length ?? 0) >= 2;
 }
 
 function renderCommunityWatchlistCard(watchlist: PublicWatchlistSummary) {
