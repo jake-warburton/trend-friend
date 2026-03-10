@@ -185,23 +185,158 @@ test("community helpers derive category, status, source, and location option lis
         },
       ],
     },
+    {
+      id: 3,
+      name: "Robotics Europe",
+      itemCount: 2,
+      shareToken: "robotics-europe",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["hardware-robotics"],
+      statuses: ["steady"],
+      sourceContributions: [
+        {
+          source: "github",
+          signalCount: 1,
+          latestSignalAt: "2026-03-10T12:00:00Z",
+          estimatedScore: 3,
+          scoreSharePercent: 40,
+          score: { total: 3, social: 0, developer: 3, knowledge: 0, search: 0, diversity: 0 },
+        },
+      ],
+      geoSummary: [
+        {
+          label: "United Kingdom",
+          countryCode: "GB",
+          region: null,
+          signalCount: 1,
+          explicitCount: 1,
+          inferredCount: 0,
+          averageConfidence: 0.9,
+        },
+      ],
+    },
   ];
 
   assert.deepEqual(listCommunityCategoryOptions(watchlists), [
     { value: "ai-machine-learning", label: "Ai Machine Learning (1)" },
-    { value: "hardware-robotics", label: "Hardware Robotics (1)" },
+    { value: "hardware-robotics", label: "Hardware Robotics (2)" },
   ]);
   assert.deepEqual(listCommunityStatusOptions(watchlists), [
     { value: "breakout", label: "Breakout (1)" },
     { value: "rising", label: "Rising (1)" },
+    { value: "steady", label: "Steady (1)" },
   ]);
   assert.deepEqual(listCommunitySourceOptions(watchlists), [
-    { value: "github", label: "GitHub (1)" },
+    { value: "github", label: "GitHub (2)" },
     { value: "google_trends", label: "Google Trends (1)" },
   ]);
   assert.deepEqual(listCommunityLocationOptions(watchlists), [
-    { value: "United Kingdom", label: "United Kingdom (1)" },
+    { value: "United Kingdom", label: "United Kingdom (2)" },
     { value: "United States", label: "United States (1)" },
+  ]);
+});
+
+test("community option counts can be derived from the currently filtered result set", () => {
+  const watchlists: PublicWatchlistsResponse["watchlists"] = [
+    {
+      id: 1,
+      name: "Robotics UK",
+      itemCount: 2,
+      shareToken: "robotics-uk",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["hardware-robotics"],
+      statuses: ["breakout"],
+      sourceContributions: [
+        {
+          source: "github",
+          signalCount: 2,
+          latestSignalAt: "2026-03-10T12:00:00Z",
+          estimatedScore: 5,
+          scoreSharePercent: 50,
+          score: { total: 5, social: 0, developer: 5, knowledge: 0, search: 0, diversity: 0 },
+        },
+      ],
+      geoSummary: [{ label: "United Kingdom", countryCode: "GB", region: null, signalCount: 2, explicitCount: 2, inferredCount: 0, averageConfidence: 1 }],
+      recentOpenCount: 5,
+      accessCount: 10,
+      popularThisWeek: true,
+    },
+    {
+      id: 2,
+      name: "Robotics US",
+      itemCount: 2,
+      shareToken: "robotics-us",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["hardware-robotics"],
+      statuses: ["steady"],
+      sourceContributions: [
+        {
+          source: "reddit",
+          signalCount: 2,
+          latestSignalAt: "2026-03-10T12:00:00Z",
+          estimatedScore: 4,
+          scoreSharePercent: 40,
+          score: { total: 4, social: 4, developer: 0, knowledge: 0, search: 0, diversity: 0 },
+        },
+      ],
+      geoSummary: [{ label: "United States", countryCode: "US", region: null, signalCount: 2, explicitCount: 2, inferredCount: 0, averageConfidence: 1 }],
+      recentOpenCount: 4,
+      accessCount: 9,
+      popularThisWeek: true,
+    },
+    {
+      id: 3,
+      name: "AI Search",
+      itemCount: 2,
+      shareToken: "ai-search",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["ai-machine-learning"],
+      statuses: ["rising"],
+      sourceContributions: [
+        {
+          source: "google_trends",
+          signalCount: 2,
+          latestSignalAt: "2026-03-10T12:00:00Z",
+          estimatedScore: 6,
+          scoreSharePercent: 60,
+          score: { total: 6, social: 0, developer: 0, knowledge: 0, search: 6, diversity: 0 },
+        },
+      ],
+      geoSummary: [{ label: "United States", countryCode: "US", region: null, signalCount: 2, explicitCount: 2, inferredCount: 0, averageConfidence: 1 }],
+      recentOpenCount: 3,
+      accessCount: 8,
+      popularThisWeek: true,
+    },
+  ];
+
+  const sourceScoped = filterAndSortCommunityWatchlists(watchlists, {
+    query: "",
+    sort: "recent",
+    category: "hardware-robotics",
+    status: "",
+    source: "",
+    location: "United Kingdom",
+    popularOnly: true,
+  });
+  const statusScoped = filterAndSortCommunityWatchlists(watchlists, {
+    query: "",
+    sort: "recent",
+    category: "hardware-robotics",
+    status: "",
+    source: "github",
+    location: "",
+    popularOnly: true,
+  });
+
+  assert.deepEqual(listCommunitySourceOptions(sourceScoped), [
+    { value: "github", label: "GitHub (1)" },
+  ]);
+  assert.deepEqual(listCommunityStatusOptions(statusScoped), [
+    { value: "breakout", label: "Breakout (1)" },
   ]);
 });
 

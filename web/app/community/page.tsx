@@ -16,6 +16,15 @@ type CommunityFilterOption = {
   value: string;
   label: string;
 };
+type CommunityFilterState = {
+  query: string;
+  sort: CommunitySort;
+  category: string;
+  status: string;
+  source: string;
+  location: string;
+  popularOnly: boolean;
+};
 type ActiveCommunityFilter = {
   key: "q" | "sort" | "category" | "status" | "source" | "location" | "popular";
   label: string;
@@ -33,11 +42,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const popularOnly = readBooleanParam(params.popular);
   const page = readPageParam(params.page);
   const directory = await loadCommunityWatchlists();
-  const categoryOptions = listCommunityCategoryOptions(directory.watchlists);
-  const statusOptions = listCommunityStatusOptions(directory.watchlists);
-  const sourceOptions = listCommunitySourceOptions(directory.watchlists);
-  const locationOptions = listCommunityLocationOptions(directory.watchlists);
-  const filteredWatchlists = filterAndSortCommunityWatchlists(directory.watchlists, {
+  const filters: CommunityFilterState = {
     query,
     sort,
     category,
@@ -45,25 +50,32 @@ export default async function CommunityPage({ searchParams }: PageProps) {
     source,
     location,
     popularOnly,
-  });
+  };
+  const categoryOptions = listCommunityCategoryOptions(
+    filterAndSortCommunityWatchlists(directory.watchlists, { ...filters, category: "" }),
+  );
+  const statusOptions = listCommunityStatusOptions(
+    filterAndSortCommunityWatchlists(directory.watchlists, { ...filters, status: "" }),
+  );
+  const sourceOptions = listCommunitySourceOptions(
+    filterAndSortCommunityWatchlists(directory.watchlists, { ...filters, source: "" }),
+  );
+  const locationOptions = listCommunityLocationOptions(
+    filterAndSortCommunityWatchlists(directory.watchlists, { ...filters, location: "" }),
+  );
+  const filteredWatchlists = filterAndSortCommunityWatchlists(directory.watchlists, filters);
   const pagination = paginateCommunityWatchlists(filteredWatchlists, page);
   const pageUrlBuilder = createCommunityUrlBuilder({
-    q: query,
-    sort,
-    category,
-    status,
-    source,
-    location,
+    q: filters.query,
+    sort: filters.sort,
+    category: filters.category,
+    status: filters.status,
+    source: filters.source,
+    location: filters.location,
     popular: popularOnly,
   });
   const activeFilters = listActiveCommunityFilters({
-    query,
-    sort,
-    category,
-    status,
-    source,
-    location,
-    popularOnly,
+    ...filters,
   });
   const emptyStateSuggestions = buildCommunityEmptyStateSuggestions(activeFilters);
 
@@ -321,15 +333,7 @@ export async function loadCommunityWatchlists(): Promise<PublicWatchlistsRespons
 
 export function filterAndSortCommunityWatchlists(
   watchlists: PublicWatchlistSummary[],
-  options: {
-    query: string;
-    sort: CommunitySort;
-    category: string;
-    status: string;
-    source: string;
-    location: string;
-    popularOnly: boolean;
-  },
+  options: CommunityFilterState,
 ) {
   const normalizedQuery = options.query.trim().toLowerCase();
   const normalizedCategory = options.category.trim().toLowerCase();
