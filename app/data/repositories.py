@@ -39,8 +39,11 @@ class SignalRepository:
         self.connection.execute("DELETE FROM signals")
         self.connection.executemany(
             """
-            INSERT INTO signals (topic, source, signal_type, value, timestamp, evidence)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO signals (
+                topic, source, signal_type, value, timestamp, evidence,
+                geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -50,6 +53,11 @@ class SignalRepository:
                     signal.value,
                     signal.timestamp.isoformat(),
                     signal.evidence,
+                    json.dumps(list(signal.geo_flags)),
+                    signal.geo_country_code,
+                    signal.geo_region,
+                    signal.geo_detection_mode,
+                    signal.geo_confidence,
                 )
                 for signal in signals
             ],
@@ -60,7 +68,11 @@ class SignalRepository:
         """Return all stored signals."""
 
         rows = self.connection.execute(
-            "SELECT topic, source, signal_type, value, timestamp, evidence FROM signals"
+            """
+            SELECT topic, source, signal_type, value, timestamp, evidence,
+                   geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
+            FROM signals
+            """
         ).fetchall()
         return [
             NormalizedSignal(
@@ -70,6 +82,11 @@ class SignalRepository:
                 value=row["value"],
                 timestamp=datetime.fromisoformat(row["timestamp"]),
                 evidence=row["evidence"],
+                geo_flags=tuple(json.loads(row["geo_flags_json"])),
+                geo_country_code=row["geo_country_code"],
+                geo_region=row["geo_region"],
+                geo_detection_mode=row["geo_detection_mode"],
+                geo_confidence=row["geo_confidence"],
             )
             for row in rows
         ]
@@ -857,7 +874,8 @@ class TrendScoreRepository:
 
         rows = self.connection.execute(
             """
-            SELECT source, signal_type, timestamp, value, evidence
+            SELECT source, signal_type, timestamp, value, evidence,
+                   geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             FROM signals
             WHERE topic = ?
             ORDER BY timestamp DESC, id DESC
@@ -872,6 +890,11 @@ class TrendScoreRepository:
                 timestamp=datetime.fromisoformat(row["timestamp"]),
                 value=row["value"],
                 evidence=row["evidence"],
+                geo_flags=tuple(json.loads(row["geo_flags_json"])),
+                geo_country_code=row["geo_country_code"],
+                geo_region=row["geo_region"],
+                geo_detection_mode=row["geo_detection_mode"],
+                geo_confidence=row["geo_confidence"],
             )
             for row in rows
         ]

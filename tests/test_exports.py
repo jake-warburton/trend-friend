@@ -148,6 +148,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
+        self.assertEqual(payload["trends"][0]["evidenceItems"][0]["geoCountryCode"], "US")
+        self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
@@ -317,6 +319,11 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
                 value=12.0,
                 evidence="AI agents evidence",
+                geo_flags=("geo:explicit", "geo:country:US", "geo:region:US"),
+                geo_country_code="US",
+                geo_region="US",
+                geo_detection_mode="explicit",
+                geo_confidence=0.95,
             )
         ],
         related_trends=[

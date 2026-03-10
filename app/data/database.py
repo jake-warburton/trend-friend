@@ -27,7 +27,12 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             signal_type TEXT NOT NULL,
             value REAL NOT NULL,
             timestamp TEXT NOT NULL,
-            evidence TEXT NOT NULL
+            evidence TEXT NOT NULL,
+            geo_flags_json TEXT NOT NULL DEFAULT '[]',
+            geo_country_code TEXT NULL,
+            geo_region TEXT NULL,
+            geo_detection_mode TEXT NOT NULL DEFAULT 'unknown',
+            geo_confidence REAL NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS source_ingestion_runs (
@@ -166,6 +171,36 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             FOREIGN KEY (rule_id) REFERENCES alert_rules (id) ON DELETE CASCADE
         );
         """
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="geo_flags_json",
+        column_sql="TEXT NOT NULL DEFAULT '[]'",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="geo_country_code",
+        column_sql="TEXT NULL",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="geo_region",
+        column_sql="TEXT NULL",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="geo_detection_mode",
+        column_sql="TEXT NOT NULL DEFAULT 'unknown'",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="geo_confidence",
+        column_sql="REAL NOT NULL DEFAULT 0",
     )
     ensure_column(
         connection,

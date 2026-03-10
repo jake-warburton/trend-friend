@@ -17,6 +17,11 @@ class RawSourceItem:
     timestamp: datetime
     engagement_score: float
     metadata: dict[str, str] = field(default_factory=dict)
+    geo_flags: tuple[str, ...] = ()
+    geo_country_code: str | None = None
+    geo_region: str | None = None
+    geo_detection_mode: str = "unknown"
+    geo_confidence: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -29,6 +34,11 @@ class NormalizedSignal:
     value: float
     timestamp: datetime
     evidence: str
+    geo_flags: tuple[str, ...] = ()
+    geo_country_code: str | None = None
+    geo_region: str | None = None
+    geo_detection_mode: str = "unknown"
+    geo_confidence: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -130,6 +140,11 @@ class TrendEvidenceItem:
     timestamp: datetime
     value: float
     evidence: str
+    geo_flags: tuple[str, ...] = ()
+    geo_country_code: str | None = None
+    geo_region: str | None = None
+    geo_detection_mode: str = "unknown"
+    geo_confidence: float = 0.0
 
 
 @dataclass(frozen=True)

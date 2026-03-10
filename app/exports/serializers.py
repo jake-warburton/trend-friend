@@ -313,6 +313,11 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                 timestamp=to_timestamp(item.timestamp),
                 value=round(item.value, 1),
                 evidence=item.evidence,
+                geo_flags=list(item.geo_flags),
+                geo_country_code=item.geo_country_code,
+                geo_region=item.geo_region,
+                geo_detection_mode=item.geo_detection_mode,
+                geo_confidence=round(item.geo_confidence, 2),
             )
             for item in trend.evidence_items
         ],

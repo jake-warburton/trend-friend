@@ -5,9 +5,9 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from app.models import NormalizedSignal
+from app.models import NormalizedSignal, RawSourceItem
 from app.topics.cluster import aggregate_topic_signals, merge_similar_topics
-from app.topics.extract import extract_candidate_topics
+from app.topics.extract import build_signals_from_items, extract_candidate_topics
 from app.topics.normalize import normalize_topic_name
 
 
@@ -131,6 +131,43 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(len(aggregates), 1)
         self.assertEqual(aggregates[0].topic, "coal plant")
         self.assertEqual(aggregates[0].signal_counts, {"social": 2})
+
+    def test_build_signals_from_items_carries_explicit_geo_flags(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = build_signals_from_items(
+            [
+                RawSourceItem(
+                    source="google_trends",
+                    external_id="gt-1",
+                    title="AI agents enterprise automation",
+                    url="https://example.com",
+                    timestamp=timestamp,
+                    engagement_score=100.0,
+                    metadata={"region": "US"},
+                )
+            ]
+        )
+        self.assertEqual(signals[0].geo_country_code, "US")
+        self.assertIn("geo:explicit", signals[0].geo_flags)
+        self.assertIn("geo:country:US", signals[0].geo_flags)
+
+    def test_build_signals_from_items_infers_geo_flags_from_title(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = build_signals_from_items(
+            [
+                RawSourceItem(
+                    source="reddit",
+                    external_id="r-1",
+                    title="AI agents surge in London startups",
+                    url="https://example.com",
+                    timestamp=timestamp,
+                    engagement_score=10.0,
+                )
+            ]
+        )
+        self.assertEqual(signals[0].geo_country_code, "GB")
+        self.assertEqual(signals[0].geo_detection_mode, "inferred")
+        self.assertIn("geo:region:London", signals[0].geo_flags)
 
 
 if __name__ == "__main__":

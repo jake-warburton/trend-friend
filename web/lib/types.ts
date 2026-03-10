@@ -189,6 +189,11 @@ export type TrendEvidenceItem = {
   timestamp: string;
   value: number;
   evidence: string;
+  geoFlags: string[];
+  geoCountryCode: string | null;
+  geoRegion: string | null;
+  geoDetectionMode: string;
+  geoConfidence: number;
 };
 
 export type RelatedTrend = {

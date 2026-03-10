@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from app.models import NormalizedSignal, RawSourceItem
+from app.topics.geo import assign_geo_flags
 from app.topics.normalize import (
     is_meaningful_topic,
     normalize_topic_name,
@@ -187,6 +188,7 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
 
     signals: list[NormalizedSignal] = []
     for item in items:
+        geo = assign_geo_flags(item)
         for topic in extract_candidate_topics(item.title):
             signals.append(
                 NormalizedSignal(
@@ -196,6 +198,11 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
                     value=item.engagement_score,
                     timestamp=item.timestamp,
                     evidence=item.title,
+                    geo_flags=geo.flags,
+                    geo_country_code=geo.country_code,
+                    geo_region=geo.region,
+                    geo_detection_mode=geo.detection_mode,
+                    geo_confidence=geo.confidence,
                 )
             )
     return signals

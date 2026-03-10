@@ -158,6 +158,11 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                     {formatSourceLabel(item.source)} · {formatSignalType(item.signalType)} · Value{" "}
                     {item.value.toFixed(1)}
                   </span>
+                  {item.geoDetectionMode !== "unknown" ? (
+                    <span>
+                      {formatGeoLabel(item)} · {item.geoDetectionMode} · {Math.round(item.geoConfidence * 100)}%
+                    </span>
+                  ) : null}
                 </div>
                 <small>{formatTimestamp(item.timestamp)}</small>
               </article>
@@ -198,6 +203,22 @@ function formatCategory(category: string) {
 
 function formatSignalType(signalType: string) {
   return signalType.charAt(0).toUpperCase() + signalType.slice(1);
+}
+
+function formatGeoLabel(item: {
+  geoCountryCode: string | null;
+  geoRegion: string | null;
+}) {
+  if (item.geoRegion && item.geoCountryCode && item.geoRegion !== item.geoCountryCode) {
+    return `${item.geoRegion} (${item.geoCountryCode})`;
+  }
+  if (item.geoRegion) {
+    return item.geoRegion;
+  }
+  if (item.geoCountryCode) {
+    return item.geoCountryCode;
+  }
+  return "Unknown location";
 }
 
 function formatRankChange(value: number | null) {
@@ -277,4 +298,3 @@ function volatilityClassName(volatility: string) {
   }
   return "volatility-pill";
 }
-

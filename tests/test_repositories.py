@@ -35,13 +35,26 @@ class RepositoryTests(unittest.TestCase):
     def test_signal_repository_round_trip(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [
-            NormalizedSignal("ai agents", "reddit", "social", 42.0, timestamp, "AI agents"),
+            NormalizedSignal(
+                "ai agents",
+                "reddit",
+                "social",
+                42.0,
+                timestamp,
+                "AI agents",
+                geo_flags=("geo:inferred", "geo:country:GB", "geo:region:London"),
+                geo_country_code="GB",
+                geo_region="London",
+                geo_detection_mode="inferred",
+                geo_confidence=0.65,
+            ),
             NormalizedSignal("battery recycling", "wikipedia", "knowledge", 55.0, timestamp, "Battery recycling"),
         ]
         repository = SignalRepository(self.connection)
         repository.replace_signals(signals)
         stored_signals = repository.list_signals()
         self.assertEqual(stored_signals, signals)
+        self.assertEqual(stored_signals[0].geo_region, "London")
 
     def test_source_ingestion_run_repository_returns_latest_runs_per_source(self) -> None:
         repository = SourceIngestionRunRepository(self.connection)

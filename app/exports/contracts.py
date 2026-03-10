@@ -160,6 +160,11 @@ class TrendEvidenceItemPayload:
     timestamp: str
     value: float
     evidence: str
+    geo_flags: list[str]
+    geo_country_code: str | None
+    geo_region: str | None
+    geo_detection_mode: str
+    geo_confidence: float
 
 
 @dataclass(frozen=True)
@@ -522,6 +527,11 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         source["latestSignalAt"] = source.pop("latest_signal_at")
     for item in payload["evidenceItems"]:
         item["signalType"] = item.pop("signal_type")
+        item["geoFlags"] = item.pop("geo_flags")
+        item["geoCountryCode"] = item.pop("geo_country_code")
+        item["geoRegion"] = item.pop("geo_region")
+        item["geoDetectionMode"] = item.pop("geo_detection_mode")
+        item["geoConfidence"] = item.pop("geo_confidence")
     for item in payload["relatedTrends"]:
         item["scoreTotal"] = item.pop("score_total")
     return payload
