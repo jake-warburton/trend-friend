@@ -1,2 +1,6 @@
 # Core dependencies
 pytrends>=4.9.0
+
+# REST API
+fastapi>=0.115.0
+uvicorn>=0.30.0

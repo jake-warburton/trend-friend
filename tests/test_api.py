@@ -1,0 +1,150 @@
+"""Tests for the REST API routes."""
+
+from __future__ import annotations
+
+import sqlite3
+import unittest
+from datetime import datetime, timezone
+
+from fastapi.testclient import TestClient
+
+from app.api.main import create_app
+from app.api.dependencies import get_db, get_settings
+from app.config import load_settings
+from app.data.database import initialize_database
+from app.data.repositories import (
+    SignalRepository,
+    SourceIngestionRunRepository,
+    TrendScoreRepository,
+)
+from app.models import NormalizedSignal, SourceIngestionRun, TrendScoreResult
+
+
+def _build_score(topic: str = "ai agents", total_score: float = 42.0) -> TrendScoreResult:
+    return TrendScoreResult(
+        topic=topic,
+        total_score=total_score,
+        search_score=0.0,
+        social_score=18.0,
+        developer_score=16.0,
+        knowledge_score=6.0,
+        diversity_score=2.0,
+        evidence=["Test evidence"],
+        source_counts={"reddit": 2, "github": 1},
+        latest_timestamp=datetime(2026, 3, 9, tzinfo=timezone.utc),
+    )
+
+
+class APITests(unittest.TestCase):
+    """Test the FastAPI routes against an in-memory database."""
+
+    def setUp(self) -> None:
+        self.connection = sqlite3.connect(":memory:", check_same_thread=False)
+        self.connection.row_factory = sqlite3.Row
+        initialize_database(self.connection)
+
+        self.app = create_app()
+
+        def override_db() -> sqlite3.Connection:
+            return self.connection
+
+        self.app.dependency_overrides[get_db] = override_db
+        self.client = TestClient(self.app)
+
+    def tearDown(self) -> None:
+        self.connection.close()
+
+    def _seed_data(self) -> None:
+        """Insert minimal test data."""
+        score_repo = TrendScoreRepository(self.connection)
+        signal_repo = SignalRepository(self.connection)
+        source_run_repo = SourceIngestionRunRepository(self.connection)
+
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+        signal_repo.replace_signals([
+            NormalizedSignal("ai agents", "reddit", "social", 12.0, captured_at, "Reddit evidence"),
+        ])
+        source_run_repo.append_runs([
+            SourceIngestionRun(
+                source="reddit",
+                fetched_at=captured_at,
+                success=True,
+                item_count=10,
+                duration_ms=500,
+            ),
+        ])
+        score_repo.append_snapshot(
+            [_build_score("ai agents", 42.0), _build_score("battery recycling", 25.0)],
+            captured_at=captured_at,
+        )
+
+    def test_health_check(self) -> None:
+        response = self.client.get("/api/v1/health")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "ok")
+
+    def test_list_trends_empty(self) -> None:
+        response = self.client.get("/api/v1/trends")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("generatedAt", data)
+        self.assertEqual(data["trends"], [])
+
+    def test_list_trends_with_data(self) -> None:
+        self._seed_data()
+        response = self.client.get("/api/v1/trends")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreater(len(data["trends"]), 0)
+
+    def test_get_trend_detail_not_found(self) -> None:
+        response = self.client.get("/api/v1/trends/nonexistent")
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_trend_detail(self) -> None:
+        self._seed_data()
+        response = self.client.get("/api/v1/trends/ai-agents")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["id"], "ai-agents")
+
+    def test_latest_trends(self) -> None:
+        self._seed_data()
+        response = self.client.get("/api/v1/trends/latest")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("trends", data)
+
+    def test_trend_history(self) -> None:
+        self._seed_data()
+        response = self.client.get("/api/v1/trends/history")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("snapshots", data)
+
+    def test_dashboard_overview(self) -> None:
+        self._seed_data()
+        response = self.client.get("/api/v1/dashboard/overview")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("summary", data)
+        self.assertIn("highlights", data)
+
+    def test_list_sources(self) -> None:
+        self._seed_data()
+        response = self.client.get("/api/v1/sources")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("sources", data)
+
+    def test_get_source_not_found(self) -> None:
+        response = self.client.get("/api/v1/sources/nonexistent")
+        self.assertEqual(response.status_code, 404)
+
+    def test_cors_headers(self) -> None:
+        response = self.client.options(
+            "/api/v1/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
+        self.assertIn("access-control-allow-origin", response.headers)
