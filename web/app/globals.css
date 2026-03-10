@@ -150,6 +150,30 @@ input {
   margin-top: 12px;
 }
 
+.community-rails {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.community-rail-card {
+  display: grid;
+  gap: 12px;
+}
+
+.community-rail-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.community-rail-item {
+  padding: 8px;
+  border: 1px solid rgba(124, 157, 216, 0.12);
+  border-radius: 12px;
+  background: rgba(8, 18, 35, 0.32);
+}
+
 .community-results-bar {
   flex-wrap: wrap;
 }
@@ -1549,6 +1573,7 @@ input {
   .filters-panel,
   .detail-grid,
   .detail-hero,
+  .community-rail-list,
   .community-grid,
   .shared-grid {
     grid-template-columns: 1fr;

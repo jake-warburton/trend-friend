@@ -35,6 +35,11 @@ type ActiveCommunityFilter = {
   label: string;
   value: string;
 };
+type CommunityPresetSection = {
+  title: string;
+  href: string;
+  watchlists: PublicWatchlistSummary[];
+};
 
 export default async function CommunityPage({ searchParams }: PageProps) {
   const params = searchParams ? await searchParams : {};
@@ -83,6 +88,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
     ...filters,
   });
   const emptyStateSuggestions = buildCommunityEmptyStateSuggestions(activeFilters);
+  const presetSections = listCommunityPresetSections(directory.watchlists);
 
   return (
     <main className="community-page">
@@ -220,6 +226,28 @@ export default async function CommunityPage({ searchParams }: PageProps) {
         </section>
       ) : null}
 
+      {presetSections.length > 0 ? (
+        <section className="community-rails">
+          {presetSections.map((section) => (
+            <section className="snapshot-card community-rail-card" key={section.title}>
+              <div className="section-heading section-heading-spaced">
+                <h2>{section.title}</h2>
+                <Link className="mini-action-button community-link-button" href={section.href}>
+                  Open
+                </Link>
+              </div>
+              <div className="community-rail-list">
+                {section.watchlists.map((watchlist) => (
+                  <article className="community-rail-item" key={`${section.title}-${watchlist.shareToken}`}>
+                    {renderCommunityWatchlistCard(watchlist)}
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </section>
+      ) : null}
+
       <section className="community-grid">
         {pagination.pageItems.length === 0 ? (
           <div className="empty-state">
@@ -233,67 +261,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
         ) : (
           pagination.pageItems.map((watchlist) => (
             <article className="snapshot-card community-card" key={watchlist.shareToken}>
-              <header>
-                <strong>
-                  <Link className="trend-link" href={`/shared/${watchlist.shareToken}`}>
-                    {watchlist.name}
-                  </Link>
-                </strong>
-                <span>{watchlist.popularThisWeek ? "Popular this week" : `${watchlist.itemCount} tracked`}</span>
-              </header>
-              <div className="community-meta">
-                <div>
-                  <span className="watchlist-share-label">7 day opens</span>
-                  <strong>{watchlist.recentOpenCount ?? 0}</strong>
-                </div>
-                <div>
-                  <span className="watchlist-share-label">Total opens</span>
-                  <strong>{watchlist.accessCount ?? 0}</strong>
-                </div>
-                <div>
-                  <span className="watchlist-share-label">Last opened</span>
-                  <strong>{watchlist.lastAccessedAt ? formatTimestamp(watchlist.lastAccessedAt) : "No opens yet"}</strong>
-                </div>
-                <div>
-                  <span className="watchlist-share-label">Created</span>
-                  <strong>{formatTimestamp(watchlist.createdAt)}</strong>
-                </div>
-              </div>
-              {hasCommunityCardTags(watchlist) ? (
-                <div className="community-chip-group">
-                  {watchlist.categories?.map((category) => (
-                    <span className="trend-date-chip" key={`category-${category}`}>
-                      {formatCategory(category)}
-                    </span>
-                  ))}
-                  {watchlist.statuses?.map((status) => (
-                    <span className="trend-date-chip" key={`status-${status}`}>
-                      {formatStatusLabel(status)}
-                    </span>
-                  ))}
-                  {watchlist.sourceContributions?.[0] ? (
-                    <span className="trend-date-chip" key={`source-${watchlist.sourceContributions[0].source}`}>
-                      {formatSourceLabel(watchlist.sourceContributions[0].source)}
-                    </span>
-                  ) : null}
-                  {watchlist.geoSummary?.slice(0, 2).map((geo) => (
-                    <span className="trend-date-chip" key={`geo-${geo.label}`}>
-                      {geo.label}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {watchlist.sourceContributions?.[0] ? (
-                <p className="source-summary-copy">
-                  Top driver: {formatSourceContributionSummary(watchlist.sourceContributions[0])}
-                </p>
-              ) : null}
-              {watchlist.ownerDisplayName ? (
-                <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
-              ) : null}
-              <p className="source-summary-copy">
-                {watchlist.expiresAt ? `Expires ${formatTimestamp(watchlist.expiresAt)}` : "No expiry"}
-              </p>
+              {renderCommunityWatchlistCard(watchlist)}
             </article>
           ))
         )}
@@ -571,6 +539,42 @@ export function buildCommunityEmptyStateSuggestions(activeFilters: ActiveCommuni
   return suggestions.slice(0, 2);
 }
 
+export function listCommunityPresetSections(watchlists: PublicWatchlistSummary[]): CommunityPresetSection[] {
+  const sections: CommunityPresetSection[] = [];
+  const popular = watchlists.filter((watchlist) => watchlist.popularThisWeek).slice(0, 3);
+  if (popular.length > 0) {
+    sections.push({
+      title: "Popular this week",
+      href: "/community?popular=true",
+      watchlists: popular,
+    });
+  }
+
+  const ai = watchlists
+    .filter((watchlist) => (watchlist.categories ?? []).includes("ai-machine-learning"))
+    .slice(0, 3);
+  if (ai.length > 0) {
+    sections.push({
+      title: "AI watchlists",
+      href: "/community?category=ai-machine-learning",
+      watchlists: ai,
+    });
+  }
+
+  const developer = watchlists
+    .filter((watchlist) => (watchlist.categories ?? []).includes("developer-tools"))
+    .slice(0, 3);
+  if (developer.length > 0) {
+    sections.push({
+      title: "Developer watchlists",
+      href: "/community?category=developer-tools",
+      watchlists: developer,
+    });
+  }
+
+  return sections;
+}
+
 function buildCommunityFilterOptions(
   watchlists: PublicWatchlistSummary[],
   valuesForWatchlist: (watchlist: PublicWatchlistSummary) => string[],
@@ -680,5 +684,73 @@ function hasCommunityCardTags(watchlist: PublicWatchlistSummary) {
     (watchlist.statuses?.length ?? 0) > 0 ||
     (watchlist.sourceContributions?.length ?? 0) > 0 ||
     (watchlist.geoSummary?.length ?? 0) > 0
+  );
+}
+
+function renderCommunityWatchlistCard(watchlist: PublicWatchlistSummary) {
+  return (
+    <>
+      <header>
+        <strong>
+          <Link className="trend-link" href={`/shared/${watchlist.shareToken}`}>
+            {watchlist.name}
+          </Link>
+        </strong>
+        <span>{watchlist.popularThisWeek ? "Popular this week" : `${watchlist.itemCount} tracked`}</span>
+      </header>
+      <div className="community-meta">
+        <div>
+          <span className="watchlist-share-label">7 day opens</span>
+          <strong>{watchlist.recentOpenCount ?? 0}</strong>
+        </div>
+        <div>
+          <span className="watchlist-share-label">Total opens</span>
+          <strong>{watchlist.accessCount ?? 0}</strong>
+        </div>
+        <div>
+          <span className="watchlist-share-label">Last opened</span>
+          <strong>{watchlist.lastAccessedAt ? formatTimestamp(watchlist.lastAccessedAt) : "No opens yet"}</strong>
+        </div>
+        <div>
+          <span className="watchlist-share-label">Created</span>
+          <strong>{formatTimestamp(watchlist.createdAt)}</strong>
+        </div>
+      </div>
+      {hasCommunityCardTags(watchlist) ? (
+        <div className="community-chip-group">
+          {watchlist.categories?.map((category) => (
+            <span className="trend-date-chip" key={`category-${category}`}>
+              {formatCategory(category)}
+            </span>
+          ))}
+          {watchlist.statuses?.map((status) => (
+            <span className="trend-date-chip" key={`status-${status}`}>
+              {formatStatusLabel(status)}
+            </span>
+          ))}
+          {watchlist.sourceContributions?.[0] ? (
+            <span className="trend-date-chip" key={`source-${watchlist.sourceContributions[0].source}`}>
+              {formatSourceLabel(watchlist.sourceContributions[0].source)}
+            </span>
+          ) : null}
+          {watchlist.geoSummary?.slice(0, 2).map((geo) => (
+            <span className="trend-date-chip" key={`geo-${geo.label}`}>
+              {geo.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {watchlist.sourceContributions?.[0] ? (
+        <p className="source-summary-copy">
+          Top driver: {formatSourceContributionSummary(watchlist.sourceContributions[0])}
+        </p>
+      ) : null}
+      {watchlist.ownerDisplayName ? (
+        <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
+      ) : null}
+      <p className="source-summary-copy">
+        {watchlist.expiresAt ? `Expires ${formatTimestamp(watchlist.expiresAt)}` : "No expiry"}
+      </p>
+    </>
   );
 }

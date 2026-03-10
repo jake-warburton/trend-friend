@@ -9,6 +9,7 @@ import CommunityPage, {
   filterAndSortCommunityWatchlists,
   listCommunityCategoryOptions,
   listActiveCommunityFilters,
+  listCommunityPresetSections,
   loadCommunityWatchlists,
   listCommunityLocationOptions,
   listCommunitySourceOptions,
@@ -340,6 +341,54 @@ test("community option counts can be derived from the currently filtered result 
   ]);
 });
 
+test("community preset sections surface popular and topical slices", () => {
+  const watchlists: PublicWatchlistsResponse["watchlists"] = [
+    {
+      id: 1,
+      name: "Popular Robotics",
+      itemCount: 3,
+      shareToken: "popular-robotics",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["hardware-robotics"],
+      statuses: ["breakout"],
+      popularThisWeek: true,
+    },
+    {
+      id: 2,
+      name: "AI Search",
+      itemCount: 2,
+      shareToken: "ai-search",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["ai-machine-learning"],
+      statuses: ["rising"],
+      popularThisWeek: false,
+    },
+    {
+      id: 3,
+      name: "Dev Tools",
+      itemCount: 2,
+      shareToken: "dev-tools",
+      createdAt: "2026-03-10T12:00:00Z",
+      updatedAt: "2026-03-10T12:00:00Z",
+      categories: ["developer-tools"],
+      statuses: ["steady"],
+      popularThisWeek: false,
+    },
+  ];
+
+  const sections = listCommunityPresetSections(watchlists);
+
+  assert.deepEqual(
+    sections.map((section) => section.title),
+    ["Popular this week", "AI watchlists", "Developer watchlists"],
+  );
+  assert.equal(sections[0]?.watchlists[0]?.name, "Popular Robotics");
+  assert.equal(sections[1]?.watchlists[0]?.name, "AI Search");
+  assert.equal(sections[2]?.watchlists[0]?.name, "Dev Tools");
+});
+
 test("pagination slices community watchlists and builds preserved URLs", () => {
   const watchlists = Array.from({ length: 11 }, (_, index) => ({
     id: index + 1,
@@ -516,6 +565,32 @@ test("community page renders public watchlists with analytics copy", async () =>
           },
         ],
       },
+      {
+        id: 2,
+        name: "AI Search",
+        itemCount: 2,
+        shareToken: "ai-search",
+        createdAt: "2026-03-10T12:00:00Z",
+        updatedAt: "2026-03-10T12:00:00Z",
+        recentOpenCount: 2,
+        accessCount: 5,
+        popularThisWeek: false,
+        categories: ["ai-machine-learning"],
+        statuses: ["rising"],
+      },
+      {
+        id: 3,
+        name: "Dev Tools Weekly",
+        itemCount: 2,
+        shareToken: "dev-tools-weekly",
+        createdAt: "2026-03-10T12:00:00Z",
+        updatedAt: "2026-03-10T12:00:00Z",
+        recentOpenCount: 1,
+        accessCount: 3,
+        popularThisWeek: false,
+        categories: ["developer-tools"],
+        statuses: ["steady"],
+      },
     ],
   };
 
@@ -542,6 +617,8 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Browse shared watchlists/);
   assert.match(html, /Popular this week/);
   assert.match(html, /Developer tools/);
+  assert.match(html, /AI watchlists/);
+  assert.match(html, /Developer watchlists/);
   assert.match(html, /Popular Robotics/);
   assert.match(html, /Popular this week/);
   assert.match(html, /Category/);
