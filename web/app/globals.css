@@ -144,6 +144,18 @@ input {
   font-size: 0.8rem;
 }
 
+.stale-warning {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #ffca6e;
+  background: rgba(255, 202, 110, 0.12);
+  letter-spacing: 0.02em;
+}
+
 .refresh-button,
 .number-button {
   border: 0;

@@ -279,6 +279,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 ? formatCompactTimestamp(initialData.overview.operations.lastRunAt)
                 : "No data"}
             </strong>
+            {isDataStale(initialData.overview.operations.lastRunAt) && (
+              <span className="stale-warning">Data may be stale</span>
+            )}
           </article>
           <div className="stat-card">
             <span>Tracked</span>
@@ -1021,6 +1024,12 @@ function formatAlertRuleType(ruleType: string) {
     new_trend: "New",
   };
   return labels[ruleType] ?? ruleType;
+}
+
+function isDataStale(lastRunAt: string | null): boolean {
+  if (!lastRunAt) return false;
+  const twoHoursMs = 2 * 60 * 60 * 1000;
+  return Date.now() - new Date(lastRunAt).getTime() > twoHoursMs;
 }
 
 function buildConicGradient(dataset: { value: number }[]) {
