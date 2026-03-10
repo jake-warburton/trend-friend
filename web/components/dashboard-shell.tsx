@@ -1080,7 +1080,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
-                      <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
                       {primaryEvidenceLink?.evidenceUrl ? (
                         <a
                           className="trend-link"
@@ -1088,8 +1087,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           rel="noreferrer"
                           target="_blank"
                         >
-                          Open source item
+                          {primaryEvidenceLink.evidence}
                         </a>
+                      ) : (
+                        <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                      )}
+                      {primaryEvidenceLink ? (
+                        <span className="source-summary-copy">
+                          Source: {formatSourceLabel(primaryEvidenceLink.source)}
+                        </span>
                       ) : null}
                       {wikipediaLink ? (
                         <a
