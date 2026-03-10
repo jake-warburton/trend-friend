@@ -11,13 +11,17 @@ from app.models import (
     AlertEventRecord,
     AlertRule,
     BreakoutPredictionSummary,
+    NotificationChannel,
+    NotificationLogEntry,
     NormalizedSignal,
     OpportunitySummary,
     PipelineRun,
     RelatedTrend,
+    RunDigest,
     SeasonalityResult,
     SourceIngestionRun,
     TrendDetailRecord,
+    DigestMover,
     TrendEvidenceItem,
     TrendForecast,
     TrendExplorerRecord,
@@ -259,6 +263,188 @@ class PipelineRunRepository:
         ]
 
 
+class NotificationRepository:
+    """Persist and retrieve notification channels plus delivery logs."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self.connection = connection
+
+    def list_channels(self, owner_user_id: int | None = None) -> list[NotificationChannel]:
+        """Return configured channels for one owner scope."""
+
+        if owner_user_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT id, owner_user_id, channel_type, destination, label, enabled, created_at
+                FROM notification_channels
+                WHERE owner_user_id IS NULL
+                ORDER BY created_at DESC, id DESC
+                """
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT id, owner_user_id, channel_type, destination, label, enabled, created_at
+                FROM notification_channels
+                WHERE owner_user_id = ?
+                ORDER BY created_at DESC, id DESC
+                """,
+                (owner_user_id,),
+            ).fetchall()
+        return [self._channel_from_row(row) for row in rows]
+
+    def list_all_channels(self) -> list[NotificationChannel]:
+        """Return all configured channels across owners."""
+
+        rows = self.connection.execute(
+            """
+            SELECT id, owner_user_id, channel_type, destination, label, enabled, created_at
+            FROM notification_channels
+            ORDER BY created_at DESC, id DESC
+            """
+        ).fetchall()
+        return [self._channel_from_row(row) for row in rows]
+
+    def get_channel(self, channel_id: int, owner_user_id: int | None = None) -> NotificationChannel | None:
+        """Return one channel when it belongs to the requested owner scope."""
+
+        if owner_user_id is None:
+            row = self.connection.execute(
+                """
+                SELECT id, owner_user_id, channel_type, destination, label, enabled, created_at
+                FROM notification_channels
+                WHERE id = ? AND owner_user_id IS NULL
+                """,
+                (channel_id,),
+            ).fetchone()
+        else:
+            row = self.connection.execute(
+                """
+                SELECT id, owner_user_id, channel_type, destination, label, enabled, created_at
+                FROM notification_channels
+                WHERE id = ? AND owner_user_id = ?
+                """,
+                (channel_id, owner_user_id),
+            ).fetchone()
+        if row is None:
+            return None
+        return self._channel_from_row(row)
+
+    def create_channel(
+        self,
+        channel_type: str,
+        destination: str,
+        label: str = "",
+        owner_user_id: int | None = None,
+        enabled: bool = True,
+    ) -> NotificationChannel:
+        """Create and return a notification channel."""
+
+        cursor = self.connection.execute(
+            """
+            INSERT INTO notification_channels (owner_user_id, channel_type, destination, label, enabled)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (owner_user_id, channel_type, destination, label, int(enabled)),
+        )
+        self.connection.commit()
+        row = self.connection.execute(
+            """
+            SELECT id, owner_user_id, channel_type, destination, label, enabled, created_at
+            FROM notification_channels
+            WHERE id = ?
+            """,
+            (int(cursor.lastrowid),),
+        ).fetchone()
+        return self._channel_from_row(row)
+
+    def delete_channel(self, channel_id: int, owner_user_id: int | None = None) -> bool:
+        """Delete one channel if it belongs to the requested owner scope."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                "DELETE FROM notification_channels WHERE id = ? AND owner_user_id IS NULL",
+                (channel_id,),
+            )
+        else:
+            cursor = self.connection.execute(
+                "DELETE FROM notification_channels WHERE id = ? AND owner_user_id = ?",
+                (channel_id, owner_user_id),
+            )
+        self.connection.commit()
+        return cursor.rowcount > 0
+
+    def append_log(
+        self,
+        channel_id: int,
+        payload_json: str,
+        status_code: int | None,
+        error: str | None,
+        sent_at: datetime,
+    ) -> NotificationLogEntry:
+        """Persist one delivery attempt."""
+
+        cursor = self.connection.execute(
+            """
+            INSERT INTO notification_log (channel_id, sent_at, payload_json, status_code, error)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (channel_id, sent_at.isoformat(), payload_json, status_code, error),
+        )
+        self.connection.commit()
+        row = self.connection.execute(
+            """
+            SELECT id, channel_id, sent_at, payload_json, status_code, error
+            FROM notification_log
+            WHERE id = ?
+            """,
+            (int(cursor.lastrowid),),
+        ).fetchone()
+        return self._log_from_row(row)
+
+    def list_recent_logs(
+        self,
+        channel_id: int,
+        limit: int = 5,
+    ) -> list[NotificationLogEntry]:
+        """Return recent delivery attempts for one channel."""
+
+        rows = self.connection.execute(
+            """
+            SELECT id, channel_id, sent_at, payload_json, status_code, error
+            FROM notification_log
+            WHERE channel_id = ?
+            ORDER BY sent_at DESC, id DESC
+            LIMIT ?
+            """,
+            (channel_id, limit),
+        ).fetchall()
+        return [self._log_from_row(row) for row in rows]
+
+    @staticmethod
+    def _channel_from_row(row: sqlite3.Row) -> NotificationChannel:
+        return NotificationChannel(
+            id=row["id"],
+            owner_user_id=row["owner_user_id"],
+            channel_type=row["channel_type"],
+            destination=row["destination"],
+            label=row["label"],
+            enabled=bool(row["enabled"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
+
+    @staticmethod
+    def _log_from_row(row: sqlite3.Row) -> NotificationLogEntry:
+        return NotificationLogEntry(
+            id=row["id"],
+            channel_id=row["channel_id"],
+            sent_at=datetime.fromisoformat(row["sent_at"]),
+            payload_json=row["payload_json"],
+            status_code=row["status_code"],
+            error=row["error"],
+        )
+
+
 class WatchlistRepository:
     """Persist and retrieve watchlists and simple alert rules."""
 
@@ -448,6 +634,29 @@ class WatchlistRepository:
                 """,
                 (owner_user_id,),
             ).fetchall()
+        return [
+            AlertRule(
+                id=row["id"],
+                watchlist_id=row["watchlist_id"],
+                name=row["name"],
+                rule_type=row["rule_type"],
+                threshold=row["threshold"],
+                enabled=bool(row["enabled"]),
+                created_at=datetime.fromisoformat(row["created_at"]),
+            )
+            for row in rows
+        ]
+
+    def list_all_alert_rules(self) -> list[AlertRule]:
+        """Return all alert rules across owners for pipeline evaluation."""
+
+        rows = self.connection.execute(
+            """
+            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            FROM alert_rules
+            ORDER BY created_at DESC, id DESC
+            """
+        ).fetchall()
         return [
             AlertRule(
                 id=row["id"],
@@ -1101,6 +1310,18 @@ class WatchlistRepository:
         for row in rows:
             result.setdefault(row["watchlist_id"], set()).add(row["trend_id"])
         return result
+
+    def get_watchlist_owner_map(self, watchlist_ids: set[int]) -> dict[int, int | None]:
+        """Return owner ids for the requested watchlists."""
+
+        if not watchlist_ids:
+            return {}
+        placeholders = ",".join("?" for _ in watchlist_ids)
+        rows = self.connection.execute(
+            f"SELECT id, owner_user_id FROM watchlists WHERE id IN ({placeholders})",
+            tuple(watchlist_ids),
+        ).fetchall()
+        return {row["id"]: row["owner_user_id"] for row in rows}
 
     def _watchlist_from_row(self, row: sqlite3.Row) -> Watchlist:
         """Build a watchlist model with nested items."""

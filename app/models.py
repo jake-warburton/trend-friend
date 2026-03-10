@@ -394,6 +394,50 @@ class AlertEventRecord:
 
 
 @dataclass(frozen=True)
+class NotificationChannel:
+    """Configured outbound notification destination."""
+
+    id: int
+    owner_user_id: int | None
+    channel_type: str
+    destination: str
+    label: str
+    enabled: bool
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class NotificationLogEntry:
+    """One attempted notification delivery."""
+
+    id: int
+    channel_id: int
+    sent_at: datetime
+    payload_json: str
+    status_code: int | None
+    error: str | None
+
+
+@dataclass(frozen=True)
+class DigestMover:
+    """One rank mover included in a post-run digest."""
+
+    name: str
+    rank_change: int
+    score: float
+
+
+@dataclass(frozen=True)
+class RunDigest:
+    """High-signal summary of a completed ranking run."""
+
+    total_trends: int
+    new_entries: list[str]
+    biggest_movers: list[DigestMover]
+    breakouts: list[str]
+
+
+@dataclass(frozen=True)
 class User:
     """Registered user account."""
 

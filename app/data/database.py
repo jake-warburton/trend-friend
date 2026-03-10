@@ -212,6 +212,27 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             read INTEGER NOT NULL DEFAULT 0,
             FOREIGN KEY (rule_id) REFERENCES alert_rules (id) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS notification_channels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            owner_user_id INTEGER NULL,
+            channel_type TEXT NOT NULL,
+            destination TEXT NOT NULL,
+            label TEXT NOT NULL DEFAULT '',
+            enabled INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS notification_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_id INTEGER NOT NULL,
+            sent_at TEXT NOT NULL,
+            payload_json TEXT NOT NULL,
+            status_code INTEGER NULL,
+            error TEXT NULL,
+            FOREIGN KEY (channel_id) REFERENCES notification_channels (id) ON DELETE CASCADE
+        );
         """
     )
     ensure_column(

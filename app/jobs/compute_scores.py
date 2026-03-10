@@ -16,6 +16,8 @@ from app.data.repositories import (
     WatchlistRepository,
 )
 from app.models import PipelineRun, TrendScoreResult
+from app.notifications.deliver import deliver_post_run_notifications
+from app.notifications.digest import build_run_digest
 from app.scoring.calculator import calculate_trend_scores
 from app.scoring.ranking import rank_topics_by_score
 from app.topics.cluster import aggregate_topic_signals
@@ -64,12 +66,26 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     )
 
     # Evaluate and persist alert events
-    _run_alert_evaluation(
+    alert_events = _run_alert_evaluation(
         connection=connection,
         repository=repository,
         ranked_scores=ranked_scores,
         previous_state=previous_snapshot,
         ranking_limit=settings.ranking_limit,
+    )
+
+    digest = build_run_digest(
+        current_scores=ranked_scores,
+        previous_scores=previous_snapshot["scores"],
+        current_ranks={score.topic: rank for rank, score in enumerate(ranked_scores, start=1)},
+        previous_ranks=previous_snapshot["ranks"],
+        statuses={record.score.topic: record.status for record in repository.list_trend_explorer_records(limit=settings.ranking_limit)},
+    )
+    deliver_post_run_notifications(
+        connection=connection,
+        run_at=captured_at,
+        alert_events=alert_events,
+        digest=digest,
     )
 
     connection.close()
@@ -101,15 +117,15 @@ def _run_alert_evaluation(
     ranked_scores: list[TrendScoreResult],
     previous_state: dict,
     ranking_limit: int,
-) -> None:
+) -> list:
     """Evaluate alert rules against the just-computed scores and persist events."""
 
     from app.alerts.evaluate import evaluate_alerts
 
     watchlist_repo = WatchlistRepository(connection)
-    rules = watchlist_repo.list_alert_rules()
+    rules = watchlist_repo.list_all_alert_rules()
     if not rules:
-        return
+        return []
 
     watchlist_trend_ids = watchlist_repo.get_watchlist_trend_ids()
     current_ranks = {score.topic: rank for rank, score in enumerate(ranked_scores, start=1)}
@@ -132,3 +148,4 @@ def _run_alert_evaluation(
     if events:
         watchlist_repo.save_alert_events(events)
         LOGGER.info("Triggered %d alert events", len(events))
+    return events

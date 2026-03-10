@@ -53,8 +53,9 @@ class APITests(unittest.TestCase):
         self.client = TestClient(self.app)
 
         # Clear global caches between tests
-        from app.api.rate_limit import response_cache
+        from app.api.rate_limit import rate_limiter, response_cache
         response_cache.clear()
+        rate_limiter.clear()
 
     def tearDown(self) -> None:
         self.connection.close()

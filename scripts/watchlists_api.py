@@ -12,7 +12,8 @@ bootstrap_project_root()
 
 from app.config import load_settings
 from app.data.database import connect_database, initialize_database
-from app.data.repositories import TrendScoreRepository, WatchlistRepository
+from app.data.repositories import NotificationRepository, TrendScoreRepository, WatchlistRepository
+from app.notifications.deliver import CHANNEL_TYPE_WEBHOOK, send_test_notification
 
 
 def main() -> None:
@@ -82,11 +83,24 @@ def main() -> None:
     create_alert.add_argument("--rule-type", required=True)
     create_alert.add_argument("--threshold", type=float, required=True)
 
+    subparsers.add_parser("list-notification-channels")
+
+    create_notification_channel = subparsers.add_parser("create-notification-channel")
+    create_notification_channel.add_argument("--destination", required=True)
+    create_notification_channel.add_argument("--label", default="")
+
+    delete_notification_channel = subparsers.add_parser("delete-notification-channel")
+    delete_notification_channel.add_argument("--channel-id", type=int, required=True)
+
+    test_notification_channel = subparsers.add_parser("test-notification-channel")
+    test_notification_channel.add_argument("--channel-id", type=int, required=True)
+
     args = parser.parse_args()
     settings = load_settings()
     connection = connect_database(settings.database_path)
     initialize_database(connection)
     watchlist_repository = WatchlistRepository(connection)
+    notification_repository = NotificationRepository(connection)
     score_repository = TrendScoreRepository(connection)
     watchlist_repository.ensure_default_watchlist()
 
@@ -175,6 +189,25 @@ def main() -> None:
         payload = mark_alerts_read_payload(
             watchlist_repository=watchlist_repository,
             event_ids=args.event_ids,
+        )
+    elif args.command == "list-notification-channels":
+        payload = list_notification_channels_payload(notification_repository)
+    elif args.command == "create-notification-channel":
+        payload = create_notification_channel_payload(
+            notification_repository=notification_repository,
+            destination=args.destination,
+            label=args.label,
+        )
+    elif args.command == "delete-notification-channel":
+        payload = delete_notification_channel_payload(
+            notification_repository=notification_repository,
+            channel_id=args.channel_id,
+        )
+    elif args.command == "test-notification-channel":
+        payload = send_test_notification_channel_payload(
+            connection=connection,
+            notification_repository=notification_repository,
+            channel_id=args.channel_id,
         )
     else:
         watchlist_repository.create_alert_rule(
@@ -393,6 +426,86 @@ def mark_alerts_read_payload(
     """Mark alert events read and return the API response shape."""
 
     return {"updated": watchlist_repository.mark_alerts_read(event_ids)}
+
+
+def list_notification_channels_payload(
+    notification_repository: NotificationRepository,
+) -> dict[str, object]:
+    """Return notification channels plus recent delivery logs."""
+
+    channels = notification_repository.list_channels()
+    return {
+        "channels": [
+            {
+                "id": channel.id,
+                "channelType": channel.channel_type,
+                "destination": channel.destination,
+                "label": channel.label,
+                "enabled": channel.enabled,
+                "createdAt": channel.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+                "recentLogs": [
+                    {
+                        "id": log.id,
+                        "sentAt": log.sent_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+                        "statusCode": log.status_code,
+                        "error": log.error,
+                    }
+                    for log in notification_repository.list_recent_logs(channel.id, limit=5)
+                ],
+            }
+            for channel in channels
+        ]
+    }
+
+
+def create_notification_channel_payload(
+    notification_repository: NotificationRepository,
+    destination: str,
+    label: str,
+) -> dict[str, object]:
+    """Create and serialize a notification channel."""
+
+    channel = notification_repository.create_channel(
+        channel_type=CHANNEL_TYPE_WEBHOOK,
+        destination=destination,
+        label=label,
+    )
+    return {
+        "id": channel.id,
+        "channelType": channel.channel_type,
+        "destination": channel.destination,
+        "label": channel.label,
+        "enabled": channel.enabled,
+        "createdAt": channel.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+
+def delete_notification_channel_payload(
+    notification_repository: NotificationRepository,
+    channel_id: int,
+) -> dict[str, object]:
+    """Delete one notification channel."""
+
+    deleted = notification_repository.delete_channel(channel_id)
+    if not deleted:
+        return {"error": "Notification channel not found"}
+    return {"ok": True}
+
+
+def send_test_notification_channel_payload(
+    connection,
+    notification_repository: NotificationRepository,
+    channel_id: int,
+) -> dict[str, object]:
+    """Send a sample payload to one notification channel."""
+
+    channel = notification_repository.get_channel(channel_id)
+    if channel is None:
+        return {"error": "Notification channel not found"}
+    status_code, error = send_test_notification(connection, channel)
+    if error is not None:
+        return {"error": error, "statusCode": status_code}
+    return {"ok": True, "statusCode": status_code}
 
 
 def _serialize_share_payload(share) -> dict[str, object]:

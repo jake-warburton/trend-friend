@@ -53,3 +53,19 @@ export async function apiPost<T>(path: string, body: unknown, options: ApiReques
   }
   return (await response.json()) as T;
 }
+
+export async function apiDelete<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  const url = `${API_BASE_URL}/api/v1${path}`;
+  const response = await fetch(url, {
+    method: "DELETE",
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      ...options.headers,
+    },
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, `API ${path} returned ${response.status}`);
+  }
+  return (await response.json()) as T;
+}
