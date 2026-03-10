@@ -107,6 +107,7 @@ def _serialize_public_watchlist_summary(
     score_by_slug: dict[str, object],
 ) -> dict[str, object]:
     geo = _aggregate_watchlist_geo(watchlist, score_repo, score_by_slug)
+    source_contributions = _aggregate_watchlist_source_contributions(watchlist, score_repo, score_by_slug)
     return {
         "id": watchlist.id,
         "name": watchlist.name,
@@ -115,6 +116,7 @@ def _serialize_public_watchlist_summary(
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
+        "sourceContributions": [_serialize_source_contribution(item) for item in source_contributions],
     }
 
 
@@ -157,6 +159,66 @@ def _aggregate_watchlist_geo(
                 combined[key] = geo
 
     ranked = sorted(combined.values(), key=lambda g: (-g.signal_count, -g.average_confidence))
+    return ranked[:limit]
+
+
+def _aggregate_watchlist_source_contributions(
+    watchlist: Watchlist,
+    score_repo: TrendScoreRepository | None,
+    score_by_slug: dict[str, object],
+    limit: int = 3,
+) -> list[TrendSourceContribution]:
+    """Aggregate estimated source contribution across all trends in a watchlist."""
+
+    if score_repo is None:
+        return []
+
+    combined: dict[str, TrendSourceContribution] = {}
+    for item in watchlist.items:
+        score = score_by_slug.get(item.trend_id)
+        topic = score.topic if score is not None else None
+        if topic is None or score is None:
+            continue
+
+        for contribution in score_repo.get_topic_source_contributions(topic, score):
+            existing = combined.get(contribution.source)
+            if existing is None:
+                combined[contribution.source] = contribution
+                continue
+
+            combined[contribution.source] = TrendSourceContribution(
+                source=contribution.source,
+                signal_count=existing.signal_count + contribution.signal_count,
+                latest_signal_at=max(existing.latest_signal_at, contribution.latest_signal_at),
+                estimated_score=round(existing.estimated_score + contribution.estimated_score, 2),
+                score_share_percent=0.0,
+                social_score=round(existing.social_score + contribution.social_score, 2),
+                developer_score=round(existing.developer_score + contribution.developer_score, 2),
+                knowledge_score=round(existing.knowledge_score + contribution.knowledge_score, 2),
+                search_score=round(existing.search_score + contribution.search_score, 2),
+                diversity_score=round(existing.diversity_score + contribution.diversity_score, 2),
+            )
+
+    total_estimated_score = sum(item.estimated_score for item in combined.values())
+    ranked = sorted(
+        (
+            TrendSourceContribution(
+                source=item.source,
+                signal_count=item.signal_count,
+                latest_signal_at=item.latest_signal_at,
+                estimated_score=item.estimated_score,
+                score_share_percent=round((item.estimated_score / total_estimated_score) * 100, 1)
+                if total_estimated_score > 0 else 0.0,
+                social_score=item.social_score,
+                developer_score=item.developer_score,
+                knowledge_score=item.knowledge_score,
+                search_score=item.search_score,
+                diversity_score=item.diversity_score,
+            )
+            for item in combined.values()
+        ),
+        key=lambda item: (-item.estimated_score, -item.signal_count, item.source),
+    )
     return ranked[:limit]
 
 

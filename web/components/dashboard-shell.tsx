@@ -953,6 +953,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     </strong>
                     <span>{watchlist.itemCount} tracked</span>
                   </header>
+                  {watchlist.sourceContributions?.[0] ? (
+                    <p className="source-summary-copy">
+                      {formatSourceContributionSummary(watchlist.sourceContributions[0])}
+                    </p>
+                  ) : null}
+                  {watchlist.geoSummary?.length ? (
+                    <p className="source-summary-copy">
+                      {watchlist.geoSummary.map((geo) => geo.label).join(", ")}
+                    </p>
+                  ) : null}
                   <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
                 </section>
               ))
@@ -1155,6 +1165,26 @@ function formatAlertRuleType(ruleType: string) {
     new_trend: "New",
   };
   return labels[ruleType] ?? ruleType;
+}
+
+function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSummary["sourceContributions"]>[number]) {
+  const components: Array<[string, number]> = [
+    ["Social", source.score.social],
+    ["Developer", source.score.developer],
+    ["Knowledge", source.score.knowledge],
+    ["Search", source.score.search],
+    ["Diversity", source.score.diversity],
+  ];
+  const topComponents = components
+    .filter(([, value]) => value > 0)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2)
+    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
+
+  if (topComponents.length === 0) {
+    return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}%`;
+  }
+  return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
 }
 
 function isDataStale(lastRunAt: string | null): boolean {

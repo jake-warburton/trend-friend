@@ -160,6 +160,7 @@ class CommunityAPITests(unittest.TestCase):
         self.assertEqual(len(data["watchlists"]), 1)
         self.assertEqual(data["watchlists"][0]["name"], "Public List")
         self.assertIn("shareToken", data["watchlists"][0])
+        self.assertIn("sourceContributions", data["watchlists"][0])
 
     def test_private_shares_not_listed(self) -> None:
         wl_id = self._create_watchlist("Private List")

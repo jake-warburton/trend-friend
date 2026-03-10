@@ -370,6 +370,7 @@ export type PublicWatchlistSummary = {
   createdAt: string;
   updatedAt: string;
   geoSummary?: TrendGeoSummary[];
+  sourceContributions?: TrendSourceContribution[];
 };
 
 export type PublicWatchlistsResponse = {
