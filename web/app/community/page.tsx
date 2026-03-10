@@ -6,6 +6,11 @@ import { getBaseUrl } from "@/app/shared/[token]/page";
 export const dynamic = "force-dynamic";
 
 const COMMUNITY_PAGE_SIZE = 9;
+const COMMUNITY_PRESET_LINKS = [
+  { label: "Popular this week", href: "/community?popular=true" },
+  { label: "AI", href: "/community?category=ai-machine-learning" },
+  { label: "Developer tools", href: "/community?category=developer-tools" },
+] as const;
 
 type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -88,6 +93,13 @@ export default async function CommunityPage({ searchParams }: PageProps) {
           <p className="source-summary-copy">
             Discover public collections ranked by recent interest instead of creation date.
           </p>
+          <div className="community-preset-links">
+            {COMMUNITY_PRESET_LINKS.map((preset) => (
+              <Link className="mini-action-button community-link-button" href={preset.href} key={preset.href}>
+                {preset.label}
+              </Link>
+            ))}
+          </div>
         </div>
         <Link className="refresh-button shared-back-link" href="/">
           Back to dashboard

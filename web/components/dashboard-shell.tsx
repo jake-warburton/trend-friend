@@ -1405,9 +1405,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
           <div className="section-heading section-heading-spaced">
             <h2>Public watchlists</h2>
-            <Link className="mini-action-button community-link-button" href="/community">
-              Browse all
-            </Link>
+            <div className="community-entry-links">
+              <Link className="mini-action-button community-link-button" href="/community?popular=true">
+                Popular this week
+              </Link>
+              <Link className="mini-action-button community-link-button" href="/community?category=ai-machine-learning">
+                AI
+              </Link>
+              <Link className="mini-action-button community-link-button" href="/community">
+                Browse all
+              </Link>
+            </div>
           </div>
 
           <div className="snapshot-list">
