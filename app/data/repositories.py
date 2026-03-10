@@ -23,6 +23,7 @@ from app.models import (
     TrendScoreResult,
     Watchlist,
     WatchlistItem,
+    WatchlistShare,
 )
 
 
@@ -448,6 +449,91 @@ class WatchlistRepository:
         )
         self.connection.commit()
         return cursor.rowcount
+
+    def create_share(
+        self,
+        watchlist_id: int,
+        share_token: str,
+        created_by: int | None = None,
+        is_public: bool = False,
+    ) -> WatchlistShare:
+        """Create a share link for a watchlist."""
+
+        cursor = self.connection.execute(
+            """
+            INSERT INTO watchlist_shares (watchlist_id, share_token, created_by, is_public)
+            VALUES (?, ?, ?, ?)
+            """,
+            (watchlist_id, share_token, created_by, int(is_public)),
+        )
+        self.connection.commit()
+        return self.get_share_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
+
+    def get_share_by_id(self, share_id: int) -> WatchlistShare | None:
+        """Return a share by id."""
+
+        row = self.connection.execute(
+            "SELECT id, watchlist_id, share_token, created_by, is_public, created_at FROM watchlist_shares WHERE id = ?",
+            (share_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._share_from_row(row)
+
+    def get_share_by_token(self, token: str) -> WatchlistShare | None:
+        """Return a share by its token."""
+
+        row = self.connection.execute(
+            "SELECT id, watchlist_id, share_token, created_by, is_public, created_at FROM watchlist_shares WHERE share_token = ?",
+            (token,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._share_from_row(row)
+
+    def list_public_watchlists(self) -> list[tuple[Watchlist, WatchlistShare]]:
+        """Return all watchlists that have a public share link."""
+
+        rows = self.connection.execute(
+            """
+            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.created_at
+            FROM watchlist_shares ws
+            WHERE ws.is_public = 1
+            ORDER BY ws.created_at DESC
+            """
+        ).fetchall()
+        results: list[tuple[Watchlist, WatchlistShare]] = []
+        for row in rows:
+            share = self._share_from_row(row)
+            watchlist = self.get_watchlist(share.watchlist_id)
+            if watchlist is not None:
+                results.append((watchlist, share))
+        return results
+
+    def list_shares_for_watchlist(self, watchlist_id: int) -> list[WatchlistShare]:
+        """Return all share links for a watchlist."""
+
+        rows = self.connection.execute(
+            """
+            SELECT id, watchlist_id, share_token, created_by, is_public, created_at
+            FROM watchlist_shares
+            WHERE watchlist_id = ?
+            ORDER BY created_at DESC
+            """,
+            (watchlist_id,),
+        ).fetchall()
+        return [self._share_from_row(row) for row in rows]
+
+    @staticmethod
+    def _share_from_row(row: sqlite3.Row) -> WatchlistShare:
+        return WatchlistShare(
+            id=row["id"],
+            watchlist_id=row["watchlist_id"],
+            share_token=row["share_token"],
+            created_by=row["created_by"],
+            is_public=bool(row["is_public"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+        )
 
     def get_watchlist_trend_ids(self) -> dict[int, set[str]]:
         """Return a mapping of watchlist_id -> set of trend_ids."""

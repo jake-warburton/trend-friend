@@ -232,6 +232,18 @@ class Watchlist:
 
 
 @dataclass(frozen=True)
+class WatchlistShare:
+    """Public or token-based share link for a watchlist."""
+
+    id: int
+    watchlist_id: int
+    share_token: str
+    created_by: int | None
+    is_public: bool
+    created_at: datetime
+
+
+@dataclass(frozen=True)
 class AlertRule:
     """Simple alert condition attached to a watchlist."""
 

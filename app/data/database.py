@@ -108,6 +108,17 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE
         );
 
+        CREATE TABLE IF NOT EXISTS watchlist_shares (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            watchlist_id INTEGER NOT NULL,
+            share_token TEXT NOT NULL UNIQUE,
+            created_by INTEGER NULL,
+            is_public INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (watchlist_id) REFERENCES watchlists (id) ON DELETE CASCADE,
+            FOREIGN KEY (created_by) REFERENCES users (id)
+        );
+
         CREATE TABLE IF NOT EXISTS alert_rules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             watchlist_id INTEGER NOT NULL,
