@@ -1240,6 +1240,13 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                               </div>
                             </div>
 
+                            {detail.geoSummary.length > 0 && (
+                              <div className="explorer-expand-geo">
+                                <small>Trending in</small>
+                                <span>{detail.geoSummary.slice(0, 4).map((g) => g.label).join(", ")}</span>
+                              </div>
+                            )}
+
                             <div className="explorer-expand-actions">
                               <Link className="mini-action-button" href={`/trends/${trend.id}`}>
                                 Full detail
