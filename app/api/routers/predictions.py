@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_db, get_settings
 from app.data.repositories import TrendScoreRepository
+from app.scoring.opportunity import score_opportunities
 from app.scoring.predictor import predict_breakouts
 
 router = APIRouter(tags=["predictions"])
@@ -55,5 +56,46 @@ def get_breakout_predictions(db: sqlite3.Connection = Depends(get_db)) -> dict:
                 "predictedDirection": p.predicted_direction,
             }
             for p in predictions
+        ],
+    }
+
+
+@router.get("/predictions/opportunity")
+def get_opportunity_scores(db: sqlite3.Connection = Depends(get_db)) -> dict:
+    """Return opportunity/actionability scores for current trends."""
+
+    settings = get_settings()
+    repository = TrendScoreRepository(db)
+    _, latest_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
+    if not latest_scores:
+        return {"opportunities": [], "generatedAt": datetime.now(tz=timezone.utc).isoformat()}
+
+    now = datetime.now(tz=timezone.utc)
+    explorer_records = repository.list_trend_explorer_records(limit=settings.ranking_limit)
+
+    ranks = {r.score.topic: r.rank for r in explorer_records}
+    momenta = {r.score.topic: r.momentum for r in explorer_records}
+    statuses = {r.score.topic: r.status for r in explorer_records}
+
+    opportunities = score_opportunities(
+        scores=latest_scores,
+        ranks=ranks,
+        momenta=momenta,
+        statuses=statuses,
+    )
+
+    return {
+        "generatedAt": now.isoformat(),
+        "opportunities": [
+            {
+                "trendId": o.trend_id,
+                "trendName": o.trend_name,
+                "composite": o.composite,
+                "content": o.content,
+                "product": o.product,
+                "investment": o.investment,
+                "reasoning": o.reasoning,
+            }
+            for o in opportunities
         ],
     }
