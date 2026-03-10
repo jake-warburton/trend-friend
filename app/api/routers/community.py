@@ -50,6 +50,27 @@ def share_watchlist(
     }
 
 
+@router.post("/watchlists/{watchlist_id}/shares/{share_id}/revoke")
+def revoke_watchlist_share(
+    watchlist_id: int,
+    share_id: int,
+    user: User = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Revoke an existing share link for a watchlist."""
+
+    repo = WatchlistRepository(db)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
+    if watchlist is None:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    revoked = repo.revoke_share(share_id, user.id if auth_enabled() else None)
+    if not revoked:
+        raise HTTPException(status_code=404, detail="Share link not found")
+
+    return {"ok": True}
+
+
 @router.get("/shared/{share_token}")
 def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_db)) -> dict:
     """View a shared watchlist by its share token."""

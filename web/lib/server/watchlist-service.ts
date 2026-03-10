@@ -7,7 +7,8 @@ const execFileAsync = promisify(execFile);
 export type WatchlistMutationBody =
   | { action: "create-watchlist"; name: string }
   | { action: "add-item"; watchlistId: number; trendId: string; trendName: string }
-  | { action: "remove-item"; watchlistId: number; trendId: string };
+  | { action: "remove-item"; watchlistId: number; trendId: string }
+  | { action: "revoke-share"; watchlistId: number; shareId: number };
 
 export type AlertMutationBody =
   | { action: "mark-read"; eventIds: number[] }
@@ -74,6 +75,13 @@ export async function mutateWatchlists(
         trendName: body.trendName,
       }, { headers: dependencies.apiHeaders });
     }
+    if (body.action === "revoke-share") {
+      return apiPost(
+        `/watchlists/${body.watchlistId}/shares/${body.shareId}/revoke`,
+        {},
+        { headers: dependencies.apiHeaders },
+      );
+    }
     return apiPost("/watchlists/items", {
       action: "remove",
       watchlistId: body.watchlistId,
@@ -95,6 +103,9 @@ export async function mutateWatchlists(
       "--trend-name",
       body.trendName,
     );
+  }
+  if (body.action === "revoke-share") {
+    return ensureSuccessPayload(await runScript("revoke-share", "--share-id", String(body.shareId)));
   }
   return runScript(
     "remove-item",

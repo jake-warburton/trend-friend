@@ -39,6 +39,9 @@ def main() -> None:
     share_watchlist.add_argument("--watchlist-id", type=int, required=True)
     share_watchlist.add_argument("--public", action="store_true")
 
+    revoke_share = subparsers.add_parser("revoke-share")
+    revoke_share.add_argument("--share-id", type=int, required=True)
+
     get_shared = subparsers.add_parser("get-shared")
     get_shared.add_argument("--token", required=True)
 
@@ -99,6 +102,11 @@ def main() -> None:
             watchlist_repository=watchlist_repository,
             score_repository=score_repository,
             token=args.token,
+        )
+    elif args.command == "revoke-share":
+        payload = revoke_share_payload(
+            watchlist_repository=watchlist_repository,
+            share_id=args.share_id,
         )
     elif args.command == "list-public":
         payload = list_public_payload(watchlist_repository, score_repository)
@@ -180,6 +188,18 @@ def get_shared_payload(
     if watchlist is None:
         return {"error": "Watchlist not found"}
     return build_shared_watchlist_payload(score_repository, share, watchlist)
+
+
+def revoke_share_payload(
+    watchlist_repository: WatchlistRepository,
+    share_id: int,
+) -> dict[str, object]:
+    """Delete an existing share link in local fallback mode."""
+
+    revoked = watchlist_repository.revoke_share(share_id, owner_user_id=None)
+    if not revoked:
+        return {"error": "Share link not found"}
+    return {"ok": True}
 
 
 def list_public_payload(

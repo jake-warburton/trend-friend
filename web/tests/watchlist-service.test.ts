@@ -38,6 +38,24 @@ test("mutateWatchlists maps add-item requests to CLI arguments", async () => {
   });
 });
 
+test("mutateWatchlists maps revoke-share requests to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "revoke-share",
+      watchlistId: 7,
+      shareId: 12,
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: ["revoke-share", "--share-id", "12"],
+  });
+});
+
 test("shareWatchlist maps public shares to the CLI fallback", async () => {
   const payload = await shareWatchlist(3, true, {
     apiEnabled: false,

@@ -454,6 +454,26 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     }
   }
 
+  async function handleRevokeShare(targetWatchlist: Watchlist, shareId: number) {
+    setShareNotice(null);
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/shares/${shareId}/revoke`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not revoke share link");
+        return;
+      }
+      showActionNotice("Share link revoked");
+      await loadWatchlists();
+      await loadPublicWatchlists();
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
 
@@ -956,11 +976,23 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 ))}
               </div>
               <div className="watchlist-items">
-                {(defaultWatchlist?.shares ?? []).slice(0, 3).map((share) => (
-                  <Link className="watchlist-item" href={`/shared/${share.shareToken}`} key={share.id}>
-                    <span>{share.public ? "Public share" : "Private share"}</span>
-                  </Link>
-                ))}
+                {defaultWatchlist
+                  ? defaultWatchlist.shares.slice(0, 3).map((share) => (
+                    <div className="watchlist-item watchlist-item-share" key={share.id}>
+                      <Link className="watchlist-item-share-link" href={`/shared/${share.shareToken}`}>
+                        <span>{share.public ? "Public share" : "Private share"}</span>
+                      </Link>
+                      <button
+                        className="mini-action-button"
+                        disabled={actionPending || watchlistsRequireAuth}
+                        onClick={() => void handleRevokeShare(defaultWatchlist, share.id)}
+                        type="button"
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  ))
+                  : null}
               </div>
               <div className="watchlist-items">
                 {(watchlistData?.matches ?? []).slice(0, 3).map((match) => (

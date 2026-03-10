@@ -74,6 +74,17 @@ class ShareWatchlistTests(unittest.TestCase):
 
         self.assertIn("error", result)
 
+    def test_revoke_share_removes_existing_share(self) -> None:
+        from scripts.watchlists_api import revoke_share_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Revoke List")
+        share = self.watchlist_repo.create_share(watchlist.id, "revoke-token", is_public=True)
+
+        result = revoke_share_payload(self.watchlist_repo, share.id)
+
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(self.watchlist_repo.list_shares_for_watchlist(watchlist.id), [])
+
 
 class GetSharedWatchlistTests(unittest.TestCase):
     """Test get_shared_payload from the CLI layer."""

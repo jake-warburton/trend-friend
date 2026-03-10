@@ -647,6 +647,38 @@ class WatchlistRepository:
         ).fetchall()
         return [self._share_from_row(row) for row in rows]
 
+    def revoke_share(self, share_id: int, owner_user_id: int | None) -> bool:
+        """Delete a share link only when it belongs to the given owner."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                DELETE FROM watchlist_shares
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (share_id,),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                DELETE FROM watchlist_shares
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (share_id, owner_user_id),
+            )
+        self.connection.commit()
+        return cursor.rowcount > 0
+
     @staticmethod
     def _share_from_row(row: sqlite3.Row) -> WatchlistShare:
         return WatchlistShare(

@@ -180,3 +180,23 @@ class APITests(unittest.TestCase):
             {watchlist["name"] for watchlist in second_payload["watchlists"]},
             {"Core Watchlist", "Owner Two"},
         )
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_user_can_revoke_own_share(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlists_response = client.get("/api/v1/watchlists")
+        watchlist_id = watchlists_response.json()["watchlists"][0]["id"]
+
+        share_response = client.post(f"/api/v1/watchlists/{watchlist_id}/share", json={"public": True})
+        self.assertEqual(share_response.status_code, 200)
+
+        shares_response = client.get("/api/v1/watchlists")
+        share_id = shares_response.json()["watchlists"][0]["shares"][0]["id"]
+
+        revoke_response = client.post(f"/api/v1/watchlists/{watchlist_id}/shares/{share_id}/revoke")
+        self.assertEqual(revoke_response.status_code, 200)
+        self.assertEqual(revoke_response.json(), {"ok": True})
+
+        after_response = client.get("/api/v1/watchlists")
+        self.assertEqual(after_response.json()["watchlists"][0]["shares"], [])

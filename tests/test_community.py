@@ -173,6 +173,24 @@ class CommunityAPITests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["watchlists"], [])
 
+    def test_revoke_share_removes_public_watchlist(self) -> None:
+        wl_id = self._create_watchlist("Revoke List")
+        share_resp = self.client.post(
+            f"/api/v1/watchlists/{wl_id}/share",
+            json={"public": True},
+        )
+        share_id = self.connection.execute(
+            "SELECT id FROM watchlist_shares WHERE share_token = ?",
+            (share_resp.json()["shareToken"],),
+        ).fetchone()[0]
+
+        revoke_resp = self.client.post(f"/api/v1/watchlists/{wl_id}/shares/{share_id}/revoke")
+        self.assertEqual(revoke_resp.status_code, 200)
+
+        resp = self.client.get("/api/v1/community/watchlists")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["watchlists"], [])
+
     # -- Public trend page --
 
     def test_get_public_trend_page(self) -> None:
