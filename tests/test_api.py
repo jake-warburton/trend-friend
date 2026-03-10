@@ -272,3 +272,18 @@ class APITests(unittest.TestCase):
 
         payload = client.get("/api/v1/watchlists").json()
         self.assertEqual(payload["watchlists"][0]["shareEvents"][0]["eventType"], "rotated")
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_watchlist_payload_includes_share_access_metrics(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+        share = client.post(f"/api/v1/watchlists/{watchlist_id}/share", json={"public": True}).json()
+
+        shared_response = client.get(f"/api/v1/shared/{share['shareToken']}")
+        self.assertEqual(shared_response.status_code, 200)
+
+        payload = client.get("/api/v1/watchlists").json()
+        stored_share = payload["watchlists"][0]["shares"][0]
+        self.assertEqual(stored_share["accessCount"], 1)
+        self.assertIsNotNone(stored_share["lastAccessedAt"])

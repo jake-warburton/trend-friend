@@ -222,6 +222,8 @@ def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_
     if watchlist is None:
         raise HTTPException(status_code=404, detail="Watchlist not found")
 
+    share = repo.record_share_access(share.id) or share
+
     score_repo = TrendScoreRepository(db)
     return build_shared_watchlist_payload(
         score_repo,

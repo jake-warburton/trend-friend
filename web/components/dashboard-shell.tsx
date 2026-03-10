@@ -1170,6 +1170,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           <strong>{formatCompactTimestamp(share.createdAt)}</strong>
                         </div>
                         <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Opens</span>
+                          <strong>{share.accessCount}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Last opened</span>
+                          <strong>{formatShareActivityTimestamp(share.lastAccessedAt)}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
                           <span className="watchlist-share-label">Last activity</span>
                           <strong>{formatShareActivityTimestamp(shareActivityById.get(share.id) ?? null)}</strong>
                         </div>

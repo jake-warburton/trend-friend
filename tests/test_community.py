@@ -137,6 +137,12 @@ class CommunityAPITests(unittest.TestCase):
         self.assertEqual(data["watchlist"]["name"], "Shared List")
         self.assertEqual(len(data["watchlist"]["items"]), 1)
         self.assertEqual(data["watchlist"]["items"][0]["trendId"], "ai-agents")
+        stored_share = self.connection.execute(
+            "SELECT access_count, last_accessed_at FROM watchlist_shares WHERE share_token = ?",
+            (token,),
+        ).fetchone()
+        self.assertEqual(stored_share["access_count"], 1)
+        self.assertIsNotNone(stored_share["last_accessed_at"])
 
     def test_get_shared_watchlist_not_found(self) -> None:
         resp = self.client.get("/api/v1/shared/nonexistent-token")

@@ -313,6 +313,8 @@ class WatchlistShare:
     is_public: bool
     show_creator: bool
     expires_at: datetime | None
+    access_count: int
+    last_accessed_at: datetime | None
     created_at: datetime
 
 

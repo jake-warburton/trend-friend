@@ -702,7 +702,7 @@ class WatchlistRepository:
         """Return a share by id."""
 
         row = self.connection.execute(
-            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, created_at FROM watchlist_shares WHERE id = ?",
+            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, access_count, last_accessed_at, created_at FROM watchlist_shares WHERE id = ?",
             (share_id,),
         ).fetchone()
         if row is None:
@@ -713,7 +713,7 @@ class WatchlistRepository:
         """Return a share by its token."""
 
         row = self.connection.execute(
-            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, created_at FROM watchlist_shares WHERE share_token = ?",
+            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, access_count, last_accessed_at, created_at FROM watchlist_shares WHERE share_token = ?",
             (token,),
         ).fetchone()
         if row is None:
@@ -728,7 +728,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.show_creator, ws.expires_at, ws.created_at
+            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.show_creator, ws.expires_at, ws.access_count, ws.last_accessed_at, ws.created_at
             FROM watchlist_shares ws
             WHERE ws.is_public = 1
             ORDER BY ws.created_at DESC
@@ -749,7 +749,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, created_at
+            SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, expires_at, access_count, last_accessed_at, created_at
             FROM watchlist_shares
             WHERE watchlist_id = ?
             ORDER BY created_at DESC
@@ -757,6 +757,23 @@ class WatchlistRepository:
             (watchlist_id,),
         ).fetchall()
         return [self._share_from_row(row) for row in rows]
+
+    def record_share_access(self, share_id: int) -> WatchlistShare | None:
+        """Increment access counters for one share."""
+
+        accessed_at = datetime.now(timezone.utc).isoformat()
+        cursor = self.connection.execute(
+            """
+            UPDATE watchlist_shares
+            SET access_count = access_count + 1, last_accessed_at = ?
+            WHERE id = ?
+            """,
+            (accessed_at, share_id),
+        )
+        self.connection.commit()
+        if cursor.rowcount == 0:
+            return None
+        return self.get_share_by_id(share_id)
 
     def revoke_share(self, share_id: int, owner_user_id: int | None) -> bool:
         """Delete a share link only when it belongs to the given owner."""
@@ -1014,6 +1031,8 @@ class WatchlistRepository:
             is_public=bool(row["is_public"]),
             show_creator=bool(row["show_creator"]),
             expires_at=datetime.fromisoformat(row["expires_at"]) if row["expires_at"] else None,
+            access_count=row["access_count"],
+            last_accessed_at=datetime.fromisoformat(row["last_accessed_at"]) if row["last_accessed_at"] else None,
             created_at=datetime.fromisoformat(row["created_at"]),
         )
 

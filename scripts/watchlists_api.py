@@ -262,6 +262,7 @@ def get_shared_payload(
     share = watchlist_repository.get_share_by_token(token)
     if share is None:
         return {"error": "Share link not found"}
+    share = watchlist_repository.record_share_access(share.id) or share
     watchlist = watchlist_repository.get_watchlist(share.watchlist_id)
     if watchlist is None:
         return {"error": "Watchlist not found"}

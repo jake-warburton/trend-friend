@@ -337,6 +337,8 @@ def _serialize_watchlist(
                 "public": share.is_public,
                 "showCreator": share.show_creator,
                 "expiresAt": _to_utc_iso(share.expires_at) if share.expires_at is not None else None,
+                "accessCount": share.access_count,
+                "lastAccessedAt": _to_utc_iso(share.last_accessed_at) if share.last_accessed_at is not None else None,
                 "createdAt": _to_utc_iso(share.created_at),
             }
             for share in shares

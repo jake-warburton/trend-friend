@@ -229,6 +229,19 @@ class GetSharedWatchlistTests(unittest.TestCase):
 
         self.assertEqual(result["watchlist"]["items"][0]["currentScore"], 55.5)
 
+    def test_get_shared_increments_share_access_metrics(self) -> None:
+        from scripts.watchlists_api import share_payload, get_shared_payload, build_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Access List")
+        share_result = share_payload(self.watchlist_repo, watchlist.id, public=True)
+
+        get_shared_payload(self.watchlist_repo, self.score_repo, share_result["shareToken"])
+
+        payload = build_payload(self.watchlist_repo, self.score_repo)
+        share = payload["watchlists"][0]["shares"][0]
+        self.assertEqual(share["accessCount"], 1)
+        self.assertIsNotNone(share["lastAccessedAt"])
+
     def test_get_shared_item_without_score_has_null(self) -> None:
         from scripts.watchlists_api import share_payload, get_shared_payload
 

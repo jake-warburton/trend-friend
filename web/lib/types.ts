@@ -327,6 +327,8 @@ export type WatchlistShare = {
   public: boolean;
   showCreator: boolean;
   expiresAt: string | null;
+  accessCount: number;
+  lastAccessedAt: string | null;
   createdAt: string;
 };
 
