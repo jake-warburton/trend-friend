@@ -35,6 +35,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
       <section className="shared-grid">
         {payload.watchlist.items.map((item) => {
           const geo = item.geoSummary ?? [];
+          const contributions = item.sourceContributions ?? [];
           return (
             <article className="snapshot-card shared-item-card" key={item.trendId}>
               <header>
@@ -59,6 +60,11 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
               </div>
               {item.sources.length > 0 && (
                 <p className="source-summary-copy">{item.sources.map(formatSourceLabel).join(", ")}</p>
+              )}
+              {contributions[0] && (
+                <p className="source-summary-copy">
+                  {formatSourceContributionSummary(contributions[0])}
+                </p>
               )}
               {geo.length > 0 && (
                 <p className="source-summary-copy">
@@ -114,4 +120,24 @@ function formatSourceLabel(source: string) {
     twitter: "Twitter/X",
   };
   return labels[source] ?? source;
+}
+
+function formatSourceContributionSummary(source: NonNullable<SharedWatchlistResponse["watchlist"]["items"][number]["sourceContributions"]>[number]) {
+  const components: Array<[string, number]> = [
+    ["Social", source.score.social],
+    ["Developer", source.score.developer],
+    ["Knowledge", source.score.knowledge],
+    ["Search", source.score.search],
+    ["Diversity", source.score.diversity],
+  ];
+  const topComponents = components
+    .filter(([, value]) => value > 0)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2)
+    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
+
+  if (topComponents.length === 0) {
+    return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% of the score`;
+  }
+  return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
 }

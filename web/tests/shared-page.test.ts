@@ -40,6 +40,23 @@ test("shared page renders the fetched watchlist", async () => {
           status: "rising",
           category: "technology",
           sources: ["reddit", "hacker_news"],
+          sourceContributions: [
+            {
+              source: "reddit",
+              signalCount: 2,
+              latestSignalAt: "2026-03-10T12:00:00Z",
+              estimatedScore: 24.2,
+              scoreSharePercent: 57.1,
+              score: {
+                total: 24.2,
+                social: 18.2,
+                developer: 0,
+                knowledge: 6,
+                search: 0,
+                diversity: 0,
+              },
+            },
+          ],
         },
       ],
     },
@@ -59,6 +76,7 @@ test("shared page renders the fetched watchlist", async () => {
   assert.match(html, /Shared List/);
   assert.match(html, /AI Agents/);
   assert.match(html, /Public link/);
+  assert.match(html, /Reddit drove 57.1%/);
 });
 
 test.afterEach(() => {

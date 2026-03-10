@@ -105,6 +105,7 @@ class GetSharedWatchlistTests(unittest.TestCase):
         self.assertEqual(result["watchlist"]["items"][0]["trendId"], "ai-agents")
         self.assertIn("currentScore", result["watchlist"]["items"][0])
         self.assertIn("geoSummary", result["watchlist"]["items"][0])
+        self.assertIn("sourceContributions", result["watchlist"]["items"][0])
         self.assertIn("shareToken", result)
 
     def test_get_shared_unknown_token_returns_error(self) -> None:

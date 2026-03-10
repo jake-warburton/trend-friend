@@ -302,6 +302,7 @@ export type SharedWatchlistItem = WatchlistItem & {
   status: string | null;
   category: string | null;
   sources: string[];
+  sourceContributions?: TrendSourceContribution[];
 };
 
 export type WatchlistShare = {

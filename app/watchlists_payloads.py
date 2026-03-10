@@ -6,7 +6,15 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
-from app.models import AlertRule, TrendGeoSummary, TrendMomentum, TrendScoreResult, Watchlist, WatchlistItem, WatchlistShare
+from app.models import (
+    AlertRule,
+    TrendGeoSummary,
+    TrendScoreResult,
+    TrendSourceContribution,
+    Watchlist,
+    WatchlistItem,
+    WatchlistShare,
+)
 from app.topics.categorize import categorize_topic
 
 WATCHLIST_SCORE_LOOKUP_LIMIT = 1000
@@ -19,6 +27,7 @@ class _ItemEnrichment:
     status: str
     category: str
     sources: list[str]
+    source_contributions: list[TrendSourceContribution]
 
 
 def build_watchlist_payload(
@@ -169,6 +178,7 @@ def _build_enrichment(
             status=status,
             category=categorize_topic(score.topic, score.source_counts),
             sources=sorted(score.source_counts),
+            source_contributions=score_repo.get_topic_source_contributions(score.topic, score),
         )
     return result
 
@@ -263,12 +273,17 @@ def _serialize_shared_watchlist_item(
         payload["status"] = info.status
         payload["category"] = info.category
         payload["sources"] = info.sources
+        payload["sourceContributions"] = [
+            _serialize_source_contribution(item)
+            for item in info.source_contributions
+        ]
     else:
         payload["rank"] = None
         payload["rankChange"] = None
         payload["status"] = None
         payload["category"] = None
         payload["sources"] = []
+        payload["sourceContributions"] = []
 
     return payload
 
@@ -282,6 +297,24 @@ def _serialize_geo_summary(geo: TrendGeoSummary) -> dict[str, object]:
         "explicitCount": geo.explicit_count,
         "inferredCount": geo.inferred_count,
         "averageConfidence": geo.average_confidence,
+    }
+
+
+def _serialize_source_contribution(contribution: TrendSourceContribution) -> dict[str, object]:
+    return {
+        "source": contribution.source,
+        "signalCount": contribution.signal_count,
+        "latestSignalAt": _to_utc_iso(contribution.latest_signal_at),
+        "estimatedScore": round(contribution.estimated_score, 1),
+        "scoreSharePercent": contribution.score_share_percent,
+        "score": {
+            "total": round(contribution.estimated_score, 1),
+            "social": round(contribution.social_score, 1),
+            "developer": round(contribution.developer_score, 1),
+            "knowledge": round(contribution.knowledge_score, 1),
+            "search": round(contribution.search_score, 1),
+            "diversity": round(contribution.diversity_score, 1),
+        },
     }
 
 
