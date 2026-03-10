@@ -22,6 +22,7 @@ import type {
   DashboardData,
   PublicWatchlistSummary,
   PublicWatchlistsResponse,
+  TrendDetailRecord,
   Watchlist,
   WatchlistResponse,
 } from "@/lib/types";
@@ -83,6 +84,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     lastRunAt: initialData.overview.operations.lastRunAt,
   });
   const [lastBackgroundUpdateAt, setLastBackgroundUpdateAt] = useState<number | null>(null);
+  const [expandedTrendId, setExpandedTrendId] = useState<string | null>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
@@ -142,6 +144,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     ];
   }, [initialData.explorer.trends]);
 
+  const detailsByTrendId = useMemo(() => {
+    const map = new Map<string, TrendDetailRecord>();
+    for (const detail of initialData.details.trends) {
+      map.set(detail.id, detail);
+    }
+    return map;
+  }, [initialData.details.trends]);
+
+  function handleToggleExpand(trendId: string) {
+    setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
+  }
+
   function handleRefresh() {
     setRefreshError(null);
     startTransition(async () => {
@@ -162,6 +176,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     void loadAlertEvents();
     void loadPublicWatchlists();
   }, []);
+
+  useEffect(() => {
+    if (expandedTrendId != null && !filteredTrends.some((t) => t.id === expandedTrendId)) {
+      setExpandedTrendId(null);
+    }
+  }, [filteredTrends, expandedTrendId]);
 
   useEffect(() => {
     const currentOverview = {
@@ -884,7 +904,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         <div className="ranking-panel">
           <div className="section-heading">
             <h2>Explorer</h2>
-            <span className="section-heading-meta">{filteredTrends.length} live</span>
+            <div className="section-heading-actions">
+              <a className="mini-action-button export-button" href="/api/export" download>
+                Export CSV
+              </a>
+              <span className="section-heading-meta">{filteredTrends.length} live</span>
+            </div>
           </div>
 
           {filteredTrends.length === 0 ? (
@@ -966,6 +991,20 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       <div className="explorer-metric explorer-metric-inline">
                         <Sparkline data={(trend.recentHistory ?? []).map((p) => p.scoreTotal)} />
                       </div>
+
+                      <button
+                        className={
+                          expandedTrendId === trend.id
+                            ? "explorer-expand-toggle explorer-expand-toggle-open"
+                            : "explorer-expand-toggle"
+                        }
+                        onClick={() => handleToggleExpand(trend.id)}
+                        aria-expanded={expandedTrendId === trend.id}
+                        aria-label={expandedTrendId === trend.id ? "Collapse detail" : "Expand detail"}
+                        type="button"
+                      >
+                        {expandedTrendId === trend.id ? "\u2212" : "+"}
+                      </button>
                     </div>
                   </div>
 
@@ -980,6 +1019,121 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           {formatSourceLabel(source)}
                         </span>
                       ))}
+                    </div>
+                  </div>
+
+                  <div
+                    className={
+                      expandedTrendId === trend.id
+                        ? "explorer-expand-wrap explorer-expand-wrap-open"
+                        : "explorer-expand-wrap"
+                    }
+                  >
+                    <div className="explorer-expand-panel">
+                      {expandedTrendId === trend.id && (() => {
+                        const detail = detailsByTrendId.get(trend.id);
+                        if (!detail) return null;
+                        const maxScore = Math.max(
+                          detail.score.social,
+                          detail.score.developer,
+                          detail.score.knowledge,
+                          detail.score.search,
+                          detail.score.diversity,
+                          1,
+                        );
+                        const topContribs = detail.sourceContributions.slice(0, 5);
+                        const maxContrib = Math.max(...topContribs.map((c) => c.scoreSharePercent), 1);
+                        const firstRelated = detail.relatedTrends[0] ?? null;
+                        return (
+                          <>
+                            <div className="explorer-expand-grid">
+                              <div className="explorer-expand-section">
+                                <strong>Score mix</strong>
+                                <div className="mini-bar-list">
+                                  {(
+                                    [
+                                      ["Social", detail.score.social],
+                                      ["Developer", detail.score.developer],
+                                      ["Knowledge", detail.score.knowledge],
+                                      ["Search", detail.score.search],
+                                      ["Diversity", detail.score.diversity],
+                                    ] as const
+                                  ).map(([label, value]) => (
+                                    <div className="mini-bar-row" key={label}>
+                                      <span>{label}</span>
+                                      <div className="mini-bar-track">
+                                        <div
+                                          className="mini-bar-fill"
+                                          style={{ width: `${(value / maxScore) * 100}%` }}
+                                        />
+                                      </div>
+                                      <strong>{value.toFixed(1)}</strong>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="explorer-expand-section">
+                                <strong>Sources</strong>
+                                <div className="mini-bar-list">
+                                  {topContribs.map((contrib) => (
+                                    <div className="mini-bar-row" key={contrib.source}>
+                                      <span>{formatSourceLabel(contrib.source)}</span>
+                                      <div className="mini-bar-track">
+                                        <div
+                                          className="mini-bar-fill mini-bar-fill-muted"
+                                          style={{ width: `${(contrib.scoreSharePercent / maxContrib) * 100}%` }}
+                                        />
+                                      </div>
+                                      <strong>{contrib.scoreSharePercent.toFixed(1)}%</strong>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="explorer-expand-section">
+                                <strong>Outlook</strong>
+                                <div className="explorer-expand-outlook">
+                                  <div>
+                                    <small>Breakout</small>
+                                    <strong>{detail.breakoutPrediction.predictedDirection}</strong>
+                                    <small>{(detail.breakoutPrediction.confidence * 100).toFixed(0)}% confidence</small>
+                                  </div>
+                                  <div>
+                                    <small>Opportunity</small>
+                                    <strong>{detail.opportunity.composite.toFixed(1)}</strong>
+                                  </div>
+                                </div>
+                                {detail.opportunity.reasoning[0] && (
+                                  <p className="explorer-expand-reason">{detail.opportunity.reasoning[0]}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="explorer-expand-actions">
+                              <Link className="mini-action-button" href={`/trends/${trend.id}`}>
+                                Full detail
+                              </Link>
+                              {firstRelated && (
+                                <Link className="mini-action-button" href={`/trends/${firstRelated.id}`}>
+                                  Compare: {firstRelated.name}
+                                </Link>
+                              )}
+                              <button
+                                className={
+                                  defaultWatchlist?.items.some((item) => item.trendId === trend.id)
+                                    ? "watch-toggle watch-toggle-active"
+                                    : "watch-toggle"
+                                }
+                                onClick={() => void handleToggleTracked(trend.id, trend.name)}
+                                type="button"
+                              >
+                                {defaultWatchlist?.items.some((item) => item.trendId === trend.id) ? "Untrack" : "Track"}
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </article>
