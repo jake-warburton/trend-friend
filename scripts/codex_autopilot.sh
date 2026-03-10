@@ -152,8 +152,11 @@ run_single_worker_loop() {
 goal_for_worker() {
   local worker="$1"
   local entry
-  IFS=';' read -r -a worker_entries <<<"$WORKER_GOALS"
-  for entry in "${worker_entries[@]}"; do
+  local -a worker_entries=()
+  if [[ -n "$WORKER_GOALS" ]]; then
+    IFS=';' read -r -a worker_entries <<<"$WORKER_GOALS"
+  fi
+  for entry in "${worker_entries[@]:-}"; do
     if [[ "$entry" == "$worker="* ]]; then
       printf '%s\n' "${entry#*=}"
       return 0
@@ -175,6 +178,14 @@ cleanup_generated_paths() {
   fi
 
   echo "Cleaning generated autopilot directories"
+  if [[ -d "$WORKTREE_BASE" ]]; then
+    while IFS= read -r registered_worktree; do
+      if [[ "$registered_worktree" == "$WORKTREE_BASE"/* ]]; then
+        git worktree remove --force "$registered_worktree" >/dev/null 2>&1 || true
+      fi
+    done < <(git worktree list --porcelain | awk '/^worktree / {print $2}')
+  fi
+  git worktree prune >/dev/null 2>&1 || true
   rm -rf "$LOG_DIR" "$WORKTREE_BASE"
 }
 
