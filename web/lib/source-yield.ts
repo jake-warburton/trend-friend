@@ -6,7 +6,7 @@ export function summarizeSourceYield(source: {
   if (source.rawItemCount <= 0) {
     return "No raw fetch volume yet";
   }
-  return `${source.keptItemCount}/${source.rawItemCount} kept (${formatYieldPercent(source.yieldRatePercent)})`;
+  return `${source.keptItemCount}/${source.rawItemCount} kept (${formatYieldPercent(source.yieldRatePercent)}) · ${classifySourceYield(source)}`;
 }
 
 export function describeSourceYield(source: {
@@ -18,6 +18,22 @@ export function describeSourceYield(source: {
     return "No raw item volume recorded yet.";
   }
   return `${source.keptItemCount} kept from ${source.rawItemCount} fetched after dedupe and caps.`;
+}
+
+export function classifySourceYield(source: {
+  rawItemCount: number;
+  yieldRatePercent: number;
+}): string {
+  if (source.rawItemCount <= 0) {
+    return "No data";
+  }
+  if (source.yieldRatePercent >= 70) {
+    return "Strong";
+  }
+  if (source.yieldRatePercent >= 40) {
+    return "Mixed";
+  }
+  return "Thin";
 }
 
 function formatYieldPercent(value: number): string {

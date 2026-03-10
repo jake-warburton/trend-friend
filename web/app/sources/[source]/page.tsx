@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
+import { classifySourceYield, describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { loadSourceSummary } from "@/lib/trends";
 
 type SourcePageProps = {
@@ -49,6 +49,10 @@ export default async function SourcePage({ params }: SourcePageProps) {
           <div className="stat-card">
             <span>Yield</span>
             <strong>{summarizeSourceYield(summary)}</strong>
+          </div>
+          <div className="stat-card">
+            <span>Yield quality</span>
+            <strong>{classifySourceYield(summary)}</strong>
           </div>
           <div className="stat-card">
             <span>Duration</span>
