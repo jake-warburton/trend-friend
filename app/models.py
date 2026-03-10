@@ -259,3 +259,29 @@ class AlertEventRecord:
     message: str
     triggered_at: datetime
     read: bool
+
+
+@dataclass(frozen=True)
+class User:
+    """Registered user account."""
+
+    id: int
+    username: str
+    password_hash: str
+    display_name: str
+    is_admin: bool
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class ApiKey:
+    """API key for programmatic access."""
+
+    id: int
+    user_id: int
+    key_hash: str
+    key_prefix: str
+    name: str
+    created_at: datetime
+    last_used_at: datetime | None
+    revoked: bool
