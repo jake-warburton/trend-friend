@@ -11,7 +11,13 @@ from app.sources.base import SourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
-_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
+_RSS_BASE = "https://trends.google.com/trending/rss?geo={geo}"
+_REGIONS = [
+    ("US", "United States", "US"),
+    ("GB", "United Kingdom", "GB"),
+    ("DE", "Germany", "DE"),
+    ("IN", "India", "IN"),
+]
 
 
 class GoogleTrendsSourceAdapter(SourceAdapter):
@@ -21,21 +27,37 @@ class GoogleTrendsSourceAdapter(SourceAdapter):
 
     def fetch(self) -> list[RawSourceItem]:
         try:
-            return self._fetch_rss()
+            return self._fetch_all_regions()
         except Exception as error:
             self.log_fallback(error)
             return self._normalize_trending(self.sample_payload())
 
-    def _fetch_rss(self) -> list[RawSourceItem]:
-        """Fetch and parse the Google Trends daily trending RSS feed."""
+    def _fetch_all_regions(self) -> list[RawSourceItem]:
+        """Fetch trending searches from multiple regions."""
 
-        xml_bytes = self.get_url(_RSS_URL, headers={
+        all_items: list[RawSourceItem] = []
+        per_region = max(self.settings.max_items_per_source // len(_REGIONS), 5)
+        for geo_code, _label, country_code in _REGIONS:
+            try:
+                items = self._fetch_rss(geo_code, country_code, per_region)
+                all_items.extend(items)
+            except Exception as exc:
+                LOGGER.warning("Google Trends fetch failed for %s: %s", geo_code, exc)
+        return all_items[: self.settings.max_items_per_source]
+
+    def _fetch_rss(self, geo: str, country_code: str, limit: int) -> list[RawSourceItem]:
+        """Fetch and parse the Google Trends daily trending RSS feed for one region."""
+
+        url = _RSS_BASE.format(geo=geo)
+        xml_bytes = self.get_url(url, headers={
             "User-Agent": "Mozilla/5.0 (compatible; TrendFriend/1.0)",
             "Accept": "application/rss+xml, application/xml, text/xml",
         })
-        return self._parse_rss(xml_bytes)
+        return self._parse_rss(xml_bytes, geo, country_code, limit)
 
-    def _parse_rss(self, xml_bytes: bytes) -> list[RawSourceItem]:
+    def _parse_rss(
+        self, xml_bytes: bytes, geo: str = "US", country_code: str = "US", limit: int = 30,
+    ) -> list[RawSourceItem]:
         """Parse RSS XML into normalized items."""
 
         root = ET.fromstring(xml_bytes)
@@ -59,16 +81,20 @@ class GoogleTrendsSourceAdapter(SourceAdapter):
             items.append(
                 RawSourceItem(
                     source=self.source_name,
-                    external_id=f"gt-{hash(title) & 0xFFFFFFFF:08x}",
+                    external_id=f"gt-{geo.lower()}-{hash(title) & 0xFFFFFFFF:08x}",
                     title=title,
-                    url=link or f"https://trends.google.com/trending?geo=US&q={title.replace(' ', '+')}",
+                    url=link or f"https://trends.google.com/trending?geo={geo}&q={title.replace(' ', '+')}",
                     timestamp=timestamp,
                     engagement_score=traffic,
-                    metadata={"region": "US"},
+                    metadata={"region": geo},
+                    geo_country_code=country_code,
+                    geo_region=None,
+                    geo_detection_mode="explicit",
+                    geo_confidence=0.95,
                 )
             )
 
-            if len(items) >= self.settings.max_items_per_source:
+            if len(items) >= limit:
                 break
 
         return items

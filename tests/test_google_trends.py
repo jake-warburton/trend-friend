@@ -52,3 +52,33 @@ class GoogleTrendsAdapterTests(unittest.TestCase):
         payload = [{"id": "gt-empty", "title": "", "url": "", "traffic": 0, "region": "US"}]
         items = self.adapter._normalize_trending(payload)
         self.assertEqual(len(items), 0)
+
+    def test_parse_rss_sets_geo_metadata(self) -> None:
+        """Parsed RSS items carry explicit geo metadata for the region."""
+
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0" xmlns:ht="https://trends.google.com/trending/rss">
+          <channel>
+            <item>
+              <title>Test Trend</title>
+              <link>https://example.com</link>
+              <pubDate>Tue, 10 Mar 2026 00:00:00 +0000</pubDate>
+              <ht:approx_traffic>200,000+</ht:approx_traffic>
+            </item>
+          </channel>
+        </rss>"""
+        items = self.adapter._parse_rss(rss_xml, geo="GB", country_code="GB", limit=10)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].geo_country_code, "GB")
+        self.assertEqual(items[0].geo_detection_mode, "explicit")
+        self.assertAlmostEqual(items[0].geo_confidence, 0.95)
+        self.assertEqual(items[0].metadata["region"], "GB")
+        self.assertIn("gt-gb-", items[0].external_id)
+
+    def test_parse_traffic_handles_variants(self) -> None:
+        """Traffic parser handles comma-separated and plus-suffixed numbers."""
+
+        self.assertEqual(self.adapter._parse_traffic("500,000+"), 500000.0)
+        self.assertEqual(self.adapter._parse_traffic("1,000,000"), 1000000.0)
+        self.assertEqual(self.adapter._parse_traffic("0"), 0.0)
+        self.assertEqual(self.adapter._parse_traffic("invalid"), 0.0)
