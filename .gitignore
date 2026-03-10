@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .env
 data/*.db
+node_modules/
 web/node_modules/
 web/.next/
 web/data/*.json
