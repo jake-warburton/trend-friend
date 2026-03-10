@@ -28,7 +28,7 @@ class TrendScoringTests(unittest.TestCase):
         self.assertGreater(score.social_score, 0)
         self.assertGreater(score.developer_score, 0)
         self.assertGreater(score.knowledge_score, 0)
-        self.assertEqual(score.diversity_score, 12.0)
+        self.assertEqual(score.diversity_score, 18.0)
 
     def test_rank_topics_by_score_is_deterministic(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
@@ -60,6 +60,30 @@ class TrendScoringTests(unittest.TestCase):
         )
         specific_score, generic_score = calculate_trend_scores([specific, generic])
         self.assertGreater(specific_score.total_score, generic_score.total_score)
+
+    def test_calculate_trend_scores_rewards_cross_source_coverage(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        cross_source = TopicAggregate(
+            topic="ai agents",
+            source_counts={"reddit": 1, "github": 1},
+            signal_counts={"social": 1, "developer": 1},
+            total_signal_value=500.0,
+            average_signal_value=250.0,
+            latest_timestamp=timestamp,
+            evidence=["AI agents are replacing repetitive office workflows"],
+        )
+        single_source = TopicAggregate(
+            topic="street view",
+            source_counts={"hacker_news": 1},
+            signal_counts={"social": 1},
+            total_signal_value=500.0,
+            average_signal_value=500.0,
+            latest_timestamp=timestamp,
+            evidence=["Show HN: I Was Here – Draw on street view, others can find your drawings"],
+        )
+        cross_source_score, single_source_score = calculate_trend_scores([cross_source, single_source])
+        self.assertGreater(cross_source_score.diversity_score, single_source_score.diversity_score)
+        self.assertGreater(cross_source_score.total_score, single_source_score.total_score)
 
 
 if __name__ == "__main__":
