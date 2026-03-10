@@ -16,13 +16,22 @@ It complements older planning docs rather than replacing them.
 - Dashboard V2 contract and rollout context: [docs/DASHBOARD_V2_PLAN.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/DASHBOARD_V2_PLAN.md)
 - Competitor-inspired feature ranking: [docs/FEATURE_IMPLEMENTATION_PLAN.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/FEATURE_IMPLEMENTATION_PLAN.md)
 
+## Completed (March 2026)
+
+1. ~~Add geo summary to watchlists, shared watchlists, and community payloads~~ — already present in all payloads; expanded panel now shows geo labels.
+2. ~~Add Google Trends ingestion~~ — already integrated; expanded to US/UK/DE/IN regions with explicit geo metadata.
+3. ~~Add historical charts and richer trend trajectory UX~~ — trajectory chart, forecast dashed lines, score breakdown chart all implemented.
+4. ~~Polish dashboard interaction states~~ — loading/error/empty states, aria-live regions, refresh redesign, server-side scheduled refresh.
+5. ~~Harden the local-first stack~~ — normalization unit tests, forward-auth tests, 99 web + 237 Python tests passing.
+6. ~~CSV export enrichment~~ — added volatility, momentum, coverage, forecast columns to backend and frontend exports.
+7. ~~Webhook delivery hardening~~ — HMAC signatures, retry with backoff, User-Agent and delivery ID headers.
+8. ~~Forecast UI polish~~ — stable badge, tooltip labels, expanded panel forecast card, trajectory chart forecast lines.
+
 ## Highest-Priority Next Steps
 
-1. Add geo summary to watchlists, shared watchlists, and community payloads so saved trend collections can answer where a cluster is trending.
-2. Add Google Trends ingestion so the `search` score component stops being effectively dead weight.
-3. Add historical charts and richer trend trajectory UX to make the score history legible in the product.
-4. Polish dashboard interaction states for sharing and alerts so loading, success, and failure are visible.
-5. Harden the local-first stack with more Python CLI tests and clearer production API migration boundaries.
+1. Seasonality detection — derived recurring/evergreen tags, explorer badge, breakout confidence dampening.
+2. Social channel breakdown — tightly capped social pulse for top trends, per-topic platform summaries.
+3. Update ROADMAP.md and IMPLEMENTATION_BACKLOG.md to reflect current state.
 
 ## Notes
 
