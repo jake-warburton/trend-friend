@@ -549,6 +549,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
+  const shareActivityById = buildShareActivityMap(defaultWatchlist);
 
   return (
     <main className="dashboard-page">
@@ -1073,24 +1074,37 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               <div className="watchlist-items">
                 {defaultWatchlist
                   ? defaultWatchlist.shares.slice(0, 3).map((share) => (
-                    <div className="watchlist-item watchlist-item-share" key={share.id}>
-                      <div className="watchlist-item-share-main">
-                        <Link className="watchlist-item-share-link" href={`/shared/${share.shareToken}`}>
-                          <span>{share.public ? "Public share" : "Private share"}</span>
-                        </Link>
-                        <small className="source-summary-copy">
-                          {share.public ? "Listed in community directory" : "Only works via direct link"} · {share.showCreator ? "Shows your name" : "Anonymous"} · {formatShareExpirySummary(share.expiresAt)} · {formatCompactTimestamp(share.createdAt)}
-                        </small>
+                    <section className="watchlist-item watchlist-item-share" key={share.id}>
+                      <div className="watchlist-share-grid">
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Link</span>
+                          <Link className="watchlist-item-share-link" href={`/shared/${share.shareToken}`}>
+                            <span>{share.public ? "Public share" : "Private share"}</span>
+                          </Link>
+                          <small className="source-summary-copy">{formatShareTokenLabel(share.shareToken)}</small>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Visibility</span>
+                          <strong>{share.public ? "Public directory" : "Direct link only"}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Attribution</span>
+                          <strong>{share.showCreator ? "Shows your name" : "Anonymous"}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Expiry</span>
+                          <strong>{formatShareExpirySummary(share.expiresAt)}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Created</span>
+                          <strong>{formatCompactTimestamp(share.createdAt)}</strong>
+                        </div>
+                        <div className="watchlist-share-cell">
+                          <span className="watchlist-share-label">Last activity</span>
+                          <strong>{formatShareActivityTimestamp(shareActivityById.get(share.id) ?? null)}</strong>
+                        </div>
                       </div>
                       <div className="watchlist-item-share-actions">
-                        <button
-                          className="mini-action-button"
-                          disabled={actionPending || watchlistsRequireAuth}
-                          onClick={() => void handleToggleShareAttribution(defaultWatchlist, share.id, share.showCreator)}
-                          type="button"
-                        >
-                          {share.showCreator ? "Hide name" : "Show name"}
-                        </button>
                         <button
                           className="mini-action-button"
                           disabled={actionPending || watchlistsRequireAuth}
@@ -1098,6 +1112,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           type="button"
                         >
                           {share.public ? "Make private" : "Make public"}
+                        </button>
+                        <button
+                          className="mini-action-button"
+                          disabled={actionPending || watchlistsRequireAuth}
+                          onClick={() => void handleToggleShareAttribution(defaultWatchlist, share.id, share.showCreator)}
+                          type="button"
+                        >
+                          {share.showCreator ? "Hide name" : "Show name"}
                         </button>
                         <button
                           className="mini-action-button"
@@ -1116,7 +1138,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           Revoke
                         </button>
                       </div>
-                    </div>
+                    </section>
                   ))
                   : null}
               </div>
@@ -1315,6 +1337,17 @@ function formatDateOnly(value: string) {
   }).format(new Date(value));
 }
 
+function buildShareActivityMap(watchlist: Watchlist | null) {
+  const shareActivityById = new Map<number, string>();
+  for (const event of watchlist?.shareEvents ?? []) {
+    if (event.shareId == null || shareActivityById.has(event.shareId)) {
+      continue;
+    }
+    shareActivityById.set(event.shareId, event.createdAt);
+  }
+  return shareActivityById;
+}
+
 function formatSourceLabel(source: string) {
   return source
     .split("_")
@@ -1400,6 +1433,17 @@ function formatDuration(durationMs: number) {
     return `${(durationMs / 1000).toFixed(1)}s`;
   }
   return `${durationMs}ms`;
+}
+
+function formatShareTokenLabel(shareToken: string) {
+  return `${shareToken.slice(0, 8)}...`;
+}
+
+function formatShareActivityTimestamp(value: string | null) {
+  if (value == null) {
+    return "No changes yet";
+  }
+  return formatCompactTimestamp(value);
 }
 
 function formatTrendStatus(status: string) {
