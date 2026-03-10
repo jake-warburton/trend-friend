@@ -638,6 +638,22 @@ input {
   margin-top: 8px;
 }
 
+.watchlist-share-analytics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.watchlist-share-analytics-card {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid rgba(124, 157, 216, 0.08);
+  border-radius: 10px;
+  background: rgba(10, 24, 44, 0.42);
+}
+
 .watchlist-item-share {
   display: grid;
   gap: 10px;
@@ -687,12 +703,20 @@ input {
 }
 
 @media (max-width: 1180px) {
+  .watchlist-share-analytics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .watchlist-share-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 720px) {
+  .watchlist-share-analytics {
+    grid-template-columns: 1fr;
+  }
+
   .watchlist-share-grid {
     grid-template-columns: 1fr 1fr;
   }

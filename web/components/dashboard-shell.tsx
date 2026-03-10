@@ -13,6 +13,7 @@ import {
   formatAutoRefreshStatus,
   hasOverviewChanged,
 } from "@/lib/auto-refresh";
+import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 
 import type {
   AlertEvent,
@@ -88,6 +89,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const deferredKeyword = useDeferredValue(keyword);
   const isPollingRef = useRef(false);
   const hasMountedRef = useRef(false);
+  const shareUsageSummary = useMemo(
+    () => summarizeShareUsage(defaultWatchlist?.shares ?? []),
+    [defaultWatchlist?.shares],
+  );
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -1134,6 +1139,30 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
               {actionNotice ? <p className="action-success-notice">{actionNotice}</p> : null}
               {shareNotice ? <p className="source-summary-copy">{shareNotice}</p> : null}
+              {defaultWatchlist && defaultWatchlist.shares.length > 0 ? (
+                <div className="watchlist-share-analytics">
+                  <article className="watchlist-share-analytics-card">
+                    <span className="watchlist-share-label">Total opens</span>
+                    <strong>{shareUsageSummary.totalOpens}</strong>
+                  </article>
+                  <article className="watchlist-share-analytics-card">
+                    <span className="watchlist-share-label">Active in 7d</span>
+                    <strong>{shareUsageSummary.activeShares}</strong>
+                  </article>
+                  <article className="watchlist-share-analytics-card">
+                    <span className="watchlist-share-label">Dormant</span>
+                    <strong>{shareUsageSummary.dormantShares}</strong>
+                  </article>
+                  <article className="watchlist-share-analytics-card">
+                    <span className="watchlist-share-label">Top link</span>
+                    <strong>
+                      {shareUsageSummary.topShare
+                        ? `${formatShareTokenLabel(shareUsageSummary.topShare.shareToken)} · ${shareUsageSummary.topShare.accessCount} opens`
+                        : "No link usage yet"}
+                    </strong>
+                  </article>
+                </div>
+              ) : null}
               <div className="watchlist-items">
                 {(defaultWatchlist?.items ?? []).slice(0, 5).map((item) => (
                   <Link className="watchlist-item" href={`/trends/${item.trendId}`} key={item.trendId}>
@@ -1176,6 +1205,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         <div className="watchlist-share-cell">
                           <span className="watchlist-share-label">Last opened</span>
                           <strong>{formatShareActivityTimestamp(share.lastAccessedAt)}</strong>
+                          {wasOpenedRecently(share.lastAccessedAt) ? (
+                            <small className="source-summary-copy">Active this week</small>
+                          ) : null}
                         </div>
                         <div className="watchlist-share-cell">
                           <span className="watchlist-share-label">Last activity</span>
