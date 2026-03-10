@@ -15,6 +15,7 @@ import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
+import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
 
@@ -1806,9 +1807,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     {source.latestFetchAt ? formatCompactTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
                     {source.latestItemCount} items · {formatDuration(source.durationMs)}
                   </p>
+                  <p className="source-summary-copy">{summarizeSourceYield(source)}</p>
                   {source.usedFallback ? (
                     <p className="source-warning-copy">Latest successful fetch used fallback sample data.</p>
-                  ) : null}
+                  ) : (
+                    <p className="source-summary-copy">{describeSourceYield(source)}</p>
+                  )}
                   {source.errorMessage ? (
                     <p className="source-error-copy">{source.errorMessage}</p>
                   ) : null}

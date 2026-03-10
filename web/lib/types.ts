@@ -99,7 +99,10 @@ export type DashboardOverviewSource = {
   status: string;
   latestFetchAt: string | null;
   latestSuccessAt: string | null;
+  rawItemCount: number;
   latestItemCount: number;
+  keptItemCount: number;
+  yieldRatePercent: number;
   durationMs: number;
   usedFallback: boolean;
   errorMessage: string | null;
@@ -292,7 +295,10 @@ export type TrendDetailIndexResponse = {
 export type SourceRun = {
   fetchedAt: string;
   success: boolean;
+  rawItemCount: number;
   itemCount: number;
+  keptItemCount: number;
+  yieldRatePercent: number;
   durationMs: number;
   usedFallback: boolean;
   errorMessage: string | null;
@@ -310,7 +316,10 @@ export type SourceSummaryRecord = {
   status: string;
   latestFetchAt: string | null;
   latestSuccessAt: string | null;
+  rawItemCount: number;
   latestItemCount: number;
+  keptItemCount: number;
+  yieldRatePercent: number;
   durationMs: number;
   usedFallback: boolean;
   errorMessage: string | null;

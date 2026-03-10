@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { loadSourceSummary } from "@/lib/trends";
 
 type SourcePageProps = {
@@ -46,8 +47,8 @@ export default async function SourcePage({ params }: SourcePageProps) {
             <strong>{formatSourceStatus(summary.status)}</strong>
           </div>
           <div className="stat-card">
-            <span>Latest item count</span>
-            <strong>{summary.latestItemCount}</strong>
+            <span>Yield</span>
+            <strong>{summarizeSourceYield(summary)}</strong>
           </div>
           <div className="stat-card">
             <span>Duration</span>
@@ -79,8 +80,12 @@ export default async function SourcePage({ params }: SourcePageProps) {
               </strong>
             </article>
             <article className="source-metric-card">
-              <span>Peak items</span>
+              <span>Peak kept items</span>
               <strong>{maxItemCount}</strong>
+            </article>
+            <article className="source-metric-card">
+              <span>Latest raw fetch</span>
+              <strong>{summary.rawItemCount}</strong>
             </article>
             <article className="source-metric-card">
               <span>Slowest run</span>
@@ -88,10 +93,12 @@ export default async function SourcePage({ params }: SourcePageProps) {
             </article>
           </div>
 
+          <p className="source-summary-copy">{describeSourceYield(summary)}</p>
+
           <div className="source-run-chart">
             <div className="source-run-chart-header">
-              <strong>Item volume</strong>
-              <span>Recent runs</span>
+              <strong>Kept item volume</strong>
+              <span>After dedupe and caps</span>
             </div>
             <div className="source-run-bars">
               {summary.runHistory.map((run, index) => (
@@ -100,7 +107,26 @@ export default async function SourcePage({ params }: SourcePageProps) {
                     className={runBarClassName(run)}
                     style={{ height: `${Math.max((run.itemCount / maxItemCount) * 100, 14)}%` }}
                   />
-                  <strong>{run.itemCount}</strong>
+                  <strong>{run.keptItemCount}</strong>
+                  <span>{formatShortDate(run.fetchedAt)}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="source-run-chart">
+            <div className="source-run-chart-header">
+              <strong>Yield rate</strong>
+              <span>Kept versus raw fetched</span>
+            </div>
+            <div className="source-run-bars">
+              {summary.runHistory.map((run, index) => (
+                <article className="source-run-bar-card" key={`yield-${run.fetchedAt}-${index}`}>
+                  <div
+                    className={runBarClassName(run)}
+                    style={{ height: `${Math.max(run.yieldRatePercent, 14)}%` }}
+                  />
+                  <strong>{formatPercent(run.yieldRatePercent)}</strong>
                   <span>{formatShortDate(run.fetchedAt)}</span>
                 </article>
               ))}
@@ -132,11 +158,11 @@ export default async function SourcePage({ params }: SourcePageProps) {
                 <div>
                   <strong>{formatTimestamp(run.fetchedAt)}</strong>
                   <span>
-                    {run.success ? "Success" : "Failed"} · {run.itemCount} items ·{" "}
+                    {run.success ? "Success" : "Failed"} · {run.keptItemCount}/{run.rawItemCount} kept ·{" "}
                     {formatDuration(run.durationMs)}
                   </span>
                 </div>
-                <small>{run.usedFallback ? "Fallback" : "Live"}</small>
+                <small>{run.usedFallback ? "Fallback" : formatPercent(run.yieldRatePercent)}</small>
               </article>
             ))}
           </div>
@@ -253,6 +279,16 @@ function formatSourceStatus(status: string) {
     return "Degraded";
   }
   return "Stale";
+}
+
+function formatPercent(value: number) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "0%";
+  }
+  if (Math.abs(value - Math.round(value)) < 0.05) {
+    return `${Math.round(value)}%`;
+  }
+  return `${value.toFixed(1)}%`;
 }
 
 function runBarClassName(run: { success: boolean; usedFallback: boolean }) {
