@@ -22,6 +22,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
     notFound();
   }
 
+  const geoSummary = trend.geoSummary ?? [];
+
   return (
     <main className="detail-page">
       <section className="detail-hero">
@@ -150,7 +152,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
 
           <div className="detail-list">
-            {trend.geoSummary.length === 0 ? (
+            {geoSummary.length === 0 ? (
               <article className="detail-list-item">
                 <div>
                   <strong>No location signals yet</strong>
@@ -158,7 +160,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 </div>
               </article>
             ) : (
-              trend.geoSummary.map((item: TrendDetailRecord["geoSummary"][number]) => (
+              geoSummary.map((item: TrendDetailRecord["geoSummary"][number]) => (
                 <article className="detail-list-item" key={`${item.label}-${item.countryCode ?? "none"}`}>
                   <div>
                     <strong>{item.label}</strong>

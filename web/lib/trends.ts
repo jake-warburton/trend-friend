@@ -254,7 +254,8 @@ export async function loadTrendExplorer(): Promise<TrendExplorerResponse> {
 export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord | null> {
   if (API_ENABLED) {
     try {
-      return await apiGet<TrendDetailRecord>(`/trends/${slug}`);
+      const trend = await apiGet<TrendDetailRecord>(`/trends/${slug}`);
+      return normalizeTrendDetailRecord(trend);
     } catch { /* fall through to file */ }
   }
   const payload = await readTrendDetailIndex();
@@ -307,30 +308,35 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
 function normalizeTrendDetailIndex(payload: TrendDetailIndexResponse): TrendDetailIndexResponse {
   return {
     generatedAt: payload.generatedAt,
-    trends: payload.trends.map((trend) => ({
-      ...trend,
-      category: trend.category ?? "general-tech",
-      status: trend.status ?? "steady",
-      volatility: trend.volatility ?? "stable",
-      previousRank: trend.previousRank ?? null,
-      rankChange: trend.rankChange ?? null,
-      firstSeenAt: trend.firstSeenAt ?? null,
-      momentum: {
-        previousRank: trend.momentum?.previousRank ?? trend.previousRank ?? null,
-        rankChange: trend.momentum?.rankChange ?? trend.rankChange ?? null,
-        absoluteDelta: trend.momentum?.absoluteDelta ?? null,
-        percentDelta: trend.momentum?.percentDelta ?? null,
-      },
-      coverage: {
-        sourceCount: trend.coverage?.sourceCount ?? trend.sources?.length ?? 0,
-        signalCount: trend.coverage?.signalCount ?? 0,
-      },
-      sources: trend.sources ?? [],
-      history: trend.history ?? [],
-      sourceBreakdown: trend.sourceBreakdown ?? [],
-      evidenceItems: trend.evidenceItems ?? [],
-      relatedTrends: trend.relatedTrends ?? [],
-    })),
+    trends: payload.trends.map(normalizeTrendDetailRecord),
+  };
+}
+
+function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord {
+  return {
+    ...trend,
+    category: trend.category ?? "general-tech",
+    status: trend.status ?? "steady",
+    volatility: trend.volatility ?? "stable",
+    previousRank: trend.previousRank ?? null,
+    rankChange: trend.rankChange ?? null,
+    firstSeenAt: trend.firstSeenAt ?? null,
+    momentum: {
+      previousRank: trend.momentum?.previousRank ?? trend.previousRank ?? null,
+      rankChange: trend.momentum?.rankChange ?? trend.rankChange ?? null,
+      absoluteDelta: trend.momentum?.absoluteDelta ?? null,
+      percentDelta: trend.momentum?.percentDelta ?? null,
+    },
+    coverage: {
+      sourceCount: trend.coverage?.sourceCount ?? trend.sources?.length ?? 0,
+      signalCount: trend.coverage?.signalCount ?? 0,
+    },
+    sources: trend.sources ?? [],
+    history: trend.history ?? [],
+    sourceBreakdown: trend.sourceBreakdown ?? [],
+    geoSummary: trend.geoSummary ?? [],
+    evidenceItems: trend.evidenceItems ?? [],
+    relatedTrends: trend.relatedTrends ?? [],
   };
 }
 
