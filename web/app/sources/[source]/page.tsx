@@ -22,6 +22,8 @@ export default async function SourcePage({ params }: SourcePageProps) {
   const maxItemCount = Math.max(...summary.runHistory.map((run) => run.itemCount), 1);
   const maxDurationMs = Math.max(...summary.runHistory.map((run) => run.durationMs), 1);
   const successfulRuns = summary.runHistory.filter((run) => run.success).length;
+  const runMix = buildRunMix(summary.runHistory);
+  const topTrendScore = Math.max(...summary.topTrends.map((trend) => trend.scoreTotal), 1);
 
   return (
     <main className="detail-page">
@@ -147,6 +149,34 @@ export default async function SourcePage({ params }: SourcePageProps) {
               <h2>Top linked trends</h2>
             </div>
           </div>
+
+          <div className="pie-chart-wrap source-detail-chart-wrap">
+            <div className="pie-chart" style={{ background: buildRunMixGradient(runMix) }} />
+            <div className="pie-chart-legend">
+              {runMix.map((item) => (
+                <div className="pie-legend-row" key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mini-bar-list source-trend-bars">
+            {summary.topTrends.map((trend) => (
+              <div className="mini-bar-row" key={`bar-${trend.id}`}>
+                <span>{trend.name}</span>
+                <div className="mini-bar-track">
+                  <div
+                    className="mini-bar-fill"
+                    style={{ width: `${Math.max((trend.scoreTotal / topTrendScore) * 100, 10)}%` }}
+                  />
+                </div>
+                <strong>{trend.scoreTotal.toFixed(1)}</strong>
+              </div>
+            ))}
+          </div>
+
           <div className="detail-list">
             {summary.topTrends.map((trend) => (
               <article className="detail-list-item" key={trend.id}>
@@ -233,4 +263,39 @@ function runBarClassName(run: { success: boolean; usedFallback: boolean }) {
     return "source-run-bar source-run-bar-fallback";
   }
   return "source-run-bar";
+}
+
+function buildRunMix(
+  runs: Array<{ success: boolean; usedFallback: boolean }>,
+): Array<{ label: string; value: number }> {
+  const healthy = runs.filter((run) => run.success && !run.usedFallback).length;
+  const degraded = runs.filter((run) => run.success && run.usedFallback).length;
+  const failed = runs.filter((run) => !run.success).length;
+  return [
+    { label: "Healthy", value: healthy },
+    { label: "Degraded", value: degraded },
+    { label: "Failed", value: failed },
+  ].filter((item) => item.value > 0);
+}
+
+function buildRunMixGradient(dataset: Array<{ label: string; value: number }>) {
+  const total = dataset.reduce((sum, item) => sum + item.value, 0);
+  if (total <= 0) {
+    return "conic-gradient(#182947 0deg 360deg)";
+  }
+
+  const colorByLabel: Record<string, string> = {
+    Healthy: "#5e6bff",
+    Degraded: "#ffca6e",
+    Failed: "#ff8b8b",
+  };
+
+  let angle = 0;
+  const segments = dataset.map((item) => {
+    const nextAngle = angle + (item.value / total) * 360;
+    const segment = `${colorByLabel[item.label] ?? "#00c4ff"} ${angle}deg ${nextAngle}deg`;
+    angle = nextAngle;
+    return segment;
+  });
+  return `conic-gradient(${segments.join(", ")})`;
 }

@@ -471,6 +471,11 @@ input {
   gap: 6px;
 }
 
+.source-detail-chart-wrap,
+.source-trend-bars {
+  margin-bottom: 14px;
+}
+
 .curated-list {
   display: grid;
   gap: 5px;
