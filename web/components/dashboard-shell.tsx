@@ -429,7 +429,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       const response = await fetch(`/api/watchlists/${targetWatchlist.id}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ public: isPublic }),
+        body: JSON.stringify({ public: isPublic, showCreator: false }),
       });
 
       if (!response.ok) {
@@ -489,6 +489,28 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         return;
       }
       showActionNotice(!isPublic ? "Share is now public" : "Share removed from public directory");
+      await loadWatchlists();
+      await loadPublicWatchlists();
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleToggleShareAttribution(targetWatchlist: Watchlist, shareId: number, showCreator: boolean) {
+    setShareNotice(null);
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch(`/api/watchlists/${targetWatchlist.id}/shares/${shareId}/attribution`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ showCreator: !showCreator }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not update share attribution");
+        return;
+      }
+      showActionNotice(!showCreator ? "Creator name will be shown" : "Creator name hidden");
       await loadWatchlists();
       await loadPublicWatchlists();
     } finally {
@@ -1006,10 +1028,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           <span>{share.public ? "Public share" : "Private share"}</span>
                         </Link>
                         <small className="source-summary-copy">
-                          {share.public ? "Listed in community directory" : "Only works via direct link"} · {formatCompactTimestamp(share.createdAt)}
+                          {share.public ? "Listed in community directory" : "Only works via direct link"} · {share.showCreator ? "Shows your name" : "Anonymous"} · {formatCompactTimestamp(share.createdAt)}
                         </small>
                       </div>
                       <div className="watchlist-item-share-actions">
+                        <button
+                          className="mini-action-button"
+                          disabled={actionPending || watchlistsRequireAuth}
+                          onClick={() => void handleToggleShareAttribution(defaultWatchlist, share.id, share.showCreator)}
+                          type="button"
+                        >
+                          {share.showCreator ? "Hide name" : "Show name"}
+                        </button>
                         <button
                           className="mini-action-button"
                           disabled={actionPending || watchlistsRequireAuth}
@@ -1170,6 +1200,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     <p className="source-summary-copy">
                       {formatSourceContributionSummary(watchlist.sourceContributions[0])}
                     </p>
+                  ) : null}
+                  {watchlist.ownerDisplayName ? (
+                    <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
                   ) : null}
                   {watchlist.geoSummary?.length ? (
                     <p className="source-summary-copy">

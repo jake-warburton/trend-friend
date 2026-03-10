@@ -310,6 +310,7 @@ class WatchlistShare:
     share_token: str
     created_by: int | None
     is_public: bool
+    show_creator: bool
     created_at: datetime
 
 

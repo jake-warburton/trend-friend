@@ -9,7 +9,8 @@ export type WatchlistMutationBody =
   | { action: "add-item"; watchlistId: number; trendId: string; trendName: string }
   | { action: "remove-item"; watchlistId: number; trendId: string }
   | { action: "revoke-share"; watchlistId: number; shareId: number }
-  | { action: "set-share-visibility"; watchlistId: number; shareId: number; public: boolean };
+  | { action: "set-share-visibility"; watchlistId: number; shareId: number; public: boolean }
+  | { action: "set-share-attribution"; watchlistId: number; shareId: number; showCreator: boolean };
 
 export type AlertMutationBody =
   | { action: "mark-read"; eventIds: number[] }
@@ -90,6 +91,13 @@ export async function mutateWatchlists(
         { headers: dependencies.apiHeaders },
       );
     }
+    if (body.action === "set-share-attribution") {
+      return apiPost(
+        `/watchlists/${body.watchlistId}/shares/${body.shareId}/attribution`,
+        { showCreator: body.showCreator },
+        { headers: dependencies.apiHeaders },
+      );
+    }
     return apiPost("/watchlists/items", {
       action: "remove",
       watchlistId: body.watchlistId,
@@ -121,6 +129,14 @@ export async function mutateWatchlists(
       "--share-id",
       String(body.shareId),
       ...(body.public ? ["--public"] : []),
+    ));
+  }
+  if (body.action === "set-share-attribution") {
+    return ensureSuccessPayload(await runScript(
+      "set-share-attribution",
+      "--share-id",
+      String(body.shareId),
+      ...(body.showCreator ? ["--show-creator"] : []),
     ));
   }
   return runScript(
@@ -184,9 +200,13 @@ export async function shareWatchlist(
   watchlistId: number,
   isPublic: boolean,
   dependencies: ServiceDependencies = {},
+  showCreator = false,
 ): Promise<JsonValue> {
   if (dependencies.apiEnabled ?? hasApi()) {
-    return (dependencies.apiPost ?? defaultApiPost)(`/watchlists/${watchlistId}/share`, { public: isPublic }, {
+    return (dependencies.apiPost ?? defaultApiPost)(`/watchlists/${watchlistId}/share`, {
+      public: isPublic,
+      showCreator,
+    }, {
       headers: dependencies.apiHeaders,
     });
   }
@@ -195,6 +215,7 @@ export async function shareWatchlist(
     "--watchlist-id",
     String(watchlistId),
     ...(isPublic ? ["--public"] : []),
+    ...(showCreator ? ["--show-creator"] : []),
   ));
 }
 

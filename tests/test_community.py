@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import unittest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -212,6 +213,31 @@ class CommunityAPITests(unittest.TestCase):
         resp = self.client.get("/api/v1/community/watchlists")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()["watchlists"]), 1)
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_shared_watchlist_can_expose_owner_display_name(self) -> None:
+        auth_client = TestClient(self.app)
+        auth_client.post(
+            "/api/v1/auth/register",
+            json={"username": "owner1", "password": "password123", "displayName": "Owner One"},
+        )
+        watchlist_id = auth_client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+        self._add_watchlist_item(watchlist_id, "ai-agents", "AI Agents")
+        self._insert_trend_score("AI Agents")
+
+        share_resp = auth_client.post(
+            f"/api/v1/watchlists/{watchlist_id}/share",
+            json={"public": True, "showCreator": True},
+        )
+        token = share_resp.json()["shareToken"]
+
+        shared_resp = self.client.get(f"/api/v1/shared/{token}")
+        self.assertEqual(shared_resp.status_code, 200)
+        self.assertEqual(shared_resp.json()["ownerDisplayName"], "Owner One")
+
+        public_resp = self.client.get("/api/v1/community/watchlists")
+        self.assertEqual(public_resp.status_code, 200)
+        self.assertEqual(public_resp.json()["watchlists"][0]["ownerDisplayName"], "Owner One")
 
     # -- Public trend page --
 

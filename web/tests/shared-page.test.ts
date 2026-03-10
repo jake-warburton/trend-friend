@@ -22,6 +22,7 @@ test("shared page renders the fetched watchlist", async () => {
   const responsePayload: SharedWatchlistResponse = {
     shareToken: "share-123",
     public: true,
+    ownerDisplayName: "Owner One",
     createdAt: "2026-03-10T12:00:00Z",
     watchlist: {
       id: 1,
@@ -76,6 +77,7 @@ test("shared page renders the fetched watchlist", async () => {
   assert.match(html, /Shared List/);
   assert.match(html, /AI Agents/);
   assert.match(html, /Public link/);
+  assert.match(html, /Shared by Owner One/);
   assert.match(html, /Reddit drove 57.1%/);
 });
 

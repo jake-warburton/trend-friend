@@ -579,15 +579,16 @@ class WatchlistRepository:
         share_token: str,
         created_by: int | None = None,
         is_public: bool = False,
+        show_creator: bool = False,
     ) -> WatchlistShare:
         """Create a share link for a watchlist."""
 
         cursor = self.connection.execute(
             """
-            INSERT INTO watchlist_shares (watchlist_id, share_token, created_by, is_public)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO watchlist_shares (watchlist_id, share_token, created_by, is_public, show_creator)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (watchlist_id, share_token, created_by, int(is_public)),
+            (watchlist_id, share_token, created_by, int(is_public), int(show_creator)),
         )
         self.connection.commit()
         return self.get_share_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
@@ -596,7 +597,7 @@ class WatchlistRepository:
         """Return a share by id."""
 
         row = self.connection.execute(
-            "SELECT id, watchlist_id, share_token, created_by, is_public, created_at FROM watchlist_shares WHERE id = ?",
+            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, created_at FROM watchlist_shares WHERE id = ?",
             (share_id,),
         ).fetchone()
         if row is None:
@@ -607,7 +608,7 @@ class WatchlistRepository:
         """Return a share by its token."""
 
         row = self.connection.execute(
-            "SELECT id, watchlist_id, share_token, created_by, is_public, created_at FROM watchlist_shares WHERE share_token = ?",
+            "SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, created_at FROM watchlist_shares WHERE share_token = ?",
             (token,),
         ).fetchone()
         if row is None:
@@ -619,7 +620,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.created_at
+            SELECT ws.id, ws.watchlist_id, ws.share_token, ws.created_by, ws.is_public, ws.show_creator, ws.created_at
             FROM watchlist_shares ws
             WHERE ws.is_public = 1
             ORDER BY ws.created_at DESC
@@ -638,7 +639,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT id, watchlist_id, share_token, created_by, is_public, created_at
+            SELECT id, watchlist_id, share_token, created_by, is_public, show_creator, created_at
             FROM watchlist_shares
             WHERE watchlist_id = ?
             ORDER BY created_at DESC
@@ -715,6 +716,47 @@ class WatchlistRepository:
             return None
         return self.get_share_by_id(share_id)
 
+    def update_share_creator_visibility(
+        self,
+        share_id: int,
+        owner_user_id: int | None,
+        show_creator: bool,
+    ) -> WatchlistShare | None:
+        """Update whether a share exposes its creator attribution."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET show_creator = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (int(show_creator), share_id),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                UPDATE watchlist_shares
+                SET show_creator = ?
+                WHERE id IN (
+                    SELECT ws.id
+                    FROM watchlist_shares ws
+                    INNER JOIN watchlists w ON w.id = ws.watchlist_id
+                    WHERE ws.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (int(show_creator), share_id, owner_user_id),
+            )
+        self.connection.commit()
+        if cursor.rowcount == 0:
+            return None
+        return self.get_share_by_id(share_id)
+
     @staticmethod
     def _share_from_row(row: sqlite3.Row) -> WatchlistShare:
         return WatchlistShare(
@@ -723,6 +765,7 @@ class WatchlistRepository:
             share_token=row["share_token"],
             created_by=row["created_by"],
             is_public=bool(row["is_public"]),
+            show_creator=bool(row["show_creator"]),
             created_at=datetime.fromisoformat(row["created_at"]),
         )
 

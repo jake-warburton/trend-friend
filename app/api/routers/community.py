@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db, get_settings
 from app.auth.middleware import auth_enabled, require_auth
+from app.auth.repository import UserRepository
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
 from app.models import User
 from app.watchlists_payloads import (
@@ -41,11 +42,13 @@ def share_watchlist(
         share_token=token,
         created_by=user.id if auth_enabled() else None,
         is_public=is_public,
+        show_creator=body.get("showCreator") is True,
     )
 
     return {
         "shareToken": share.share_token,
         "public": share.is_public,
+        "showCreator": share.show_creator,
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -97,6 +100,38 @@ def update_watchlist_share_visibility(
         "id": share.id,
         "shareToken": share.share_token,
         "public": share.is_public,
+        "showCreator": share.show_creator,
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+
+@router.post("/watchlists/{watchlist_id}/shares/{share_id}/attribution")
+def update_watchlist_share_attribution(
+    watchlist_id: int,
+    share_id: int,
+    body: dict,
+    user: User = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db),
+) -> dict:
+    """Update whether a share exposes its creator display name."""
+
+    if "showCreator" not in body or not isinstance(body["showCreator"], bool):
+        raise HTTPException(status_code=422, detail="showCreator must be a boolean")
+
+    repo = WatchlistRepository(db)
+    watchlist = repo.get_watchlist_for_owner(watchlist_id, user.id if auth_enabled() else None)
+    if watchlist is None:
+        raise HTTPException(status_code=404, detail="Watchlist not found")
+
+    share = repo.update_share_creator_visibility(share_id, user.id if auth_enabled() else None, body["showCreator"])
+    if share is None:
+        raise HTTPException(status_code=404, detail="Share link not found")
+
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "showCreator": share.show_creator,
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -115,7 +150,12 @@ def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_
         raise HTTPException(status_code=404, detail="Watchlist not found")
 
     score_repo = TrendScoreRepository(db)
-    return build_shared_watchlist_payload(score_repo, share, watchlist)
+    return build_shared_watchlist_payload(
+        score_repo,
+        share,
+        watchlist,
+        owner_display_name=_resolve_owner_display_name(db, share),
+    )
 
 
 @router.get("/community/watchlists")
@@ -125,8 +165,11 @@ def list_public_watchlists(db: sqlite3.Connection = Depends(get_db)) -> dict:
     repo = WatchlistRepository(db)
     score_repo = TrendScoreRepository(db)
     public = repo.list_public_watchlists()
-
-    return build_public_watchlists_payload(public, score_repo=score_repo)
+    return build_public_watchlists_payload(
+        public,
+        score_repo=score_repo,
+        owner_display_names=_resolve_owner_display_names(db, [share for _, share in public]),
+    )
 
 
 @router.get("/community/trends/{trend_id}")
@@ -176,3 +219,22 @@ def get_public_trend_page(trend_id: str, db: sqlite3.Connection = Depends(get_db
             }
 
     raise HTTPException(status_code=404, detail="Trend not found")
+
+
+def _resolve_owner_display_name(db: sqlite3.Connection, share) -> str | None:
+    if share.created_by is None:
+        return None
+    user = UserRepository(db).get_user_by_id(share.created_by)
+    return user.display_name if user is not None else None
+
+
+def _resolve_owner_display_names(db: sqlite3.Connection, shares: list) -> dict[int, str]:
+    repository = UserRepository(db)
+    resolved: dict[int, str] = {}
+    for share in shares:
+        if share.created_by is None:
+            continue
+        user = repository.get_user_by_id(share.created_by)
+        if user is not None:
+            resolved[share.id] = user.display_name
+    return resolved

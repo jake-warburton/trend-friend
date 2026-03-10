@@ -26,6 +26,9 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
         <p className="source-summary-copy">
           {payload.watchlist.itemCount} tracked trends | {payload.public ? "Public link" : "Private token link"}
         </p>
+        {payload.ownerDisplayName ? (
+          <p className="source-summary-copy">Shared by {payload.ownerDisplayName}</p>
+        ) : null}
         <p className="source-summary-copy">Created {formatTimestamp(payload.createdAt)}</p>
         <Link className="refresh-button shared-back-link" href="/">
           Back to dashboard

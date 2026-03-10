@@ -71,6 +71,7 @@ def build_shared_watchlist_payload(
     score_repo: TrendScoreRepository,
     share: WatchlistShare,
     watchlist: Watchlist,
+    owner_display_name: str | None = None,
 ) -> dict[str, object]:
     """Build the public payload for a tokenized watchlist share."""
 
@@ -94,6 +95,8 @@ def build_shared_watchlist_payload(
         },
         "shareToken": share.share_token,
         "public": share.is_public,
+        "showCreator": share.show_creator,
+        "ownerDisplayName": owner_display_name if share.show_creator else None,
         "createdAt": _to_utc_iso(share.created_at),
     }
 
@@ -101,6 +104,7 @@ def build_shared_watchlist_payload(
 def build_public_watchlists_payload(
     public_watchlists: list[tuple[Watchlist, WatchlistShare]],
     score_repo: TrendScoreRepository | None = None,
+    owner_display_names: dict[int, str] | None = None,
 ) -> dict[str, object]:
     """Build the public community directory payload."""
 
@@ -109,7 +113,13 @@ def build_public_watchlists_payload(
 
     return {
         "watchlists": [
-            _serialize_public_watchlist_summary(watchlist, share, score_repo, score_by_slug)
+            _serialize_public_watchlist_summary(
+                watchlist,
+                share,
+                score_repo,
+                score_by_slug,
+                owner_display_name=(owner_display_names or {}).get(share.id),
+            )
             for watchlist, share in public_watchlists
         ]
     }
@@ -120,6 +130,7 @@ def _serialize_public_watchlist_summary(
     share: WatchlistShare,
     score_repo: TrendScoreRepository | None,
     score_by_slug: dict[str, object],
+    owner_display_name: str | None,
 ) -> dict[str, object]:
     geo = _aggregate_watchlist_geo(watchlist, score_repo, score_by_slug)
     source_contributions = _aggregate_watchlist_source_contributions(watchlist, score_repo, score_by_slug)
@@ -128,6 +139,8 @@ def _serialize_public_watchlist_summary(
         "name": watchlist.name,
         "itemCount": len(watchlist.items),
         "shareToken": share.share_token,
+        "showCreator": share.show_creator,
+        "ownerDisplayName": owner_display_name if share.show_creator else None,
         "createdAt": _to_utc_iso(watchlist.created_at),
         "updatedAt": _to_utc_iso(watchlist.updated_at),
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
@@ -313,6 +326,7 @@ def _serialize_watchlist(
                 "id": share.id,
                 "shareToken": share.share_token,
                 "public": share.is_public,
+                "showCreator": share.show_creator,
                 "createdAt": _to_utc_iso(share.created_at),
             }
             for share in shares

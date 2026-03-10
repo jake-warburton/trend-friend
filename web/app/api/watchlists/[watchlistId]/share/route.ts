@@ -18,11 +18,16 @@ export async function handleShareWatchlistPost(
   dependencies: ShareRouteDependencies = { shareWatchlist },
 ) {
   try {
-    const body = (await request.json()) as { public?: boolean };
+    const body = (await request.json()) as { public?: boolean; showCreator?: boolean };
     const { watchlistId } = await context.params;
-    const payload = await dependencies.shareWatchlist(Number(watchlistId), body.public === true, {
-      apiHeaders: buildForwardedAuthHeaders(request),
-    });
+    const payload = await dependencies.shareWatchlist(
+      Number(watchlistId),
+      body.public === true,
+      {
+        apiHeaders: buildForwardedAuthHeaders(request),
+      },
+      body.showCreator === true,
+    );
     return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Share request failed";

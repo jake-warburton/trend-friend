@@ -95,6 +95,16 @@ class ShareWatchlistTests(unittest.TestCase):
 
         self.assertTrue(result["public"])
 
+    def test_attribution_update_changes_show_creator_flag(self) -> None:
+        from scripts.watchlists_api import update_share_attribution_payload
+
+        watchlist = self.watchlist_repo.create_watchlist("Attribution List")
+        share = self.watchlist_repo.create_share(watchlist.id, "attribution-token", is_public=True, show_creator=False)
+
+        result = update_share_attribution_payload(self.watchlist_repo, share.id, show_creator=True)
+
+        self.assertTrue(result["showCreator"])
+
 
 class GetSharedWatchlistTests(unittest.TestCase):
     """Test get_shared_payload from the CLI layer."""

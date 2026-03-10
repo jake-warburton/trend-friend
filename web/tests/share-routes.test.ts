@@ -4,6 +4,7 @@ import test from "node:test";
 import { WatchlistServiceError } from "@/lib/server/watchlist-service";
 import { handleShareWatchlistPost } from "@/app/api/watchlists/[watchlistId]/share/route";
 import { handleRevokeSharePost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/revoke/route";
+import { handleShareAttributionPost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/attribution/route";
 import { handleShareVisibilityPost } from "@/app/api/watchlists/[watchlistId]/shares/[shareId]/visibility/route";
 import { handleSharedWatchlistGet } from "@/app/api/shared/[token]/route";
 
@@ -133,6 +134,37 @@ test("share visibility route returns updated share payload", async () => {
     id: 3,
     shareToken: "share-123",
     public: true,
+    createdAt: "2026-03-10T12:00:00Z",
+  });
+});
+
+test("share attribution route returns updated share payload", async () => {
+  const request = new Request("http://localhost/api/watchlists/12/shares/3/attribution", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ showCreator: true }),
+  });
+
+  const response = await handleShareAttributionPost(
+    request,
+    { params: Promise.resolve({ watchlistId: "12", shareId: "3" }) },
+    {
+      mutateWatchlists: async () => ({
+        id: 3,
+        shareToken: "share-123",
+        public: true,
+        showCreator: true,
+        createdAt: "2026-03-10T12:00:00Z",
+      }),
+    },
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    id: 3,
+    shareToken: "share-123",
+    public: true,
+    showCreator: true,
     createdAt: "2026-03-10T12:00:00Z",
   });
 });

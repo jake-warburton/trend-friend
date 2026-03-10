@@ -38,6 +38,7 @@ def main() -> None:
     share_watchlist = subparsers.add_parser("share-watchlist")
     share_watchlist.add_argument("--watchlist-id", type=int, required=True)
     share_watchlist.add_argument("--public", action="store_true")
+    share_watchlist.add_argument("--show-creator", action="store_true")
 
     revoke_share = subparsers.add_parser("revoke-share")
     revoke_share.add_argument("--share-id", type=int, required=True)
@@ -45,6 +46,10 @@ def main() -> None:
     update_share_visibility = subparsers.add_parser("set-share-visibility")
     update_share_visibility.add_argument("--share-id", type=int, required=True)
     update_share_visibility.add_argument("--public", action="store_true")
+
+    update_share_attribution = subparsers.add_parser("set-share-attribution")
+    update_share_attribution.add_argument("--share-id", type=int, required=True)
+    update_share_attribution.add_argument("--show-creator", action="store_true")
 
     get_shared = subparsers.add_parser("get-shared")
     get_shared.add_argument("--token", required=True)
@@ -100,6 +105,7 @@ def main() -> None:
             watchlist_repository=watchlist_repository,
             watchlist_id=args.watchlist_id,
             public=args.public,
+            show_creator=args.show_creator,
         )
     elif args.command == "get-shared":
         payload = get_shared_payload(
@@ -117,6 +123,12 @@ def main() -> None:
             watchlist_repository=watchlist_repository,
             share_id=args.share_id,
             public=args.public,
+        )
+    elif args.command == "set-share-attribution":
+        payload = update_share_attribution_payload(
+            watchlist_repository=watchlist_repository,
+            share_id=args.share_id,
+            show_creator=args.show_creator,
         )
     elif args.command == "list-public":
         payload = list_public_payload(watchlist_repository, score_repository)
@@ -161,6 +173,7 @@ def share_payload(
     watchlist_repository: WatchlistRepository,
     watchlist_id: int,
     public: bool,
+    show_creator: bool = False,
 ) -> dict[str, object]:
     """Create and return a share payload."""
 
@@ -174,10 +187,12 @@ def share_payload(
         watchlist_id=watchlist_id,
         share_token=secrets.token_urlsafe(16),
         is_public=public,
+        show_creator=show_creator,
     )
     return {
         "shareToken": share.share_token,
         "public": share.is_public,
+        "showCreator": share.show_creator,
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 
@@ -226,6 +241,26 @@ def update_share_visibility_payload(
         "id": share.id,
         "shareToken": share.share_token,
         "public": share.is_public,
+        "showCreator": share.show_creator,
+        "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
+
+
+def update_share_attribution_payload(
+    watchlist_repository: WatchlistRepository,
+    share_id: int,
+    show_creator: bool,
+) -> dict[str, object]:
+    """Update whether a local share exposes creator attribution."""
+
+    share = watchlist_repository.update_share_creator_visibility(share_id, owner_user_id=None, show_creator=show_creator)
+    if share is None:
+        return {"error": "Share link not found"}
+    return {
+        "id": share.id,
+        "shareToken": share.share_token,
+        "public": share.is_public,
+        "showCreator": share.show_creator,
         "createdAt": share.created_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 

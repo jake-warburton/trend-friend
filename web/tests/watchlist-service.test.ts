@@ -75,6 +75,25 @@ test("mutateWatchlists maps share visibility updates to CLI arguments", async ()
   });
 });
 
+test("mutateWatchlists maps share attribution updates to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "set-share-attribution",
+      watchlistId: 7,
+      shareId: 12,
+      showCreator: true,
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: ["set-share-attribution", "--share-id", "12", "--show-creator"],
+  });
+});
+
 test("shareWatchlist maps public shares to the CLI fallback", async () => {
   const payload = await shareWatchlist(3, true, {
     apiEnabled: false,

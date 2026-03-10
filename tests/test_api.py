@@ -215,3 +215,18 @@ class APITests(unittest.TestCase):
         )
         self.assertEqual(update_response.status_code, 200)
         self.assertTrue(update_response.json()["public"])
+
+    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    def test_user_can_toggle_share_attribution(self) -> None:
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123", "displayName": "Owner One"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+        client.post(f"/api/v1/watchlists/{watchlist_id}/share", json={"public": True, "showCreator": False})
+        share_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["shares"][0]["id"]
+
+        update_response = client.post(
+            f"/api/v1/watchlists/{watchlist_id}/shares/{share_id}/attribution",
+            json={"showCreator": True},
+        )
+        self.assertEqual(update_response.status_code, 200)
+        self.assertTrue(update_response.json()["showCreator"])
