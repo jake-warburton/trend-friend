@@ -108,6 +108,16 @@ class TrendForecastPayload:
 
 
 @dataclass(frozen=True)
+class SeasonalityPayload:
+    """Derived recurrence metadata exposed on trend surfaces."""
+
+    tag: str | None
+    recurrence_count: int
+    avg_gap_runs: float
+    confidence: float
+
+
+@dataclass(frozen=True)
 class OpportunityPayload:
     """Opportunity scoring exposed on detail pages."""
 
@@ -146,6 +156,7 @@ class TrendExplorerRecordPayload:
     sources: list[str]
     evidence_preview: list[str]
     recent_history: list[TrendHistoryPointPayload]
+    seasonality: SeasonalityPayload | None = None
     forecast_direction: str | None = None
 
 
@@ -262,6 +273,7 @@ class TrendDetailRecordPayload:
     geo_summary: list[TrendGeoSummaryPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     related_trends: list[RelatedTrendPayload]
+    seasonality: SeasonalityPayload | None = None
 
 
 @dataclass(frozen=True)
@@ -562,6 +574,9 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["evidencePreview"] = payload.pop("evidence_preview")
     payload["recentHistory"] = payload.pop("recent_history")
+    if payload["seasonality"] is not None:
+        payload["seasonality"]["recurrenceCount"] = payload["seasonality"].pop("recurrence_count")
+        payload["seasonality"]["avgGapRuns"] = payload["seasonality"].pop("avg_gap_runs")
     payload["forecastDirection"] = payload.pop("forecast_direction")
     for point in payload["recentHistory"]:
         point["capturedAt"] = point.pop("captured_at")
@@ -585,6 +600,9 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["breakoutPrediction"]["predictedDirection"] = payload["breakoutPrediction"].pop("predicted_direction")
     if payload["forecast"] is not None:
         payload["forecast"]["predictedScores"] = payload["forecast"].pop("predicted_scores")
+    if payload["seasonality"] is not None:
+        payload["seasonality"]["recurrenceCount"] = payload["seasonality"].pop("recurrence_count")
+        payload["seasonality"]["avgGapRuns"] = payload["seasonality"].pop("avg_gap_runs")
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")

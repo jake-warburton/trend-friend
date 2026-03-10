@@ -243,6 +243,14 @@ function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExplorerRe
       },
       sources: trend.sources ?? [],
       evidencePreview: trend.evidencePreview ?? [],
+      seasonality: trend.seasonality
+        ? {
+            tag: trend.seasonality.tag ?? null,
+            recurrenceCount: trend.seasonality.recurrenceCount ?? 0,
+            avgGapRuns: trend.seasonality.avgGapRuns ?? 0,
+            confidence: trend.seasonality.confidence ?? 0,
+          }
+        : null,
       forecastDirection: trend.forecastDirection ?? null,
     })),
   };
@@ -359,6 +367,14 @@ function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetailRecord
     geoSummary: trend.geoSummary ?? [],
     evidenceItems: trend.evidenceItems ?? [],
     relatedTrends: trend.relatedTrends ?? [],
+    seasonality: trend.seasonality
+      ? {
+          tag: trend.seasonality.tag ?? null,
+          recurrenceCount: trend.seasonality.recurrenceCount ?? 0,
+          avgGapRuns: trend.seasonality.avgGapRuns ?? 0,
+          confidence: trend.seasonality.confidence ?? 0,
+        }
+      : null,
   };
 }
 

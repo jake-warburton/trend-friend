@@ -156,6 +156,13 @@ export type TrendForecast = {
   method: string;
 };
 
+export type SeasonalitySummary = {
+  tag: string | null;
+  recurrenceCount: number;
+  avgGapRuns: number;
+  confidence: number;
+};
+
 export type OpportunitySummary = {
   composite: number;
   content: number;
@@ -186,6 +193,7 @@ export type TrendExplorerRecord = {
   sources: string[];
   evidencePreview: string[];
   recentHistory?: TrendHistoryPoint[];
+  seasonality?: SeasonalitySummary | null;
   forecastDirection?: string | null;
 };
 
@@ -270,6 +278,7 @@ export type TrendDetailRecord = {
   geoSummary: TrendGeoSummary[];
   evidenceItems: TrendEvidenceItem[];
   relatedTrends: RelatedTrend[];
+  seasonality?: SeasonalitySummary | null;
 };
 
 export type TrendDetailIndexResponse = {

@@ -19,6 +19,7 @@ from app.exports.serializers import (
 )
 from app.models import (
     BreakoutPredictionSummary,
+    SeasonalityResult,
     TrendDetailRecord,
     TrendEvidenceItem,
     TrendExplorerRecord,
@@ -139,6 +140,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["momentum"]["percentDelta"], 40.2)
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["evidencePreview"][0], "ai agents evidence")
+        self.assertEqual(payload["trends"][0]["seasonality"]["tag"], "recurring")
+        self.assertEqual(payload["trends"][0]["seasonality"]["recurrenceCount"], 2)
         self.assertEqual(payload["trends"][0]["forecastDirection"], "accelerating")
 
     def test_build_trend_detail_index_payload_uses_api_style_keys(self) -> None:
@@ -163,6 +166,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["forecast"]["method"], "holt")
         self.assertEqual(payload["trends"][0]["forecast"]["confidence"], "high")
         self.assertEqual(payload["trends"][0]["forecast"]["predictedScores"][0], 47.2)
+        self.assertEqual(payload["trends"][0]["seasonality"]["tag"], "recurring")
+        self.assertEqual(payload["trends"][0]["seasonality"]["avgGapRuns"], 3.5)
         self.assertGreater(payload["trends"][0]["opportunity"]["composite"], 0.0)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
@@ -294,6 +299,12 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
                 score_total=31.1,
             ),
         ],
+        seasonality=SeasonalityResult(
+            tag="recurring",
+            recurrence_count=2,
+            avg_gap_runs=3.5,
+            confidence=0.82,
+        ),
         forecast_direction="accelerating",
     )
 
@@ -407,6 +418,12 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 score_total=28.1,
             )
         ],
+        seasonality=SeasonalityResult(
+            tag="recurring",
+            recurrence_count=2,
+            avg_gap_runs=3.5,
+            confidence=0.82,
+        ),
     )
 
 

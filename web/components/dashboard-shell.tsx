@@ -15,6 +15,7 @@ import {
   hasOverviewChanged,
 } from "@/lib/auto-refresh";
 import { getExplorerForecastBadge } from "@/lib/forecast-ui";
+import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
 
@@ -61,6 +62,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
+  const [hideRecurring, setHideRecurring] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(null);
   const [watchlistError, setWatchlistError] = useState<string | null>(null);
@@ -122,7 +124,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         trend.name.toLowerCase().includes(normalizedKeyword) ||
         trend.evidencePreview.some((item) => item.toLowerCase().includes(normalizedKeyword));
       const matchesScore = trend.score.total >= minimum;
-      return matchesSource && matchesCategory && matchesKeyword && matchesScore;
+      const matchesSeasonality = !hideRecurring || !isRecurringTrend(trend.seasonality);
+      return matchesSource && matchesCategory && matchesKeyword && matchesScore && matchesSeasonality;
     });
 
     return [...trends].sort((left, right) => {
@@ -137,7 +140,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, initialData.explorer.trends, minimumScore, selectedCategory, selectedSource, sortBy]);
+  }, [deferredKeyword, hideRecurring, initialData.explorer.trends, minimumScore, selectedCategory, selectedSource, sortBy]);
 
   const categoryOptions = useMemo(() => {
     const categories = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.category))).sort();
@@ -788,6 +791,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           </NumberField.Root>
         </label>
 
+        <label className="filter-field filter-checkbox-field">
+          <span>Seasonality</span>
+          <button
+            className={hideRecurring ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+            onClick={() => setHideRecurring((current) => !current)}
+            type="button"
+          >
+            {hideRecurring ? "Hiding recurring" : "Hide recurring"}
+          </button>
+        </label>
+
         <div className="filter-field filter-field-action">
           <button className="export-button" onClick={() => downloadTrendsCsv()} type="button">
             Export CSV
@@ -946,6 +960,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               </div>
               {filteredTrends.map((trend) => {
                 const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
+                const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
                 return (
                 <article className="explorer-card" key={trend.id}>
                   <div className="explorer-card-top">
@@ -976,6 +991,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         {forecastBadge ? (
                           <span className={`forecast-badge forecast-badge-${forecastBadge.tone}`}>
                             {forecastBadge.label}
+                          </span>
+                        ) : null}
+                        {seasonalityBadge ? (
+                          <span className={`seasonality-badge seasonality-badge-${seasonalityBadge.tone}`}>
+                            {seasonalityBadge.label}
                           </span>
                         ) : null}
                         <span className="trend-date-chip">{formatCategory(trend.category)}</span>

@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone, timedelta
 
-from app.models import TrendHistoryPoint, TrendScoreResult
+from app.models import SeasonalityResult, TrendHistoryPoint, TrendScoreResult
 from app.scoring.predictor import predict_breakouts, BreakoutPrediction
 
 
@@ -148,3 +148,34 @@ class PredictorTests(unittest.TestCase):
         )
 
         self.assertGreater(len(predictions[0].signals), 0)
+
+    def test_recurring_seasonality_dampens_breakout_confidence(self) -> None:
+        score = _make_score("tax software", total=45.0, sources=4)
+        history = _make_history([20.0, 30.0, 40.0, 45.0], start_rank=8)
+        now = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        baseline = predict_breakouts(
+            current_scores=[score],
+            histories={"tax software": history},
+            current_ranks={"tax software": 2},
+            first_seen={"tax software": datetime(2026, 3, 8, tzinfo=timezone.utc)},
+            now=now,
+        )[0]
+        recurring = predict_breakouts(
+            current_scores=[score],
+            histories={"tax software": history},
+            current_ranks={"tax software": 2},
+            first_seen={"tax software": datetime(2026, 3, 8, tzinfo=timezone.utc)},
+            now=now,
+            seasonality_by_topic={
+                "tax software": SeasonalityResult(
+                    tag="recurring",
+                    recurrence_count=2,
+                    avg_gap_runs=3.5,
+                    confidence=0.82,
+                )
+            },
+        )[0]
+
+        self.assertLess(recurring.confidence, baseline.confidence)
+        self.assertIn("Recurring pattern detected", recurring.signals[-1])

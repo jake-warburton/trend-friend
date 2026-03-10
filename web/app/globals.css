@@ -1234,6 +1234,29 @@ input {
   color: #ffd29d;
 }
 
+.seasonality-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.seasonality-badge-recurring {
+  border: 1px solid rgba(255, 140, 102, 0.22);
+  background: rgba(255, 140, 102, 0.12);
+  color: #ffb79b;
+}
+
+.seasonality-badge-evergreen {
+  border: 1px solid rgba(118, 213, 149, 0.22);
+  background: rgba(118, 213, 149, 0.12);
+  color: #a8ebbc;
+}
+
 .trend-cell span,
 .score-cell span,
 .explorer-metric span,
@@ -1317,6 +1340,31 @@ input {
 
 .forecast-note-medium {
   color: #ffd29d;
+}
+
+.filter-checkbox-field {
+  display: grid;
+  gap: 8px;
+}
+
+.toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: rgba(8, 18, 35, 0.46);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.toggle-chip-active {
+  border-color: rgba(255, 140, 102, 0.3);
+  background: rgba(255, 140, 102, 0.12);
+  color: #ffb79b;
 }
 
 .source-row-compact {

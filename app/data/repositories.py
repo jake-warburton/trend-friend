@@ -15,6 +15,7 @@ from app.models import (
     OpportunitySummary,
     PipelineRun,
     RelatedTrend,
+    SeasonalityResult,
     SourceIngestionRun,
     TrendDetailRecord,
     TrendEvidenceItem,
@@ -1321,6 +1322,42 @@ class TrendScoreRepository:
             return None
         return datetime.fromisoformat(row["captured_at"])
 
+    def get_topic_appearance_gaps(self, topic: str) -> list[int]:
+        """Return missing-run gaps between consecutive topic appearances."""
+
+        rows = self.connection.execute(
+            """
+            SELECT trend_runs.id AS run_id
+            FROM trend_score_snapshots
+            INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
+            WHERE trend_score_snapshots.topic = ?
+            ORDER BY trend_runs.id ASC
+            """,
+            (topic,),
+        ).fetchall()
+        run_ids = [row["run_id"] for row in rows]
+        if len(run_ids) < 2:
+            return []
+        return [max(0, run_ids[index] - run_ids[index - 1] - 1) for index in range(1, len(run_ids))]
+
+    def get_topic_seasonality(self, topic: str) -> SeasonalityResult:
+        """Return derived recurrence metadata for one topic."""
+
+        from app.scoring.seasonality import classify_seasonality
+
+        appearance_count = self.connection.execute(
+            "SELECT COUNT(*) AS count FROM trend_score_snapshots WHERE topic = ?",
+            (topic,),
+        ).fetchone()["count"]
+        total_runs = self.connection.execute(
+            "SELECT COUNT(*) AS count FROM trend_runs",
+        ).fetchone()["count"]
+        return classify_seasonality(
+            appearance_count=appearance_count,
+            total_runs=total_runs,
+            gaps=self.get_topic_appearance_gaps(topic),
+        )
+
     def list_trend_explorer_records(self, limit: int, history_limit: int = 2) -> list[TrendExplorerRecord]:
         """Return explorer-ready records with movement fields derived from snapshots."""
 
@@ -1336,6 +1373,7 @@ class TrendScoreRepository:
             full_history = list(reversed(self.get_topic_history(score.topic, limit_runs=max(history_limit, 6))))
             momentum = self._build_momentum(score.total_score, recent_history)
             forecast = forecast_trend(full_history)
+            seasonality = self.get_topic_seasonality(score.topic)
             records.append(
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
@@ -1353,6 +1391,7 @@ class TrendScoreRepository:
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
                     recent_history=recent_history,
+                    seasonality=seasonality if seasonality.tag is not None else None,
                     forecast_direction=describe_forecast_direction(forecast, score.total_score),
                 )
             )
@@ -1378,6 +1417,7 @@ class TrendScoreRepository:
         first_seen_by_topic: dict[str, datetime | None] = {}
         momentum_by_topic: dict[str, TrendMomentum] = {}
         forecast_by_topic: dict[str, TrendForecast | None] = {}
+        seasonality_by_topic: dict[str, SeasonalityResult | None] = {}
         status_by_topic: dict[str, str] = {}
         ranks_by_topic: dict[str, int] = {}
 
@@ -1388,6 +1428,8 @@ class TrendScoreRepository:
             first_seen_by_topic[score.topic] = self.get_first_seen_at(score.topic)
             momentum_by_topic[score.topic] = momentum
             forecast_by_topic[score.topic] = forecast_trend(history)
+            seasonality = self.get_topic_seasonality(score.topic)
+            seasonality_by_topic[score.topic] = seasonality if seasonality.tag is not None else None
             status_by_topic[score.topic] = self._build_trend_status(momentum)
             ranks_by_topic[score.topic] = rank
 
@@ -1408,6 +1450,7 @@ class TrendScoreRepository:
                 current_ranks=ranks_by_topic,
                 first_seen=first_seen_by_topic,
                 now=latest_captured_at,
+                seasonality_by_topic=seasonality_by_topic,
             )
         }
 
@@ -1456,6 +1499,7 @@ class TrendScoreRepository:
                     geo_summary=self.get_topic_geo_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
                     related_trends=[],
+                    seasonality=seasonality_by_topic[score.topic],
                 )
             )
         return self._attach_related_trends(records)
@@ -1784,6 +1828,7 @@ class TrendScoreRepository:
                 geo_summary=record.geo_summary,
                 evidence_items=record.evidence_items,
                 related_trends=related_map.get(record.id, []),
+                seasonality=record.seasonality,
             )
             for record in records
         ]

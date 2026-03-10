@@ -103,6 +103,7 @@ class APITests(unittest.TestCase):
         data = response.json()
         self.assertGreater(len(data["trends"]), 0)
         self.assertIn("forecastDirection", data["trends"][0])
+        self.assertIn("seasonality", data["trends"][0])
 
     def test_get_trend_detail_not_found(self) -> None:
         response = self.client.get("/api/v1/trends/nonexistent")
@@ -116,10 +117,12 @@ class APITests(unittest.TestCase):
         self.assertEqual(data["id"], "ai-agents")
         self.assertIn("breakoutPrediction", data)
         self.assertIn("forecast", data)
+        self.assertIn("seasonality", data)
         self.assertIn("opportunity", data)
         self.assertIn("sourceContributions", data)
         self.assertEqual(data["sourceContributions"][0]["source"], "reddit")
         self.assertIsNone(data["forecast"])
+        self.assertIsNone(data["seasonality"])
 
     def test_latest_trends(self) -> None:
         self._seed_data()

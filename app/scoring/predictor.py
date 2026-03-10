@@ -16,7 +16,7 @@ import math
 from dataclasses import dataclass
 from datetime import datetime
 
-from app.models import TrendHistoryPoint, TrendScoreResult
+from app.models import SeasonalityResult, TrendHistoryPoint, TrendScoreResult
 
 
 @dataclass(frozen=True)
@@ -45,6 +45,7 @@ def predict_breakouts(
     current_ranks: dict[str, int],
     first_seen: dict[str, datetime | None],
     now: datetime,
+    seasonality_by_topic: dict[str, SeasonalityResult | None] | None = None,
 ) -> list[BreakoutPrediction]:
     """Predict breakout likelihood for all scored trends.
 
@@ -65,6 +66,7 @@ def predict_breakouts(
             rank=rank,
             first_seen_at=first,
             now=now,
+            seasonality=seasonality_by_topic.get(topic) if seasonality_by_topic else None,
         )
         predictions.append(prediction)
 
@@ -79,6 +81,7 @@ def _predict_single(
     rank: int | None,
     first_seen_at: datetime | None,
     now: datetime,
+    seasonality: SeasonalityResult | None,
 ) -> BreakoutPrediction:
     """Compute breakout prediction for a single trend."""
 
@@ -124,6 +127,15 @@ def _predict_single(
         + _W_RECENCY * recency_score
         + _W_MAGNITUDE * magnitude_score
     )
+
+    if seasonality is not None:
+        if seasonality.tag == "recurring":
+            confidence *= 0.6
+            signals.append(f"Recurring pattern detected ({seasonality.recurrence_count} reappearances)")
+        elif seasonality.tag == "evergreen":
+            confidence *= 0.85
+            signals.append("Evergreen topic with consistent presence")
+
     confidence = max(0.0, min(1.0, confidence))
 
     # Determine direction label

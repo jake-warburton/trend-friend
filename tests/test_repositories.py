@@ -276,6 +276,37 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(len(detail_records[0].forecast.predicted_scores), 5)
         self.assertEqual(explorer_records[0].forecast_direction, "accelerating")
 
+    def test_get_topic_appearance_gaps_returns_missing_run_counts(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        base_captured_at = datetime(2026, 3, 4, tzinfo=timezone.utc)
+
+        repository.append_snapshot([build_score(topic="ai agents", total_score=10.0)], captured_at=base_captured_at)
+        repository.append_snapshot([build_score(topic="battery recycling", total_score=12.0)], captured_at=base_captured_at + timedelta(days=1))
+        repository.append_snapshot([build_score(topic="battery recycling", total_score=14.0)], captured_at=base_captured_at + timedelta(days=2))
+        repository.append_snapshot([build_score(topic="ai agents", total_score=16.0)], captured_at=base_captured_at + timedelta(days=3))
+
+        self.assertEqual(repository.get_topic_appearance_gaps("ai agents"), [2])
+
+    def test_trend_score_repository_builds_recurring_seasonality(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        base_captured_at = datetime(2026, 3, 1, tzinfo=timezone.utc)
+        score_totals = [12.0, 14.0, None, None, None, 18.0, 20.0, None, None, None, 24.0]
+
+        for day_offset, total_score in enumerate(score_totals):
+            scores = [build_score(topic="battery recycling", total_score=8.0)]
+            if total_score is not None:
+                scores.insert(0, build_score(topic="tax software", total_score=total_score))
+            repository.append_snapshot(scores, captured_at=base_captured_at + timedelta(days=day_offset))
+
+        detail_records = repository.list_trend_detail_records(limit=5)
+        explorer_records = repository.list_trend_explorer_records(limit=5)
+        tax_detail = next(record for record in detail_records if record.id == "tax-software")
+        tax_explorer = next(record for record in explorer_records if record.id == "tax-software")
+
+        self.assertEqual(tax_detail.seasonality.tag, "recurring")
+        self.assertEqual(tax_detail.seasonality.recurrence_count, 2)
+        self.assertEqual(tax_explorer.seasonality.tag, "recurring")
+
     def test_watchlist_repository_round_trip(self) -> None:
         repository = WatchlistRepository(self.connection)
 

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { TrendDetailRecord } from "@/lib/types";
 import { loadTrendDetail } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
+import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 
@@ -24,6 +25,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   }
 
   const geoSummary = trend.geoSummary ?? [];
+  const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
 
   return (
     <main className="detail-page">
@@ -37,6 +39,11 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             <span className="trend-date-chip">{formatCategory(trend.category)}</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
             <span className={volatilityClassName(trend.volatility)}>{formatVolatility(trend.volatility)}</span>
+            {seasonalityBadge ? (
+              <span className={`seasonality-badge seasonality-badge-${seasonalityBadge.tone}`}>
+                {seasonalityBadge.label}
+              </span>
+            ) : null}
           </div>
           <h1>{trend.name}</h1>
           <p className="detail-copy">
@@ -157,6 +164,15 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                   {trend.forecast.predictedScores[0]?.toFixed(1)} to{" "}
                   {trend.forecast.predictedScores[trend.forecast.predictedScores.length - 1]?.toFixed(1)} projected
                 </small>
+              </article>
+            ) : null}
+            {trend.seasonality ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>{seasonalityBadge?.label ?? "Seasonality"}</strong>
+                  <span>{summarizeSeasonality(trend.seasonality)}</span>
+                </div>
+                <small>{Math.round(trend.seasonality.confidence * 100)}% confidence</small>
               </article>
             ) : null}
           </div>

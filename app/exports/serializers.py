@@ -37,6 +37,7 @@ from app.exports.contracts import (
     TrendHistoryPayload,
     TrendMomentumPayload,
     TrendRecord,
+    SeasonalityPayload,
     TrendScoreComponents,
     TrendSourceContributionPayload,
     TrendSourceBreakdownPayload,
@@ -267,6 +268,16 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
             )
             for point in trend.recent_history
         ],
+        seasonality=(
+            SeasonalityPayload(
+                tag=trend.seasonality.tag,
+                recurrence_count=trend.seasonality.recurrence_count,
+                avg_gap_runs=trend.seasonality.avg_gap_runs,
+                confidence=trend.seasonality.confidence,
+            )
+            if trend.seasonality is not None
+            else None
+        ),
         forecast_direction=trend.forecast_direction,
     )
 
@@ -391,6 +402,16 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             serialize_related_trend(item)
             for item in trend.related_trends
         ],
+        seasonality=(
+            SeasonalityPayload(
+                tag=trend.seasonality.tag,
+                recurrence_count=trend.seasonality.recurrence_count,
+                avg_gap_runs=trend.seasonality.avg_gap_runs,
+                confidence=trend.seasonality.confidence,
+            )
+            if trend.seasonality is not None
+            else None
+        ),
     )
 
 

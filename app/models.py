@@ -122,6 +122,16 @@ class TrendForecast:
 
 
 @dataclass(frozen=True)
+class SeasonalityResult:
+    """Derived recurrence metadata for a trend."""
+
+    tag: str | None
+    recurrence_count: int
+    avg_gap_runs: float
+    confidence: float
+
+
+@dataclass(frozen=True)
 class OpportunitySummary:
     """Actionability scoring for a trend."""
 
@@ -151,6 +161,7 @@ class TrendExplorerRecord:
     source_count: int
     signal_count: int
     recent_history: list[TrendHistoryPoint]
+    seasonality: SeasonalityResult | None = None
     forecast_direction: str | None = None
 
 
@@ -247,6 +258,7 @@ class TrendDetailRecord:
     geo_summary: list[TrendGeoSummary]
     evidence_items: list[TrendEvidenceItem]
     related_trends: list[RelatedTrend]
+    seasonality: SeasonalityResult | None = None
 
 
 @dataclass(frozen=True)

@@ -29,12 +29,15 @@ def get_breakout_predictions(db: sqlite3.Connection = Depends(get_db)) -> dict:
     histories = {}
     current_ranks = {}
     first_seen = {}
+    seasonality_by_topic = {}
 
     for rank, score in enumerate(latest_scores, start=1):
         topic = score.topic
         current_ranks[topic] = rank
         histories[topic] = repository.get_topic_history(topic, limit_runs=6)
         first_seen[topic] = repository.get_first_seen_at(topic)
+        seasonality = repository.get_topic_seasonality(topic)
+        seasonality_by_topic[topic] = seasonality if seasonality.tag is not None else None
 
     predictions = predict_breakouts(
         current_scores=latest_scores,
@@ -42,6 +45,7 @@ def get_breakout_predictions(db: sqlite3.Connection = Depends(get_db)) -> dict:
         current_ranks=current_ranks,
         first_seen=first_seen,
         now=now,
+        seasonality_by_topic=seasonality_by_topic,
     )
 
     return {
