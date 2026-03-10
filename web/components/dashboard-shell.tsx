@@ -1733,7 +1733,7 @@ function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSumm
   return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
 }
 
-function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
+export function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
   const spotlights: Array<{
     title: string;
     description: string;
