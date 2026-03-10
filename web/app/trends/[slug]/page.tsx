@@ -39,6 +39,11 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
+          {trend.relatedTrends[0] ? (
+            <Link className="detail-back-link" href={`/compare?ids=${trend.id},${trend.relatedTrends[0].id}`}>
+              Compare with {trend.relatedTrends[0].name}
+            </Link>
+          ) : null}
         </div>
 
         <div className="detail-meta-grid">
@@ -141,15 +146,22 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
 
           <div className="detail-list">
             {trend.relatedTrends.map((item) => (
-              <Link className="detail-list-item" href={`/trends/${item.id}`} key={item.id}>
+              <article className="detail-list-item" key={item.id}>
                 <div>
-                  <strong>{item.name}</strong>
+                  <strong>
+                    <Link className="trend-link" href={`/trends/${item.id}`}>
+                      {item.name}
+                    </Link>
+                  </strong>
                   <span>{formatTrendStatus(item.status)}</span>
                 </div>
                 <small>
-                  #{item.rank} · {item.scoreTotal.toFixed(1)}
+                  <Link className="trend-link" href={`/compare?ids=${trend.id},${item.id}`}>
+                    Compare
+                  </Link>{" "}
+                  · #{item.rank} · {item.scoreTotal.toFixed(1)}
                 </small>
-              </Link>
+              </article>
             ))}
           </div>
         </section>
