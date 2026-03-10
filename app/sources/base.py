@@ -24,6 +24,8 @@ class SourceAdapter(ABC):
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.used_fallback = False
+        self.raw_item_count = 0
+        self.kept_item_count = 0
 
     @abstractmethod
     def fetch(self) -> list[RawSourceItem]:
@@ -85,3 +87,5 @@ class SourceAdapter(ABC):
         """Clear per-fetch state before a new request cycle."""
 
         self.used_fallback = False
+        self.raw_item_count = 0
+        self.kept_item_count = 0

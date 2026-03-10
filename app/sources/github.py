@@ -29,6 +29,7 @@ class GitHubSourceAdapter(SourceAdapter):
             for page in range(1, max(1, self.settings.github_page_limit) + 1):
                 payload = self.get_json(f"{base_url}&page={page}", headers=headers)
                 page_items = self.normalize_items(payload, limit=self.settings.max_items_per_source)
+                self.raw_item_count += len(payload.get("items", []))
                 if not page_items:
                     break
                 for item in page_items:
@@ -36,6 +37,7 @@ class GitHubSourceAdapter(SourceAdapter):
                         continue
                     seen_ids.add(item.external_id)
                     items.append(item)
+                    self.kept_item_count += 1
                     if len(items) >= self.settings.max_items_per_source:
                         return items
             return items

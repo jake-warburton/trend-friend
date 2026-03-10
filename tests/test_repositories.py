@@ -64,14 +64,18 @@ class RepositoryTests(unittest.TestCase):
                     source="reddit",
                     fetched_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
                     success=True,
+                    raw_item_count=15,
                     item_count=10,
+                    kept_item_count=10,
                     duration_ms=120,
                 ),
                 SourceIngestionRun(
                     source="reddit",
                     fetched_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
                     success=False,
+                    raw_item_count=30,
                     item_count=0,
+                    kept_item_count=0,
                     duration_ms=950,
                     error_message="timeout",
                 ),
@@ -79,7 +83,9 @@ class RepositoryTests(unittest.TestCase):
                     source="github",
                     fetched_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
                     success=True,
+                    raw_item_count=8,
                     item_count=4,
+                    kept_item_count=4,
                     duration_ms=80,
                     used_fallback=True,
                 ),
@@ -92,8 +98,10 @@ class RepositoryTests(unittest.TestCase):
         reddit_run = next(run for run in runs if run.source == "reddit")
         self.assertFalse(reddit_run.success)
         self.assertEqual(reddit_run.error_message, "timeout")
+        self.assertEqual(reddit_run.raw_item_count, 30)
         github_run = next(run for run in runs if run.source == "github")
         self.assertTrue(github_run.used_fallback)
+        self.assertEqual(github_run.kept_item_count, 4)
         self.assertEqual(github_run.duration_ms, 80)
 
     def test_trend_score_repository_round_trip(self) -> None:

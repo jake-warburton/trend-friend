@@ -49,7 +49,9 @@ class SourceIngestionRun:
     source: str
     fetched_at: datetime
     success: bool
+    raw_item_count: int
     item_count: int
+    kept_item_count: int
     duration_ms: int
     used_fallback: bool = False
     error_message: str | None = None
@@ -295,7 +297,10 @@ class SourceSummaryRecord:
     status: str
     latest_fetch_at: datetime | None
     latest_success_at: datetime | None
+    raw_item_count: int
     latest_item_count: int
+    kept_item_count: int
+    yield_rate_percent: float
     duration_ms: int
     used_fallback: bool
     error_message: str | None

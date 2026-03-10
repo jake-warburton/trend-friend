@@ -75,7 +75,9 @@ class APITests(unittest.TestCase):
                 source="reddit",
                 fetched_at=captured_at,
                 success=True,
+                raw_item_count=15,
                 item_count=10,
+                kept_item_count=10,
                 duration_ms=500,
             ),
         ])
@@ -153,6 +155,10 @@ class APITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("sources", data)
+        reddit = next(source for source in data["sources"] if source["source"] == "reddit")
+        self.assertEqual(reddit["rawItemCount"], 15)
+        self.assertEqual(reddit["keptItemCount"], 10)
+        self.assertEqual(reddit["yieldRatePercent"], 66.7)
 
     def test_get_source_not_found(self) -> None:
         response = self.client.get("/api/v1/sources/nonexistent")

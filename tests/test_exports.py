@@ -208,8 +208,11 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sections"]["metaTrends"][0]["category"], "artificial-intelligence")
         self.assertEqual(payload["sources"][0]["signalCount"], 2)
         self.assertEqual(payload["sources"][0]["trendCount"], 2)
+        self.assertEqual(payload["sources"][0]["rawItemCount"], 2)
         self.assertEqual(payload["sources"][0]["status"], "healthy")
         self.assertEqual(payload["sources"][1]["status"], "degraded")
+        self.assertEqual(payload["sources"][1]["keptItemCount"], 2)
+        self.assertEqual(payload["sources"][1]["yieldRatePercent"], 100.0)
         self.assertTrue(payload["sources"][1]["usedFallback"])
         self.assertEqual(payload["sources"][1]["durationMs"], 85)
 
@@ -234,7 +237,11 @@ class ExportPayloadTests(unittest.TestCase):
         ).to_dict()
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["sources"][0]["latestFetchAt"], "2026-03-08T00:00:00Z")
+        self.assertEqual(payload["sources"][0]["rawItemCount"], 5)
         self.assertEqual(payload["sources"][0]["runHistory"][0]["itemCount"], 3)
+        self.assertEqual(payload["sources"][0]["runHistory"][0]["keptItemCount"], 3)
+        self.assertEqual(payload["sources"][0]["runHistory"][0]["yieldRatePercent"], 100.0)
+        self.assertEqual(payload["sources"][0]["yieldRatePercent"], 60.0)
         self.assertEqual(payload["sources"][0]["topTrends"][0]["scoreTotal"], 42.4)
 
     def test_build_source_summary_records_uses_runs_and_trends(self) -> None:
@@ -249,6 +256,9 @@ class ExportPayloadTests(unittest.TestCase):
         )
         reddit_record = next(record for record in records if record.source == "reddit")
         self.assertEqual(reddit_record.status, "degraded")
+        self.assertEqual(reddit_record.raw_item_count, 3)
+        self.assertEqual(reddit_record.kept_item_count, 3)
+        self.assertEqual(reddit_record.yield_rate_percent, 100.0)
         self.assertEqual(reddit_record.top_trends[0].id, "ai-agents")
 
 
@@ -467,6 +477,8 @@ def build_source_run(
     success: bool,
     item_count: int,
     duration_ms: int,
+    raw_item_count: int | None = None,
+    kept_item_count: int | None = None,
     used_fallback: bool = False,
     error_message: str | None = None,
 ) -> SourceIngestionRun:
@@ -476,7 +488,9 @@ def build_source_run(
         source=source,
         fetched_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
         success=success,
+        raw_item_count=item_count if raw_item_count is None else raw_item_count,
         item_count=item_count,
+        kept_item_count=item_count if kept_item_count is None else kept_item_count,
         duration_ms=duration_ms,
         used_fallback=used_fallback,
         error_message=error_message,
@@ -491,7 +505,10 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
         status="healthy",
         latest_fetch_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
         latest_success_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        raw_item_count=5,
         latest_item_count=3,
+        kept_item_count=3,
+        yield_rate_percent=60.0,
         duration_ms=120,
         used_fallback=False,
         error_message=None,

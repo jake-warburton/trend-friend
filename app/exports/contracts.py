@@ -389,7 +389,10 @@ class DashboardOverviewSourcePayload:
     status: str
     latest_fetch_at: str | None
     latest_success_at: str | None
+    raw_item_count: int
     latest_item_count: int
+    kept_item_count: int
+    yield_rate_percent: float
     duration_ms: int
     used_fallback: bool
     error_message: str | None
@@ -484,7 +487,10 @@ class DashboardOverviewPayload:
             source["trendCount"] = source.pop("trend_count")
             source["latestFetchAt"] = source.pop("latest_fetch_at")
             source["latestSuccessAt"] = source.pop("latest_success_at")
+            source["rawItemCount"] = source.pop("raw_item_count")
             source["latestItemCount"] = source.pop("latest_item_count")
+            source["keptItemCount"] = source.pop("kept_item_count")
+            source["yieldRatePercent"] = source.pop("yield_rate_percent")
             source["durationMs"] = source.pop("duration_ms")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
@@ -497,7 +503,10 @@ class SourceRunPayload:
 
     fetched_at: str
     success: bool
+    raw_item_count: int
     item_count: int
+    kept_item_count: int
+    yield_rate_percent: float
     duration_ms: int
     used_fallback: bool
     error_message: str | None
@@ -521,7 +530,10 @@ class SourceSummaryRecordPayload:
     status: str
     latest_fetch_at: str | None
     latest_success_at: str | None
+    raw_item_count: int
     latest_item_count: int
+    kept_item_count: int
+    yield_rate_percent: float
     duration_ms: int
     used_fallback: bool
     error_message: str | None
@@ -546,7 +558,10 @@ class SourceSummaryPayload:
         for source in payload["sources"]:
             source["latestFetchAt"] = source.pop("latest_fetch_at")
             source["latestSuccessAt"] = source.pop("latest_success_at")
+            source["rawItemCount"] = source.pop("raw_item_count")
             source["latestItemCount"] = source.pop("latest_item_count")
+            source["keptItemCount"] = source.pop("kept_item_count")
+            source["yieldRatePercent"] = source.pop("yield_rate_percent")
             source["durationMs"] = source.pop("duration_ms")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
@@ -556,7 +571,10 @@ class SourceSummaryPayload:
             source["topTrends"] = source.pop("top_trends")
             for run in source["runHistory"]:
                 run["fetchedAt"] = run.pop("fetched_at")
+                run["rawItemCount"] = run.pop("raw_item_count")
                 run["itemCount"] = run.pop("item_count")
+                run["keptItemCount"] = run.pop("kept_item_count")
+                run["yieldRatePercent"] = run.pop("yield_rate_percent")
                 run["durationMs"] = run.pop("duration_ms")
                 run["usedFallback"] = run.pop("used_fallback")
                 run["errorMessage"] = run.pop("error_message")

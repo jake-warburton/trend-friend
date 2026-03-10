@@ -45,11 +45,13 @@ class RedditSourceAdapter(SourceAdapter):
             page_url = url if after is None else f"{url}&after={after}"
             payload = self.get_json(page_url, headers=headers)
             page_items = self.normalize_items(payload, limit=self.settings.max_items_per_source)
+            self.raw_item_count += len(payload.get("data", {}).get("children", []))
             for item in page_items:
                 if item.external_id in seen_ids:
                     continue
                 seen_ids.add(item.external_id)
                 items.append(item)
+                self.kept_item_count += 1
                 if len(items) >= self.settings.max_items_per_source:
                     return items
             after_value = payload.get("data", {}).get("after")

@@ -23,6 +23,7 @@ class HackerNewsSourceAdapter(SourceAdapter):
                 len(story_ids),
                 stories_per_page * max(1, self.settings.hacker_news_page_limit),
             )
+            self.raw_item_count = max_story_ids
             for story_id in story_ids[:max_story_ids]:
                 payload = self.get_json(
                     f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
@@ -31,6 +32,7 @@ class HackerNewsSourceAdapter(SourceAdapter):
                 if normalized is not None and normalized.external_id not in seen_ids:
                     seen_ids.add(normalized.external_id)
                     items.append(normalized)
+                    self.kept_item_count += 1
                 if len(items) >= self.settings.max_items_per_source:
                     break
             return items

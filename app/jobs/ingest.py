@@ -40,12 +40,16 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
             duration_ms = int((perf_counter() - started_at) * 1000)
             LOGGER.info("Fetched %s items from %s", len(source_items), adapter.source_name)
             all_items.extend(source_items)
+            raw_item_count = getattr(adapter, "raw_item_count", len(source_items))
+            kept_item_count = getattr(adapter, "kept_item_count", len(source_items))
             source_runs.append(
                 SourceIngestionRun(
                     source=adapter.source_name,
                     fetched_at=fetched_at,
                     success=True,
+                    raw_item_count=raw_item_count,
                     item_count=len(source_items),
+                    kept_item_count=kept_item_count,
                     duration_ms=duration_ms,
                     used_fallback=adapter.used_fallback,
                 )
@@ -58,7 +62,9 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
                     source=adapter.source_name,
                     fetched_at=fetched_at,
                     success=False,
+                    raw_item_count=getattr(adapter, "raw_item_count", 0),
                     item_count=0,
+                    kept_item_count=getattr(adapter, "kept_item_count", 0),
                     duration_ms=duration_ms,
                     used_fallback=adapter.used_fallback,
                     error_message=str(error),

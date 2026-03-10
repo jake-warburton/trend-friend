@@ -119,16 +119,18 @@ class SourceIngestionRunRepository:
         self.connection.executemany(
             """
             INSERT INTO source_ingestion_runs (
-                source, fetched_at, success, item_count, duration_ms, used_fallback, error_message
+                source, fetched_at, success, raw_item_count, item_count, kept_item_count, duration_ms, used_fallback, error_message
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
                     run.source,
                     run.fetched_at.isoformat(),
                     int(run.success),
+                    run.raw_item_count,
                     run.item_count,
+                    run.kept_item_count,
                     run.duration_ms,
                     int(run.used_fallback),
                     run.error_message,
@@ -143,8 +145,8 @@ class SourceIngestionRunRepository:
 
         rows = self.connection.execute(
             """
-            SELECT current.source, current.fetched_at, current.success, current.item_count,
-                   current.duration_ms, current.used_fallback, current.error_message
+            SELECT current.source, current.fetched_at, current.success, current.raw_item_count, current.item_count,
+                   current.kept_item_count, current.duration_ms, current.used_fallback, current.error_message
             FROM source_ingestion_runs AS current
             INNER JOIN (
                 SELECT source, MAX(fetched_at) AS fetched_at
@@ -161,7 +163,9 @@ class SourceIngestionRunRepository:
                 source=row["source"],
                 fetched_at=datetime.fromisoformat(row["fetched_at"]),
                 success=bool(row["success"]),
+                raw_item_count=row["raw_item_count"],
                 item_count=row["item_count"],
+                kept_item_count=row["kept_item_count"],
                 duration_ms=row["duration_ms"],
                 used_fallback=bool(row["used_fallback"]),
                 error_message=row["error_message"],
@@ -174,7 +178,7 @@ class SourceIngestionRunRepository:
 
         rows = self.connection.execute(
             """
-            SELECT source, fetched_at, success, item_count, duration_ms, used_fallback, error_message
+            SELECT source, fetched_at, success, raw_item_count, item_count, kept_item_count, duration_ms, used_fallback, error_message
             FROM source_ingestion_runs
             ORDER BY fetched_at DESC, id DESC
             """
@@ -190,7 +194,9 @@ class SourceIngestionRunRepository:
                     source=source,
                     fetched_at=datetime.fromisoformat(row["fetched_at"]),
                     success=bool(row["success"]),
+                    raw_item_count=row["raw_item_count"],
                     item_count=row["item_count"],
+                    kept_item_count=row["kept_item_count"],
                     duration_ms=row["duration_ms"],
                     used_fallback=bool(row["used_fallback"]),
                     error_message=row["error_message"],

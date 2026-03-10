@@ -174,7 +174,10 @@ def build_source_summary_payload(
                 status=source.status,
                 latest_fetch_at=to_optional_timestamp(source.latest_fetch_at),
                 latest_success_at=to_optional_timestamp(source.latest_success_at),
+                raw_item_count=source.raw_item_count,
                 latest_item_count=source.latest_item_count,
+                kept_item_count=source.kept_item_count,
+                yield_rate_percent=source.yield_rate_percent,
                 duration_ms=source.duration_ms,
                 used_fallback=source.used_fallback,
                 error_message=source.error_message,
@@ -184,7 +187,10 @@ def build_source_summary_payload(
                     SourceRunPayload(
                         fetched_at=to_timestamp(run.fetched_at),
                         success=run.success,
+                        raw_item_count=run.raw_item_count,
                         item_count=run.item_count,
+                        kept_item_count=run.kept_item_count,
+                        yield_rate_percent=build_yield_rate_percent(run),
                         duration_ms=run.duration_ms,
                         used_fallback=run.used_fallback,
                         error_message=run.error_message,
@@ -518,7 +524,10 @@ def build_source_summaries(
                 if source in latest_success_by_source
                 else None
             ),
+            raw_item_count=latest_by_source[source].raw_item_count if source in latest_by_source else 0,
             latest_item_count=latest_by_source[source].item_count if source in latest_by_source else 0,
+            kept_item_count=latest_by_source[source].kept_item_count if source in latest_by_source else 0,
+            yield_rate_percent=build_yield_rate_percent(latest_by_source.get(source)),
             duration_ms=latest_by_source[source].duration_ms if source in latest_by_source else 0,
             used_fallback=latest_by_source[source].used_fallback if source in latest_by_source else False,
             error_message=latest_by_source[source].error_message if source in latest_by_source else None,
@@ -535,6 +544,14 @@ def build_source_status(run: SourceIngestionRun | None) -> str:
     if run.used_fallback:
         return "degraded"
     return "healthy"
+
+
+def build_yield_rate_percent(run: SourceIngestionRun | None) -> float:
+    """Return the share of raw fetched items kept after dedupe and caps."""
+
+    if run is None or run.raw_item_count <= 0:
+        return 0.0
+    return round((run.kept_item_count / run.raw_item_count) * 100, 1)
 
 
 def build_dashboard_charts_payload(
@@ -707,7 +724,10 @@ def build_source_summary_records(
                 status=build_source_status(latest_run),
                 latest_fetch_at=latest_run.fetched_at if latest_run is not None else None,
                 latest_success_at=successful_runs[0].fetched_at if successful_runs else None,
+                raw_item_count=latest_run.raw_item_count if latest_run is not None else 0,
                 latest_item_count=latest_run.item_count if latest_run is not None else 0,
+                kept_item_count=latest_run.kept_item_count if latest_run is not None else 0,
+                yield_rate_percent=build_yield_rate_percent(latest_run),
                 duration_ms=latest_run.duration_ms if latest_run is not None else 0,
                 used_fallback=latest_run.used_fallback if latest_run is not None else False,
                 error_message=latest_run.error_message if latest_run is not None else None,

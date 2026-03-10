@@ -41,7 +41,9 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             source TEXT NOT NULL,
             fetched_at TEXT NOT NULL,
             success INTEGER NOT NULL,
+            raw_item_count INTEGER NOT NULL DEFAULT 0,
             item_count INTEGER NOT NULL,
+            kept_item_count INTEGER NOT NULL DEFAULT 0,
             duration_ms INTEGER NOT NULL DEFAULT 0,
             used_fallback INTEGER NOT NULL DEFAULT 0,
             error_message TEXT NULL
@@ -308,6 +310,18 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         table_name="signals",
         column_name="geo_confidence",
         column_sql="REAL NOT NULL DEFAULT 0",
+    )
+    ensure_column(
+        connection,
+        table_name="source_ingestion_runs",
+        column_name="raw_item_count",
+        column_sql="INTEGER NOT NULL DEFAULT 0",
+    )
+    ensure_column(
+        connection,
+        table_name="source_ingestion_runs",
+        column_name="kept_item_count",
+        column_sql="INTEGER NOT NULL DEFAULT 0",
     )
     ensure_column(
         connection,
