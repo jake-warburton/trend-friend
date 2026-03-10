@@ -14,6 +14,7 @@ import { getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
+import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
 
 import type {
@@ -981,6 +982,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               {filteredTrends.map((trend) => {
                 const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
                 const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
+                const detail = detailsByTrendId.get(trend.id);
+                const wikipediaLink = getWikipediaLinkFromDetail(detail);
                 return (
                 <article className="explorer-card" key={trend.id}>
                   <div className="explorer-card-top">
@@ -1076,6 +1079,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
                       <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                      {wikipediaLink ? (
+                        <a
+                          className="trend-link"
+                          href={wikipediaLink.url}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          Wikipedia: {wikipediaLink.title}
+                        </a>
+                      ) : null}
                     </div>
 
                     <div className="source-row source-row-compact">
@@ -1096,7 +1109,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                   >
                     <div className="explorer-expand-panel">
                       {expandedTrendId === trend.id && (() => {
-                        const detail = detailsByTrendId.get(trend.id);
                         if (!detail) return null;
                         const maxScore = Math.max(
                           detail.score.social,
@@ -1172,6 +1184,20 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                                 {detail.opportunity.reasoning[0] && (
                                   <p className="explorer-expand-reason">{detail.opportunity.reasoning[0]}</p>
                                 )}
+                                {wikipediaLink ? (
+                                  <p className="explorer-expand-reason">
+                                    Wikipedia pageviews are concentrated on{" "}
+                                    <a
+                                      className="trend-link"
+                                      href={wikipediaLink.url}
+                                      rel="noreferrer"
+                                      target="_blank"
+                                    >
+                                      {wikipediaLink.title}
+                                    </a>
+                                    . Treat Wikipedia-only movement as context until another source corroborates it.
+                                  </p>
+                                ) : null}
                               </div>
                             </div>
 
@@ -1183,6 +1209,16 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                                 <Link className="mini-action-button" href={`/trends/${firstRelated.id}`}>
                                   Compare: {firstRelated.name}
                                 </Link>
+                              )}
+                              {wikipediaLink && (
+                                <a
+                                  className="mini-action-button"
+                                  href={wikipediaLink.url}
+                                  rel="noreferrer"
+                                  target="_blank"
+                                >
+                                  Open wiki
+                                </a>
                               )}
                               <button
                                 className={

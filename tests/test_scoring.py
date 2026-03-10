@@ -160,6 +160,30 @@ class TrendScoringTests(unittest.TestCase):
         exact_score, substring_score = calculate_trend_scores([exact_phrase, substring_only])
         self.assertGreater(exact_score.total_score, substring_score.total_score)
 
+    def test_calculate_trend_scores_penalizes_wikipedia_only_topics(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        wikipedia_only = TopicAggregate(
+            topic="obscure biography",
+            source_counts={"wikipedia": 1},
+            signal_counts={"knowledge": 1},
+            total_signal_value=900_000.0,
+            average_signal_value=900_000.0,
+            latest_timestamp=timestamp,
+            evidence=["Obscure biography"],
+        )
+        corroborated = TopicAggregate(
+            topic="obscure biography",
+            source_counts={"wikipedia": 1, "reddit": 1},
+            signal_counts={"knowledge": 1, "social": 1},
+            total_signal_value=900_200.0,
+            average_signal_value=450_100.0,
+            latest_timestamp=timestamp,
+            evidence=["Obscure biography", "People are suddenly discussing obscure biography"],
+        )
+
+        wikipedia_score, corroborated_score = calculate_trend_scores([wikipedia_only, corroborated])
+        self.assertLess(wikipedia_score.total_score, corroborated_score.total_score)
+
 
 if __name__ == "__main__":
     unittest.main()

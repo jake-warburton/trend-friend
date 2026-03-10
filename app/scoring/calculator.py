@@ -21,6 +21,7 @@ EXACT_PHRASE_BONUS = 1.5
 GENERIC_LEAD_PENALTY = 2.0
 CORROBORATION_BONUS_PER_EXTRA_EVIDENCE = 0.75
 MAX_CORROBORATION_BONUS = 1.5
+WIKIPEDIA_ONLY_TOPIC_PENALTY = 4.0
 
 
 def calculate_trend_scores(
@@ -90,6 +91,8 @@ def topic_quality_adjustment(aggregate: TopicAggregate) -> float:
     topic_tokens = normalized_topic.split()
     if topic_tokens and topic_tokens[0] in GENERIC_LEAD_TOKENS:
         adjustment -= GENERIC_LEAD_PENALTY
+    if set(aggregate.source_counts) == {"wikipedia"}:
+        adjustment -= WIKIPEDIA_ONLY_TOPIC_PENALTY
     adjustment += corroboration_adjustment(aggregate)
     return adjustment
 

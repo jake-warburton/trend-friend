@@ -5,6 +5,7 @@ import type { TrendDetailRecord } from "@/lib/types";
 import { loadTrendDetail } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
+import { getWikipediaLinkFromDetail, loadWikipediaSummary } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 
@@ -26,6 +27,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
 
   const geoSummary = trend.geoSummary ?? [];
   const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
+  const wikipediaLink = getWikipediaLinkFromDetail(trend);
+  const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
 
   return (
     <main className="detail-page">
@@ -50,6 +53,11 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
+          {wikipediaLink ? (
+            <a className="detail-back-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
+              Open Wikipedia page for {wikipediaLink.title}
+            </a>
+          ) : null}
           {trend.relatedTrends[0] ? (
             <Link className="detail-back-link" href={`/compare?ids=${trend.id},${trend.relatedTrends[0].id}`}>
               Compare with {trend.relatedTrends[0].name}
@@ -203,6 +211,33 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             ))}
           </div>
         </section>
+
+        {wikipediaLink ? (
+          <section className="detail-panel">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Wikipedia</p>
+                <h2>Knowledge context</h2>
+              </div>
+            </div>
+
+            <div className="detail-list">
+              <article className="detail-list-item">
+                <div>
+                  <strong>
+                    <a className="trend-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
+                      {wikipediaLink.title}
+                    </a>
+                  </strong>
+                  <span>
+                    {wikipediaSummary ??
+                      "This trend includes a Wikipedia pageview signal. Treat it as context unless other sources also move."}
+                  </span>
+                </div>
+              </article>
+            </div>
+          </section>
+        ) : null}
 
         <section className="detail-panel">
           <div className="section-heading">
