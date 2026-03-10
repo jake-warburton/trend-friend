@@ -684,6 +684,26 @@ input {
   padding: 14px;
 }
 
+.shared-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.shared-rank {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.shared-category {
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
 .section-heading {
   display: flex;
   align-items: center;

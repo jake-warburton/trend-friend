@@ -287,6 +287,11 @@ export type WatchlistItem = {
 
 export type SharedWatchlistItem = WatchlistItem & {
   currentScore: number | null;
+  rank: number | null;
+  rankChange: number | null;
+  status: string | null;
+  category: string | null;
+  sources: string[];
 };
 
 export type WatchlistShare = {

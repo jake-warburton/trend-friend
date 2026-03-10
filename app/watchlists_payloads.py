@@ -2,12 +2,23 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
-from app.models import AlertRule, TrendGeoSummary, Watchlist, WatchlistItem, WatchlistShare
+from app.models import AlertRule, TrendGeoSummary, TrendMomentum, TrendScoreResult, Watchlist, WatchlistItem, WatchlistShare
+from app.topics.categorize import categorize_topic
 
 WATCHLIST_SCORE_LOOKUP_LIMIT = 1000
+
+
+@dataclass(frozen=True)
+class _ItemEnrichment:
+    rank: int
+    rank_change: int | None
+    status: str
+    category: str
+    sources: list[str]
 
 
 def build_watchlist_payload(
@@ -41,6 +52,7 @@ def build_shared_watchlist_payload(
 
     latest_scores = score_repo.list_scores(limit=WATCHLIST_SCORE_LOOKUP_LIMIT)
     score_by_slug = {_slugify(score.topic): score for score in latest_scores}
+    enrichment = _build_enrichment(latest_scores, score_repo)
 
     return {
         "watchlist": {
@@ -50,7 +62,9 @@ def build_shared_watchlist_payload(
             "createdAt": _to_utc_iso(watchlist.created_at),
             "updatedAt": _to_utc_iso(watchlist.updated_at),
             "items": [
-                _serialize_shared_watchlist_item(item, score_by_slug.get(item.trend_id), score_repo, score_by_slug)
+                _serialize_shared_watchlist_item(
+                    item, score_by_slug.get(item.trend_id), score_repo, score_by_slug, enrichment
+                )
                 for item in watchlist.items
             ],
         },
@@ -137,6 +151,28 @@ def _aggregate_watchlist_geo(
     return ranked[:limit]
 
 
+def _build_enrichment(
+    ordered_scores: list[TrendScoreResult],
+    score_repo: TrendScoreRepository,
+) -> dict[str, _ItemEnrichment]:
+    """Build rank, status, category, and source data for each scored trend."""
+
+    result: dict[str, _ItemEnrichment] = {}
+    for rank, score in enumerate(ordered_scores, start=1):
+        slug = _slugify(score.topic)
+        history = score_repo.get_topic_history(score.topic, limit_runs=2)
+        momentum = TrendScoreRepository._build_momentum(score.total_score, history)
+        status = TrendScoreRepository._build_trend_status(momentum)
+        result[slug] = _ItemEnrichment(
+            rank=rank,
+            rank_change=momentum.rank_change,
+            status=status,
+            category=categorize_topic(score.topic, score.source_counts),
+            sources=sorted(score.source_counts),
+        )
+    return result
+
+
 def _build_alert_matches(
     watchlists: list[Watchlist],
     alerts: list[AlertRule],
@@ -212,12 +248,28 @@ def _serialize_watchlist_item(
 
 def _serialize_shared_watchlist_item(
     item: WatchlistItem,
-    score: object | None,
+    score: TrendScoreResult | None,
     score_repo: TrendScoreRepository,
     score_by_slug: dict[str, object],
+    enrichment: dict[str, _ItemEnrichment] | None = None,
 ) -> dict[str, object]:
     payload: dict[str, object] = _serialize_watchlist_item(item, score_repo, score_by_slug)
     payload["currentScore"] = round(score.total_score, 1) if score is not None else None
+
+    info = enrichment.get(item.trend_id) if enrichment else None
+    if info is not None:
+        payload["rank"] = info.rank
+        payload["rankChange"] = info.rank_change
+        payload["status"] = info.status
+        payload["category"] = info.category
+        payload["sources"] = info.sources
+    else:
+        payload["rank"] = None
+        payload["rankChange"] = None
+        payload["status"] = None
+        payload["category"] = None
+        payload["sources"] = []
+
     return payload
 
 

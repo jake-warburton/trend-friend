@@ -45,7 +45,21 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
                 </strong>
                 <span>{item.currentScore != null ? item.currentScore.toFixed(1) : "No score"}</span>
               </header>
-              <p className="source-summary-copy">Added {formatTimestamp(item.addedAt)}</p>
+              <div className="shared-item-meta">
+                {item.rank != null && <span className="shared-rank">#{item.rank}</span>}
+                {item.status && (
+                  <span className={`trend-status-pill trend-status-pill-${item.status}`}>{item.status}</span>
+                )}
+                {item.rankChange != null && item.rankChange !== 0 && (
+                  <span className={`movement-pill ${item.rankChange > 0 ? "movement-pill-up" : "movement-pill-down"}`}>
+                    {item.rankChange > 0 ? "+" : ""}{item.rankChange}
+                  </span>
+                )}
+                {item.category && <span className="shared-category">{item.category}</span>}
+              </div>
+              {item.sources.length > 0 && (
+                <p className="source-summary-copy">{item.sources.map(formatSourceLabel).join(", ")}</p>
+              )}
               {geo.length > 0 && (
                 <p className="source-summary-copy">
                   {geo.map((g: TrendGeoSummary) => g.label).join(", ")}
@@ -88,4 +102,16 @@ function formatTimestamp(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatSourceLabel(source: string) {
+  const labels: Record<string, string> = {
+    reddit: "Reddit",
+    hacker_news: "Hacker News",
+    github: "GitHub",
+    wikipedia: "Wikipedia",
+    google_trends: "Google Trends",
+    twitter: "Twitter/X",
+  };
+  return labels[source] ?? source;
 }
