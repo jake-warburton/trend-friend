@@ -7,6 +7,7 @@ import CommunityPage, {
   buildCommunityEmptyStateSuggestions,
   createCommunityUrlBuilder,
   filterAndSortCommunityWatchlists,
+  listCommunityAudienceOptions,
   listCommunityCategoryOptions,
   listActiveCommunityFilters,
   listCommunityPresetSections,
@@ -21,7 +22,7 @@ import type { PublicWatchlistsResponse } from "@/lib/types";
 const originalFetch = global.fetch;
 const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-test("filterAndSortCommunityWatchlists supports category, status, source, location, and popular filters", () => {
+test("filterAndSortCommunityWatchlists supports category, status, source, location, audience, and popular filters", () => {
   const result = filterAndSortCommunityWatchlists(
     [
       {
@@ -64,6 +65,9 @@ test("filterAndSortCommunityWatchlists supports category, status, source, locati
             averageConfidence: 1,
           },
         ],
+        audienceSummary: [
+          { segmentType: "market", label: "b2b", signalCount: 2 },
+        ],
       },
       {
         id: 2,
@@ -105,6 +109,9 @@ test("filterAndSortCommunityWatchlists supports category, status, source, locati
             averageConfidence: 0.7,
           },
         ],
+        audienceSummary: [
+          { segmentType: "audience", label: "developer", signalCount: 3 },
+        ],
       },
     ],
     {
@@ -114,6 +121,7 @@ test("filterAndSortCommunityWatchlists supports category, status, source, locati
       status: "breakout",
       source: "github",
       location: "United Kingdom",
+      audience: "developer",
       popularOnly: true,
     },
   );
@@ -122,7 +130,7 @@ test("filterAndSortCommunityWatchlists supports category, status, source, locati
   assert.equal(result[0]?.name, "Beta Robotics");
 });
 
-test("community helpers derive category, status, source, and location option lists", () => {
+test("community helpers derive category, status, source, location, and audience option lists", () => {
   const watchlists: PublicWatchlistsResponse["watchlists"] = [
     {
       id: 1,
@@ -154,6 +162,7 @@ test("community helpers derive category, status, source, and location option lis
           averageConfidence: 0.8,
         },
       ],
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 2 }],
     },
     {
       id: 2,
@@ -185,6 +194,7 @@ test("community helpers derive category, status, source, and location option lis
           averageConfidence: 1,
         },
       ],
+      audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 4 }],
     },
     {
       id: 3,
@@ -216,6 +226,7 @@ test("community helpers derive category, status, source, and location option lis
           averageConfidence: 0.9,
         },
       ],
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 1 }],
     },
   ];
 
@@ -235,6 +246,10 @@ test("community helpers derive category, status, source, and location option lis
   assert.deepEqual(listCommunityLocationOptions(watchlists), [
     { value: "United Kingdom", label: "United Kingdom (2)" },
     { value: "United States", label: "United States (1)" },
+  ]);
+  assert.deepEqual(listCommunityAudienceOptions(watchlists), [
+    { value: "b2c", label: "B2C (1)" },
+    { value: "developer", label: "Developer (2)" },
   ]);
 });
 
@@ -260,6 +275,7 @@ test("community option counts can be derived from the currently filtered result 
         },
       ],
       geoSummary: [{ label: "United Kingdom", countryCode: "GB", region: null, signalCount: 2, explicitCount: 2, inferredCount: 0, averageConfidence: 1 }],
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 2 }],
       recentOpenCount: 5,
       accessCount: 10,
       popularThisWeek: true,
@@ -284,6 +300,7 @@ test("community option counts can be derived from the currently filtered result 
         },
       ],
       geoSummary: [{ label: "United States", countryCode: "US", region: null, signalCount: 2, explicitCount: 2, inferredCount: 0, averageConfidence: 1 }],
+      audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 2 }],
       recentOpenCount: 4,
       accessCount: 9,
       popularThisWeek: true,
@@ -308,6 +325,7 @@ test("community option counts can be derived from the currently filtered result 
         },
       ],
       geoSummary: [{ label: "United States", countryCode: "US", region: null, signalCount: 2, explicitCount: 2, inferredCount: 0, averageConfidence: 1 }],
+      audienceSummary: [{ segmentType: "audience", label: "research", signalCount: 2 }],
       recentOpenCount: 3,
       accessCount: 8,
       popularThisWeek: true,
@@ -321,6 +339,7 @@ test("community option counts can be derived from the currently filtered result 
     status: "",
     source: "",
     location: "United Kingdom",
+    audience: "",
     popularOnly: true,
   });
   const statusScoped = filterAndSortCommunityWatchlists(watchlists, {
@@ -330,6 +349,7 @@ test("community option counts can be derived from the currently filtered result 
     status: "",
     source: "github",
     location: "",
+    audience: "",
     popularOnly: true,
   });
 
@@ -353,6 +373,7 @@ test("community preset sections surface popular and topical slices", () => {
       categories: ["hardware-robotics"],
       statuses: ["breakout"],
       popularThisWeek: true,
+      audienceSummary: [{ segmentType: "audience", label: "founder", signalCount: 2 }],
     },
     {
       id: 2,
@@ -394,6 +415,7 @@ test("community preset sections surface popular and topical slices", () => {
         },
       ],
       popularThisWeek: false,
+      audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 3 }],
     },
     {
       id: 3,
@@ -416,6 +438,7 @@ test("community preset sections surface popular and topical slices", () => {
         },
       ],
       popularThisWeek: false,
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 2 }],
     },
   ];
 
@@ -426,6 +449,7 @@ test("community preset sections surface popular and topical slices", () => {
     status: "",
     source: "",
     location: "",
+    audience: "",
     popularOnly: false,
   });
 
@@ -436,17 +460,20 @@ test("community preset sections surface popular and topical slices", () => {
       "AI watchlists",
       "Developer watchlists",
       "Search-driven watchlists",
+      "Developer audience",
       "Global interest",
     ],
   );
   assert.equal(sections[0]?.description, "Watchlists with the strongest recent open activity.");
   assert.equal(sections[3]?.description, "Driven mostly by Google Trends and search demand signals.");
-  assert.equal(sections[4]?.description, "Showing up across multiple regions at the same time.");
+  assert.equal(sections[4]?.description, "Collections resonating most with developers and technical builders.");
+  assert.equal(sections[5]?.description, "Showing up across multiple regions at the same time.");
   assert.equal(sections[0]?.watchlists[0]?.name, "Popular Robotics");
   assert.equal(sections[1]?.watchlists[0]?.name, "AI Search");
   assert.equal(sections[2]?.watchlists[0]?.name, "Dev Tools");
   assert.equal(sections[3]?.watchlists[0]?.name, "AI Search");
-  assert.equal(sections[4]?.watchlists[0]?.name, "AI Search");
+  assert.equal(sections[4]?.watchlists[0]?.name, "Dev Tools");
+  assert.equal(sections[5]?.watchlists[0]?.name, "AI Search");
 });
 
 test("community preset sections hide rails that conflict with the active slice", () => {
@@ -461,6 +488,7 @@ test("community preset sections hide rails that conflict with the active slice",
       categories: ["hardware-robotics"],
       statuses: ["breakout"],
       popularThisWeek: true,
+      audienceSummary: [{ segmentType: "audience", label: "founder", signalCount: 2 }],
     },
     {
       id: 2,
@@ -502,6 +530,7 @@ test("community preset sections hide rails that conflict with the active slice",
         },
       ],
       popularThisWeek: false,
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 3 }],
     },
     {
       id: 3,
@@ -513,6 +542,7 @@ test("community preset sections hide rails that conflict with the active slice",
       categories: ["developer-tools"],
       statuses: ["steady"],
       popularThisWeek: false,
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 2 }],
     },
   ];
 
@@ -523,6 +553,7 @@ test("community preset sections hide rails that conflict with the active slice",
     status: "",
     source: "",
     location: "",
+    audience: "developer",
     popularOnly: true,
   });
 
@@ -550,6 +581,7 @@ test("pagination slices community watchlists and builds preserved URLs", () => {
     status: "breakout",
     source: "github",
     location: "United Kingdom",
+    audience: "developer",
     popular: true,
   });
 
@@ -559,7 +591,7 @@ test("pagination slices community watchlists and builds preserved URLs", () => {
   assert.equal(page.pageItems[0]?.name, "Watchlist 10");
   assert.equal(
     buildUrl(2),
-    "/community?q=robot&sort=total&category=hardware-robotics&status=breakout&source=github&location=United+Kingdom&popular=true&page=2",
+    "/community?q=robot&sort=total&category=hardware-robotics&status=breakout&source=github&location=United+Kingdom&audience=developer&popular=true&page=2",
   );
 });
 
@@ -571,6 +603,7 @@ test("community active filters expose readable labels and removal URLs", () => {
     status: "breakout",
     source: "github",
     location: "United Kingdom",
+    audience: "developer",
     popularOnly: true,
   });
 
@@ -581,6 +614,7 @@ test("community active filters expose readable labels and removal URLs", () => {
     { key: "status", label: "Status", value: "Breakout" },
     { key: "source", label: "Source", value: "GitHub" },
     { key: "location", label: "Location", value: "United Kingdom" },
+    { key: "audience", label: "Audience", value: "Developer" },
     { key: "popular", label: "Popularity", value: "Popular this week" },
   ]);
 
@@ -593,11 +627,12 @@ test("community active filters expose readable labels and removal URLs", () => {
         status: "breakout",
         source: "github",
         location: "United Kingdom",
+        audience: "developer",
         popular: true,
       },
       "status",
     ),
-    "/community?q=robot&sort=total&category=hardware-robotics&source=github&location=United+Kingdom&popular=true",
+    "/community?q=robot&sort=total&category=hardware-robotics&source=github&location=United+Kingdom&audience=developer&popular=true",
   );
 
   assert.equal(
@@ -609,11 +644,12 @@ test("community active filters expose readable labels and removal URLs", () => {
         status: "breakout",
         source: "github",
         location: "United Kingdom",
+        audience: "developer",
         popular: true,
       },
       "sort",
     ),
-    "/community?q=robot&category=hardware-robotics&status=breakout&source=github&location=United+Kingdom&popular=true",
+    "/community?q=robot&category=hardware-robotics&status=breakout&source=github&location=United+Kingdom&audience=developer&popular=true",
   );
 });
 
@@ -707,6 +743,10 @@ test("community page renders public watchlists with analytics copy", async () =>
             averageConfidence: 0.75,
           },
         ],
+        audienceSummary: [
+          { segmentType: "audience", label: "developer", signalCount: 4 },
+          { segmentType: "market", label: "b2b", signalCount: 3 },
+        ],
       },
       {
         id: 2,
@@ -757,6 +797,7 @@ test("community page renders public watchlists with analytics copy", async () =>
             averageConfidence: 0.9,
           },
         ],
+        audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 3 }],
       },
       {
         id: 3,
@@ -770,6 +811,7 @@ test("community page renders public watchlists with analytics copy", async () =>
         popularThisWeek: false,
         categories: ["developer-tools"],
         statuses: ["steady"],
+        audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 2 }],
       },
     ],
   };
@@ -788,6 +830,7 @@ test("community page renders public watchlists with analytics copy", async () =>
       status: "breakout",
       source: "github",
       location: "United Kingdom",
+      audience: "developer",
       popular: "true",
       page: "1",
     }),
@@ -808,19 +851,23 @@ test("community page renders public watchlists with analytics copy", async () =>
   assert.match(html, /Status/);
   assert.match(html, /Source/);
   assert.match(html, /Location/);
+  assert.match(html, /Audience/);
   assert.match(html, /Hardware Robotics \(1\)/);
   assert.match(html, /GitHub \(1\)/);
+  assert.match(html, /Developer \(1\)/);
   assert.match(html, /7 day opens/);
   assert.match(html, /<strong>6<\/strong>/);
   assert.match(html, /Hardware Robotics/);
   assert.match(html, /Breakout/);
   assert.match(html, /GitHub/);
   assert.match(html, /United Kingdom/);
+  assert.match(html, /Audience: Developer · Market: B2B/);
   assert.match(html, /Top driver: GitHub drove 66.7%/);
   assert.match(html, /Shared by Owner One/);
   assert.match(html, /Showing 1-1 of 1 public watchlists/);
   assert.match(html, /Search: robot/);
   assert.match(html, /Category: Hardware Robotics/);
+  assert.match(html, /Audience: Developer/);
   assert.match(html, /Clear all/);
 });
 

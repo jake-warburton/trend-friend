@@ -11,6 +11,7 @@ const COMMUNITY_PRESET_LINKS = [
   { label: "AI", href: "/community?category=ai-machine-learning" },
   { label: "Developer tools", href: "/community?category=developer-tools" },
   { label: "Search-driven", href: "/community?source=google_trends" },
+  { label: "Developer audience", href: "/community?audience=developer" },
 ] as const;
 
 type PageProps = {
@@ -29,10 +30,11 @@ type CommunityFilterState = {
   status: string;
   source: string;
   location: string;
+  audience: string;
   popularOnly: boolean;
 };
 type ActiveCommunityFilter = {
-  key: "q" | "sort" | "category" | "status" | "source" | "location" | "popular";
+  key: "q" | "sort" | "category" | "status" | "source" | "location" | "audience" | "popular";
   label: string;
   value: string;
 };
@@ -51,6 +53,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const status = readSearchParam(params.status);
   const source = readSearchParam(params.source);
   const location = readSearchParam(params.location);
+  const audience = readSearchParam(params.audience);
   const popularOnly = readBooleanParam(params.popular);
   const page = readPageParam(params.page);
   const directory = await loadCommunityWatchlists();
@@ -61,6 +64,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
     status,
     source,
     location,
+    audience,
     popularOnly,
   };
   const categoryOptions = listCommunityCategoryOptions(
@@ -75,6 +79,9 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const locationOptions = listCommunityLocationOptions(
     filterAndSortCommunityWatchlists(directory.watchlists, { ...filters, location: "" }),
   );
+  const audienceOptions = listCommunityAudienceOptions(
+    filterAndSortCommunityWatchlists(directory.watchlists, { ...filters, audience: "" }),
+  );
   const filteredWatchlists = filterAndSortCommunityWatchlists(directory.watchlists, filters);
   const pagination = paginateCommunityWatchlists(filteredWatchlists, page);
   const pageUrlBuilder = createCommunityUrlBuilder({
@@ -84,6 +91,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
     status: filters.status,
     source: filters.source,
     location: filters.location,
+    audience: filters.audience,
     popular: popularOnly,
   });
   const activeFilters = listActiveCommunityFilters({
@@ -177,6 +185,17 @@ export default async function CommunityPage({ searchParams }: PageProps) {
             ))}
           </select>
         </label>
+        <label className="filter-field">
+          <span>Audience</span>
+          <select className="select-trigger community-select" defaultValue={audience} name="audience">
+            <option value="">All audiences</option>
+            {audienceOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="community-toggle">
           <input defaultChecked={popularOnly} name="popular" type="checkbox" value="true" />
           <span>Popular this week only</span>
@@ -212,6 +231,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
                     status,
                     source,
                     location,
+                    audience,
                     popular: popularOnly,
                   },
                   filter.key,
@@ -327,6 +347,7 @@ export function filterAndSortCommunityWatchlists(
   const normalizedStatus = options.status.trim().toLowerCase();
   const normalizedSource = options.source.trim().toLowerCase();
   const normalizedLocation = options.location.trim().toLowerCase();
+  const normalizedAudience = options.audience.trim().toLowerCase();
   return watchlists
     .filter((watchlist) => {
       if (options.popularOnly && !watchlist.popularThisWeek) {
@@ -358,6 +379,12 @@ export function filterAndSortCommunityWatchlists(
       ) {
         return false;
       }
+      if (
+        normalizedAudience.length > 0 &&
+        !(watchlist.audienceSummary ?? []).some((segment) => segment.label.toLowerCase() === normalizedAudience)
+      ) {
+        return false;
+      }
       if (normalizedQuery.length === 0) {
         return true;
       }
@@ -367,6 +394,7 @@ export function filterAndSortCommunityWatchlists(
         ...(watchlist.categories ?? []),
         ...(watchlist.statuses?.map(formatStatusLabel) ?? []),
         ...(watchlist.geoSummary?.map((geo) => geo.label) ?? []),
+        ...(watchlist.audienceSummary?.map((segment) => formatAudienceLabel(segment.label)) ?? []),
       ].some((value) => value.toLowerCase().includes(normalizedQuery));
     })
     .sort((left, right) => {
@@ -412,6 +440,14 @@ export function listCommunityLocationOptions(watchlists: PublicWatchlistSummary[
   );
 }
 
+export function listCommunityAudienceOptions(watchlists: PublicWatchlistSummary[]): CommunityFilterOption[] {
+  return buildCommunityFilterOptions(
+    watchlists,
+    (watchlist) => (watchlist.audienceSummary ?? []).map((segment) => segment.label),
+    formatAudienceLabel,
+  );
+}
+
 export function paginateCommunityWatchlists(watchlists: PublicWatchlistSummary[], page: number) {
   const totalPages = Math.max(1, Math.ceil(watchlists.length / COMMUNITY_PAGE_SIZE));
   const currentPage = Math.min(Math.max(1, page), totalPages);
@@ -434,6 +470,7 @@ export function createCommunityUrlBuilder(filters: {
   status: string;
   source: string;
   location: string;
+  audience: string;
   popular: boolean;
 }) {
   return (page: number) => {
@@ -456,6 +493,9 @@ export function createCommunityUrlBuilder(filters: {
     if (filters.location) {
       params.set("location", filters.location);
     }
+    if (filters.audience) {
+      params.set("audience", filters.audience);
+    }
     if (filters.popular) {
       params.set("popular", "true");
     }
@@ -474,6 +514,7 @@ export function listActiveCommunityFilters(filters: {
   status: string;
   source: string;
   location: string;
+  audience: string;
   popularOnly: boolean;
 }): ActiveCommunityFilter[] {
   const result: ActiveCommunityFilter[] = [];
@@ -495,6 +536,9 @@ export function listActiveCommunityFilters(filters: {
   if (filters.location) {
     result.push({ key: "location", label: "Location", value: filters.location });
   }
+  if (filters.audience) {
+    result.push({ key: "audience", label: "Audience", value: formatAudienceLabel(filters.audience) });
+  }
   if (filters.popularOnly) {
     result.push({ key: "popular", label: "Popularity", value: "Popular this week" });
   }
@@ -509,6 +553,7 @@ export function buildCommunityFilterRemovalUrl(
     status: string;
     source: string;
     location: string;
+    audience: string;
     popular: boolean;
   },
   filterKey: ActiveCommunityFilter["key"],
@@ -521,6 +566,7 @@ export function buildCommunityFilterRemovalUrl(
     status: filterKey === "status" ? "" : filters.status,
     source: filterKey === "source" ? "" : filters.source,
     location: filterKey === "location" ? "" : filters.location,
+    audience: filterKey === "audience" ? "" : filters.audience,
     popular: filterKey === "popular" ? false : filters.popular,
   })(1);
 }
@@ -604,6 +650,22 @@ export function listCommunityPresetSections(
       description: "Driven mostly by Google Trends and search demand signals.",
       href: "/community?source=google_trends",
       watchlists: searchDriven,
+    });
+  }
+
+  const developerAudience = filters.audience !== "developer"
+    ? watchlists
+        .filter((watchlist) =>
+          (watchlist.audienceSummary ?? []).some((segment) => segment.label === "developer"),
+        )
+        .slice(0, 3)
+    : [];
+  if (developerAudience.length > 0) {
+    sections.push({
+      title: "Developer audience",
+      description: "Collections resonating most with developers and technical builders.",
+      href: "/community?audience=developer",
+      watchlists: developerAudience,
     });
   }
 
@@ -730,7 +792,8 @@ function hasCommunityCardTags(watchlist: PublicWatchlistSummary) {
     (watchlist.categories?.length ?? 0) > 0 ||
     (watchlist.statuses?.length ?? 0) > 0 ||
     (watchlist.sourceContributions?.length ?? 0) > 0 ||
-    (watchlist.geoSummary?.length ?? 0) > 0
+    (watchlist.geoSummary?.length ?? 0) > 0 ||
+    (watchlist.audienceSummary?.length ?? 0) > 0
   );
 }
 
@@ -789,6 +852,11 @@ function renderCommunityWatchlistCard(watchlist: PublicWatchlistSummary) {
               {geo.label}
             </span>
           ))}
+          {watchlist.audienceSummary?.slice(0, 1).map((segment) => (
+            <span className="trend-date-chip" key={`audience-${segment.segmentType}-${segment.label}`}>
+              {formatAudienceLabel(segment.label)}
+            </span>
+          ))}
         </div>
       ) : null}
       {watchlist.sourceContributions?.[0] ? (
@@ -829,6 +897,6 @@ function formatAudiencePrefix(segmentType: string) {
 function formatAudienceLabel(label: string) {
   return label
     .split("-")
-    .map((part) => (part.toUpperCase() === part && part.length <= 3 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .map((part) => (part.length <= 3 || /\d/.test(part) ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)))
     .join(" ");
 }

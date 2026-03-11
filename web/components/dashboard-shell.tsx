@@ -2222,7 +2222,7 @@ function formatAudiencePrefix(segmentType: string) {
 function formatAudienceLabel(label: string) {
   return label
     .split("-")
-    .map((part) => (part.toUpperCase() === part && part.length <= 3 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .map((part) => (part.length <= 3 || /\d/.test(part) ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)))
     .join(" ");
 }
 
