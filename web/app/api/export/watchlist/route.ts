@@ -22,6 +22,9 @@ const CSV_COLUMNS = [
   "source_count",
   "signal_count",
   "sources",
+  "audience_segments",
+  "market_segments",
+  "language_segments",
   "forecast_direction",
   "first_seen",
   "latest_signal",
@@ -35,7 +38,8 @@ function escapeField(value: string): string {
   return value;
 }
 
-function trendToCsvRow(trend: TrendExplorerRecord, addedAt: string): string {
+export function trendToWatchlistCsvRow(trend: TrendExplorerRecord, addedAt: string): string {
+  const audienceSummary = trend.audienceSummary ?? [];
   const fields = [
     String(trend.rank),
     escapeField(trend.name),
@@ -53,12 +57,40 @@ function trendToCsvRow(trend: TrendExplorerRecord, addedAt: string): string {
     String(trend.coverage.sourceCount),
     String(trend.coverage.signalCount),
     escapeField(trend.sources.join(",")),
+    escapeField(summarizeSegments(audienceSummary, "audience")),
+    escapeField(summarizeSegments(audienceSummary, "market")),
+    escapeField(summarizeSegments(audienceSummary, "language")),
     trend.forecastDirection ?? "",
     trend.firstSeenAt ?? "",
     trend.latestSignalAt,
     addedAt,
   ];
   return fields.join(",");
+}
+
+function summarizeSegments(summary: NonNullable<TrendExplorerRecord["audienceSummary"]>, segmentType: string): string {
+  return summary
+    .filter((item) => item.segmentType === segmentType)
+    .map((item) => item.label)
+    .join(",");
+}
+
+export function buildWatchlistCsv(
+  watchlist: Watchlist,
+  trends: TrendExplorerRecord[],
+): string {
+  const trendById = new Map(trends.map((t) => [t.id, t]));
+  const addedAtById = new Map(watchlist.items.map((item) => [item.trendId, item.addedAt]));
+
+  const rows = [CSV_COLUMNS.join(",")];
+  for (const item of watchlist.items) {
+    const trend = trendById.get(item.trendId);
+    if (trend) {
+      rows.push(trendToWatchlistCsvRow(trend, addedAtById.get(item.trendId) ?? ""));
+    }
+  }
+
+  return rows.join("\n") + "\n";
 }
 
 export async function GET(request: NextRequest) {
@@ -86,18 +118,7 @@ export async function GET(request: NextRequest) {
   }
 
   const explorer = await loadTrendExplorer();
-  const trendById = new Map(explorer.trends.map((t) => [t.id, t]));
-  const addedAtById = new Map(watchlist.items.map((item) => [item.trendId, item.addedAt]));
-
-  const rows = [CSV_COLUMNS.join(",")];
-  for (const item of watchlist.items) {
-    const trend = trendById.get(item.trendId);
-    if (trend) {
-      rows.push(trendToCsvRow(trend, addedAtById.get(item.trendId) ?? ""));
-    }
-  }
-
-  const csv = rows.join("\n") + "\n";
+  const csv = buildWatchlistCsv(watchlist, explorer.trends);
   const date = new Date().toISOString().slice(0, 10);
   const safeName = watchlist.name.replace(/[^a-zA-Z0-9_-]/g, "-");
 
