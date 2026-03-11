@@ -11,18 +11,40 @@ import {
   YAxis,
 } from "recharts";
 
-import type { TrendDetailRecord } from "@/lib/types";
+import type { TrendDetailRecord, TrendHistoryResponse } from "@/lib/types";
 
 type TrendTrajectoryChartProps = {
   trends: TrendDetailRecord[];
+  history: TrendHistoryResponse;
   limit?: number;
 };
 
 const PALETTE = ["#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#9b8cff"];
 
-export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChartProps) {
-  const topTrends = trends
-    .filter((t) => t.history.length >= 2)
+type ChartTrend = TrendDetailRecord & {
+  chartHistory: Array<{ capturedAt: string; scoreTotal: number }>;
+};
+
+export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajectoryChartProps) {
+  const historyByTrendId = new Map<string, Array<{ capturedAt: string; scoreTotal: number }>>();
+
+  for (const snapshot of history.snapshots) {
+    for (const trend of snapshot.trends) {
+      const points = historyByTrendId.get(trend.id) ?? [];
+      points.push({
+        capturedAt: snapshot.capturedAt,
+        scoreTotal: trend.score.total,
+      });
+      historyByTrendId.set(trend.id, points);
+    }
+  }
+
+  const topTrends: ChartTrend[] = trends
+    .map((trend) => ({
+      ...trend,
+      chartHistory: historyByTrendId.get(trend.id) ?? [],
+    }))
+    .filter((t) => t.chartHistory.length >= 2)
     .sort((a, b) => a.rank - b.rank)
     .slice(0, limit);
 
@@ -33,7 +55,7 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
   // Collect all unique dates across all trends
   const dateSet = new Set<string>();
   for (const trend of topTrends) {
-    for (const point of trend.history) {
+    for (const point of trend.chartHistory) {
       dateSet.add(point.capturedAt.slice(0, 10));
     }
   }
@@ -51,7 +73,7 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
   const data: Record<string, string | number | undefined>[] = dates.map((date) => {
     const row: Record<string, string | number | undefined> = { date: formatShortDate(date) };
     for (const trend of topTrends) {
-      const point = trend.history.find((p) => p.capturedAt.slice(0, 10) === date);
+      const point = trend.chartHistory.find((p) => p.capturedAt.slice(0, 10) === date);
       if (point) {
         row[trend.name] = point.scoreTotal;
       }
@@ -95,7 +117,7 @@ export function TrendTrajectoryChart({ trends, limit = 5 }: TrendTrajectoryChart
   );
 
   const maxScore = Math.max(
-    ...topTrends.flatMap((t) => t.history.map((p) => p.scoreTotal)),
+    ...topTrends.flatMap((t) => t.chartHistory.map((p) => p.scoreTotal)),
     ...topTrends.flatMap((t) =>
       t.forecast ? t.forecast.predictedScores : [],
     ),

@@ -10,9 +10,10 @@ const NAV_LINKS = [
 
 export function NavBar() {
   const pathname = usePathname();
+  const navClassName = pathname === "/" ? "nav-bar nav-bar-static" : "nav-bar";
 
   return (
-    <nav className="nav-bar">
+    <nav className={navClassName}>
       <Link className="nav-bar-brand" href="/">
         Trend Friend
       </Link>

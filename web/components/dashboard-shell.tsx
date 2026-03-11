@@ -1096,7 +1096,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           <div className="section-heading">
             <h2>Top trends over time</h2>
           </div>
-          <TrendTrajectoryChart trends={initialData.details.trends} />
+          <TrendTrajectoryChart history={initialData.history} trends={initialData.details.trends} />
         </article>
       </section>
 
@@ -1171,10 +1171,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
               <div className="explorer-legend" aria-hidden="true">
                 <span>Trend</span>
-                <span>Pos</span>
-                <span>Move</span>
-                <span>Score</span>
-                <span>Signals</span>
+                <span>Metrics</span>
               </div>
               {filteredTrends.map((trend) => {
                 const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
@@ -1184,6 +1181,20 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 const wikipediaLink = getWikipediaLinkFromDetail(detail);
                 const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
                 const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
+                const evidenceMeta = [
+                  primaryEvidenceLink ? `Source: ${formatSourceLabel(primaryEvidenceLink.source)}` : null,
+                  audienceSummary,
+                ]
+                  .filter((item): item is string => Boolean(item))
+                  .join(" · ");
+                const compactSummaryParts = [
+                  formatTrendStatus(trend.status),
+                  formatVolatility(trend.volatility),
+                  forecastBadge?.label ?? null,
+                  seasonalityBadge?.label ?? null,
+                  audienceBadge ?? null,
+                  formatCategory(trend.category),
+                ].filter((item): item is string => Boolean(item));
                 return (
                 <article className="explorer-card" data-status={trend.status} key={trend.id}>
                   <div className="explorer-card-top">
@@ -1214,66 +1225,45 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         >
                           {defaultWatchlist?.items.some((item) => item.trendId === trend.id) ? "Tracked" : "Track"}
                         </button>
+                        <span className="trend-date-chip">Sources: {trend.sources.length}</span>
                       </div>
                       <div className="explorer-badge-row">
-                        <span className={trendStatusClassName(trend.status)}>
-                          {formatTrendStatus(trend.status)}
-                        </span>
-                        <span className={volatilityClassName(trend.volatility)}>
-                          {formatVolatility(trend.volatility)}
-                        </span>
-                        {forecastBadge ? (
-                          <span className={`forecast-badge forecast-badge-${forecastBadge.tone}`}>
-                            {forecastBadge.label}
-                          </span>
-                        ) : null}
-                        {seasonalityBadge ? (
-                          <span className={`seasonality-badge seasonality-badge-${seasonalityBadge.tone}`}>
-                            {seasonalityBadge.label}
-                          </span>
-                        ) : null}
-                        {audienceBadge ? (
-                          <span className="trend-date-chip">{audienceBadge}</span>
-                        ) : null}
-                        <span className="trend-date-chip">{formatCategory(trend.category)}</span>
+                        <span className="trend-summary-chip">{compactSummaryParts.join(" / ")}</span>
                       </div>
                     </div>
 
                     <div className="explorer-metrics-row">
-                      <div className="explorer-metric explorer-metric-inline">
-                        <span>Position</span>
-                        <strong>#{trend.rank}</strong>
-                      </div>
-
-                      <div className="explorer-metric explorer-metric-inline">
-                        <span>Momentum</span>
-                        <div className="movement-inline">
-                          <strong className={movementClassName(trend.rankChange)}>
-                            {formatRankChange(trend.rankChange)}
-                          </strong>
-                          <small>{formatMomentum(trend.momentum.percentDelta)}</small>
+                      <div className="explorer-metrics-panel">
+                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
+                          <span>Position</span>
+                          <strong>#{trend.rank}</strong>
                         </div>
-                      </div>
 
-                      <div className="explorer-metric explorer-metric-inline">
-                        <span>Total score</span>
-                        <div className="score-inline">
-                          <strong>{trend.score.total.toFixed(1)}</strong>
-                          <small>
-                            S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
-                            {trend.score.knowledge.toFixed(1)}
-                          </small>
+                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
+                          <span>Momentum</span>
+                          <div className="movement-inline">
+                            <strong className={movementClassName(trend.rankChange)}>
+                              {formatRankChange(trend.rankChange)}
+                            </strong>
+                            <small>{formatMomentum(trend.momentum.percentDelta)}</small>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="explorer-metric explorer-metric-inline">
-                        <span>Signals</span>
-                        <strong>{trend.coverage.signalCount}</strong>
-                      </div>
+                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-score">
+                          <span>Total score</span>
+                          <div className="score-inline">
+                            <strong>{trend.score.total.toFixed(1)}</strong>
+                            <small>
+                              S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
+                              {trend.score.knowledge.toFixed(1)}
+                            </small>
+                          </div>
+                        </div>
 
-                      <div className="explorer-metric explorer-metric-inline">
-                        <span>Trajectory</span>
-                        <Sparkline data={(trend.recentHistory ?? []).map((p) => p.scoreTotal)} />
+                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
+                          <span>Signals</span>
+                          <strong>{trend.coverage.signalCount}</strong>
+                        </div>
                       </div>
 
                       <button
@@ -1294,43 +1284,36 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
-                      <span className="explorer-evidence-label">Signal brief</span>
-                      {primaryEvidenceLink?.evidenceUrl ? (
-                        <a
-                          className="trend-link"
-                          href={primaryEvidenceLink.evidenceUrl}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          {primaryEvidenceLink.evidence}
-                        </a>
-                      ) : (
-                        <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
-                      )}
-                      {primaryEvidenceLink ? (
-                        <span className="source-summary-copy">
-                          Source: {formatSourceLabel(primaryEvidenceLink.source)}
-                        </span>
+                      <div className="evidence-main-row">
+                        <span className="explorer-evidence-label">Signal brief</span>
+                        {primaryEvidenceLink?.evidenceUrl ? (
+                          <a
+                            className="trend-link"
+                            href={primaryEvidenceLink.evidenceUrl}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            {primaryEvidenceLink.evidence}
+                          </a>
+                        ) : (
+                          <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                        )}
+                      </div>
+                      {(evidenceMeta || wikipediaLink) ? (
+                        <div className="evidence-meta-row">
+                          {evidenceMeta ? <span className="source-summary-copy">{evidenceMeta}</span> : null}
+                          {wikipediaLink ? (
+                            <a
+                              className="trend-link source-summary-copy"
+                              href={wikipediaLink.url}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              Wikipedia: {wikipediaLink.title}
+                            </a>
+                          ) : null}
+                        </div>
                       ) : null}
-                      {audienceSummary ? <span className="source-summary-copy">{audienceSummary}</span> : null}
-                      {wikipediaLink ? (
-                        <a
-                          className="trend-link"
-                          href={wikipediaLink.url}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          Wikipedia: {wikipediaLink.title}
-                        </a>
-                      ) : null}
-                    </div>
-
-                    <div className="source-row source-row-compact">
-                      {trend.sources.map((source) => (
-                        <span className="source-badge" key={source}>
-                          {formatSourceLabel(source)}
-                        </span>
-                      ))}
                     </div>
                   </div>
 
@@ -1386,6 +1369,13 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                               <div className="explorer-expand-section">
                                 <strong>Sources</strong>
+                                <div className="source-row explorer-expand-source-row">
+                                  {trend.sources.map((source) => (
+                                    <span className="source-badge" key={source}>
+                                      {formatSourceLabel(source)}
+                                    </span>
+                                  ))}
+                                </div>
                                 <div className="mini-bar-list">
                                   {topContribs.map((contrib) => (
                                     <div className="mini-bar-row" key={contrib.source}>
