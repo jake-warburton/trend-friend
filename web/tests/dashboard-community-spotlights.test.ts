@@ -6,6 +6,7 @@ import {
   buildCommunitySpotlights,
   buildLanguageFilterOptions,
   buildMarketFilterOptions,
+  listActiveExplorerFilters,
   trendMatchesAudience,
   trendMatchesLanguage,
   trendMatchesMarket,
@@ -307,4 +308,29 @@ test("trendMatchesAudience supports explorer audience filtering", () => {
   assert.equal(trendMatchesLanguage(detail, "en"), true);
   assert.equal(trendMatchesLanguage(detail, "es"), false);
   assert.equal(trendMatchesLanguage(undefined, "en"), false);
+});
+
+test("listActiveExplorerFilters returns readable chips for non-default explorer filters", () => {
+  assert.deepEqual(
+    listActiveExplorerFilters({
+      keyword: "robotics",
+      selectedSource: "github",
+      selectedCategory: "developer-tools",
+      selectedAudience: "developer",
+      selectedMarket: "b2b",
+      selectedLanguage: "en",
+      sortBy: "score",
+      hideRecurring: true,
+    }),
+    [
+      { key: "keyword", label: "Keyword", value: "robotics" },
+      { key: "source", label: "Source", value: "GitHub" },
+      { key: "category", label: "Category", value: "Developer Tools" },
+      { key: "audience", label: "Audience", value: "Developer" },
+      { key: "market", label: "Market", value: "B2B" },
+      { key: "language", label: "Language", value: "English" },
+      { key: "sort", label: "Sort", value: "Score" },
+      { key: "seasonality", label: "Seasonality", value: "Hide recurring" },
+    ],
+  );
 });

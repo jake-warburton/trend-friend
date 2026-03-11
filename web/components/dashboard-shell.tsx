@@ -61,6 +61,12 @@ const SORT_OPTIONS = [
   { label: "Newest", value: "newest" },
 ] as const;
 
+type ExplorerActiveFilter = {
+  key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "sort" | "seasonality";
+  label: string;
+  value: string;
+};
+
 export function DashboardShell({ initialData }: DashboardShellProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -160,6 +166,21 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     return map;
   }, [initialData.details.trends]);
 
+  const activeExplorerFilters = useMemo(
+    () =>
+      listActiveExplorerFilters({
+        keyword,
+        selectedSource,
+        selectedCategory,
+        selectedAudience,
+        selectedMarket,
+        selectedLanguage,
+        sortBy,
+        hideRecurring,
+      }),
+    [hideRecurring, keyword, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy],
+  );
+
   const filteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
     const minimum = minimumScore ?? 0;
@@ -206,6 +227,50 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
+  }
+
+  function clearExplorerFilter(filterKey: ExplorerActiveFilter["key"]) {
+    if (filterKey === "keyword") {
+      setKeyword("");
+      return;
+    }
+    if (filterKey === "source") {
+      setSelectedSource("all");
+      return;
+    }
+    if (filterKey === "category") {
+      setSelectedCategory("all");
+      return;
+    }
+    if (filterKey === "audience") {
+      setSelectedAudience("all");
+      return;
+    }
+    if (filterKey === "market") {
+      setSelectedMarket("all");
+      return;
+    }
+    if (filterKey === "language") {
+      setSelectedLanguage("all");
+      return;
+    }
+    if (filterKey === "sort") {
+      setSortBy("rank");
+      return;
+    }
+    setHideRecurring(false);
+  }
+
+  function clearAllExplorerFilters() {
+    setKeyword("");
+    setSelectedSource("all");
+    setSelectedCategory("all");
+    setSelectedAudience("all");
+    setSelectedMarket("all");
+    setSelectedLanguage("all");
+    setSortBy("rank");
+    setMinimumScore(0);
+    setHideRecurring(false);
   }
 
   function handleRefresh() {
@@ -941,6 +1006,26 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
           </button>
         </label>
       </section>
+
+      {activeExplorerFilters.length > 0 ? (
+        <section className="explorer-active-filters" aria-label="Active explorer filters">
+          <div className="community-chip-group">
+            {activeExplorerFilters.map((filter) => (
+              <button
+                className="community-filter-chip"
+                key={filter.key}
+                onClick={() => clearExplorerFilter(filter.key)}
+                type="button"
+              >
+                {filter.label}: {filter.value} <span aria-hidden="true">x</span>
+              </button>
+            ))}
+          </div>
+          <button className="source-summary-copy detail-button-link" onClick={clearAllExplorerFilters} type="button">
+            Clear all
+          </button>
+        </section>
+      ) : null}
 
       {refreshError ? <p className="error-banner" role="alert">{refreshError}</p> : null}
 
@@ -2098,7 +2183,15 @@ function buildShareActivityMap(watchlist: Watchlist | null) {
 }
 
 function formatSourceLabel(source: string) {
-  return source
+  const labels: Record<string, string> = {
+    reddit: "Reddit",
+    hacker_news: "Hacker News",
+    github: "GitHub",
+    wikipedia: "Wikipedia",
+    google_trends: "Google Trends",
+    twitter: "Twitter/X",
+  };
+  return labels[source] ?? source
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
@@ -2441,6 +2534,44 @@ export function trendMatchesLanguage(detail: TrendDetailRecord | undefined, sele
   return (detail?.evidenceItems ?? []).some((item) => item.languageCode?.toLowerCase() === selectedLanguage);
 }
 
+export function listActiveExplorerFilters(filters: {
+  keyword: string;
+  selectedSource: string;
+  selectedCategory: string;
+  selectedAudience: string;
+  selectedMarket: string;
+  selectedLanguage: string;
+  sortBy: string;
+  hideRecurring: boolean;
+}): ExplorerActiveFilter[] {
+  const result: ExplorerActiveFilter[] = [];
+  if (filters.keyword.trim().length > 0) {
+    result.push({ key: "keyword", label: "Keyword", value: filters.keyword.trim() });
+  }
+  if (filters.selectedSource !== "all") {
+    result.push({ key: "source", label: "Source", value: formatSourceLabel(filters.selectedSource) });
+  }
+  if (filters.selectedCategory !== "all") {
+    result.push({ key: "category", label: "Category", value: formatCategory(filters.selectedCategory) });
+  }
+  if (filters.selectedAudience !== "all") {
+    result.push({ key: "audience", label: "Audience", value: formatAudienceLabel(filters.selectedAudience) });
+  }
+  if (filters.selectedMarket !== "all") {
+    result.push({ key: "market", label: "Market", value: formatAudienceLabel(filters.selectedMarket) });
+  }
+  if (filters.selectedLanguage !== "all") {
+    result.push({ key: "language", label: "Language", value: formatLanguageLabel(filters.selectedLanguage) });
+  }
+  if (filters.sortBy !== "rank") {
+    result.push({ key: "sort", label: "Sort", value: formatExplorerSortLabel(filters.sortBy) });
+  }
+  if (filters.hideRecurring) {
+    result.push({ key: "seasonality", label: "Seasonality", value: "Hide recurring" });
+  }
+  return result;
+}
+
 function buildSegmentFilterOptions(
   details: TrendDetailRecord[],
   segmentType: string,
@@ -2508,6 +2639,16 @@ function formatLanguageLabel(code: string) {
     zh: "Chinese",
   };
   return labels[code] ?? code.toUpperCase();
+}
+
+function formatExplorerSortLabel(sortBy: string) {
+  const labels: Record<string, string> = {
+    rank: "Rank",
+    score: "Score",
+    mover: "Biggest mover",
+    newest: "Newest",
+  };
+  return labels[sortBy] ?? sortBy;
 }
 
 function buildShareExpiryIso(preset: string) {
