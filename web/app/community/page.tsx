@@ -115,6 +115,9 @@ export default async function CommunityPage({ searchParams }: PageProps) {
                 {preset.label}
               </Link>
             ))}
+            <a className="mini-action-button community-link-button" href="/api/export/community" download>
+              Export CSV
+            </a>
           </div>
         </div>
         <Link className="detail-back-link" href="/">

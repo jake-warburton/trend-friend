@@ -47,6 +47,11 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
           {payload.expiresAt ? `Expires ${formatTimestamp(payload.expiresAt)}` : "No expiry"}
         </p>
         <p className="source-summary-copy">Created {formatTimestamp(payload.createdAt)}</p>
+        <div className="community-preset-links">
+          <a className="mini-action-button community-link-button" href={`/api/export/shared/${payload.shareToken}`} download>
+            Export CSV
+          </a>
+        </div>
         <Link className="detail-back-link" href="/">
           Back to dashboard
         </Link>

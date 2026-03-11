@@ -838,6 +838,7 @@ test("community page renders public watchlists with analytics copy", async () =>
   const html = renderToStaticMarkup(element);
 
   assert.match(html, /Browse shared watchlists/);
+  assert.match(html, /\/api\/export\/community/);
   assert.match(html, /Popular this week/);
   assert.match(html, /Developer tools/);
   assert.match(html, /AI watchlists/);

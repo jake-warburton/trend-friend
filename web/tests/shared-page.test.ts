@@ -88,6 +88,7 @@ test("shared page renders the fetched watchlist", async () => {
   assert.match(html, /Public link/);
   assert.match(html, /Shared by Owner One/);
   assert.match(html, /Reddit drove 57.1%/);
+  assert.match(html, /\/api\/export\/shared\/share-123/);
 });
 
 test.afterEach(() => {
