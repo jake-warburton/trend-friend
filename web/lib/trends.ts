@@ -252,6 +252,7 @@ export function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExp
       },
       sources: trend.sources ?? [],
       evidencePreview: trend.evidencePreview ?? [],
+      audienceSummary: trend.audienceSummary ?? [],
       primaryEvidence: trend.primaryEvidence
         ? {
             ...trend.primaryEvidence,

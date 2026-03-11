@@ -167,6 +167,7 @@ class TrendExplorerRecord:
     source_count: int
     signal_count: int
     recent_history: list[TrendHistoryPoint]
+    audience_summary: list["TrendAudienceSegment"] = field(default_factory=list)
     primary_evidence: "TrendPrimaryEvidence | None" = None
     seasonality: SeasonalityResult | None = None
     forecast_direction: str | None = None

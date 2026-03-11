@@ -279,6 +279,14 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
         ),
         sources=sorted(trend.score.source_counts),
         evidence_preview=trend.score.evidence[:2],
+        audience_summary=[
+            TrendAudienceSegmentPayload(
+                segment_type=item.segment_type,
+                label=item.label,
+                signal_count=item.signal_count,
+            )
+            for item in trend.audience_summary
+        ],
         primary_evidence=(
             TrendPrimaryEvidencePayload(
                 source=trend.primary_evidence.source,

@@ -25,6 +25,9 @@ CSV_COLUMNS = [
     "source_count",
     "signal_count",
     "sources",
+    "audience_segments",
+    "market_segments",
+    "language_segments",
     "forecast_direction",
     "first_seen",
     "latest_signal",
@@ -56,6 +59,9 @@ def trends_to_csv(trends: list[TrendExplorerRecordPayload]) -> str:
             trend.coverage.source_count,
             trend.coverage.signal_count,
             ",".join(trend.sources),
+            _summarize_segments(trend.audience_summary, "audience"),
+            _summarize_segments(trend.audience_summary, "market"),
+            _summarize_segments(trend.audience_summary, "language"),
             trend.forecast_direction or "",
             trend.first_seen_at or "",
             trend.latest_signal_at,
@@ -69,3 +75,12 @@ def build_csv_filename() -> str:
 
     date_stamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     return f"trend-friend-export-{date_stamp}.csv"
+
+
+def _summarize_segments(segments: list[object], segment_type: str) -> str:
+    labels = [
+        str(getattr(segment, "label"))
+        for segment in segments
+        if getattr(segment, "segment_type", None) == segment_type
+    ]
+    return ",".join(labels)

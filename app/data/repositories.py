@@ -1639,6 +1639,7 @@ class TrendScoreRepository:
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
                     recent_history=recent_history,
+                    audience_summary=self.get_topic_audience_summary(score.topic),
                     primary_evidence=self.get_primary_evidence(score.topic),
                     seasonality=seasonality if seasonality.tag is not None else None,
                     forecast_direction=describe_forecast_direction(forecast, score.total_score),

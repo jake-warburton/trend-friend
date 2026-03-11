@@ -167,6 +167,7 @@ class TrendExplorerRecordPayload:
     coverage: TrendCoveragePayload
     sources: list[str]
     evidence_preview: list[str]
+    audience_summary: list[TrendAudienceSegmentPayload]
     primary_evidence: TrendPrimaryEvidencePayload | None
     recent_history: list[TrendHistoryPointPayload]
     seasonality: SeasonalityPayload | None = None
@@ -631,6 +632,7 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     payload["coverage"]["sourceCount"] = payload["coverage"].pop("source_count")
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["evidencePreview"] = payload.pop("evidence_preview")
+    payload["audienceSummary"] = payload.pop("audience_summary")
     payload["primaryEvidence"] = payload.pop("primary_evidence")
     payload["recentHistory"] = payload.pop("recent_history")
     if payload["primaryEvidence"] is not None:
@@ -640,6 +642,9 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
         payload["seasonality"]["recurrenceCount"] = payload["seasonality"].pop("recurrence_count")
         payload["seasonality"]["avgGapRuns"] = payload["seasonality"].pop("avg_gap_runs")
     payload["forecastDirection"] = payload.pop("forecast_direction")
+    for item in payload["audienceSummary"]:
+        item["segmentType"] = item.pop("segment_type")
+        item["signalCount"] = item.pop("signal_count")
     for point in payload["recentHistory"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")

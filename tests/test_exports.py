@@ -143,6 +143,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["momentum"]["percentDelta"], 40.2)
         self.assertEqual(payload["trends"][0]["coverage"]["signalCount"], 2)
         self.assertEqual(payload["trends"][0]["evidencePreview"][0], "ai agents evidence")
+        self.assertEqual(payload["trends"][0]["audienceSummary"][0]["segmentType"], "audience")
+        self.assertEqual(payload["trends"][0]["audienceSummary"][0]["label"], "developer")
         self.assertEqual(payload["trends"][0]["primaryEvidence"]["source"], "reddit")
         self.assertEqual(payload["trends"][0]["primaryEvidence"]["evidenceUrl"], "https://example.com/ai-agents")
         self.assertEqual(payload["trends"][0]["seasonality"]["tag"], "recurring")
@@ -323,6 +325,11 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
                 rank=4,
                 score_total=31.1,
             ),
+        ],
+        audience_summary=[
+            TrendAudienceSegment(segment_type="audience", label="developer", signal_count=2),
+            TrendAudienceSegment(segment_type="market", label="b2b", signal_count=1),
+            TrendAudienceSegment(segment_type="language", label="EN", signal_count=2),
         ],
         primary_evidence=TrendPrimaryEvidence(
             source="reddit",

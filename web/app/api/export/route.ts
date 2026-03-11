@@ -20,6 +20,9 @@ const CSV_COLUMNS = [
   "source_count",
   "signal_count",
   "sources",
+  "audience_segments",
+  "market_segments",
+  "language_segments",
   "forecast_direction",
   "first_seen",
   "latest_signal",
@@ -33,6 +36,7 @@ function escapeField(value: string): string {
 }
 
 function trendToCsvRow(trend: TrendExplorerRecord): string {
+  const audienceSummary = trend.audienceSummary ?? [];
   const fields = [
     String(trend.rank),
     escapeField(trend.name),
@@ -50,11 +54,21 @@ function trendToCsvRow(trend: TrendExplorerRecord): string {
     String(trend.coverage.sourceCount),
     String(trend.coverage.signalCount),
     escapeField(trend.sources.join(",")),
+    escapeField(summarizeSegments(audienceSummary, "audience")),
+    escapeField(summarizeSegments(audienceSummary, "market")),
+    escapeField(summarizeSegments(audienceSummary, "language")),
     trend.forecastDirection ?? "",
     trend.firstSeenAt ?? "",
     trend.latestSignalAt,
   ];
   return fields.join(",");
+}
+
+function summarizeSegments(summary: NonNullable<TrendExplorerRecord["audienceSummary"]>, segmentType: string): string {
+  return summary
+    .filter((item) => item.segmentType === segmentType)
+    .map((item) => item.label)
+    .join(",");
 }
 
 export async function GET() {

@@ -203,6 +203,7 @@ export type TrendExplorerRecord = {
   coverage: TrendCoverage;
   sources: string[];
   evidencePreview: string[];
+  audienceSummary?: TrendAudienceSegment[];
   primaryEvidence?: TrendEvidenceItem | null;
   recentHistory?: TrendHistoryPoint[];
   seasonality?: SeasonalitySummary | null;

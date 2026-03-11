@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from app.exports.csv_export import CSV_COLUMNS, build_csv_filename, trends_to_csv
 from app.exports.serializers import build_trend_explorer_payload
 from app.models import (
+    TrendAudienceSegment,
     TrendExplorerRecord,
     TrendHistoryPoint,
     TrendMomentum,
@@ -49,6 +50,9 @@ class CsvExportTests(unittest.TestCase):
         self.assertEqual(row[13], "2")  # source_count
         self.assertEqual(row[14], "2")  # signal_count
         self.assertIn("reddit", row[15])  # sources
+        self.assertEqual(row[16], "developer")
+        self.assertEqual(row[17], "b2b")
+        self.assertEqual(row[18], "EN")
 
     def test_trends_to_csv_handles_null_rank_change(self) -> None:
         record = _build_explorer_record()
@@ -153,6 +157,11 @@ def _build_explorer_record() -> TrendExplorerRecord:
                 rank=4,
                 score_total=31.1,
             ),
+        ],
+        audience_summary=[
+            TrendAudienceSegment(segment_type="audience", label="developer", signal_count=2),
+            TrendAudienceSegment(segment_type="market", label="b2b", signal_count=1),
+            TrendAudienceSegment(segment_type="language", label="EN", signal_count=2),
         ],
         primary_evidence=None,
     )
