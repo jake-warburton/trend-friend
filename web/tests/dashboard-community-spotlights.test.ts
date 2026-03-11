@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCommunitySpotlights } from "@/components/dashboard-shell";
-import type { PublicWatchlistsResponse } from "@/lib/types";
+import { buildAudienceFilterOptions, buildCommunitySpotlights, trendMatchesAudience } from "@/components/dashboard-shell";
+import type { PublicWatchlistsResponse, TrendDetailRecord } from "@/lib/types";
 
 test("buildCommunitySpotlights returns popular, search-driven, and global entries when available", () => {
   const watchlists: PublicWatchlistsResponse["watchlists"] = [
@@ -136,4 +136,102 @@ test("buildCommunitySpotlights omits spotlight buckets with no matching watchlis
   const spotlights = buildCommunitySpotlights(watchlists);
 
   assert.deepEqual(spotlights, []);
+});
+
+test("buildAudienceFilterOptions returns readable audience labels for explorer filters", () => {
+  const details: TrendDetailRecord[] = [
+    {
+      id: "robotics",
+      name: "Robotics",
+      category: "developer-tools",
+      status: "breakout",
+      volatility: "medium",
+      rank: 1,
+      previousRank: null,
+      rankChange: null,
+      firstSeenAt: null,
+      latestSignalAt: "2026-03-10T12:00:00Z",
+      score: { total: 10, social: 2, developer: 6, knowledge: 1, search: 1, diversity: 0 },
+      momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
+      breakoutPrediction: { confidence: 0.7, predictedDirection: "up", signals: [] },
+      opportunity: { composite: 5, content: 4, product: 6, investment: 5, reasoning: [] },
+      coverage: { sourceCount: 2, signalCount: 5 },
+      sources: ["github"],
+      history: [],
+      sourceBreakdown: [],
+      sourceContributions: [],
+      geoSummary: [],
+      audienceSummary: [
+        { segmentType: "audience", label: "developer", signalCount: 3 },
+        { segmentType: "market", label: "b2b", signalCount: 2 },
+      ],
+      evidenceItems: [],
+      relatedTrends: [],
+    },
+    {
+      id: "consumer-ai",
+      name: "Consumer AI",
+      category: "ai-machine-learning",
+      status: "rising",
+      volatility: "high",
+      rank: 2,
+      previousRank: 3,
+      rankChange: 1,
+      firstSeenAt: null,
+      latestSignalAt: "2026-03-10T12:00:00Z",
+      score: { total: 8, social: 4, developer: 1, knowledge: 1, search: 2, diversity: 0 },
+      momentum: { previousRank: 3, rankChange: 1, absoluteDelta: 2, percentDelta: 30 },
+      breakoutPrediction: { confidence: 0.6, predictedDirection: "up", signals: [] },
+      opportunity: { composite: 4, content: 5, product: 4, investment: 3, reasoning: [] },
+      coverage: { sourceCount: 2, signalCount: 4 },
+      sources: ["reddit"],
+      history: [],
+      sourceBreakdown: [],
+      sourceContributions: [],
+      geoSummary: [],
+      audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 3 }],
+      evidenceItems: [],
+      relatedTrends: [],
+    },
+  ];
+
+  assert.deepEqual(buildAudienceFilterOptions(details), [
+    { label: "All audiences", value: "all" },
+    { label: "B2B", value: "b2b" },
+    { label: "B2C", value: "b2c" },
+    { label: "Developer", value: "developer" },
+  ]);
+});
+
+test("trendMatchesAudience supports explorer audience filtering", () => {
+  const detail = {
+    id: "robotics",
+    name: "Robotics",
+    category: "developer-tools",
+    status: "breakout",
+    volatility: "medium",
+    rank: 1,
+    previousRank: null,
+    rankChange: null,
+    firstSeenAt: null,
+    latestSignalAt: "2026-03-10T12:00:00Z",
+    score: { total: 10, social: 2, developer: 6, knowledge: 1, search: 1, diversity: 0 },
+    momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
+    breakoutPrediction: { confidence: 0.7, predictedDirection: "up", signals: [] },
+    opportunity: { composite: 5, content: 4, product: 6, investment: 5, reasoning: [] },
+    coverage: { sourceCount: 2, signalCount: 5 },
+    sources: ["github"],
+    history: [],
+    sourceBreakdown: [],
+    sourceContributions: [],
+    geoSummary: [],
+    audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 3 }],
+    evidenceItems: [],
+    relatedTrends: [],
+  } satisfies TrendDetailRecord;
+
+  assert.equal(trendMatchesAudience(detail, "all"), true);
+  assert.equal(trendMatchesAudience(detail, "developer"), true);
+  assert.equal(trendMatchesAudience(detail, "b2b"), false);
+  assert.equal(trendMatchesAudience(undefined, "developer"), false);
 });

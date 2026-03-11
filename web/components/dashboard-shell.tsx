@@ -50,6 +50,7 @@ const SOURCE_FILTER_OPTIONS = [
 ] as const;
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;
+const DEFAULT_AUDIENCE_OPTION = { label: "All audiences", value: "all" } as const;
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
@@ -64,6 +65,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [keyword, setKeyword] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedAudience, setSelectedAudience] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
   const [hideRecurring, setHideRecurring] = useState(false);
@@ -125,21 +127,44 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     setTimeout(() => setActionNotice(null), 3000);
   }
 
+  const categoryOptions = useMemo(() => {
+    const categories = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.category))).sort();
+    return [
+      DEFAULT_CATEGORY_OPTION,
+      ...categories.map((category) => ({ label: formatCategory(category), value: category })),
+    ];
+  }, [initialData.explorer.trends]);
+
+  const audienceOptions = useMemo(
+    () => buildAudienceFilterOptions(initialData.details.trends),
+    [initialData.details.trends],
+  );
+
+  const detailsByTrendId = useMemo(() => {
+    const map = new Map<string, TrendDetailRecord>();
+    for (const detail of initialData.details.trends) {
+      map.set(detail.id, detail);
+    }
+    return map;
+  }, [initialData.details.trends]);
+
   const filteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
     const minimum = minimumScore ?? 0;
     const trends = initialData.explorer.trends.filter((trend) => {
+      const detail = detailsByTrendId.get(trend.id);
       const matchesSource =
         selectedSource === "all" || trend.sources.includes(selectedSource);
       const matchesCategory =
         selectedCategory === "all" || trend.category === selectedCategory;
+      const matchesAudience = trendMatchesAudience(detail, selectedAudience);
       const matchesKeyword =
         normalizedKeyword.length === 0 ||
         trend.name.toLowerCase().includes(normalizedKeyword) ||
         trend.evidencePreview.some((item) => item.toLowerCase().includes(normalizedKeyword));
       const matchesScore = trend.score.total >= minimum;
       const matchesSeasonality = !hideRecurring || !isRecurringTrend(trend.seasonality);
-      return matchesSource && matchesCategory && matchesKeyword && matchesScore && matchesSeasonality;
+      return matchesSource && matchesCategory && matchesAudience && matchesKeyword && matchesScore && matchesSeasonality;
     });
 
     return [...trends].sort((left, right) => {
@@ -154,23 +179,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, hideRecurring, initialData.explorer.trends, minimumScore, selectedCategory, selectedSource, sortBy]);
-
-  const categoryOptions = useMemo(() => {
-    const categories = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.category))).sort();
-    return [
-      DEFAULT_CATEGORY_OPTION,
-      ...categories.map((category) => ({ label: formatCategory(category), value: category })),
-    ];
-  }, [initialData.explorer.trends]);
-
-  const detailsByTrendId = useMemo(() => {
-    const map = new Map<string, TrendDetailRecord>();
-    for (const detail of initialData.details.trends) {
-      map.set(detail.id, detail);
-    }
-    return map;
-  }, [initialData.details.trends]);
+  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedSource, sortBy]);
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -779,6 +788,29 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <Select.Popup className="select-popup">
                   <Select.List className="select-list">
                     {categoryOptions.map((option) => (
+                      <Select.Item className="select-item" key={option.value} value={option.value}>
+                        <Select.ItemText>{option.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.List>
+                </Select.Popup>
+              </Select.Positioner>
+            </Select.Portal>
+          </Select.Root>
+        </label>
+
+        <label className="filter-field">
+          <span>Audience</span>
+          <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
+            <Select.Trigger className="select-trigger">
+              <Select.Value />
+              <Select.Icon className="select-icon">+</Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Positioner className="select-positioner" sideOffset={8}>
+                <Select.Popup className="select-popup">
+                  <Select.List className="select-list">
+                    {audienceOptions.map((option) => (
                       <Select.Item className="select-item" key={option.value} value={option.value}>
                         <Select.ItemText>{option.label}</Select.ItemText>
                       </Select.Item>
@@ -2297,6 +2329,29 @@ export function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
   }
 
   return spotlights;
+}
+
+export function buildAudienceFilterOptions(details: TrendDetailRecord[]) {
+  const labels = new Set<string>();
+  for (const detail of details) {
+    for (const item of detail.audienceSummary) {
+      labels.add(item.label);
+    }
+  }
+
+  return [
+    DEFAULT_AUDIENCE_OPTION,
+    ...Array.from(labels)
+      .sort()
+      .map((label) => ({ label: formatAudienceLabel(label), value: label })),
+  ];
+}
+
+export function trendMatchesAudience(detail: TrendDetailRecord | undefined, selectedAudience: string) {
+  if (selectedAudience === "all") {
+    return true;
+  }
+  return (detail?.audienceSummary ?? []).some((item) => item.label === selectedAudience);
 }
 
 function buildTrendAudienceBadge(summary: TrendDetailRecord["audienceSummary"]) {
