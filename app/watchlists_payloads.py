@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
 from app.models import (
+    TrendAudienceSegment,
     AlertRule,
     TrendGeoSummary,
     TrendScoreResult,
@@ -29,6 +30,7 @@ class _ItemEnrichment:
     category: str
     sources: list[str]
     source_contributions: list[TrendSourceContribution]
+    audience_summary: list[TrendAudienceSegment]
 
 
 def build_watchlist_payload(
@@ -154,6 +156,7 @@ def _serialize_public_watchlist_summary(
 ) -> dict[str, object]:
     geo = _aggregate_watchlist_geo(watchlist, score_repo, score_by_slug)
     source_contributions = _aggregate_watchlist_source_contributions(watchlist, score_repo, score_by_slug)
+    audience_summary = _aggregate_watchlist_audience(watchlist, score_repo, score_by_slug)
     categories = _aggregate_watchlist_categories(watchlist, score_by_slug)
     statuses = _aggregate_watchlist_statuses(watchlist, score_repo, score_by_slug)
     return {
@@ -173,6 +176,7 @@ def _serialize_public_watchlist_summary(
         "categories": categories,
         "statuses": statuses,
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
+        "audienceSummary": [_serialize_audience_segment(item) for item in audience_summary],
         "sourceContributions": [_serialize_source_contribution(item) for item in source_contributions],
     }
 
@@ -326,6 +330,39 @@ def _aggregate_watchlist_source_contributions(
     return ranked[:limit]
 
 
+def _aggregate_watchlist_audience(
+    watchlist: Watchlist,
+    score_repo: TrendScoreRepository | None,
+    score_by_slug: dict[str, object],
+    limit: int = 4,
+) -> list[TrendAudienceSegment]:
+    """Aggregate audience and market signals across all trends in a watchlist."""
+
+    if score_repo is None:
+        return []
+
+    combined: dict[tuple[str, str], TrendAudienceSegment] = {}
+    for item in watchlist.items:
+        score = score_by_slug.get(item.trend_id)
+        topic = score.topic if score is not None else None
+        if topic is None:
+            continue
+        for segment in score_repo.get_topic_audience_summary(topic):
+            key = (segment.segment_type, segment.label)
+            existing = combined.get(key)
+            if existing is None:
+                combined[key] = segment
+                continue
+            combined[key] = TrendAudienceSegment(
+                segment_type=segment.segment_type,
+                label=segment.label,
+                signal_count=existing.signal_count + segment.signal_count,
+            )
+
+    ranked = sorted(combined.values(), key=lambda item: (-item.signal_count, item.segment_type, item.label))
+    return ranked[:limit]
+
+
 def _build_enrichment(
     ordered_scores: list[TrendScoreResult],
     score_repo: TrendScoreRepository,
@@ -345,6 +382,7 @@ def _build_enrichment(
             category=categorize_topic(score.topic, score.source_counts),
             sources=sorted(score.source_counts),
             source_contributions=score_repo.get_topic_source_contributions(score.topic, score),
+            audience_summary=score_repo.get_topic_audience_summary(score.topic),
         )
     return result
 
@@ -425,11 +463,13 @@ def _serialize_watchlist_item(
     score = score_by_slug.get(item.trend_id)
     topic = score.topic if score is not None else None
     geo = score_repo.get_topic_geo_summary(topic) if topic else []
+    audience = score_repo.get_topic_audience_summary(topic) if topic else []
     return {
         "trendId": item.trend_id,
         "trendName": item.trend_name,
         "addedAt": _to_utc_iso(item.added_at),
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
+        "audienceSummary": [_serialize_audience_segment(segment) for segment in audience],
     }
 
 
@@ -474,6 +514,7 @@ def _serialize_shared_watchlist_item(
         payload["status"] = info.status
         payload["category"] = info.category
         payload["sources"] = info.sources
+        payload["audienceSummary"] = [_serialize_audience_segment(item) for item in info.audience_summary]
         payload["sourceContributions"] = [
             _serialize_source_contribution(item)
             for item in info.source_contributions
@@ -484,6 +525,7 @@ def _serialize_shared_watchlist_item(
         payload["status"] = None
         payload["category"] = None
         payload["sources"] = []
+        payload["audienceSummary"] = []
         payload["sourceContributions"] = []
 
     return payload
@@ -516,6 +558,14 @@ def _serialize_source_contribution(contribution: TrendSourceContribution) -> dic
             "search": round(contribution.search_score, 1),
             "diversity": round(contribution.diversity_score, 1),
         },
+    }
+
+
+def _serialize_audience_segment(segment: TrendAudienceSegment) -> dict[str, object]:
+    return {
+        "segmentType": segment.segment_type,
+        "label": segment.label,
+        "signalCount": segment.signal_count,
     }
 
 

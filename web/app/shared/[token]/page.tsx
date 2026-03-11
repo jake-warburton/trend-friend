@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import type { SharedWatchlistResponse, TrendGeoSummary } from "@/lib/types";
+import type { SharedWatchlistResponse, TrendAudienceSegment, TrendGeoSummary } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +55,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
       <section className="shared-grid">
         {payload.watchlist.items.map((item) => {
           const geo = item.geoSummary ?? [];
+          const audience = item.audienceSummary ?? [];
           const contributions = item.sourceContributions ?? [];
           return (
             <article className="snapshot-card shared-item-card" key={item.trendId}>
@@ -90,6 +91,9 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
                 <p className="source-summary-copy">
                   {geo.map((g: TrendGeoSummary) => g.label).join(", ")}
                 </p>
+              )}
+              {audience.length > 0 && (
+                <p className="source-summary-copy">{formatAudienceSummary(audience)}</p>
               )}
             </article>
           );
@@ -163,4 +167,21 @@ function formatSourceContributionSummary(source: NonNullable<SharedWatchlistResp
     return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% of the score`;
   }
   return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
+}
+
+function formatAudienceSummary(summary: TrendAudienceSegment[]) {
+  return summary
+    .slice(0, 3)
+    .map((item) => {
+      const prefix = item.segmentType === "audience" ? "Audience" : item.segmentType === "market" ? "Market" : "Language";
+      return `${prefix}: ${formatAudienceLabel(item.label)}`;
+    })
+    .join(" · ");
+}
+
+function formatAudienceLabel(label: string) {
+  return label
+    .split("-")
+    .map((part) => part.toUpperCase() === part && part.length <= 3 ? part : part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

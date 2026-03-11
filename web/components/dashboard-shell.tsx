@@ -1929,6 +1929,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         {formatSourceContributionSummary(watchlist.sourceContributions[0])}
                       </p>
                     ) : null}
+                    {watchlist.audienceSummary?.length ? (
+                      <p className="source-summary-copy">{formatAudienceSummary(watchlist.audienceSummary)}</p>
+                    ) : null}
                     {watchlist.ownerDisplayName ? (
                       <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
                     ) : null}
@@ -2197,6 +2200,30 @@ function formatSourceContributionSummary(source: NonNullable<PublicWatchlistSumm
     return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}%`;
   }
   return `${formatSourceLabel(source.source)} drove ${source.scoreSharePercent.toFixed(1)}% · ${topComponents.join(" · ")}`;
+}
+
+function formatAudienceSummary(summary: NonNullable<PublicWatchlistSummary["audienceSummary"]>) {
+  return summary
+    .slice(0, 2)
+    .map((item) => `${formatAudiencePrefix(item.segmentType)} ${formatAudienceLabel(item.label)}`)
+    .join(" · ");
+}
+
+function formatAudiencePrefix(segmentType: string) {
+  if (segmentType === "audience") {
+    return "Audience:";
+  }
+  if (segmentType === "market") {
+    return "Market:";
+  }
+  return "Language:";
+}
+
+function formatAudienceLabel(label: string) {
+  return label
+    .split("-")
+    .map((part) => (part.toUpperCase() === part && part.length <= 3 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join(" ");
 }
 
 export function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {

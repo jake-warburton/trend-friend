@@ -366,6 +366,7 @@ export type SharedWatchlistItem = WatchlistItem & {
   status: string | null;
   category: string | null;
   sources: string[];
+  audienceSummary?: TrendAudienceSegment[];
   sourceContributions?: TrendSourceContribution[];
 };
 
@@ -476,6 +477,7 @@ export type PublicWatchlistSummary = {
   categories?: string[];
   statuses?: string[];
   geoSummary?: TrendGeoSummary[];
+  audienceSummary?: TrendAudienceSegment[];
   sourceContributions?: TrendSourceContribution[];
 };
 
