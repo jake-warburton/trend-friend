@@ -14,7 +14,10 @@ import type {
   TrendHistoryResponse,
 } from "@/lib/types";
 
-const DATA_DIRECTORY = path.join(process.cwd(), "data");
+const DATA_DIRECTORIES = [
+  path.join(process.cwd(), "data"),
+  path.join(process.cwd(), "web", "data"),
+];
 
 /**
  * Whether to fetch from the Python REST API (true) or fall back to JSON files.
@@ -481,11 +484,14 @@ export async function loadSourceSummaries(): Promise<SourceSummaryResponse> {
 }
 
 async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {
-  try {
-    const filePath = path.join(DATA_DIRECTORY, filename);
-    const contents = await fs.readFile(filePath, "utf8");
-    return JSON.parse(contents) as T;
-  } catch {
-    return fallback;
+  for (const directory of DATA_DIRECTORIES) {
+    try {
+      const filePath = path.join(directory, filename);
+      const contents = await fs.readFile(filePath, "utf8");
+      return JSON.parse(contents) as T;
+    } catch {
+      continue;
+    }
   }
+  return fallback;
 }
