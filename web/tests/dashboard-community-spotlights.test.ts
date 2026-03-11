@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildAudienceFilterOptions, buildCommunitySpotlights, trendMatchesAudience } from "@/components/dashboard-shell";
+import {
+  buildAudienceFilterOptions,
+  buildCommunitySpotlights,
+  buildLanguageFilterOptions,
+  buildMarketFilterOptions,
+  trendMatchesAudience,
+  trendMatchesLanguage,
+  trendMatchesMarket,
+} from "@/components/dashboard-shell";
 import type { PublicWatchlistsResponse, TrendDetailRecord } from "@/lib/types";
 
 test("buildCommunitySpotlights returns popular, search-driven, and global entries when available", () => {
@@ -165,7 +173,24 @@ test("buildAudienceFilterOptions returns readable audience labels for explorer f
         { segmentType: "audience", label: "developer", signalCount: 3 },
         { segmentType: "market", label: "b2b", signalCount: 2 },
       ],
-      evidenceItems: [],
+      evidenceItems: [
+        {
+          source: "github",
+          signalType: "repo",
+          timestamp: "2026-03-10T12:00:00Z",
+          value: 4,
+          evidence: "Robotics toolkit",
+          evidenceUrl: null,
+          languageCode: "en",
+          audienceFlags: [],
+          marketFlags: [],
+          geoFlags: [],
+          geoCountryCode: null,
+          geoRegion: null,
+          geoDetectionMode: "unknown",
+          geoConfidence: 0,
+        },
+      ],
       relatedTrends: [],
     },
     {
@@ -190,16 +215,41 @@ test("buildAudienceFilterOptions returns readable audience labels for explorer f
       sourceContributions: [],
       geoSummary: [],
       audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 3 }],
-      evidenceItems: [],
+      evidenceItems: [
+        {
+          source: "reddit",
+          signalType: "post",
+          timestamp: "2026-03-10T12:00:00Z",
+          value: 3,
+          evidence: "Consumer AI discussion",
+          evidenceUrl: null,
+          languageCode: "es",
+          audienceFlags: [],
+          marketFlags: [],
+          geoFlags: [],
+          geoCountryCode: null,
+          geoRegion: null,
+          geoDetectionMode: "unknown",
+          geoConfidence: 0,
+        },
+      ],
       relatedTrends: [],
     },
   ];
 
   assert.deepEqual(buildAudienceFilterOptions(details), [
     { label: "All audiences", value: "all" },
+    { label: "Developer", value: "developer" },
+  ]);
+  assert.deepEqual(buildMarketFilterOptions(details), [
+    { label: "All markets", value: "all" },
     { label: "B2B", value: "b2b" },
     { label: "B2C", value: "b2c" },
-    { label: "Developer", value: "developer" },
+  ]);
+  assert.deepEqual(buildLanguageFilterOptions(details), [
+    { label: "All languages", value: "all" },
+    { label: "English", value: "en" },
+    { label: "Spanish", value: "es" },
   ]);
 });
 
@@ -226,7 +276,24 @@ test("trendMatchesAudience supports explorer audience filtering", () => {
     sourceContributions: [],
     geoSummary: [],
     audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 3 }],
-    evidenceItems: [],
+    evidenceItems: [
+      {
+        source: "github",
+        signalType: "repo",
+        timestamp: "2026-03-10T12:00:00Z",
+        value: 3,
+        evidence: "Developer trend",
+        evidenceUrl: null,
+        languageCode: "en",
+        audienceFlags: [],
+        marketFlags: [],
+        geoFlags: [],
+        geoCountryCode: null,
+        geoRegion: null,
+        geoDetectionMode: "unknown",
+        geoConfidence: 0,
+      },
+    ],
     relatedTrends: [],
   } satisfies TrendDetailRecord;
 
@@ -234,4 +301,10 @@ test("trendMatchesAudience supports explorer audience filtering", () => {
   assert.equal(trendMatchesAudience(detail, "developer"), true);
   assert.equal(trendMatchesAudience(detail, "b2b"), false);
   assert.equal(trendMatchesAudience(undefined, "developer"), false);
+  assert.equal(trendMatchesMarket(detail, "all"), true);
+  assert.equal(trendMatchesMarket(detail, "b2b"), false);
+  assert.equal(trendMatchesLanguage(detail, "all"), true);
+  assert.equal(trendMatchesLanguage(detail, "en"), true);
+  assert.equal(trendMatchesLanguage(detail, "es"), false);
+  assert.equal(trendMatchesLanguage(undefined, "en"), false);
 });

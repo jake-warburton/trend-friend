@@ -51,6 +51,8 @@ const SOURCE_FILTER_OPTIONS = [
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;
 const DEFAULT_AUDIENCE_OPTION = { label: "All audiences", value: "all" } as const;
+const DEFAULT_MARKET_OPTION = { label: "All markets", value: "all" } as const;
+const DEFAULT_LANGUAGE_OPTION = { label: "All languages", value: "all" } as const;
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
@@ -66,6 +68,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedAudience, setSelectedAudience] = useState<string>("all");
+  const [selectedMarket, setSelectedMarket] = useState<string>("all");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
   const [hideRecurring, setHideRecurring] = useState(false);
@@ -139,6 +143,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     () => buildAudienceFilterOptions(initialData.details.trends),
     [initialData.details.trends],
   );
+  const marketOptions = useMemo(
+    () => buildMarketFilterOptions(initialData.details.trends),
+    [initialData.details.trends],
+  );
+  const languageOptions = useMemo(
+    () => buildLanguageFilterOptions(initialData.details.trends),
+    [initialData.details.trends],
+  );
 
   const detailsByTrendId = useMemo(() => {
     const map = new Map<string, TrendDetailRecord>();
@@ -158,13 +170,24 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       const matchesCategory =
         selectedCategory === "all" || trend.category === selectedCategory;
       const matchesAudience = trendMatchesAudience(detail, selectedAudience);
+      const matchesMarket = trendMatchesMarket(detail, selectedMarket);
+      const matchesLanguage = trendMatchesLanguage(detail, selectedLanguage);
       const matchesKeyword =
         normalizedKeyword.length === 0 ||
         trend.name.toLowerCase().includes(normalizedKeyword) ||
         trend.evidencePreview.some((item) => item.toLowerCase().includes(normalizedKeyword));
       const matchesScore = trend.score.total >= minimum;
       const matchesSeasonality = !hideRecurring || !isRecurringTrend(trend.seasonality);
-      return matchesSource && matchesCategory && matchesAudience && matchesKeyword && matchesScore && matchesSeasonality;
+      return (
+        matchesSource &&
+        matchesCategory &&
+        matchesAudience &&
+        matchesMarket &&
+        matchesLanguage &&
+        matchesKeyword &&
+        matchesScore &&
+        matchesSeasonality
+      );
     });
 
     return [...trends].sort((left, right) => {
@@ -179,7 +202,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedSource, sortBy]);
+  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy]);
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -811,6 +834,52 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 <Select.Popup className="select-popup">
                   <Select.List className="select-list">
                     {audienceOptions.map((option) => (
+                      <Select.Item className="select-item" key={option.value} value={option.value}>
+                        <Select.ItemText>{option.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.List>
+                </Select.Popup>
+              </Select.Positioner>
+            </Select.Portal>
+          </Select.Root>
+        </label>
+
+        <label className="filter-field">
+          <span>Market</span>
+          <Select.Root value={selectedMarket} onValueChange={(value) => setSelectedMarket(value ?? "all")}>
+            <Select.Trigger className="select-trigger">
+              <Select.Value />
+              <Select.Icon className="select-icon">+</Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Positioner className="select-positioner" sideOffset={8}>
+                <Select.Popup className="select-popup">
+                  <Select.List className="select-list">
+                    {marketOptions.map((option) => (
+                      <Select.Item className="select-item" key={option.value} value={option.value}>
+                        <Select.ItemText>{option.label}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.List>
+                </Select.Popup>
+              </Select.Positioner>
+            </Select.Portal>
+          </Select.Root>
+        </label>
+
+        <label className="filter-field">
+          <span>Language</span>
+          <Select.Root value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value ?? "all")}>
+            <Select.Trigger className="select-trigger">
+              <Select.Value />
+              <Select.Icon className="select-icon">+</Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Positioner className="select-positioner" sideOffset={8}>
+                <Select.Popup className="select-popup">
+                  <Select.List className="select-list">
+                    {languageOptions.map((option) => (
                       <Select.Item className="select-item" key={option.value} value={option.value}>
                         <Select.ItemText>{option.label}</Select.ItemText>
                       </Select.Item>
@@ -2332,26 +2401,73 @@ export function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
 }
 
 export function buildAudienceFilterOptions(details: TrendDetailRecord[]) {
-  const labels = new Set<string>();
+  return buildSegmentFilterOptions(details, "audience", DEFAULT_AUDIENCE_OPTION);
+}
+
+export function buildMarketFilterOptions(details: TrendDetailRecord[]) {
+  return buildSegmentFilterOptions(details, "market", DEFAULT_MARKET_OPTION);
+}
+
+export function buildLanguageFilterOptions(details: TrendDetailRecord[]) {
+  const codes = new Set<string>();
   for (const detail of details) {
-    for (const item of detail.audienceSummary) {
-      labels.add(item.label);
+    for (const item of detail.evidenceItems) {
+      if (item.languageCode) {
+        codes.add(item.languageCode.toLowerCase());
+      }
     }
   }
 
   return [
-    DEFAULT_AUDIENCE_OPTION,
+    DEFAULT_LANGUAGE_OPTION,
+    ...Array.from(codes)
+      .sort()
+      .map((code) => ({ label: formatLanguageLabel(code), value: code })),
+  ];
+}
+
+export function trendMatchesAudience(detail: TrendDetailRecord | undefined, selectedAudience: string) {
+  return trendMatchesSegment(detail, selectedAudience, "audience");
+}
+
+export function trendMatchesMarket(detail: TrendDetailRecord | undefined, selectedMarket: string) {
+  return trendMatchesSegment(detail, selectedMarket, "market");
+}
+
+export function trendMatchesLanguage(detail: TrendDetailRecord | undefined, selectedLanguage: string) {
+  if (selectedLanguage === "all") {
+    return true;
+  }
+  return (detail?.evidenceItems ?? []).some((item) => item.languageCode?.toLowerCase() === selectedLanguage);
+}
+
+function buildSegmentFilterOptions(
+  details: TrendDetailRecord[],
+  segmentType: string,
+  defaultOption: { label: string; value: string },
+) {
+  const labels = new Set<string>();
+  for (const detail of details) {
+    for (const item of detail.audienceSummary) {
+      if (item.segmentType === segmentType) {
+        labels.add(item.label);
+      }
+    }
+  }
+
+  return [
+    defaultOption,
     ...Array.from(labels)
       .sort()
       .map((label) => ({ label: formatAudienceLabel(label), value: label })),
   ];
 }
 
-export function trendMatchesAudience(detail: TrendDetailRecord | undefined, selectedAudience: string) {
-  if (selectedAudience === "all") {
+function trendMatchesSegment(detail: TrendDetailRecord | undefined, selectedValue: string, segmentType: string) {
+  if (selectedValue === "all") {
     return true;
   }
-  return (detail?.audienceSummary ?? []).some((item) => item.label === selectedAudience);
+  return (detail?.audienceSummary ?? []).some((item) => item.segmentType === segmentType && item.label === selectedValue);
 }
 
 function buildTrendAudienceBadge(summary: TrendDetailRecord["audienceSummary"]) {
@@ -2376,6 +2492,22 @@ function summarizeTrendAudience(summary: TrendDetailRecord["audienceSummary"]) {
     .slice(0, 2)
     .map((item) => `${formatAudiencePrefix(item.segmentType)} ${formatAudienceLabel(item.label)}`)
     .join(" · ");
+}
+
+function formatLanguageLabel(code: string) {
+  const labels: Record<string, string> = {
+    en: "English",
+    es: "Spanish",
+    fr: "French",
+    de: "German",
+    pt: "Portuguese",
+    it: "Italian",
+    nl: "Dutch",
+    ja: "Japanese",
+    ko: "Korean",
+    zh: "Chinese",
+  };
+  return labels[code] ?? code.toUpperCase();
 }
 
 function buildShareExpiryIso(preset: string) {
