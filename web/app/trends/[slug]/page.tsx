@@ -39,7 +39,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 <span className="trend-date-chip">Recent snapshot</span>
                 <span className="trend-date-chip">No longer in the live ranking</span>
               </div>
-              <h1>{recentTrend.name}</h1>
+              <h1>{recentTrend.record.name}</h1>
               <p className="detail-copy">
                 Last seen at rank #{recentTrend.rank} on {formatTimestamp(recentTrend.capturedAt)} across{" "}
                 {recentTrend.record.sources.length} source{recentTrend.record.sources.length === 1 ? "" : "s"}.
