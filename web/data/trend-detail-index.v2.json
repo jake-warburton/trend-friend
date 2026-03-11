@@ -1,0 +1,1831 @@
+{
+  "generatedAt": "2026-03-11T21:01:29.155088Z",
+  "trends": [
+    {
+      "id": "ai-agents",
+      "name": "AI Agents",
+      "category": "ai-machine-learning",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 1,
+      "score": {
+        "total": 108.8,
+        "social": 87.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 18.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.504,
+        "content": 0.716,
+        "product": 0.6,
+        "investment": 0.225,
+        "reasoning": [
+          "Strong content play (social 88, 3 evidence items)",
+          "Product opportunity (dev 0, rank #1)"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 3,
+        "signalCount": 8
+      },
+      "sources": [
+        "hacker_news",
+        "reddit",
+        "twitter"
+      ],
+      "history": [
+        {
+          "rank": 1,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 108.8
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T19:17:25Z",
+      "breakoutPrediction": {
+        "confidence": 0.687,
+        "signals": [
+          "Multi-source coverage (3 sources)",
+          "Recently emerged (<24h)",
+          "High base score (108.8)"
+        ],
+        "predictedDirection": "breakout"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "hacker_news",
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-11T16:24:17Z"
+        },
+        {
+          "source": "reddit",
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-11T19:17:25Z"
+        },
+        {
+          "source": "twitter",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-09T12:00:00Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "hacker_news",
+          "score": {
+            "total": 41.1,
+            "social": 35.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-11T16:24:17Z",
+          "estimatedScore": 41.1,
+          "scoreSharePercent": 37.8
+        },
+        {
+          "source": "reddit",
+          "score": {
+            "total": 41.1,
+            "social": 35.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-11T19:17:25Z",
+          "estimatedScore": 41.1,
+          "scoreSharePercent": 37.8
+        },
+        {
+          "source": "twitter",
+          "score": {
+            "total": 23.6,
+            "social": 17.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-09T12:00:00Z",
+          "estimatedScore": 23.6,
+          "scoreSharePercent": 21.7
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 4
+        },
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 3
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 2
+        },
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "enterprise",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "b2b",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T19:17:25Z",
+          "value": 0.0,
+          "evidence": "My first open-source project \u2014 a folder-by-folder operating system for running a SaaS company, designed to work with AI agents",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/opensource/comments/1rr3dkn/my_first_opensource_project_a_folderbyfolder/",
+          "languageCode": null,
+          "audienceFlags": [
+            "developer"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "hacker_news",
+          "timestamp": "2026-03-11T16:24:17Z",
+          "value": 26.0,
+          "evidence": "Launch HN: Sentrial (YC W26) \u2013 Catch AI agent failures before your users do",
+          "signalType": "social",
+          "evidenceUrl": "https://www.sentrial.com/",
+          "languageCode": null,
+          "audienceFlags": [
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [
+            "europe-market",
+            "us-market"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T15:29:13Z",
+          "value": 8.0,
+          "evidence": "How are you using AI agents today - I will not promote",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/startups/comments/1rqwwqf/how_are_you_using_ai_agents_today_i_will_not/",
+          "languageCode": null,
+          "audienceFlags": [
+            "founder"
+          ],
+          "marketFlags": [
+            "us-market"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "hacker_news",
+          "timestamp": "2026-03-11T14:39:30Z",
+          "value": 101.0,
+          "evidence": "Show HN: Open-source browser for AI agents",
+          "signalType": "social",
+          "evidenceUrl": "https://github.com/theredsix/agent-browser-protocol",
+          "languageCode": "en",
+          "audienceFlags": [
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "twitter",
+          "timestamp": "2026-03-09T12:00:00Z",
+          "value": 2185.0,
+          "evidence": "AI agents are transforming enterprise automation workflows at scale",
+          "signalType": "social",
+          "evidenceUrl": "https://x.com/i/status/tw-1",
+          "languageCode": null,
+          "audienceFlags": [
+            "consumer",
+            "enterprise",
+            "founder"
+          ],
+          "marketFlags": [
+            "b2b",
+            "b2c"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T14:39:30Z",
+        "value": 101.0,
+        "evidence": "Show HN: Open-source browser for AI agents",
+        "signalType": "social",
+        "evidenceUrl": "https://github.com/theredsix/agent-browser-protocol"
+      },
+      "relatedTrends": [
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "status": "new",
+          "rank": 6,
+          "scoreTotal": 30.7
+        },
+        {
+          "id": "shootings-bombings",
+          "name": "Shootings Bombings",
+          "status": "new",
+          "rank": 7,
+          "scoreTotal": 29.3
+        }
+      ]
+    },
+    {
+      "id": "baseball-classic",
+      "name": "Baseball Classic",
+      "category": "science-research",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 2,
+      "score": {
+        "total": 37.7,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 33.4,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.229,
+        "content": 0.075,
+        "product": 0.514,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 4
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "history": [
+        {
+          "rank": 2,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 37.7
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-10T00:00:00Z",
+      "breakoutPrediction": {
+        "confidence": 0.577,
+        "signals": [
+          "Recently emerged (<24h)",
+          "High base score (37.7)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "wikipedia",
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-10T00:00:00Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "wikipedia",
+          "score": {
+            "total": 39.4,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 33.4,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-10T00:00:00Z",
+          "estimatedScore": 39.4,
+          "scoreSharePercent": 104.6
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 2
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "wikipedia",
+          "timestamp": "2026-03-10T00:00:00Z",
+          "value": 89027.0,
+          "evidence": "World Baseball Classic",
+          "signalType": "knowledge",
+          "evidenceUrl": "https://en.wikipedia.org/wiki/World_Baseball_Classic",
+          "languageCode": null,
+          "audienceFlags": [
+            "research"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "wikipedia",
+          "timestamp": "2026-03-10T00:00:00Z",
+          "value": 96633.0,
+          "evidence": "2026 World Baseball Classic",
+          "signalType": "knowledge",
+          "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic",
+          "languageCode": null,
+          "audienceFlags": [
+            "research"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "wikipedia",
+        "timestamp": "2026-03-10T00:00:00Z",
+        "value": 96633.0,
+        "evidence": "2026 World Baseball Classic",
+        "signalType": "knowledge",
+        "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "league-schedule",
+          "name": "League Schedule",
+          "status": "new",
+          "rank": 3,
+          "scoreTotal": 36.9
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        }
+      ]
+    },
+    {
+      "id": "league-schedule",
+      "name": "League Schedule",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 3,
+      "score": {
+        "total": 36.9,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 28.7,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.223,
+        "content": 0.075,
+        "product": 0.498,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 3
+      },
+      "sources": [
+        "google_trends"
+      ],
+      "history": [
+        {
+          "rank": 3,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 36.9
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T20:40:00Z",
+      "breakoutPrediction": {
+        "confidence": 0.576,
+        "signals": [
+          "Recently emerged (<24h)",
+          "High base score (36.9)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "google_trends",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T20:30:00Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "google_trends",
+          "score": {
+            "total": 34.7,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 28.7,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T20:30:00Z",
+          "estimatedScore": 34.7,
+          "scoreSharePercent": 93.9
+        }
+      ],
+      "geoSummary": [
+        {
+          "label": "US",
+          "region": null,
+          "countryCode": "US",
+          "signalCount": 1,
+          "explicitCount": 1,
+          "inferredCount": 0,
+          "averageConfidence": 0.95
+        }
+      ],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "google_trends",
+          "timestamp": "2026-03-11T20:30:00Z",
+          "value": 5000.0,
+          "evidence": "champions league schedule",
+          "signalType": "search",
+          "evidenceUrl": "https://trends.google.com/trending/rss?geo=US",
+          "languageCode": null,
+          "audienceFlags": [
+            "consumer"
+          ],
+          "marketFlags": [
+            "b2c",
+            "us-market"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": "US",
+          "geoRegion": null,
+          "geoDetectionMode": "explicit",
+          "geoConfidence": 0.95
+        }
+      ],
+      "primaryEvidence": {
+        "source": "google_trends",
+        "timestamp": "2026-03-11T20:30:00Z",
+        "value": 5000.0,
+        "evidence": "champions league schedule",
+        "signalType": "search",
+        "evidenceUrl": "https://trends.google.com/trending/rss?geo=US"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "status": "new",
+          "rank": 2,
+          "scoreTotal": 37.7
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        }
+      ]
+    },
+    {
+      "id": "without-permission",
+      "name": "Without Permission",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 4,
+      "score": {
+        "total": 32.9,
+        "social": 25.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.315,
+        "content": 0.424,
+        "product": 0.462,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "history": [
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 32.9
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T14:34:34Z",
+      "breakoutPrediction": {
+        "confidence": 0.568,
+        "signals": [
+          "Recently emerged (<24h)",
+          "High base score (32.9)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "reddit",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T14:34:34Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "reddit",
+          "score": {
+            "total": 31.4,
+            "social": 25.4,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T14:34:34Z",
+          "estimatedScore": 31.4,
+          "scoreSharePercent": 95.4
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T14:34:34Z",
+          "value": 8652.0,
+          "evidence": "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqvfr9/yugioh_accuses_white_house_of_using_anime_footage/",
+          "languageCode": null,
+          "audienceFlags": [],
+          "marketFlags": [
+            "us-market"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-11T14:34:34Z",
+        "value": 8652.0,
+        "evidence": "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqvfr9/yugioh_accuses_white_house_of_using_anime_footage/"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "status": "new",
+          "rank": 6,
+          "scoreTotal": 30.7
+        },
+        {
+          "id": "shootings-bombings",
+          "name": "Shootings Bombings",
+          "status": "new",
+          "rank": 7,
+          "scoreTotal": 29.3
+        }
+      ]
+    },
+    {
+      "id": "video-like",
+      "name": "Video Like",
+      "category": "consumer-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 5,
+      "score": {
+        "total": 32.5,
+        "social": 26.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.316,
+        "content": 0.445,
+        "product": 0.447,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "history": [
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 32.5
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T10:38:44Z",
+      "breakoutPrediction": {
+        "confidence": 0.567,
+        "signals": [
+          "Recently emerged (<24h)",
+          "High base score (32.5)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "reddit",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T10:38:44Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "reddit",
+          "score": {
+            "total": 32.5,
+            "social": 26.5,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T10:38:44Z",
+          "estimatedScore": 32.5,
+          "scoreSharePercent": 100.0
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T10:38:44Z",
+          "value": 12926.0,
+          "evidence": "Report: Creating a 5-second AI video is like running a microwave for an hour",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqq93s/report_creating_a_5second_ai_video_is_like/",
+          "languageCode": "en",
+          "audienceFlags": [],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-11T10:38:44Z",
+        "value": 12926.0,
+        "evidence": "Report: Creating a 5-second AI video is like running a microwave for an hour",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqq93s/report_creating_a_5second_ai_video_is_like/"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "status": "new",
+          "rank": 6,
+          "scoreTotal": 30.7
+        },
+        {
+          "id": "shootings-bombings",
+          "name": "Shootings Bombings",
+          "status": "new",
+          "rank": 7,
+          "scoreTotal": 29.3
+        }
+      ]
+    },
+    {
+      "id": "year-journey",
+      "name": "Year Journey",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 6,
+      "score": {
+        "total": 30.7,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 12.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.304,
+        "content": 0.343,
+        "product": 0.424,
+        "investment": 0.15,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 2,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news",
+        "reddit"
+      ],
+      "history": [
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 30.7
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T15:50:30Z",
+      "breakoutPrediction": {
+        "confidence": 0.6,
+        "signals": [
+          "Recently emerged (<24h)",
+          "High base score (30.7)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "hacker_news",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:35:50Z"
+        },
+        {
+          "source": "reddit",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:50:30Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "hacker_news",
+          "score": {
+            "total": 14.2,
+            "social": 8.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:35:50Z",
+          "estimatedScore": 14.2,
+          "scoreSharePercent": 46.3
+        },
+        {
+          "source": "reddit",
+          "score": {
+            "total": 14.2,
+            "social": 8.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:50:30Z",
+          "estimatedScore": 14.2,
+          "scoreSharePercent": 46.3
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T15:50:30Z",
+          "value": 51.0,
+          "evidence": "Temporal: The 9-Year Journey to Fix Time in JavaScript",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/programming/comments/1rqxh0q/temporal_the_9year_journey_to_fix_time_in/",
+          "languageCode": "en",
+          "audienceFlags": [],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "hacker_news",
+          "timestamp": "2026-03-11T15:35:50Z",
+          "value": 505.0,
+          "evidence": "Temporal: A nine-year journey to fix time in JavaScript",
+          "signalType": "social",
+          "evidenceUrl": "https://bloomberg.github.io/js-blog/post/temporal/",
+          "languageCode": null,
+          "audienceFlags": [
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T15:35:50Z",
+        "value": 505.0,
+        "evidence": "Temporal: A nine-year journey to fix time in JavaScript",
+        "signalType": "social",
+        "evidenceUrl": "https://bloomberg.github.io/js-blog/post/temporal/"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        },
+        {
+          "id": "shootings-bombings",
+          "name": "Shootings Bombings",
+          "status": "new",
+          "rank": 7,
+          "scoreTotal": 29.3
+        }
+      ]
+    },
+    {
+      "id": "shootings-bombings",
+      "name": "Shootings Bombings",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 7,
+      "score": {
+        "total": 29.3,
+        "social": 21.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.29,
+        "content": 0.41,
+        "product": 0.404,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "history": [
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 29.3
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T13:20:23Z",
+      "breakoutPrediction": {
+        "confidence": 0.56,
+        "signals": [
+          "Recently emerged (<24h)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "reddit",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T13:20:23Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "reddit",
+          "score": {
+            "total": 27.8,
+            "social": 21.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T13:20:23Z",
+          "estimatedScore": 27.8,
+          "scoreSharePercent": 94.9
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T13:20:23Z",
+          "value": 2158.0,
+          "evidence": "ChatGPT, Gemini, and other chatbots helped teens plan shootings, bombings, and political violence, study shows / Of the 10 major chatbots tested, only one, Claude, reliably shut down would-be attackers.",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqtkak/chatgpt_gemini_and_other_chatbots_helped_teens/",
+          "languageCode": "en",
+          "audienceFlags": [
+            "research"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-11T13:20:23Z",
+        "value": 2158.0,
+        "evidence": "ChatGPT, Gemini, and other chatbots helped teens plan shootings, bombings, and political violence, study shows / Of the 10 major chatbots tested, only one, Claude, reliably shut down would-be attackers.",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqtkak/chatgpt_gemini_and_other_chatbots_helped_teens/"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "status": "new",
+          "rank": 6,
+          "scoreTotal": 30.7
+        }
+      ]
+    },
+    {
+      "id": "time-javascript",
+      "name": "Time Javascript",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 8,
+      "score": {
+        "total": 29.2,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 12.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.297,
+        "content": 0.357,
+        "product": 0.391,
+        "investment": 0.15,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 2,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news",
+        "reddit"
+      ],
+      "history": [
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 29.2
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T15:50:30Z",
+      "breakoutPrediction": {
+        "confidence": 0.597,
+        "signals": [
+          "Recently emerged (<24h)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "hacker_news",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:35:50Z"
+        },
+        {
+          "source": "reddit",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:50:30Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "hacker_news",
+          "score": {
+            "total": 14.2,
+            "social": 8.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:35:50Z",
+          "estimatedScore": 14.2,
+          "scoreSharePercent": 48.7
+        },
+        {
+          "source": "reddit",
+          "score": {
+            "total": 14.2,
+            "social": 8.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T15:50:30Z",
+          "estimatedScore": 14.2,
+          "scoreSharePercent": 48.7
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "reddit",
+          "timestamp": "2026-03-11T15:50:30Z",
+          "value": 51.0,
+          "evidence": "Temporal: The 9-Year Journey to Fix Time in JavaScript",
+          "signalType": "social",
+          "evidenceUrl": "https://www.reddit.com/r/programming/comments/1rqxh0q/temporal_the_9year_journey_to_fix_time_in/",
+          "languageCode": "en",
+          "audienceFlags": [],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "hacker_news",
+          "timestamp": "2026-03-11T15:35:50Z",
+          "value": 505.0,
+          "evidence": "Temporal: A nine-year journey to fix time in JavaScript",
+          "signalType": "social",
+          "evidenceUrl": "https://bloomberg.github.io/js-blog/post/temporal/",
+          "languageCode": null,
+          "audienceFlags": [
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T15:35:50Z",
+        "value": 505.0,
+        "evidence": "Temporal: A nine-year journey to fix time in JavaScript",
+        "signalType": "social",
+        "evidenceUrl": "https://bloomberg.github.io/js-blog/post/temporal/"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "status": "new",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "status": "new",
+          "rank": 5,
+          "scoreTotal": 32.5
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "status": "new",
+          "rank": 6,
+          "scoreTotal": 30.7
+        }
+      ]
+    },
+    {
+      "id": "robotics",
+      "name": "Robotics",
+      "category": "hardware-robotics",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 9,
+      "score": {
+        "total": 27.9,
+        "social": 20.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.277,
+        "content": 0.403,
+        "product": 0.372,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "twitter"
+      ],
+      "history": [
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 27.9
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-09T14:30:00Z",
+      "breakoutPrediction": {
+        "confidence": 0.557,
+        "signals": [
+          "Recently emerged (<24h)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "twitter",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-09T14:30:00Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "twitter",
+          "score": {
+            "total": 26.4,
+            "social": 20.4,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-09T14:30:00Z",
+          "estimatedScore": 26.4,
+          "scoreSharePercent": 94.6
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "twitter",
+          "timestamp": "2026-03-09T14:30:00Z",
+          "value": 1282.0,
+          "evidence": "Open source robotics framework reaches 10k stars on GitHub",
+          "signalType": "social",
+          "evidenceUrl": "https://x.com/i/status/tw-2",
+          "languageCode": null,
+          "audienceFlags": [
+            "consumer",
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [
+            "b2c"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "twitter",
+        "timestamp": "2026-03-09T14:30:00Z",
+        "value": 1282.0,
+        "evidence": "Open source robotics framework reaches 10k stars on GitHub",
+        "signalType": "social",
+        "evidenceUrl": "https://x.com/i/status/tw-2"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "status": "new",
+          "rank": 10,
+          "scoreTotal": 27.4
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "status": "new",
+          "rank": 2,
+          "scoreTotal": 37.7
+        },
+        {
+          "id": "league-schedule",
+          "name": "League Schedule",
+          "status": "new",
+          "rank": 3,
+          "scoreTotal": 36.9
+        }
+      ]
+    },
+    {
+      "id": "reduces-training",
+      "name": "Reduces Training",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 10,
+      "score": {
+        "total": 27.4,
+        "social": 19.9,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "forecast": null,
+      "opportunity": {
+        "composite": 0.271,
+        "content": 0.401,
+        "product": 0.357,
+        "investment": 0.075,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "twitter"
+      ],
+      "history": [
+        {
+          "rank": 10,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 27.4
+        }
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-09T16:00:00Z",
+      "breakoutPrediction": {
+        "confidence": 0.555,
+        "signals": [
+          "Recently emerged (<24h)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "twitter",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-09T16:00:00Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "twitter",
+          "score": {
+            "total": 25.9,
+            "social": 19.9,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-09T16:00:00Z",
+          "estimatedScore": 25.9,
+          "scoreSharePercent": 94.5
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "twitter",
+          "timestamp": "2026-03-09T16:00:00Z",
+          "value": 1048.0,
+          "evidence": "New machine learning technique reduces training costs by 60%",
+          "signalType": "social",
+          "evidenceUrl": "https://x.com/i/status/tw-3",
+          "languageCode": "en",
+          "audienceFlags": [
+            "consumer",
+            "founder"
+          ],
+          "marketFlags": [
+            "b2c"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "twitter",
+        "timestamp": "2026-03-09T16:00:00Z",
+        "value": 1048.0,
+        "evidence": "New machine learning technique reduces training costs by 60%",
+        "signalType": "social",
+        "evidenceUrl": "https://x.com/i/status/tw-3"
+      },
+      "relatedTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "status": "new",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "status": "new",
+          "rank": 9,
+          "scoreTotal": 27.9
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "status": "new",
+          "rank": 2,
+          "scoreTotal": 37.7
+        },
+        {
+          "id": "league-schedule",
+          "name": "League Schedule",
+          "status": "new",
+          "rank": 3,
+          "scoreTotal": 36.9
+        }
+      ]
+    }
+  ]
+}

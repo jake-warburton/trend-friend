@@ -1,0 +1,714 @@
+{
+  "generatedAt": "2026-03-11T21:01:29.155088Z",
+  "trends": [
+    {
+      "id": "ai-agents",
+      "name": "AI Agents",
+      "category": "ai-machine-learning",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 1,
+      "score": {
+        "total": 108.8,
+        "social": 87.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 18.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 3,
+        "signalCount": 8
+      },
+      "sources": [
+        "hacker_news",
+        "reddit",
+        "twitter"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T19:17:25Z",
+      "evidencePreview": [
+        "My first open-source project \u2014 a folder-by-folder operating system for running a SaaS company, designed to work with AI agents",
+        "How are you using AI agents today - I will not promote"
+      ],
+      "audienceSummary": [
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 4
+        },
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 3
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 2
+        },
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "enterprise",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "b2b",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T14:39:30Z",
+        "value": 101.0,
+        "evidence": "Show HN: Open-source browser for AI agents",
+        "signalType": "social",
+        "evidenceUrl": "https://github.com/theredsix/agent-browser-protocol"
+      },
+      "recentHistory": [
+        {
+          "rank": 1,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 108.8
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "baseball-classic",
+      "name": "Baseball Classic",
+      "category": "science-research",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 2,
+      "score": {
+        "total": 37.7,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 33.4,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 4
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-10T00:00:00Z",
+      "evidencePreview": [
+        "2026 World Baseball Classic",
+        "World Baseball Classic"
+      ],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 2
+        }
+      ],
+      "primaryEvidence": {
+        "source": "wikipedia",
+        "timestamp": "2026-03-10T00:00:00Z",
+        "value": 96633.0,
+        "evidence": "2026 World Baseball Classic",
+        "signalType": "knowledge",
+        "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic"
+      },
+      "recentHistory": [
+        {
+          "rank": 2,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 37.7
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "league-schedule",
+      "name": "League Schedule",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 3,
+      "score": {
+        "total": 36.9,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 28.7,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 3
+      },
+      "sources": [
+        "google_trends"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T20:40:00Z",
+      "evidencePreview": [
+        "champions league schedule",
+        "champions league"
+      ],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "google_trends",
+        "timestamp": "2026-03-11T20:30:00Z",
+        "value": 5000.0,
+        "evidence": "champions league schedule",
+        "signalType": "search",
+        "evidenceUrl": "https://trends.google.com/trending/rss?geo=US"
+      },
+      "recentHistory": [
+        {
+          "rank": 3,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 36.9
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "without-permission",
+      "name": "Without Permission",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 4,
+      "score": {
+        "total": 32.9,
+        "social": 25.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T14:34:34Z",
+      "evidencePreview": [
+        "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019"
+      ],
+      "audienceSummary": [
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-11T14:34:34Z",
+        "value": 8652.0,
+        "evidence": "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqvfr9/yugioh_accuses_white_house_of_using_anime_footage/"
+      },
+      "recentHistory": [
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 32.9
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "video-like",
+      "name": "Video Like",
+      "category": "consumer-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 5,
+      "score": {
+        "total": 32.5,
+        "social": 26.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T10:38:44Z",
+      "evidencePreview": [
+        "Report: Creating a 5-second AI video is like running a microwave for an hour"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-11T10:38:44Z",
+        "value": 12926.0,
+        "evidence": "Report: Creating a 5-second AI video is like running a microwave for an hour",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqq93s/report_creating_a_5second_ai_video_is_like/"
+      },
+      "recentHistory": [
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 32.5
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "year-journey",
+      "name": "Year Journey",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 6,
+      "score": {
+        "total": 30.7,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 12.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 2,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news",
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T15:50:30Z",
+      "evidencePreview": [
+        "Temporal: The 9-Year Journey to Fix Time in JavaScript",
+        "Temporal: A nine-year journey to fix time in JavaScript"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T15:35:50Z",
+        "value": 505.0,
+        "evidence": "Temporal: A nine-year journey to fix time in JavaScript",
+        "signalType": "social",
+        "evidenceUrl": "https://bloomberg.github.io/js-blog/post/temporal/"
+      },
+      "recentHistory": [
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 30.7
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "shootings-bombings",
+      "name": "Shootings Bombings",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 7,
+      "score": {
+        "total": 29.3,
+        "social": 21.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T13:20:23Z",
+      "evidencePreview": [
+        "ChatGPT, Gemini, and other chatbots helped teens plan shootings, bombings, and political violence, study shows / Of the 10 major chatbots tested, only one, Claude, reliably shut down would-be attackers."
+      ],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-11T13:20:23Z",
+        "value": 2158.0,
+        "evidence": "ChatGPT, Gemini, and other chatbots helped teens plan shootings, bombings, and political violence, study shows / Of the 10 major chatbots tested, only one, Claude, reliably shut down would-be attackers.",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqtkak/chatgpt_gemini_and_other_chatbots_helped_teens/"
+      },
+      "recentHistory": [
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 29.3
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "time-javascript",
+      "name": "Time Javascript",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 8,
+      "score": {
+        "total": 29.2,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 12.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 2,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news",
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T15:50:30Z",
+      "evidencePreview": [
+        "Temporal: The 9-Year Journey to Fix Time in JavaScript",
+        "Temporal: A nine-year journey to fix time in JavaScript"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T15:35:50Z",
+        "value": 505.0,
+        "evidence": "Temporal: A nine-year journey to fix time in JavaScript",
+        "signalType": "social",
+        "evidenceUrl": "https://bloomberg.github.io/js-blog/post/temporal/"
+      },
+      "recentHistory": [
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 29.2
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "robotics",
+      "name": "Robotics",
+      "category": "hardware-robotics",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 9,
+      "score": {
+        "total": 27.9,
+        "social": 20.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "twitter"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-09T14:30:00Z",
+      "evidencePreview": [
+        "Open source robotics framework reaches 10k stars on GitHub"
+      ],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "twitter",
+        "timestamp": "2026-03-09T14:30:00Z",
+        "value": 1282.0,
+        "evidence": "Open source robotics framework reaches 10k stars on GitHub",
+        "signalType": "social",
+        "evidenceUrl": "https://x.com/i/status/tw-2"
+      },
+      "recentHistory": [
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 27.9
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "reduces-training",
+      "name": "Reduces Training",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 10,
+      "score": {
+        "total": 27.4,
+        "social": 19.9,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "twitter"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-09T16:00:00Z",
+      "evidencePreview": [
+        "New machine learning technique reduces training costs by 60%"
+      ],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "twitter",
+        "timestamp": "2026-03-09T16:00:00Z",
+        "value": 1048.0,
+        "evidence": "New machine learning technique reduces training costs by 60%",
+        "signalType": "social",
+        "evidenceUrl": "https://x.com/i/status/tw-3"
+      },
+      "recentHistory": [
+        {
+          "rank": 10,
+          "capturedAt": "2026-03-11T21:01:29.155088Z",
+          "scoreTotal": 27.4
+        }
+      ],
+      "forecastDirection": null
+    }
+  ]
+}

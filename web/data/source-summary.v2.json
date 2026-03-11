@@ -1,0 +1,262 @@
+{
+  "sources": [
+    {
+      "source": "github",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-11T21:01:26.836709Z",
+      "latestSuccessAt": "2026-03-11T21:01:26.836709Z",
+      "rawItemCount": 30,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 100.0,
+      "durationMs": 135,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 29,
+      "trendCount": 29,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:01:26.836709Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 135,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": []
+    },
+    {
+      "source": "google_trends",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-11T21:01:27.087045Z",
+      "latestSuccessAt": "2026-03-11T21:01:27.087045Z",
+      "rawItemCount": 0,
+      "latestItemCount": 28,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 2021,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 30,
+      "trendCount": 28,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:01:27.087045Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 2021,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "league-schedule",
+          "name": "League Schedule",
+          "rank": 3,
+          "scoreTotal": 36.9
+        }
+      ]
+    },
+    {
+      "source": "hacker_news",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-11T21:01:14.295428Z",
+      "latestSuccessAt": "2026-03-11T21:01:14.295428Z",
+      "rawItemCount": 90,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 33.3,
+      "durationMs": 12541,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 55,
+      "trendCount": 54,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:01:14.295428Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 12541,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "rank": 6,
+          "scoreTotal": 30.7
+        },
+        {
+          "id": "time-javascript",
+          "name": "Time Javascript",
+          "rank": 8,
+          "scoreTotal": 29.2
+        }
+      ]
+    },
+    {
+      "source": "reddit",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-11T21:01:10.991734Z",
+      "latestSuccessAt": "2026-03-11T21:01:10.991734Z",
+      "rawItemCount": 100,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 30.0,
+      "durationMs": 3303,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 59,
+      "trendCount": 58,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:01:10.991734Z",
+          "rawItemCount": 100,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 30.0,
+          "durationMs": 3303,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "rank": 4,
+          "scoreTotal": 32.9
+        },
+        {
+          "id": "video-like",
+          "name": "Video Like",
+          "rank": 5,
+          "scoreTotal": 32.5
+        },
+        {
+          "id": "year-journey",
+          "name": "Year Journey",
+          "rank": 6,
+          "scoreTotal": 30.7
+        },
+        {
+          "id": "shootings-bombings",
+          "name": "Shootings Bombings",
+          "rank": 7,
+          "scoreTotal": 29.3
+        }
+      ]
+    },
+    {
+      "source": "twitter",
+      "status": "degraded",
+      "latestFetchAt": "2026-03-11T21:01:29.108630Z",
+      "latestSuccessAt": "2026-03-11T21:01:29.108630Z",
+      "rawItemCount": 0,
+      "latestItemCount": 3,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 0,
+      "usedFallback": true,
+      "errorMessage": null,
+      "signalCount": 8,
+      "trendCount": 8,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:01:29.108630Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "usedFallback": true,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "scoreTotal": 108.8
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "rank": 9,
+          "scoreTotal": 27.9
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "rank": 10,
+          "scoreTotal": 27.4
+        }
+      ]
+    },
+    {
+      "source": "wikipedia",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-11T21:01:26.972668Z",
+      "latestSuccessAt": "2026-03-11T21:01:26.972668Z",
+      "rawItemCount": 0,
+      "latestItemCount": 24,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 114,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 30,
+      "trendCount": 28,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:01:26.972668Z",
+          "rawItemCount": 0,
+          "itemCount": 24,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 114,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "rank": 2,
+          "scoreTotal": 37.7
+        }
+      ]
+    }
+  ],
+  "generatedAt": "2026-03-11T21:01:29.155088Z"
+}

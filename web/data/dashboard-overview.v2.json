@@ -1,0 +1,300 @@
+{
+  "summary": {
+    "trackedTrends": 10,
+    "totalSignals": 211,
+    "sourceCount": 6,
+    "averageScore": 39.3
+  },
+  "highlights": {
+    "topTrendId": "ai-agents",
+    "topTrendName": "AI Agents",
+    "biggestMoverId": "ai-agents",
+    "biggestMoverName": "AI Agents",
+    "newestTrendId": "ai-agents",
+    "newestTrendName": "AI Agents"
+  },
+  "charts": {
+    "topTrendScores": [
+      {
+        "label": "AI Agents",
+        "value": 108.8
+      },
+      {
+        "label": "Baseball Classic",
+        "value": 37.7
+      },
+      {
+        "label": "League Schedule",
+        "value": 36.9
+      },
+      {
+        "label": "Without Permission",
+        "value": 32.9
+      },
+      {
+        "label": "Video Like",
+        "value": 32.5
+      },
+      {
+        "label": "Year Journey",
+        "value": 30.7
+      },
+      {
+        "label": "Shootings Bombings",
+        "value": 29.3
+      },
+      {
+        "label": "Time Javascript",
+        "value": 29.2
+      }
+    ],
+    "sourceShare": [
+      {
+        "label": "Reddit",
+        "value": 59.0
+      },
+      {
+        "label": "Hacker News",
+        "value": 55.0
+      },
+      {
+        "label": "Google Trends",
+        "value": 30.0
+      },
+      {
+        "label": "Wikipedia",
+        "value": 30.0
+      },
+      {
+        "label": "Github",
+        "value": 29.0
+      },
+      {
+        "label": "Twitter",
+        "value": 8.0
+      }
+    ],
+    "statusBreakdown": [
+      {
+        "label": "NEW",
+        "value": 10.0
+      }
+    ]
+  },
+  "sections": {
+    "topTrends": [
+      {
+        "id": "ai-agents",
+        "name": "AI Agents",
+        "category": "ai-machine-learning",
+        "status": "new",
+        "rank": 1,
+        "scoreTotal": 108.8
+      },
+      {
+        "id": "baseball-classic",
+        "name": "Baseball Classic",
+        "category": "science-research",
+        "status": "new",
+        "rank": 2,
+        "scoreTotal": 37.7
+      },
+      {
+        "id": "league-schedule",
+        "name": "League Schedule",
+        "category": "general-tech",
+        "status": "new",
+        "rank": 3,
+        "scoreTotal": 36.9
+      },
+      {
+        "id": "without-permission",
+        "name": "Without Permission",
+        "category": "general-tech",
+        "status": "new",
+        "rank": 4,
+        "scoreTotal": 32.9
+      },
+      {
+        "id": "video-like",
+        "name": "Video Like",
+        "category": "consumer-tech",
+        "status": "new",
+        "rank": 5,
+        "scoreTotal": 32.5
+      }
+    ],
+    "breakoutTrends": [],
+    "risingTrends": [],
+    "metaTrends": [
+      {
+        "category": "ai-machine-learning",
+        "trendCount": 1,
+        "averageScore": 108.8,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents"
+      },
+      {
+        "category": "science-research",
+        "trendCount": 1,
+        "averageScore": 37.7,
+        "topTrendId": "baseball-classic",
+        "topTrendName": "Baseball Classic"
+      },
+      {
+        "category": "consumer-tech",
+        "trendCount": 1,
+        "averageScore": 32.5,
+        "topTrendId": "video-like",
+        "topTrendName": "Video Like"
+      },
+      {
+        "category": "general-tech",
+        "trendCount": 6,
+        "averageScore": 31.1,
+        "topTrendId": "league-schedule",
+        "topTrendName": "League Schedule"
+      },
+      {
+        "category": "hardware-robotics",
+        "trendCount": 1,
+        "averageScore": 27.9,
+        "topTrendId": "robotics",
+        "topTrendName": "Robotics"
+      }
+    ]
+  },
+  "operations": {
+    "lastRunAt": "2026-03-11T21:01:29.155088Z",
+    "successRate": 100.0,
+    "averageDurationMs": 19170,
+    "recentRuns": [
+      {
+        "status": "healthy",
+        "capturedAt": "2026-03-11T21:01:29.155088Z",
+        "durationMs": 19170,
+        "sourceCount": 6,
+        "successfulSourceCount": 6,
+        "failedSourceCount": 0,
+        "signalCount": 211,
+        "rankedTrendCount": 10,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents",
+        "topScore": 108.8
+      }
+    ]
+  },
+  "sources": [
+    {
+      "source": "reddit",
+      "status": "healthy",
+      "signalCount": 59,
+      "trendCount": 58,
+      "latestFetchAt": "2026-03-11T21:01:10.991734Z",
+      "latestSuccessAt": "2026-03-11T21:01:10.991734Z",
+      "rawItemCount": 100,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 30.0,
+      "durationMs": 3303,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "hacker_news",
+      "status": "healthy",
+      "signalCount": 55,
+      "trendCount": 54,
+      "latestFetchAt": "2026-03-11T21:01:14.295428Z",
+      "latestSuccessAt": "2026-03-11T21:01:14.295428Z",
+      "rawItemCount": 90,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 33.3,
+      "durationMs": 12541,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "google_trends",
+      "status": "healthy",
+      "signalCount": 30,
+      "trendCount": 28,
+      "latestFetchAt": "2026-03-11T21:01:27.087045Z",
+      "latestSuccessAt": "2026-03-11T21:01:27.087045Z",
+      "rawItemCount": 0,
+      "latestItemCount": 28,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 2021,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "wikipedia",
+      "status": "healthy",
+      "signalCount": 30,
+      "trendCount": 28,
+      "latestFetchAt": "2026-03-11T21:01:26.972668Z",
+      "latestSuccessAt": "2026-03-11T21:01:26.972668Z",
+      "rawItemCount": 0,
+      "latestItemCount": 24,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 114,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "github",
+      "status": "healthy",
+      "signalCount": 29,
+      "trendCount": 29,
+      "latestFetchAt": "2026-03-11T21:01:26.836709Z",
+      "latestSuccessAt": "2026-03-11T21:01:26.836709Z",
+      "rawItemCount": 30,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 100.0,
+      "durationMs": 135,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "twitter",
+      "status": "degraded",
+      "signalCount": 8,
+      "trendCount": 8,
+      "latestFetchAt": "2026-03-11T21:01:29.108630Z",
+      "latestSuccessAt": "2026-03-11T21:01:29.108630Z",
+      "rawItemCount": 0,
+      "latestItemCount": 3,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 0,
+      "usedFallback": true,
+      "errorMessage": null
+    }
+  ],
+  "generatedAt": "2026-03-11T21:01:29.155088Z",
+  "sourceWatch": [
+    {
+      "source": "twitter",
+      "severity": "warning",
+      "title": "Twitter",
+      "detail": "Latest run used fallback data"
+    },
+    {
+      "source": "hacker_news",
+      "severity": "info",
+      "title": "Hacker News",
+      "detail": "Mixed kept yield from recent fetches"
+    },
+    {
+      "source": "reddit",
+      "severity": "info",
+      "title": "Reddit",
+      "detail": "Mixed kept yield from recent fetches"
+    }
+  ]
+}

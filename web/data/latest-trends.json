@@ -1,0 +1,215 @@
+{
+  "generatedAt": "2026-03-11T21:01:29.155088Z",
+  "trends": [
+    {
+      "id": "ai-agents",
+      "name": "AI Agents",
+      "rank": 1,
+      "score": {
+        "total": 108.8,
+        "social": 87.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 18.0
+      },
+      "sources": [
+        "hacker_news",
+        "reddit",
+        "twitter"
+      ],
+      "evidence": [
+        "My first open-source project \u2014 a folder-by-folder operating system for running a SaaS company, designed to work with AI agents",
+        "How are you using AI agents today - I will not promote",
+        "Show HN: Open-source browser for AI agents"
+      ],
+      "latestSignalAt": "2026-03-11T19:17:25Z"
+    },
+    {
+      "id": "baseball-classic",
+      "name": "Baseball Classic",
+      "rank": 2,
+      "score": {
+        "total": 37.7,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 33.4,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "evidence": [
+        "2026 World Baseball Classic",
+        "World Baseball Classic"
+      ],
+      "latestSignalAt": "2026-03-10T00:00:00Z"
+    },
+    {
+      "id": "league-schedule",
+      "name": "League Schedule",
+      "rank": 3,
+      "score": {
+        "total": 36.9,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 28.7,
+        "diversity": 6.0
+      },
+      "sources": [
+        "google_trends"
+      ],
+      "evidence": [
+        "champions league schedule",
+        "champions league"
+      ],
+      "latestSignalAt": "2026-03-11T20:40:00Z"
+    },
+    {
+      "id": "without-permission",
+      "name": "Without Permission",
+      "rank": 4,
+      "score": {
+        "total": 32.9,
+        "social": 25.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "reddit"
+      ],
+      "evidence": [
+        "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019"
+      ],
+      "latestSignalAt": "2026-03-11T14:34:34Z"
+    },
+    {
+      "id": "video-like",
+      "name": "Video Like",
+      "rank": 5,
+      "score": {
+        "total": 32.5,
+        "social": 26.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "reddit"
+      ],
+      "evidence": [
+        "Report: Creating a 5-second AI video is like running a microwave for an hour"
+      ],
+      "latestSignalAt": "2026-03-11T10:38:44Z"
+    },
+    {
+      "id": "year-journey",
+      "name": "Year Journey",
+      "rank": 6,
+      "score": {
+        "total": 30.7,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 12.0
+      },
+      "sources": [
+        "hacker_news",
+        "reddit"
+      ],
+      "evidence": [
+        "Temporal: The 9-Year Journey to Fix Time in JavaScript",
+        "Temporal: A nine-year journey to fix time in JavaScript"
+      ],
+      "latestSignalAt": "2026-03-11T15:50:30Z"
+    },
+    {
+      "id": "shootings-bombings",
+      "name": "Shootings Bombings",
+      "rank": 7,
+      "score": {
+        "total": 29.3,
+        "social": 21.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "reddit"
+      ],
+      "evidence": [
+        "ChatGPT, Gemini, and other chatbots helped teens plan shootings, bombings, and political violence, study shows / Of the 10 major chatbots tested, only one, Claude, reliably shut down would-be attackers."
+      ],
+      "latestSignalAt": "2026-03-11T13:20:23Z"
+    },
+    {
+      "id": "time-javascript",
+      "name": "Time Javascript",
+      "rank": 8,
+      "score": {
+        "total": 29.2,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 12.0
+      },
+      "sources": [
+        "hacker_news",
+        "reddit"
+      ],
+      "evidence": [
+        "Temporal: The 9-Year Journey to Fix Time in JavaScript",
+        "Temporal: A nine-year journey to fix time in JavaScript"
+      ],
+      "latestSignalAt": "2026-03-11T15:50:30Z"
+    },
+    {
+      "id": "robotics",
+      "name": "Robotics",
+      "rank": 9,
+      "score": {
+        "total": 27.9,
+        "social": 20.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "twitter"
+      ],
+      "evidence": [
+        "Open source robotics framework reaches 10k stars on GitHub"
+      ],
+      "latestSignalAt": "2026-03-09T14:30:00Z"
+    },
+    {
+      "id": "reduces-training",
+      "name": "Reduces Training",
+      "rank": 10,
+      "score": {
+        "total": 27.4,
+        "social": 19.9,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "twitter"
+      ],
+      "evidence": [
+        "New machine learning technique reduces training costs by 60%"
+      ],
+      "latestSignalAt": "2026-03-09T16:00:00Z"
+    }
+  ]
+}
