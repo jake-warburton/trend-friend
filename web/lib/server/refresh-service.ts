@@ -25,7 +25,7 @@ export class RefreshConflictError extends Error {
 }
 
 export function hasRefreshApi(): boolean {
-  return !!process.env.TREND_FRIEND_API_URL;
+  return !!process.env.SIGNAL_EYE_API_URL;
 }
 
 export function acquireLocalRefreshLock(): boolean {
@@ -74,7 +74,7 @@ export function getRefreshErrorStatus(error: unknown): number {
 
 async function defaultApiPost<T>(apiPath: string, body: unknown): Promise<T> {
   const { apiPost } = await import("@/lib/api-client");
-  const refreshSecret = process.env.TREND_FRIEND_REFRESH_SECRET;
+  const refreshSecret = process.env.SIGNAL_EYE_REFRESH_SECRET;
   return apiPost<T>(apiPath, body, {
     headers: refreshSecret
       ? { "X-Trend-Friend-Refresh-Secret": refreshSecret }

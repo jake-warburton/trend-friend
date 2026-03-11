@@ -249,7 +249,7 @@ class CommunityAPITests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()["watchlists"]), 1)
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_shared_watchlist_can_expose_owner_display_name(self) -> None:
         auth_client = TestClient(self.app)
         auth_client.post(

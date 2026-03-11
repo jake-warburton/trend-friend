@@ -18,9 +18,9 @@ const DATA_DIRECTORY = path.join(process.cwd(), "data");
 
 /**
  * Whether to fetch from the Python REST API (true) or fall back to JSON files.
- * Set TREND_FRIEND_API_URL to enable API mode. Falls back to files on error.
+ * Set SIGNAL_EYE_API_URL to enable API mode. Falls back to files on error.
  */
-const API_ENABLED = !!process.env.TREND_FRIEND_API_URL;
+const API_ENABLED = !!process.env.SIGNAL_EYE_API_URL;
 
 export async function loadDashboardData(): Promise<DashboardData> {
   const [latest, history, overview, explorer, details, sourceSummary] = await Promise.all([
@@ -212,6 +212,10 @@ export function normalizeDashboardOverview(payload: DashboardOverviewResponse): 
 
 export async function loadDashboardOverview(): Promise<DashboardOverviewResponse> {
   return readDashboardOverview();
+}
+
+export async function loadTrendHistory(): Promise<TrendHistoryResponse> {
+  return readTrendHistory();
 }
 
 async function readTrendExplorer(): Promise<TrendExplorerResponse> {

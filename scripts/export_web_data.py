@@ -28,7 +28,6 @@ from app.exports.serializers import (
 )
 from app.logging import configure_logging
 
-HISTORY_RUN_LIMIT = 10
 PIPELINE_RUN_LIMIT = 6
 
 
@@ -50,7 +49,7 @@ def main() -> None:
     source_run_history = source_run_repository.list_recent_runs(limit_per_source=6)
     latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
     history = repository.list_score_history(
-        limit_runs=HISTORY_RUN_LIMIT,
+        limit_runs=settings.history_run_limit,
         per_run_limit=settings.ranking_limit,
     )
     explorer_records = repository.list_trend_explorer_records(limit=settings.ranking_limit)

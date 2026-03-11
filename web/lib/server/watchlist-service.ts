@@ -43,7 +43,7 @@ const PROJECT_ROOT = path.resolve(process.cwd(), "..");
 const SCRIPT = path.join(PROJECT_ROOT, "scripts", "watchlists_api.py");
 
 export function hasApi(): boolean {
-  return !!process.env.TREND_FRIEND_API_URL;
+  return !!process.env.SIGNAL_EYE_API_URL;
 }
 
 export async function runWatchlistScript(...args: string[]): Promise<JsonValue> {

@@ -21,7 +21,7 @@ class RepositoryTests(unittest.TestCase):
     """SQLite repositories should round-trip the shared models."""
 
     def setUp(self) -> None:
-        self.database_path = Path("data/test_trend_friend.db")
+        self.database_path = Path("data/test_signal_eye.db")
         if self.database_path.exists():
             self.database_path.unlink()
         self.connection = connect_database(self.database_path)

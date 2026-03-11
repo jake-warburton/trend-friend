@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import type { TrendDetailRecord } from "@/lib/types";
+import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
-import { loadTrendDetail } from "@/lib/trends";
+import { loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
 import { getWikipediaLinkFromDetail, loadWikipediaSummary } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
-import { GeoMap } from "@/components/geo-map";
+import { GeoMapClient } from "@/components/geo-map-client";
 
 type TrendDetailPageProps = {
   params: Promise<{
@@ -21,9 +21,113 @@ export const dynamic = "force-dynamic";
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
-  const trend = await loadTrendDetail(slug);
+  const [trend, history] = await Promise.all([loadTrendDetail(slug), loadTrendHistory()]);
 
   if (trend === null) {
+    const recentTrend = findRecentTrendSnapshot(history, slug);
+    if (recentTrend != null) {
+      const historyPoints = buildRecentTrendHistory(history, slug);
+      return (
+        <main className="detail-page">
+          <section className="detail-hero">
+            <div>
+              <Link className="detail-back-link" href="/">
+                Back to explorer
+              </Link>
+              <p className="eyebrow">Trend detail</p>
+              <div className="detail-pill-row">
+                <span className="trend-date-chip">Recent snapshot</span>
+                <span className="trend-date-chip">No longer in the live ranking</span>
+              </div>
+              <h1>{recentTrend.name}</h1>
+              <p className="detail-copy">
+                Last seen at rank #{recentTrend.rank} on {formatTimestamp(recentTrend.capturedAt)} across{" "}
+                {recentTrend.record.sources.length} source{recentTrend.record.sources.length === 1 ? "" : "s"}.
+              </p>
+            </div>
+
+            <div className="detail-meta-grid">
+              <div className="stat-card">
+                <span>Total score</span>
+                <strong>{recentTrend.record.score.total.toFixed(1)}</strong>
+              </div>
+              <div className="stat-card">
+                <span>Last rank</span>
+                <strong>#{recentTrend.rank}</strong>
+              </div>
+              <div className="stat-card">
+                <span>Sources</span>
+                <strong>{recentTrend.record.sources.length}</strong>
+              </div>
+              <div className="stat-card">
+                <span>Last signal</span>
+                <strong>{formatDateOnly(recentTrend.record.latestSignalAt)}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="detail-grid">
+            <section className="detail-panel detail-panel-wide">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">History</p>
+                  <h2>Recent score trajectory</h2>
+                </div>
+              </div>
+              <TrendScoreChart history={historyPoints} currentScore={recentTrend.record.score.total} />
+            </section>
+
+            <section className="detail-panel">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Score</p>
+                  <h2>Component breakdown</h2>
+                </div>
+              </div>
+              <ScoreBreakdownChart score={recentTrend.record.score} />
+            </section>
+
+            <section className="detail-panel">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Sources</p>
+                  <h2>Last known drivers</h2>
+                </div>
+              </div>
+              <div className="detail-list">
+                {recentTrend.record.sources.map((source) => (
+                  <article className="detail-list-item" key={source}>
+                    <div>
+                      <strong>{formatSourceLabel(source)}</strong>
+                      <span>Present in the latest recent snapshot for this trend</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="detail-panel detail-panel-wide">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Evidence</p>
+                  <h2>Last captured signals</h2>
+                </div>
+              </div>
+              <div className="detail-list">
+                {recentTrend.record.evidence.map((item, index) => (
+                  <article className="detail-list-item detail-evidence-item" key={`${recentTrend.capturedAt}-${index}`}>
+                    <div>
+                      <strong>{item}</strong>
+                      <span>{formatTimestamp(recentTrend.record.latestSignalAt)}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </section>
+        </main>
+      );
+    }
     notFound();
   }
 
@@ -320,7 +424,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             <p className="chart-empty">No location signals yet.</p>
           ) : (
             <>
-              <GeoMap data={geoSummary} />
+              <GeoMapClient data={geoSummary} />
               <div className="geo-legend">
                 {geoSummary.map((item) => (
                   <div className="geo-legend-item" key={`${item.label}-${item.countryCode ?? "none"}`}>
@@ -382,6 +486,41 @@ function formatTimestamp(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function findRecentTrendSnapshot(
+  history: Awaited<ReturnType<typeof loadTrendHistory>>,
+  slug: string,
+): { capturedAt: string; rank: number; record: TrendRecord } | null {
+  for (const snapshot of history.snapshots) {
+    const record = snapshot.trends.find((trend) => trend.id === slug);
+    if (record != null) {
+      return {
+        capturedAt: snapshot.capturedAt,
+        rank: record.rank,
+        record,
+      };
+    }
+  }
+  return null;
+}
+
+function buildRecentTrendHistory(
+  history: Awaited<ReturnType<typeof loadTrendHistory>>,
+  slug: string,
+): TrendHistoryPoint[] {
+  const points: TrendHistoryPoint[] = [];
+  for (const snapshot of history.snapshots) {
+    const record = snapshot.trends.find((trend) => trend.id === slug);
+    if (record != null) {
+      points.push({
+        rank: record.rank,
+        capturedAt: snapshot.capturedAt,
+        scoreTotal: record.score.total,
+      });
+    }
+  }
+  return points;
 }
 
 function formatDateOnly(value: string) {

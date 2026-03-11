@@ -262,7 +262,7 @@ The scoring engine treats every score spike as a potential breakout. Recurring
 seasonal topics ("pumpkin spice" in September, "tax software" in April) generate
 false-positive breakout signals. Google Trends implicitly handles this through
 multi-year views, Glimpse explicitly tags seasonality patterns, and Similarweb
-offers seasonal traffic analysis. Without seasonality awareness, trend-friend
+offers seasonal traffic analysis. Without seasonality awareness, signal-eye
 over-ranks predictable cyclical interest.
 
 ### Goal
@@ -276,7 +276,7 @@ distinguish genuine emerging trends from calendar-driven spikes.
 #### Detection approach
 
 Compare the current run's score against the same calendar period in historical
-data. Since trend-friend stores snapshots every 30 minutes (via scheduler), and
+data. Since signal-eye stores snapshots every 30 minutes (via scheduler), and
 most deployments are days-to-weeks old, full annual seasonality detection requires
 accumulated data. The system should start tagging as soon as it has ≥ 2 weeks of
 history for a given topic, improving over time.
@@ -395,7 +395,7 @@ watchlists. Add a frontend "Download CSV" button on both surfaces.
 
 #### CSV format — Explorer
 
-Filename: `trend-friend-export-{date}.csv`
+Filename: `signal-eye-export-{date}.csv`
 
 ```csv
 rank,name,category,status,score,social_score,developer_score,knowledge_score,search_score,diversity_score,rank_change,sources,first_seen,latest_signal
@@ -432,7 +432,7 @@ Same columns as explorer, filtered to watchlist items only, with an additional
 
 #### CLI fallback
 
-`python3 main.py export-csv` — writes `trend-friend-export-{date}.csv` to
+`python3 main.py export-csv` — writes `signal-eye-export-{date}.csv` to
 the current directory. Uses the same `trends_to_csv()` function.
 
 #### Security
@@ -469,13 +469,13 @@ contributed to a trend's score, but it doesn't indicate where the *broader publi
 conversation* is happening. Glimpse breaks down mentions across 8 social platforms
 (TikTok, LinkedIn, Reddit, Instagram, Twitter/X, YouTube, Facebook, Pinterest).
 SparkToro reveals audience media consumption patterns. A trend scoring high on
-HN might simultaneously be exploding on YouTube or TikTok — and trend-friend
+HN might simultaneously be exploding on YouTube or TikTok — and signal-eye
 has no signal for that.
 
 ### Goal
 
 Add lightweight social mention indicators that show users where else a trend is
-being discussed beyond trend-friend's core sources. Start with free, no-auth-required
+being discussed beyond signal-eye's core sources. Start with free, no-auth-required
 signals: YouTube search results and broader Reddit coverage (beyond the 5 hardcoded
 subreddits).
 

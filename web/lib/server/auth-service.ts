@@ -37,7 +37,7 @@ export class AuthServiceError extends Error {
 }
 
 export function hasApi(): boolean {
-  return !!process.env.TREND_FRIEND_API_URL;
+  return !!process.env.SIGNAL_EYE_API_URL;
 }
 
 export async function registerUser(

@@ -104,7 +104,10 @@ def _export_web_data(settings: Settings) -> None:
     source_runs = source_run_repository.list_latest_runs()
     source_run_history = source_run_repository.list_recent_runs(limit_per_source=6)
     latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
-    history = repository.list_score_history(limit_runs=10, per_run_limit=settings.ranking_limit)
+    history = repository.list_score_history(
+        limit_runs=settings.history_run_limit,
+        per_run_limit=settings.ranking_limit,
+    )
     explorer_records = repository.list_trend_explorer_records(limit=settings.ranking_limit)
     detail_records = repository.list_trend_detail_records(limit=settings.ranking_limit)
     connection.close()

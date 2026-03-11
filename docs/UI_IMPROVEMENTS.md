@@ -1,6 +1,6 @@
 # UI Improvements — Navigation & Visual Polish
 
-Summary of all changes made to bring consistency and polish to the trend-friend web dashboard.
+Summary of all changes made to bring consistency and polish to the signal-eye web dashboard.
 
 ---
 
@@ -86,7 +86,7 @@ border-color: var(--accent);
 Client component using `usePathname()` from `next/navigation`.
 
 **Structure:**
-- Left: "Trend Friend" brand link to `/`
+- Left: "Signal Eye" brand link to `/`
 - Right: "Explorer" (`/`) and "Community" (`/community`) links
 - Active state detection: Explorer is active for `/`, `/trends/*`, `/sources/*`; Community is active for `/community*`
 

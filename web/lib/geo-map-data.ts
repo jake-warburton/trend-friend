@@ -67,6 +67,10 @@ export const COUNTRY_CENTROIDS: Record<string, [number, number]> = {
   KE: [37.91, -0.02],
 };
 
+const COUNTRY_NAME_OVERRIDES: Record<string, string> = {
+  GB: "Great Britain",
+};
+
 /**
  * Mapping from ISO 3166-1 numeric codes (used by TopoJSON) to alpha-2
  * codes (used by our data). Covers the same set as COUNTRY_CENTROIDS.
@@ -83,6 +87,33 @@ export const ISO_NUMERIC_TO_ALPHA2: Record<string, string> = {
   "784": "AE", "586": "PK", "158": "TW", "152": "CL", "170": "CO",
   "804": "UA", "203": "CZ", "642": "RO", "348": "HU", "300": "GR",
   "344": "HK", "404": "KE",
+};
+
+const REGION_CODES = (
+  "AD AE AF AG AL AM AO AR AT AU AZ BA BB BD BE BF BG BH BI BJ BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CL CM CN CO CR CU CV CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FM FR GA GB GD GE GH GM GN GQ GR GT GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MH MK ML MM MN MR MT MU MV MW MX MY MZ NA NE NG NI NL NO NP NR NZ OM PA PE PG PH PK PL PT PW PY QA RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VN VU WS YE ZA ZM ZW"
+).split(" ");
+
+const COUNTRY_NAME_ALIASES: Record<string, string> = {
+  "bolivia": "BO",
+  "brunei": "BN",
+  "cape verde": "CV",
+  "czech republic": "CZ",
+  "democratic republic of the congo": "CD",
+  "iran": "IR",
+  "laos": "LA",
+  "micronesia": "FM",
+  "moldova": "MD",
+  "north korea": "KP",
+  "palestine": "PS",
+  "russia": "RU",
+  "south korea": "KR",
+  "syria": "SY",
+  "taiwan": "TW",
+  "tanzania": "TZ",
+  "the bahamas": "BS",
+  "the gambia": "GM",
+  "venezuela": "VE",
+  "vietnam": "VN",
 };
 
 /**
@@ -130,7 +161,7 @@ export function buildGeoMapData(geoSummary: TrendGeoSummary[]): GeoMapDatum[] {
       if (!centroid) return null;
       return {
         countryCode: code,
-        label: data.label,
+        label: formatCountryLabel(code, data.label),
         signalCount: data.signalCount,
         explicitCount: data.explicitCount,
         inferredCount: data.inferredCount,
@@ -141,4 +172,58 @@ export function buildGeoMapData(geoSummary: TrendGeoSummary[]): GeoMapDatum[] {
     })
     .filter((d): d is GeoMapDatum => d !== null)
     .sort((a, b) => b.signalCount - a.signalCount);
+}
+
+export function formatCountryLabel(countryCode: string, fallbackLabel: string) {
+  const explicitName = COUNTRY_NAME_OVERRIDES[countryCode] ?? getRegionName(countryCode);
+  if (explicitName) {
+    return `${countryCode} - ${explicitName}`;
+  }
+  return fallbackLabel && fallbackLabel !== countryCode ? `${countryCode} - ${fallbackLabel}` : countryCode;
+}
+
+export function getRegionName(countryCode: string): string | null {
+  try {
+    const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+    return displayNames.of(countryCode) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function lookupCountryCode(numericId: string | undefined, geographyName: string | undefined): string | undefined {
+  if (numericId) {
+    const mappedByNumeric = ISO_NUMERIC_TO_ALPHA2[numericId];
+    if (mappedByNumeric) {
+      return mappedByNumeric;
+    }
+  }
+
+  if (!geographyName) {
+    return undefined;
+  }
+
+  const normalizedName = normalizeCountryName(geographyName);
+  const aliasMatch = COUNTRY_NAME_ALIASES[normalizedName];
+  if (aliasMatch) {
+    return aliasMatch;
+  }
+
+  for (const regionCode of REGION_CODES) {
+    const regionName = getRegionName(regionCode);
+    if (regionName && normalizeCountryName(regionName) === normalizedName) {
+      return regionCode;
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeCountryName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")
+    .replace(/^the\s+/, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }

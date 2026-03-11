@@ -30,7 +30,7 @@ export class NotificationServiceError extends Error {
 }
 
 export function hasApi(): boolean {
-  return !!process.env.TREND_FRIEND_API_URL;
+  return !!process.env.SIGNAL_EYE_API_URL;
 }
 
 async function runNotificationScript(...args: string[]): Promise<JsonValue> {

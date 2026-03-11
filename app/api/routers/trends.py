@@ -19,8 +19,6 @@ from app.exports.serializers import (
 
 router = APIRouter(tags=["trends"])
 
-HISTORY_RUN_LIMIT = 10
-
 
 @router.get("/trends")
 def list_trends(db: sqlite3.Connection = Depends(get_db)) -> dict:
@@ -55,7 +53,7 @@ def list_trend_history(db: sqlite3.Connection = Depends(get_db)) -> dict:
     repository = TrendScoreRepository(db)
     generated_at = datetime.now(tz=timezone.utc)
     history = repository.list_score_history(
-        limit_runs=HISTORY_RUN_LIMIT,
+        limit_runs=settings.history_run_limit,
         per_run_limit=settings.ranking_limit,
     )
     payload = build_trend_history_payload(generated_at=generated_at, snapshots=history)

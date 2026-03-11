@@ -110,10 +110,10 @@ class CsvExportTests(unittest.TestCase):
 
     def test_build_csv_filename_contains_date(self) -> None:
         filename = build_csv_filename()
-        self.assertTrue(filename.startswith("trend-friend-export-"))
+        self.assertTrue(filename.startswith("signal-eye-export-"))
         self.assertTrue(filename.endswith(".csv"))
         # Should contain a date-like pattern
-        date_part = filename.replace("trend-friend-export-", "").replace(".csv", "")
+        date_part = filename.replace("signal-eye-export-", "").replace(".csv", "")
         self.assertEqual(len(date_part), 10)  # YYYY-MM-DD
 
 

@@ -354,7 +354,7 @@ Implementation note:
 
 Add public-facing internal models before updating serializers.
 
-Recommended additions to [app/models.py](/Users/jakewarburton/Documents/repos/trend-friend/app/models.py):
+Recommended additions to [app/models.py](/Users/jakewarburton/Documents/repos/signal-eye/app/models.py):
 
 - `TrendMomentum`
 - `TrendCoverage`
@@ -368,7 +368,7 @@ Keep `TrendScoreResult` as the scoring primitive and build richer view models in
 
 ## Suggested Repository Additions
 
-Add read helpers to [app/data/repositories.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/repositories.py):
+Add read helpers to [app/data/repositories.py](/Users/jakewarburton/Documents/repos/signal-eye/app/data/repositories.py):
 
 - `get_topic_history(topic: str, limit_runs: int) -> list[TrendHistoryPoint]`
 - `get_previous_rank(topic: str, current_run_id: int) -> int | None`
@@ -402,9 +402,9 @@ Keep the web app thin and consume V2 payloads through typed loaders.
 
 Recommended additions:
 
-- [web/lib/types.ts](/Users/jakewarburton/Documents/repos/trend-friend/web/lib/types.ts)
+- [web/lib/types.ts](/Users/jakewarburton/Documents/repos/signal-eye/web/lib/types.ts)
   - add V2 payload types
-- [web/lib/trends.ts](/Users/jakewarburton/Documents/repos/trend-friend/web/lib/trends.ts)
+- [web/lib/trends.ts](/Users/jakewarburton/Documents/repos/signal-eye/web/lib/trends.ts)
   - add V2 loader functions
 - `web/app/trends/[id]/page.tsx`
   - trend detail page

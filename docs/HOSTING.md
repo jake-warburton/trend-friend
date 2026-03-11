@@ -1,4 +1,4 @@
-# Hosting Trend Friend
+# Hosting Signal Eye
 
 This project is currently split naturally into:
 
@@ -16,6 +16,34 @@ Use:
 - **Postgres** for long-term persistence
 
 SQLite is acceptable only as a temporary hosted step if your platform provides a persistent disk. It is not the right final production database for a multi-instance deployment.
+
+## Free option: Vercel + GitHub Actions
+
+If you want to avoid paying for backend hosting, the simplest free path is:
+
+- Vercel for the frontend
+- GitHub Actions for scheduled ingestion and export
+- generated snapshots committed back into the repo
+
+This repo includes [refresh-data.yml](/Users/jakewarburton/Documents/repos/signal-eye/.github/workflows/refresh-data.yml), which:
+
+1. runs `python3 scripts/run_ingestion.py`
+2. runs `python3 scripts/export_web_data.py`
+3. persists `data/signal_eye.db` so historical state survives between runs
+4. force-adds the generated database and `web/data` files
+5. commits and pushes the updated snapshots back to the repository
+
+For this setup:
+
+- leave `SIGNAL_EYE_API_URL` unset on Vercel
+- let the Next.js app read `web/data/*.json`
+- configure GitHub repository secrets for any optional tokens
+
+Default workflow cadence:
+
+- every 15 minutes
+
+That is a practical compromise between freshness and repository churn.
 
 ## Backend deployment
 
@@ -35,51 +63,51 @@ Health check:
 
 ## Render quick start
 
-This repo now includes [render.yaml](/Users/jakewarburton/Documents/repos/trend-friend/render.yaml).
+This repo now includes [render.yaml](/Users/jakewarburton/Documents/repos/signal-eye/render.yaml).
 
 To deploy:
 
 1. Create a new Render Blueprint from the repo.
-2. Render will create the `trend-friend-api` web service from `render.yaml`.
+2. Render will create the `signal-eye-api` web service from `render.yaml`.
 3. Fill in the non-synced environment variables in the Render dashboard:
-   - `TREND_FRIEND_REDDIT_USER_AGENT`
+   - `SIGNAL_EYE_REDDIT_USER_AGENT`
    - `GITHUB_TOKEN` if you want higher GitHub rate limits
    - `TWITTER_BEARER_TOKEN` if you want live Twitter/X ingestion
-4. Copy the generated `TREND_FRIEND_REFRESH_SECRET`.
-5. Set the same `TREND_FRIEND_REFRESH_SECRET` in Vercel.
-6. Set `TREND_FRIEND_API_URL` in Vercel to the Render API URL.
+4. Copy the generated `SIGNAL_EYE_REFRESH_SECRET`.
+5. Set the same `SIGNAL_EYE_REFRESH_SECRET` in Vercel.
+6. Set `SIGNAL_EYE_API_URL` in Vercel to the Render API URL.
 
 The included Render blueprint currently uses:
 
 - a Docker web service
 - a 1 GB persistent disk mounted at `/data`
-- SQLite stored at `/data/trend_friend.db`
-- CORS preconfigured for `https://trend-friend-zeta.vercel.app`
+- SQLite stored at `/data/signal_eye.db`
+- CORS preconfigured for `https://signal-eye-zeta.vercel.app`
 
 This is acceptable as a first hosted step. The next production step is still migrating to Postgres.
 
 ## Required backend environment variables
 
-- `TREND_FRIEND_DATABASE_PATH`
-- `TREND_FRIEND_REDDIT_USER_AGENT`
-- `TREND_FRIEND_CORS_ORIGINS`
+- `SIGNAL_EYE_DATABASE_PATH`
+- `SIGNAL_EYE_REDDIT_USER_AGENT`
+- `SIGNAL_EYE_CORS_ORIGINS`
 
 ## Recommended backend environment variables
 
-- `TREND_FRIEND_REFRESH_SECRET`
+- `SIGNAL_EYE_REFRESH_SECRET`
 - `GITHUB_TOKEN`
 - `TWITTER_BEARER_TOKEN`
-- `TREND_FRIEND_REQUEST_TIMEOUT_SECONDS`
-- `TREND_FRIEND_MAX_ITEMS_PER_SOURCE`
-- `TREND_FRIEND_RANKING_LIMIT`
+- `SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS`
+- `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`
+- `SIGNAL_EYE_RANKING_LIMIT`
 
 Example hosted values:
 
 ```bash
-TREND_FRIEND_DATABASE_PATH=/data/trend_friend.db
-TREND_FRIEND_CORS_ORIGINS=https://trend-friend-zeta.vercel.app
-TREND_FRIEND_REFRESH_SECRET=replace-me
-TREND_FRIEND_REDDIT_USER_AGENT=trend-friend-production/1.0
+SIGNAL_EYE_DATABASE_PATH=/data/signal_eye.db
+SIGNAL_EYE_CORS_ORIGINS=https://signal-eye-zeta.vercel.app
+SIGNAL_EYE_REFRESH_SECRET=replace-me
+SIGNAL_EYE_REDDIT_USER_AGENT=signal-eye-production/1.0
 ```
 
 ## Frontend environment variables on Vercel
@@ -87,8 +115,8 @@ TREND_FRIEND_REDDIT_USER_AGENT=trend-friend-production/1.0
 Set:
 
 ```bash
-TREND_FRIEND_API_URL=https://your-api-host.example.com
-TREND_FRIEND_REFRESH_SECRET=replace-me
+SIGNAL_EYE_API_URL=https://your-api-host.example.com
+SIGNAL_EYE_REFRESH_SECRET=replace-me
 CRON_SECRET=replace-with-a-separate-secret
 ```
 
@@ -106,7 +134,7 @@ POST /api/v1/refresh
 with this header:
 
 ```text
-X-Trend-Friend-Refresh-Secret: <TREND_FRIEND_REFRESH_SECRET>
+X-Trend-Friend-Refresh-Secret: <SIGNAL_EYE_REFRESH_SECRET>
 ```
 
 Recommended schedule:
@@ -118,15 +146,13 @@ This can be triggered by:
 - a scheduler in Railway/Render
 - or Vercel Cron calling the backend refresh endpoint
 
-This repo now includes [vercel.json](/Users/jakewarburton/Documents/repos/trend-friend/vercel.json) and a cron route at [web/app/api/cron/refresh/route.ts](/Users/jakewarburton/Documents/repos/trend-friend/web/app/api/cron/refresh/route.ts).
+This repo now includes [vercel.json](/Users/jakewarburton/Documents/repos/signal-eye/vercel.json) and a cron route at [web/app/api/cron/refresh/route.ts](/Users/jakewarburton/Documents/repos/signal-eye/web/app/api/cron/refresh/route.ts).
 
 The default schedule is:
 
-- `0 6 * * *` (once daily at 06:00 UTC)
+- `*/5 * * * *` (every 5 minutes)
 
-That default is conservative so it is less likely to conflict with lower-tier Vercel limits.
-
-If you are on a plan that supports more frequent cron jobs, change the schedule in `vercel.json` to something like:
+If you need to reduce invocation frequency later, change the schedule in `vercel.json` to something like:
 
 ```json
 {
@@ -142,8 +168,8 @@ If you are on a plan that supports more frequent cron jobs, change the schedule 
 ## Rollout order
 
 1. Deploy the Python API with persistent storage.
-2. Set `TREND_FRIEND_API_URL` on Vercel.
-3. Set matching `TREND_FRIEND_REFRESH_SECRET` on both backend and Vercel.
+2. Set `SIGNAL_EYE_API_URL` on Vercel.
+3. Set matching `SIGNAL_EYE_REFRESH_SECRET` on both backend and Vercel.
 4. Add a scheduled `POST /api/v1/refresh` job.
 5. Migrate from SQLite to Postgres.
 
@@ -151,4 +177,4 @@ If you are on a plan that supports more frequent cron jobs, change the schedule 
 
 Replace SQLite with Postgres. That is the real production milestone for persistence and multi-instance safety.
 
-The staged migration plan is documented in [docs/POSTGRES_MIGRATION.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/POSTGRES_MIGRATION.md).
+The staged migration plan is documented in [docs/POSTGRES_MIGRATION.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/POSTGRES_MIGRATION.md).

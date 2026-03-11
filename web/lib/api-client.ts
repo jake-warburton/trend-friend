@@ -1,11 +1,11 @@
 /**
- * HTTP client for the Trend Friend Python REST API.
+ * HTTP client for the Signal Eye Python REST API.
  *
  * Server-side only — used by Next.js server components and API routes
  * to fetch data from the FastAPI backend instead of reading JSON files.
  */
 
-const API_BASE_URL = process.env.TREND_FRIEND_API_URL ?? "http://localhost:8000";
+const API_BASE_URL = process.env.SIGNAL_EYE_API_URL ?? "http://localhost:8000";
 
 export type ApiRequestOptions = {
   headers?: HeadersInit;

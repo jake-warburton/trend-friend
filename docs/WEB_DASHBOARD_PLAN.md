@@ -17,7 +17,7 @@ The first web version should:
 ### Monorepo layout
 
 ```text
-trend-friend/
+signal-eye/
   app/                    # Python ingestion, scoring, persistence
   scripts/                # Python entrypoints
   web/                    # Next.js app

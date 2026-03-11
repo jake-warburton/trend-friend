@@ -1,7 +1,7 @@
 # Ranked Feature Implementation Plan
 
 This document ranks the five competitor-inspired features in
-[docs/FEATURE_SPECS.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/FEATURE_SPECS.md)
+[docs/FEATURE_SPECS.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/FEATURE_SPECS.md)
 against the current state of the `develop` branch as of March 10, 2026.
 
 The ranking reflects what is already built in this repo:
@@ -205,8 +205,8 @@ This order keeps the first three features:
 ## Planning Notes
 
 Two planning docs in the repo are now stale relative to the current branch:
-- [context/business/ROADMAP.md](/Users/jakewarburton/Documents/repos/trend-friend/context/business/ROADMAP.md)
-- [context/stack/IMPLEMENTATION_BACKLOG.md](/Users/jakewarburton/Documents/repos/trend-friend/context/stack/IMPLEMENTATION_BACKLOG.md)
+- [context/business/ROADMAP.md](/Users/jakewarburton/Documents/repos/signal-eye/context/business/ROADMAP.md)
+- [context/stack/IMPLEMENTATION_BACKLOG.md](/Users/jakewarburton/Documents/repos/signal-eye/context/stack/IMPLEMENTATION_BACKLOG.md)
 
 Before using them as the primary roadmap again, update them to reflect that the
 following are already done:

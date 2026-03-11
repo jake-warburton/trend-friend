@@ -1,6 +1,6 @@
 # Postgres Migration Plan
 
-Trend Friend is not ready for a direct SQLite -> Postgres flip yet.
+Signal Eye is not ready for a direct SQLite -> Postgres flip yet.
 
 ## Why this is not a config-only change
 
@@ -11,11 +11,11 @@ The current backend is tightly coupled to SQLite in three ways:
    - request dependencies return raw SQLite connections
 
 2. **Schema management**
-   - schema creation lives in [app/data/database.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/database.py)
+   - schema creation lives in [app/data/database.py](/Users/jakewarburton/Documents/repos/signal-eye/app/data/database.py)
    - migrations rely on SQLite-only features such as `PRAGMA table_info`, `PRAGMA index_list`, and table rebuild patterns
 
 3. **Query semantics**
-   - the repository layer in [app/data/repositories.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/repositories.py) uses SQLite-shaped SQL and behaviors such as:
+   - the repository layer in [app/data/repositories.py](/Users/jakewarburton/Documents/repos/signal-eye/app/data/repositories.py) uses SQLite-shaped SQL and behaviors such as:
      - `?` parameter placeholders
      - `INSERT OR IGNORE`
      - `ON CONFLICT(...) DO UPDATE` in SQLite form
@@ -25,13 +25,13 @@ The current backend is tightly coupled to SQLite in three ways:
 
 ## Boundary added
 
-This repo now includes [app/data/primary.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/primary.py).
+This repo now includes [app/data/primary.py](/Users/jakewarburton/Documents/repos/signal-eye/app/data/primary.py).
 
 That module is now the runtime boundary used by:
 
-- [app/api/dependencies.py](/Users/jakewarburton/Documents/repos/trend-friend/app/api/dependencies.py)
-- [app/jobs/compute_scores.py](/Users/jakewarburton/Documents/repos/trend-friend/app/jobs/compute_scores.py)
-- [app/api/routers/refresh.py](/Users/jakewarburton/Documents/repos/trend-friend/app/api/routers/refresh.py)
+- [app/api/dependencies.py](/Users/jakewarburton/Documents/repos/signal-eye/app/api/dependencies.py)
+- [app/jobs/compute_scores.py](/Users/jakewarburton/Documents/repos/signal-eye/app/jobs/compute_scores.py)
+- [app/api/routers/refresh.py](/Users/jakewarburton/Documents/repos/signal-eye/app/api/routers/refresh.py)
 
 This is the first cutover point for introducing Postgres support.
 
@@ -87,13 +87,13 @@ Goal: move the deployed backend from SQLite-on-disk to Postgres.
 Tasks:
 
 - provision hosted Postgres
-- wire `TREND_FRIEND_DATABASE_URL`
+- wire `SIGNAL_EYE_DATABASE_URL`
 - remove the SQLite persistent disk dependency
 - run a migration/import job
 - redeploy API
 
 ## Current guardrail
 
-`TREND_FRIEND_DATABASE_URL` is now recognized in config, but the app intentionally raises an explicit error if you try to use it before the repository layer is migrated.
+`SIGNAL_EYE_DATABASE_URL` is now recognized in config, but the app intentionally raises an explicit error if you try to use it before the repository layer is migrated.
 
 That is deliberate. A half-wired database switch would be riskier than staying on SQLite until the data layer is actually portable.

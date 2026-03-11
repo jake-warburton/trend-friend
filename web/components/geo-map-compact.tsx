@@ -7,7 +7,7 @@ import {
 } from "react-simple-maps";
 
 import type { TrendGeoSummary } from "@/lib/types";
-import { buildGeoMapData, ISO_NUMERIC_TO_ALPHA2 } from "@/lib/geo-map-data";
+import { buildGeoMapData, lookupCountryCode } from "@/lib/geo-map-data";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -27,16 +27,16 @@ export function GeoMapCompact({ data }: { data: TrendGeoSummary[] }) {
     <div className="geo-map-compact">
       <ComposableMap
         projection="geoNaturalEarth1"
-        projectionConfig={{ scale: 100 }}
+        projectionConfig={{ scale: 84, center: [0, 8] }}
         width={500}
-        height={120}
-        style={{ width: "100%", height: "120px", background: "transparent" }}
+        height={210}
+        style={{ width: "100%", height: "210px", background: "transparent" }}
       >
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
             geographies.map((geo) => {
               const numericId = String(geo.id).padStart(3, "0");
-              const alpha2 = ISO_NUMERIC_TO_ALPHA2[numericId];
+              const alpha2 = lookupCountryCode(numericId, String(geo.properties?.name ?? numericId));
 
               return (
                 <Geography

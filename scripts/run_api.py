@@ -1,4 +1,4 @@
-"""Start the Trend Friend REST API server."""
+"""Start the Signal Eye REST API server."""
 
 from __future__ import annotations
 
@@ -17,9 +17,9 @@ def main() -> None:
     import uvicorn
 
     configure_logging()
-    host = os.getenv("TREND_FRIEND_API_HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", os.getenv("TREND_FRIEND_API_PORT", "8000")))
-    reload = os.getenv("TREND_FRIEND_API_RELOAD", "true").lower() == "true"
+    host = os.getenv("SIGNAL_EYE_API_HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", os.getenv("SIGNAL_EYE_API_PORT", "8000")))
+    reload = os.getenv("SIGNAL_EYE_API_RELOAD", "true").lower() == "true"
 
     uvicorn.run(
         "app.api.main:app",

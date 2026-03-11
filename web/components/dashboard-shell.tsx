@@ -60,6 +60,7 @@ const SORT_OPTIONS = [
   { label: "Biggest mover", value: "mover" },
   { label: "Newest", value: "newest" },
 ] as const;
+const WATCHLISTS_ENABLED = false;
 
 type ExplorerActiveFilter = {
   key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "sort" | "seasonality";
@@ -287,6 +288,10 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   }
 
   useEffect(() => {
+    if (!WATCHLISTS_ENABLED) {
+      setWatchlistLoading(false);
+      return;
+    }
     void loadAuthStatus();
     void loadWatchlists();
     void loadAlertEvents();
@@ -830,203 +835,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         </div>
       </section>
 
-      <section className="filters-panel filters-panel-wide">
-        <label className="filter-field">
-          <span>Keyword</span>
-          <Input
-            className="text-input"
-            placeholder="AI agents, robotics, battery..."
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-          />
-        </label>
-
-        <label className="filter-field">
-          <span>Source</span>
-          <Select.Root value={selectedSource} onValueChange={(value) => setSelectedSource(value ?? "all")}>
-            <Select.Trigger className="select-trigger">
-              <Select.Value />
-              <Select.Icon className="select-icon">+</Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Positioner className="select-positioner" sideOffset={8}>
-                <Select.Popup className="select-popup">
-                  <Select.List className="select-list">
-                    {SOURCE_FILTER_OPTIONS.map((option) => (
-                      <Select.Item className="select-item" key={option.value} value={option.value}>
-                        <Select.ItemText>{option.label}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.List>
-                </Select.Popup>
-              </Select.Positioner>
-            </Select.Portal>
-          </Select.Root>
-        </label>
-
-        <label className="filter-field">
-          <span>Category</span>
-          <Select.Root value={selectedCategory} onValueChange={(value) => setSelectedCategory(value ?? "all")}>
-            <Select.Trigger className="select-trigger">
-              <Select.Value />
-              <Select.Icon className="select-icon">+</Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Positioner className="select-positioner" sideOffset={8}>
-                <Select.Popup className="select-popup">
-                  <Select.List className="select-list">
-                    {categoryOptions.map((option) => (
-                      <Select.Item className="select-item" key={option.value} value={option.value}>
-                        <Select.ItemText>{option.label}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.List>
-                </Select.Popup>
-              </Select.Positioner>
-            </Select.Portal>
-          </Select.Root>
-        </label>
-
-        <label className="filter-field">
-          <span>Audience</span>
-          <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
-            <Select.Trigger className="select-trigger">
-              <Select.Value />
-              <Select.Icon className="select-icon">+</Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Positioner className="select-positioner" sideOffset={8}>
-                <Select.Popup className="select-popup">
-                  <Select.List className="select-list">
-                    {audienceOptions.map((option) => (
-                      <Select.Item className="select-item" key={option.value} value={option.value}>
-                        <Select.ItemText>{option.label}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.List>
-                </Select.Popup>
-              </Select.Positioner>
-            </Select.Portal>
-          </Select.Root>
-        </label>
-
-        <label className="filter-field">
-          <span>Market</span>
-          <Select.Root value={selectedMarket} onValueChange={(value) => setSelectedMarket(value ?? "all")}>
-            <Select.Trigger className="select-trigger">
-              <Select.Value />
-              <Select.Icon className="select-icon">+</Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Positioner className="select-positioner" sideOffset={8}>
-                <Select.Popup className="select-popup">
-                  <Select.List className="select-list">
-                    {marketOptions.map((option) => (
-                      <Select.Item className="select-item" key={option.value} value={option.value}>
-                        <Select.ItemText>{option.label}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.List>
-                </Select.Popup>
-              </Select.Positioner>
-            </Select.Portal>
-          </Select.Root>
-        </label>
-
-        <label className="filter-field">
-          <span>Language</span>
-          <Select.Root value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value ?? "all")}>
-            <Select.Trigger className="select-trigger">
-              <Select.Value />
-              <Select.Icon className="select-icon">+</Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Positioner className="select-positioner" sideOffset={8}>
-                <Select.Popup className="select-popup">
-                  <Select.List className="select-list">
-                    {languageOptions.map((option) => (
-                      <Select.Item className="select-item" key={option.value} value={option.value}>
-                        <Select.ItemText>{option.label}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.List>
-                </Select.Popup>
-              </Select.Positioner>
-            </Select.Portal>
-          </Select.Root>
-        </label>
-
-        <label className="filter-field">
-          <span>Sort</span>
-          <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
-            <Select.Trigger className="select-trigger">
-              <Select.Value />
-              <Select.Icon className="select-icon">+</Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Positioner className="select-positioner" sideOffset={8}>
-                <Select.Popup className="select-popup">
-                  <Select.List className="select-list">
-                    {SORT_OPTIONS.map((option) => (
-                      <Select.Item className="select-item" key={option.value} value={option.value}>
-                        <Select.ItemText>{option.label}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.List>
-                </Select.Popup>
-              </Select.Positioner>
-            </Select.Portal>
-          </Select.Root>
-        </label>
-
-        <label className="filter-field">
-          <span>Minimum score</span>
-          <NumberField.Root
-            className="number-field"
-            min={0}
-            value={minimumScore}
-            onValueChange={setMinimumScore}
-          >
-            <NumberField.Group className="number-group">
-              <NumberField.Decrement className="number-button">-</NumberField.Decrement>
-              <NumberField.Input className="number-input" />
-              <NumberField.Increment className="number-button">+</NumberField.Increment>
-            </NumberField.Group>
-          </NumberField.Root>
-        </label>
-
-        <label className="filter-field filter-checkbox-field">
-          <span>Seasonality</span>
-          <button
-            className={hideRecurring ? "toggle-chip toggle-chip-active" : "toggle-chip"}
-            onClick={() => setHideRecurring((current) => !current)}
-            type="button"
-          >
-            {hideRecurring ? "Hiding recurring" : "Hide recurring"}
-          </button>
-        </label>
-      </section>
-
-      {activeExplorerFilters.length > 0 ? (
-        <section className="explorer-active-filters" aria-label="Active explorer filters">
-          <div className="community-chip-group">
-            {activeExplorerFilters.map((filter) => (
-              <button
-                className="community-filter-chip"
-                key={filter.key}
-                onClick={() => clearExplorerFilter(filter.key)}
-                type="button"
-              >
-                {filter.label}: {filter.value} <span aria-hidden="true">x</span>
-              </button>
-            ))}
-          </div>
-          <button className="source-summary-copy detail-button-link" onClick={clearAllExplorerFilters} type="button">
-            Clear all
-          </button>
-        </section>
-      ) : null}
-
       {refreshError ? <p className="error-banner" role="alert">{refreshError}</p> : null}
 
       <section className="analytics-strip">
@@ -1169,6 +977,203 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </div>
           ) : (
             <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
+              <section className="filters-panel filters-panel-wide">
+                <label className="filter-field">
+                  <span>Keyword</span>
+                  <Input
+                    className="text-input"
+                    placeholder="AI agents, robotics, battery..."
+                    value={keyword}
+                    onChange={(event) => setKeyword(event.target.value)}
+                  />
+                </label>
+
+                <label className="filter-field">
+                  <span>Source</span>
+                  <Select.Root value={selectedSource} onValueChange={(value) => setSelectedSource(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {SOURCE_FILTER_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Category</span>
+                  <Select.Root value={selectedCategory} onValueChange={(value) => setSelectedCategory(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {categoryOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Audience</span>
+                  <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {audienceOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Market</span>
+                  <Select.Root value={selectedMarket} onValueChange={(value) => setSelectedMarket(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {marketOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Language</span>
+                  <Select.Root value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {languageOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Sort</span>
+                  <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
+                    <Select.Trigger className="select-trigger">
+                      <Select.Value />
+                      <Select.Icon className="select-icon">+</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {SORT_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Minimum score</span>
+                  <NumberField.Root
+                    className="number-field"
+                    min={0}
+                    value={minimumScore}
+                    onValueChange={setMinimumScore}
+                  >
+                    <NumberField.Group className="number-group">
+                      <NumberField.Decrement className="number-button">-</NumberField.Decrement>
+                      <NumberField.Input className="number-input" />
+                      <NumberField.Increment className="number-button">+</NumberField.Increment>
+                    </NumberField.Group>
+                  </NumberField.Root>
+                </label>
+
+                <label className="filter-field filter-checkbox-field">
+                  <span>Seasonality</span>
+                  <button
+                    className={hideRecurring ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+                    onClick={() => setHideRecurring((current) => !current)}
+                    type="button"
+                  >
+                    {hideRecurring ? "Hiding recurring" : "Hide recurring"}
+                  </button>
+                </label>
+              </section>
+
+              {activeExplorerFilters.length > 0 ? (
+                <section className="explorer-active-filters" aria-label="Active explorer filters">
+                  <div className="community-chip-group">
+                    {activeExplorerFilters.map((filter) => (
+                      <button
+                        className="community-filter-chip"
+                        key={filter.key}
+                        onClick={() => clearExplorerFilter(filter.key)}
+                        type="button"
+                      >
+                        {filter.label}: {filter.value} <span aria-hidden="true">x</span>
+                      </button>
+                    ))}
+                  </div>
+                  <button className="source-summary-copy detail-button-link" onClick={clearAllExplorerFilters} type="button">
+                    Clear all
+                  </button>
+                </section>
+              ) : null}
+
               <div className="explorer-legend" aria-hidden="true">
                 <span>Trend</span>
                 <span>Metrics</span>
@@ -1214,17 +1219,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                             {trend.name}
                           </Link>
                         </strong>
-                        <button
-                          className={
-                            defaultWatchlist?.items.some((item) => item.trendId === trend.id)
-                              ? "watch-toggle watch-toggle-active"
-                              : "watch-toggle"
-                          }
-                          onClick={() => void handleToggleTracked(trend.id, trend.name)}
-                          type="button"
-                        >
-                          {defaultWatchlist?.items.some((item) => item.trendId === trend.id) ? "Tracked" : "Track"}
-                        </button>
                         <span className="trend-date-chip">Sources: {trend.sources.length}</span>
                       </div>
                       <div className="explorer-badge-row">
@@ -1325,7 +1319,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                     }
                   >
                     <div className="explorer-expand-panel">
-                      {expandedTrendId === trend.id && (() => {
+                      {(() => {
                         if (!detail) return null;
                         const maxScore = Math.max(
                           detail.score.social,
@@ -1435,11 +1429,14 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                                   </p>
                                 ) : null}
                               </div>
+
                             </div>
 
                             {detail.geoSummary.length > 0 && (
-                              <div className="explorer-expand-geo">
-                                <GeoMapCompact data={detail.geoSummary} />
+                              <div className="explorer-expand-geo-wrap">
+                                <div className="explorer-expand-geo">
+                                  <GeoMapCompact data={detail.geoSummary} />
+                                </div>
                               </div>
                             )}
 
@@ -1472,17 +1469,6 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                                   Open wiki
                                 </a>
                               )}
-                              <button
-                                className={
-                                  defaultWatchlist?.items.some((item) => item.trendId === trend.id)
-                                    ? "watch-toggle watch-toggle-active"
-                                    : "watch-toggle"
-                                }
-                                onClick={() => void handleToggleTracked(trend.id, trend.name)}
-                                type="button"
-                              >
-                                {defaultWatchlist?.items.some((item) => item.trendId === trend.id) ? "Untrack" : "Track"}
-                              </button>
                             </div>
                           </>
                         );
@@ -1498,460 +1484,102 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
         <aside className="history-panel">
           <div className="section-heading">
-            <h2>Watchlists</h2>
+            <h2>{WATCHLISTS_ENABLED ? "Watchlists" : "Operations"}</h2>
           </div>
 
-          <div className="snapshot-list">
-            <section className="snapshot-card">
-              <header>
-                <strong>Identity</strong>
-                <span>{authStatus.authEnabled ? (authStatus.user ? "Signed in" : "Required") : "Local mode"}</span>
-              </header>
-              {authStatus.authEnabled ? (
-                authStatus.user ? (
-                  <>
-                    <p className="source-summary-copy">
-                      {authStatus.user.displayName} · @{authStatus.user.username}
-                    </p>
-                    <Button className="mini-action-button" disabled={authPending} onClick={() => void handleLogout()}>
-                      {authPending ? "Signing out..." : "Sign out"}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="watchlist-form watchlist-form-stack">
-                      <Input
-                        className="text-input"
-                        placeholder="Username"
-                        value={authUsername}
-                        onChange={(event) => setAuthUsername(event.target.value)}
-                      />
-                      {authMode === "register" ? (
-                        <Input
-                          className="text-input"
-                          placeholder="Display name"
-                          value={authDisplayName}
-                          onChange={(event) => setAuthDisplayName(event.target.value)}
-                        />
-                      ) : null}
-                      <Input
-                        className="text-input"
-                        placeholder="Password"
-                        type="password"
-                        value={authPassword}
-                        onChange={(event) => setAuthPassword(event.target.value)}
-                      />
-                    </div>
-                    <div className="watchlist-form">
-                      <Button className="mini-action-button" disabled={authPending} onClick={() => void handleAuthSubmit()}>
-                        {authPending ? (authMode === "login" ? "Signing in..." : "Creating...") : authMode === "login" ? "Sign in" : "Register"}
-                      </Button>
-                      <Button
-                        className="mini-action-button"
-                        disabled={authPending}
-                        onClick={() => {
-                          setAuthMode((current) => (current === "login" ? "register" : "login"));
-                          setAuthError(null);
-                        }}
-                      >
-                        {authMode === "login" ? "Need account" : "Use login"}
-                      </Button>
-                    </div>
-                    {authError ? <p className="source-error-copy">{authError}</p> : null}
-                  </>
-                )
-              ) : (
-                <p className="empty-state-hint">Authentication is disabled in local-first mode. Watchlists stay machine-local.</p>
-              )}
-            </section>
-
-            <section className="snapshot-card">
-              <header>
-                <strong>{defaultWatchlist?.name ?? "Core Watchlist"}</strong>
-                <span>{watchlistLoading ? <span className="pulse-text">Loading\u2026</span> : `${defaultWatchlist?.items.length ?? 0} tracked`}</span>
-              </header>
-              {watchlistsRequireAuth ? (
-                <p className="empty-state-hint">Sign in to create watchlists, alerts, and share links.</p>
-              ) : null}
-              <div className="watchlist-form">
-                <Input
-                  className="text-input"
-                  placeholder="New watchlist"
-                  value={watchlistName}
-                  onChange={(event) => setWatchlistName(event.target.value)}
-                  disabled={watchlistsRequireAuth}
-                />
-                <Button className="mini-action-button" disabled={actionPending || watchlistsRequireAuth} onClick={() => void handleCreateWatchlist()}>
-                  Add
-                </Button>
-                {defaultWatchlist ? (
-                  <button className="export-button export-button-small" onClick={() => downloadWatchlistCsv(defaultWatchlist.id)} type="button">
-                    Export
-                  </button>
-                ) : null}
-              </div>
-              <div className="watchlist-form">
-                <NumberField.Root min={1} value={alertThreshold} onValueChange={setAlertThreshold}>
-                  <NumberField.Group className="number-group">
-                    <NumberField.Decrement className="number-button">-</NumberField.Decrement>
-                    <NumberField.Input className="number-input" />
-                    <NumberField.Increment className="number-button">+</NumberField.Increment>
-                  </NumberField.Group>
-                </NumberField.Root>
-                <Button className="mini-action-button" disabled={actionPending || watchlistsRequireAuth} onClick={() => void handleCreateAlert()}>
-                  Alert
-                </Button>
-              </div>
-              {defaultWatchlist ? (
-                <>
-                <div className="watchlist-form">
-                  <Select.Root value={shareExpiryPreset} onValueChange={(value) => setShareExpiryPreset(value ?? "none")}>
-                    <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner className="select-positioner" sideOffset={8}>
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            <Select.Item className="select-item" value="default"><Select.ItemText>{formatShareDefaultOptionLabel(defaultWatchlist.defaultShareExpiryDays)}</Select.ItemText></Select.Item>
-                            <Select.Item className="select-item" value="none"><Select.ItemText>No expiry</Select.ItemText></Select.Item>
-                            <Select.Item className="select-item" value="24h"><Select.ItemText>24 hours</Select.ItemText></Select.Item>
-                            <Select.Item className="select-item" value="7d"><Select.ItemText>7 days</Select.ItemText></Select.Item>
-                            <Select.Item className="select-item" value="30d"><Select.ItemText>30 days</Select.ItemText></Select.Item>
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                  <Button
-                    className="mini-action-button"
-                    disabled={actionPending || watchlistsRequireAuth || shareExpiryPreset === "default"}
-                    onClick={() => void handleSaveDefaultShareExpiry(defaultWatchlist)}
-                  >
-                    Save default
-                  </Button>
-                </div>
-                <p className="source-summary-copy">
-                  Default for new links: {formatWatchlistDefaultShareExpiry(defaultWatchlist.defaultShareExpiryDays)}
-                </p>
-                <div className="watchlist-form">
-                  <Button
-                    className="mini-action-button"
-                    disabled={actionPending || watchlistsRequireAuth}
-                    onClick={() => void handleCreateShare(defaultWatchlist, false)}
-                  >
-                    {actionPending ? "Sharing..." : "Private link"}
-                  </Button>
-                  <Button
-                    className="mini-action-button"
-                    disabled={actionPending || watchlistsRequireAuth}
-                    onClick={() => void handleCreateShare(defaultWatchlist, true)}
-                  >
-                    {actionPending ? "Sharing..." : "Public link"}
-                  </Button>
-                </div>
-                </>
-              ) : null}
-              <div aria-live="polite">
-                {watchlistError ? <p className="source-error-copy">{watchlistError}</p> : null}
-                {actionNotice ? <p className="action-success-notice">{actionNotice}</p> : null}
-                {shareNotice ? <p className="source-summary-copy">{shareNotice}</p> : null}
-              </div>
-              {defaultWatchlist && defaultWatchlist.shares.length > 0 ? (
-                <div className="watchlist-share-analytics">
-                  <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Total opens</span>
-                    <strong>{shareUsageSummary.totalOpens}</strong>
-                  </article>
-                  <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Last 7 days</span>
-                    <strong>{shareUsageSummary.recentOpens}</strong>
-                  </article>
-                  <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Active in 7d</span>
-                    <strong>{shareUsageSummary.activeShares}</strong>
-                  </article>
-                  <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Top link</span>
-                    <strong>
-                      {shareUsageSummary.topShare
-                        ? `${formatShareTokenLabel(shareUsageSummary.topShare.shareToken)} · ${shareUsageSummary.topShare.accessCount} opens`
-                        : "No link usage yet"}
-                    </strong>
-                  </article>
-                  <article className="watchlist-share-analytics-card">
-                    <span className="watchlist-share-label">Dormant</span>
-                    <strong>{shareUsageSummary.dormantShares}</strong>
-                  </article>
-                </div>
-              ) : null}
-              <div className="watchlist-items">
-                {(defaultWatchlist?.items ?? []).slice(0, 5).map((item) => (
-                  <Link className="watchlist-item" href={`/trends/${item.trendId}`} key={item.trendId}>
-                    <span>{item.trendName}</span>
-                  </Link>
-                ))}
-              </div>
-              <div className="watchlist-items">
-                {defaultWatchlist
-                  ? defaultWatchlist.shares.slice(0, 3).map((share) => (
-                    <section className="watchlist-item watchlist-item-share" key={share.id}>
-                      <div className="watchlist-share-grid">
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Link</span>
-                          <Link className="watchlist-item-share-link" href={`/shared/${share.shareToken}`}>
-                            <span>{share.public ? "Public share" : "Private share"}</span>
-                          </Link>
-                          <small className="source-summary-copy">{formatShareTokenLabel(share.shareToken)}</small>
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Visibility</span>
-                          <strong>{share.public ? "Public directory" : "Direct link only"}</strong>
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Attribution</span>
-                          <strong>{share.showCreator ? "Shows your name" : "Anonymous"}</strong>
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Expiry</span>
-                          <strong>{formatShareExpirySummary(share.expiresAt)}</strong>
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Created</span>
-                          <strong>{formatCompactTimestamp(share.createdAt)}</strong>
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Opens</span>
-                          <strong>{share.accessCount}</strong>
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">7 day trend</span>
-                          <Sparkline
-                            data={fillShareHistory(share.accessHistory).map((point) => point.count)}
-                            color={wasOpenedRecently(share.lastAccessedAt) ? "#7fe0a7" : "#ffca6e"}
-                            width={96}
-                            height={28}
-                          />
-                        </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Last opened</span>
-                          <strong>{formatShareActivityTimestamp(share.lastAccessedAt)}</strong>
-                          {wasOpenedRecently(share.lastAccessedAt) ? (
-                            <small className="source-summary-copy">Active this week</small>
+          {WATCHLISTS_ENABLED ? (
+            <>
+              <div className="snapshot-list">
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Identity</strong>
+                    <span>{authStatus.authEnabled ? (authStatus.user ? "Signed in" : "Required") : "Local mode"}</span>
+                  </header>
+                  {authStatus.authEnabled ? (
+                    authStatus.user ? (
+                      <>
+                        <p className="source-summary-copy">
+                          {authStatus.user.displayName} · @{authStatus.user.username}
+                        </p>
+                        <Button className="mini-action-button" disabled={authPending} onClick={() => void handleLogout()}>
+                          {authPending ? "Signing out..." : "Sign out"}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="watchlist-form watchlist-form-stack">
+                          <Input className="text-input" placeholder="Username" value={authUsername} onChange={(event) => setAuthUsername(event.target.value)} />
+                          {authMode === "register" ? (
+                            <Input className="text-input" placeholder="Display name" value={authDisplayName} onChange={(event) => setAuthDisplayName(event.target.value)} />
                           ) : null}
+                          <Input className="text-input" placeholder="Password" type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} />
                         </div>
-                        <div className="watchlist-share-cell">
-                          <span className="watchlist-share-label">Last activity</span>
-                          <strong>{formatShareActivityTimestamp(shareActivityById.get(share.id) ?? null)}</strong>
-                        </div>
-                      </div>
-                      <div className="watchlist-item-share-actions">
-                        <button
-                          className="mini-action-button"
-                          disabled={actionPending || watchlistsRequireAuth}
-                          onClick={() => void handleToggleShareVisibility(defaultWatchlist, share.id, share.public)}
-                          type="button"
-                        >
-                          {share.public ? "Make private" : "Make public"}
-                        </button>
-                        <button
-                          className="mini-action-button"
-                          disabled={actionPending || watchlistsRequireAuth}
-                          onClick={() => void handleToggleShareAttribution(defaultWatchlist, share.id, share.showCreator)}
-                          type="button"
-                        >
-                          {share.showCreator ? "Hide name" : "Show name"}
-                        </button>
-                        <button
-                          className="mini-action-button"
-                          disabled={actionPending || watchlistsRequireAuth}
-                          onClick={() => void handleRotateShare(defaultWatchlist, share.id)}
-                          type="button"
-                        >
-                          Rotate
-                        </button>
-                        <button
-                          className="mini-action-button"
-                          disabled={actionPending || watchlistsRequireAuth}
-                          onClick={() => void handleSetShareExpiry(defaultWatchlist, share.id, share.expiresAt ? "none" : "7d")}
-                          type="button"
-                        >
-                          {share.expiresAt ? "Clear expiry" : "Expire in 7d"}
-                        </button>
-                        <button
-                          className="mini-action-button"
-                          disabled={actionPending || watchlistsRequireAuth}
-                          onClick={() => void handleRevokeShare(defaultWatchlist, share.id)}
-                          type="button"
-                        >
-                          Revoke
-                        </button>
-                      </div>
-                    </section>
-                  ))
-                  : null}
-              </div>
-              <div className="watchlist-items">
-                {(watchlistData?.matches ?? []).slice(0, 3).map((match) => (
-                  <div className="watchlist-item watchlist-item-alert" key={`${match.alertId}-${match.trendId}`}>
-                    <span>
-                      {match.trendName} {match.currentValue.toFixed(1)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              {defaultWatchlist && defaultWatchlist.shareEvents.length > 0 ? (
-                <div className="watchlist-share-history">
-                  <p className="source-summary-copy">Share activity</p>
-                  <div className="watchlist-items">
-                    {defaultWatchlist.shareEvents.slice(0, 5).map((event) => (
-                      <div className="watchlist-item watchlist-item-share-event" key={event.id}>
-                        <span>{event.detail}</span>
-                        <small className="source-summary-copy">{formatCompactTimestamp(event.createdAt)}</small>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </section>
-
-            <section className="snapshot-card">
-              <header>
-                <strong>Notifications</strong>
-                <span>
-                  {notificationChannels.length > 0
-                    ? `${notificationChannels.length} webhook${notificationChannels.length === 1 ? "" : "s"}`
-                    : "None"}
-                </span>
-              </header>
-              <p className="empty-state-hint">
-                Send post-run alerts and digest summaries to Slack, Discord, or your own webhook endpoint.
-              </p>
-              <div className="watchlist-form watchlist-form-stack">
-                <Input
-                  className="text-input"
-                  placeholder="https://hooks.example.com/..."
-                  value={notificationDestination}
-                  onChange={(event) => setNotificationDestination(event.target.value)}
-                  disabled={watchlistsRequireAuth || notificationPending}
-                />
-                <Input
-                  className="text-input"
-                  placeholder="Optional label"
-                  value={notificationLabel}
-                  onChange={(event) => setNotificationLabel(event.target.value)}
-                  disabled={watchlistsRequireAuth || notificationPending}
-                />
-              </div>
-              <div className="watchlist-form">
-                <Button
-                  className="mini-action-button"
-                  disabled={watchlistsRequireAuth || notificationPending}
-                  onClick={() => void handleCreateNotificationChannel()}
-                >
-                  {notificationPending ? "Saving..." : "Add webhook"}
-                </Button>
-              </div>
-              {watchlistsRequireAuth ? (
-                <p className="empty-state-hint">Sign in to manage webhook notifications.</p>
-              ) : null}
-              <div aria-live="polite">
-                {notificationError ? <p className="source-error-copy">{notificationError}</p> : null}
-                {notificationNotice ? <p className="action-success-notice">{notificationNotice}</p> : null}
-              </div>
-              {notificationChannels.length === 0 ? (
-                <p className="empty-state-hint">No webhooks configured yet.</p>
-              ) : (
-                <div className="watchlist-items">
-                  {notificationChannels.map((channel) => (
-                    <section className="watchlist-item watchlist-item-notification" key={channel.id}>
-                      <div className="notification-channel-row">
-                        <div>
-                          <strong>{channel.label || "Webhook"}</strong>
-                          <small className="source-summary-copy">{maskWebhookDestination(channel.destination)}</small>
-                        </div>
-                        <div className="notification-channel-actions">
-                          <button
+                        <div className="watchlist-form">
+                          <Button className="mini-action-button" disabled={authPending} onClick={() => void handleAuthSubmit()}>
+                            {authPending ? (authMode === "login" ? "Signing in..." : "Creating...") : authMode === "login" ? "Sign in" : "Register"}
+                          </Button>
+                          <Button
                             className="mini-action-button"
-                            disabled={watchlistsRequireAuth || notificationPending}
-                            onClick={() => void handleTestNotificationChannel(channel.id)}
-                            type="button"
+                            disabled={authPending}
+                            onClick={() => {
+                              setAuthMode((current) => (current === "login" ? "register" : "login"));
+                              setAuthError(null);
+                            }}
                           >
-                            Test
-                          </button>
-                          <button
-                            className="mini-action-button"
-                            disabled={watchlistsRequireAuth || notificationPending}
-                            onClick={() => void handleDeleteNotificationChannel(channel.id)}
-                            type="button"
-                          >
-                            Delete
-                          </button>
+                            {authMode === "login" ? "Need account" : "Use login"}
+                          </Button>
                         </div>
-                      </div>
-                      <small className="source-summary-copy">
-                        Created {formatCompactTimestamp(channel.createdAt)}
-                      </small>
-                      <div className="notification-log-list">
-                        {channel.recentLogs.length === 0 ? (
-                          <small className="source-summary-copy">No deliveries yet</small>
-                        ) : (
-                          channel.recentLogs.slice(0, 5).map((log) => (
-                            <div className="notification-log-row" key={log.id}>
-                              <span>{summarizeNotificationDelivery(log)}</span>
-                              <small className="source-summary-copy">{formatCompactTimestamp(log.sentAt)}</small>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-
-          <details className="sidebar-section" open={alertCount > 0 ? true : undefined}>
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>
-                  Alerts
-                  {alertCount > 0 ? (
-                    <span className="alert-badge">{alertCount}</span>
-                  ) : null}
-                </h2>
-                {alertCount > 0 ? (
-                  <button className="mini-action-button" onClick={() => void handleMarkAlertsRead()} type="button">
-                    Mark read
-                  </button>
-                ) : null}
+                        {authError ? <p className="source-error-copy">{authError}</p> : null}
+                      </>
+                    )
+                  ) : (
+                    <p className="empty-state-hint">Authentication is disabled in local-first mode. Watchlists stay machine-local.</p>
+                  )}
+                </section>
               </div>
-            </summary>
 
-            <div className="snapshot-list">
-              {alertEvents.length === 0 ? (
-                <p className="empty-state-hint">No unread alerts. Create alert rules above to get notified when trends cross score thresholds.</p>
-              ) : (
-                alertEvents.slice(0, 8).map((event) => (
-                  <section className="snapshot-card snapshot-card-alert" key={event.id}>
-                    <header>
-                      <strong>
-                        <Link className="trend-link" href={`/trends/${event.trendId}`}>
-                          {event.trendName}
-                        </Link>
-                      </strong>
-                      <span className="trend-status-pill trend-status-pill-breakout">
-                        {formatAlertRuleType(event.ruleType)}
-                      </span>
-                    </header>
-                    <p className="source-summary-copy">{event.message}</p>
-                    <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
-                  </section>
-                ))
-              )}
-            </div>
-          </details>
+              <details className="sidebar-section" open={alertCount > 0 ? true : undefined}>
+                <summary>
+                  <div className="section-heading section-heading-spaced">
+                    <h2>
+                      Alerts
+                      {alertCount > 0 ? (
+                        <span className="alert-badge">{alertCount}</span>
+                      ) : null}
+                    </h2>
+                    {alertCount > 0 ? (
+                      <button className="mini-action-button" onClick={() => void handleMarkAlertsRead()} type="button">
+                        Mark read
+                      </button>
+                    ) : null}
+                  </div>
+                </summary>
+
+                <div className="snapshot-list">
+                  {alertEvents.length === 0 ? (
+                    <p className="empty-state-hint">No unread alerts. Create alert rules above to get notified when trends cross score thresholds.</p>
+                  ) : (
+                    alertEvents.slice(0, 8).map((event) => (
+                      <section className="snapshot-card snapshot-card-alert" key={event.id}>
+                        <header>
+                          <strong>
+                            <Link className="trend-link" href={`/trends/${event.trendId}`}>
+                              {event.trendName}
+                            </Link>
+                          </strong>
+                          <span className="trend-status-pill trend-status-pill-breakout">
+                            {formatAlertRuleType(event.ruleType)}
+                          </span>
+                        </header>
+                        <p className="source-summary-copy">{event.message}</p>
+                        <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
+                      </section>
+                    ))
+                  )}
+                </div>
+              </details>
+            </>
+          ) : null}
 
           <details className="sidebar-section">
             <summary>
@@ -2055,122 +1683,15 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             </div>
           </details>
 
-          <details className="sidebar-section">
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Public watchlists</h2>
-              </div>
-            </summary>
-            <div className="community-entry-links">
-              <Link className="mini-action-button community-link-button" href="/community?popular=true">
-                Popular this week
-              </Link>
-              <Link className="mini-action-button community-link-button" href="/community?category=ai-machine-learning">
-                AI
-              </Link>
-              <Link className="mini-action-button community-link-button" href="/community">
-                Browse all
-              </Link>
-              <a className="mini-action-button community-link-button" download href={buildCommunityExportHref()}>
-                Export CSV
-              </a>
-            </div>
-
-          <div className="snapshot-list">
-            {publicWatchlists.length === 0 ? (
-              <p className="empty-state-hint">No public watchlists yet. Share a watchlist with a public link to have it listed here.</p>
-            ) : (
-              <>
-                {communitySpotlights.length > 0 ? (
-                  <div className="community-spotlight-grid">
-                    {communitySpotlights.map((spotlight) => (
-                      <section className="snapshot-card community-spotlight-card" key={spotlight.title}>
-                        <header>
-                          <strong>{spotlight.title}</strong>
-                          <div className="community-entry-links">
-                            <Link className="mini-action-button community-link-button" href={spotlight.href}>
-                              Open
-                            </Link>
-                            <a
-                              className="mini-action-button community-link-button"
-                              download
-                              href={buildSharedWatchlistExportHref(spotlight.watchlist.shareToken)}
-                            >
-                              CSV
-                            </a>
-                          </div>
-                        </header>
-                        <p className="source-summary-copy">{spotlight.description}</p>
-                        <p className="source-summary-copy">
-                          <Link className="trend-link" href={`/shared/${spotlight.watchlist.shareToken}`}>
-                            {spotlight.watchlist.name}
-                          </Link>
-                        </p>
-                        {spotlight.watchlist.sourceContributions?.[0] ? (
-                          <p className="source-summary-copy">
-                            {formatSourceContributionSummary(spotlight.watchlist.sourceContributions[0])}
-                          </p>
-                        ) : null}
-                      </section>
-                    ))}
-                  </div>
-                ) : null}
-
-                {publicWatchlists.slice(0, 6).map((watchlist) => (
-                  <section className="snapshot-card" key={watchlist.shareToken}>
-                    <header>
-                      <strong>
-                        <Link className="trend-link" href={`/shared/${watchlist.shareToken}`}>
-                          {watchlist.name}
-                        </Link>
-                      </strong>
-                      <span>{watchlist.popularThisWeek ? "Popular this week" : `${watchlist.itemCount} tracked`}</span>
-                    </header>
-                    {watchlist.recentOpenCount != null ? (
-                      <p className="source-summary-copy">
-                        {watchlist.recentOpenCount} opens in the last 7 days
-                        {watchlist.accessCount != null ? ` · ${watchlist.accessCount} total` : ""}
-                      </p>
-                    ) : null}
-                    {watchlist.sourceContributions?.[0] ? (
-                      <p className="source-summary-copy">
-                        {formatSourceContributionSummary(watchlist.sourceContributions[0])}
-                      </p>
-                    ) : null}
-                    {watchlist.audienceSummary?.length ? (
-                      <p className="source-summary-copy">{formatAudienceSummary(watchlist.audienceSummary)}</p>
-                    ) : null}
-                    {watchlist.ownerDisplayName ? (
-                      <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
-                    ) : null}
-                    <p className="source-summary-copy">{formatShareExpirySummary(watchlist.expiresAt ?? null)}</p>
-                    {watchlist.geoSummary?.length ? (
-                      <p className="source-summary-copy">
-                        {watchlist.geoSummary.map((geo) => geo.label).join(", ")}
-                      </p>
-                    ) : null}
-                    {watchlist.lastAccessedAt ? (
-                      <p className="source-summary-copy">Last opened {formatCompactTimestamp(watchlist.lastAccessedAt)}</p>
-                    ) : null}
-                    <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
-                    <div className="community-entry-links">
-                      <Link className="mini-action-button community-link-button" href={`/shared/${watchlist.shareToken}`}>
-                        Open
-                      </Link>
-                      <a
-                        className="mini-action-button community-link-button"
-                        download
-                        href={buildSharedWatchlistExportHref(watchlist.shareToken)}
-                      >
-                        Export CSV
-                      </a>
-                    </div>
-                  </section>
-                ))}
-              </>
-            )}
-          </div>
-          </details>
+          {WATCHLISTS_ENABLED ? (
+            <details className="sidebar-section">
+              <summary>
+                <div className="section-heading section-heading-spaced">
+                  <h2>Public watchlists</h2>
+                </div>
+              </summary>
+            </details>
+          ) : null}
         </aside>
       </section>
     </main>

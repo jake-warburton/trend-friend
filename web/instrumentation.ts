@@ -1,4 +1,4 @@
-const REFRESH_INTERVAL_MS = 60_000;
+const REFRESH_INTERVAL_MS = 300_000;
 
 export async function register() {
   // Only run server-side scheduled refresh in the Node.js runtime

@@ -74,7 +74,7 @@ def build_csv_filename() -> str:
     """Build a timestamped CSV filename."""
 
     date_stamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
-    return f"trend-friend-export-{date_stamp}.csv"
+    return f"signal-eye-export-{date_stamp}.csv"
 
 
 def _summarize_segments(segments: list[object], segment_type: str) -> str:

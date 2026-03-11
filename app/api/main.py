@@ -1,4 +1,4 @@
-"""FastAPI application factory for Trend Friend."""
+"""FastAPI application factory for Signal Eye."""
 
 from __future__ import annotations
 
@@ -25,13 +25,13 @@ def create_app() -> FastAPI:
     """Build and configure the FastAPI application."""
 
     application = FastAPI(
-        title="Trend Friend API",
-        description="REST API for the Trend Friend trend intelligence platform.",
+        title="Signal Eye API",
+        description="REST API for the Signal Eye trend intelligence platform.",
         version="1.0.0",
     )
 
     allowed_origins = os.getenv(
-        "TREND_FRIEND_CORS_ORIGINS",
+        "SIGNAL_EYE_CORS_ORIGINS",
         "http://localhost:3000",
     ).split(",")
 
@@ -43,7 +43,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    rate_limit_enabled = os.getenv("TREND_FRIEND_RATE_LIMIT", "true").lower() == "true"
+    rate_limit_enabled = os.getenv("SIGNAL_EYE_RATE_LIMIT", "true").lower() == "true"
 
     @application.middleware("http")
     async def rate_limit_and_cache_middleware(request: Request, call_next):

@@ -22,6 +22,7 @@ class Settings:
     hacker_news_page_limit: int
     github_page_limit: int
     ranking_limit: int
+    history_run_limit: int
     github_token: Optional[str]
     twitter_bearer_token: Optional[str]
     reddit_user_agent: str
@@ -35,22 +36,23 @@ def load_settings() -> Settings:
 
     load_dotenv_file(Path(".env"))
     return Settings(
-        app_name="Trend Friend",
-        database_url=os.getenv("TREND_FRIEND_DATABASE_URL"),
-        database_path=Path(os.getenv("TREND_FRIEND_DATABASE_PATH", "data/trend_friend.db")),
-        web_data_path=Path(os.getenv("TREND_FRIEND_WEB_DATA_PATH", "web/data")),
-        request_timeout_seconds=int(os.getenv("TREND_FRIEND_REQUEST_TIMEOUT_SECONDS", "10")),
-        max_items_per_source=int(os.getenv("TREND_FRIEND_MAX_ITEMS_PER_SOURCE", "30")),
-        reddit_page_limit=int(os.getenv("TREND_FRIEND_REDDIT_PAGE_LIMIT", "3")),
-        hacker_news_page_limit=int(os.getenv("TREND_FRIEND_HACKER_NEWS_PAGE_LIMIT", "3")),
-        github_page_limit=int(os.getenv("TREND_FRIEND_GITHUB_PAGE_LIMIT", "2")),
-        ranking_limit=int(os.getenv("TREND_FRIEND_RANKING_LIMIT", "100")),
+        app_name="Signal Eye",
+        database_url=os.getenv("SIGNAL_EYE_DATABASE_URL"),
+        database_path=Path(os.getenv("SIGNAL_EYE_DATABASE_PATH", "data/signal_eye.db")),
+        web_data_path=Path(os.getenv("SIGNAL_EYE_WEB_DATA_PATH", "web/data")),
+        request_timeout_seconds=int(os.getenv("SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS", "10")),
+        max_items_per_source=int(os.getenv("SIGNAL_EYE_MAX_ITEMS_PER_SOURCE", "30")),
+        reddit_page_limit=int(os.getenv("SIGNAL_EYE_REDDIT_PAGE_LIMIT", "3")),
+        hacker_news_page_limit=int(os.getenv("SIGNAL_EYE_HACKER_NEWS_PAGE_LIMIT", "3")),
+        github_page_limit=int(os.getenv("SIGNAL_EYE_GITHUB_PAGE_LIMIT", "2")),
+        ranking_limit=int(os.getenv("SIGNAL_EYE_RANKING_LIMIT", "100")),
+        history_run_limit=int(os.getenv("SIGNAL_EYE_HISTORY_RUN_LIMIT", "72")),
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
-        reddit_user_agent=os.getenv("TREND_FRIEND_REDDIT_USER_AGENT", "trend-friend-mvp/1.0"),
-        poll_interval_minutes=int(os.getenv("TREND_FRIEND_POLL_INTERVAL_MINUTES", "30")),
-        health_file_path=Path(os.getenv("TREND_FRIEND_HEALTH_FILE_PATH", "data/last_run.json")),
-        refresh_secret=os.getenv("TREND_FRIEND_REFRESH_SECRET"),
+        reddit_user_agent=os.getenv("SIGNAL_EYE_REDDIT_USER_AGENT", "signal-eye-mvp/1.0"),
+        poll_interval_minutes=int(os.getenv("SIGNAL_EYE_POLL_INTERVAL_MINUTES", "30")),
+        health_file_path=Path(os.getenv("SIGNAL_EYE_HEALTH_FILE_PATH", "data/last_run.json")),
+        refresh_secret=os.getenv("SIGNAL_EYE_REFRESH_SECRET"),
     )
 
 

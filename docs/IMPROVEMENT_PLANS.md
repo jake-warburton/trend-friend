@@ -1,6 +1,6 @@
 # Improvement Plans
 
-Plans for the next phase of Trend Friend development. Each plan is self-contained with scope, implementation steps, and effort estimates. The final section provides a prioritized roadmap across all plans.
+Plans for the next phase of Signal Eye development. Each plan is self-contained with scope, implementation steps, and effort estimates. The final section provides a prioritized roadmap across all plans.
 
 ---
 
@@ -123,7 +123,7 @@ None. Data layer is ready.
 
 ### Why
 
-Without automation, the tool only updates when someone manually runs `python main.py`. A trend detection tool that doesn't continuously monitor is fundamentally limited. Competitors run continuously; Trend Friend should too.
+Without automation, the tool only updates when someone manually runs `python main.py`. A trend detection tool that doesn't continuously monitor is fundamentally limited. Competitors run continuously; Signal Eye should too.
 
 ### Scope
 
@@ -145,12 +145,12 @@ Without automation, the tool only updates when someone manually runs `python mai
    ```python
    # Runs the pipeline on a configurable interval
    # Default: every 30 minutes
-   # Configurable via TREND_FRIEND_POLL_INTERVAL_MINUTES env var
+   # Configurable via SIGNAL_EYE_POLL_INTERVAL_MINUTES env var
    ```
 
 3. **Add configuration:**
    - `poll_interval_minutes` to `Settings` (default: 30)
-   - `TREND_FRIEND_POLL_INTERVAL_MINUTES` env var
+   - `SIGNAL_EYE_POLL_INTERVAL_MINUTES` env var
 
 4. **Add health file output:**
    - After each successful run, write a `data/last_run.json` with timestamp, status, duration
@@ -254,7 +254,7 @@ None. Can be built independently. Benefits from more data sources feeding in.
 
 ### Why
 
-Proactive notifications turn Trend Friend from a tool you check into a tool that reaches out to you. "AI Agents just hit breakout status" or "Your watchlist item jumped 5 ranks" are high-value notifications. The database schema for `alert_rules` and `watchlists` already exists.
+Proactive notifications turn Signal Eye from a tool you check into a tool that reaches out to you. "AI Agents just hit breakout status" or "Your watchlist item jumped 5 ranks" are high-value notifications. The database schema for `alert_rules` and `watchlists` already exists.
 
 ### Current State
 

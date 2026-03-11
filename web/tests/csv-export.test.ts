@@ -16,7 +16,7 @@ test("export CSV route returns text/csv with a header row", async () => {
   assert.equal(response.headers.get("Content-Type"), "text/csv");
 
   const disposition = response.headers.get("Content-Disposition") ?? "";
-  assert.ok(disposition.startsWith('attachment; filename="trend-friend-export-'));
+  assert.ok(disposition.startsWith('attachment; filename="signal-eye-export-'));
   assert.ok(disposition.endsWith('.csv"'));
 
   const body = await response.text();

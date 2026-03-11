@@ -23,8 +23,8 @@ def connect_primary_database(settings: Settings) -> sqlite3.Connection:
 
     if settings.database_url:
         raise NotImplementedError(
-            "TREND_FRIEND_DATABASE_URL is reserved for the Postgres migration and is not wired yet. "
-            "Use TREND_FRIEND_DATABASE_PATH until the repository layer is migrated."
+            "SIGNAL_EYE_DATABASE_URL is reserved for the Postgres migration and is not wired yet. "
+            "Use SIGNAL_EYE_DATABASE_PATH until the repository layer is migrated."
         )
 
     connection = connect_database(settings.database_path)

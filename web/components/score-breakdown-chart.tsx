@@ -52,10 +52,10 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
           />
           <Tooltip
             contentStyle={{
-              background: "#0e1420",
-              border: "1px solid #1e2838",
+              background: "var(--surface-tooltip)",
+              border: "1px solid var(--border-strong)",
               borderRadius: 8,
-              color: "#e0e4ea",
+              color: "var(--copy)",
               fontSize: 12,
             }}
             formatter={(value) => [Number(value).toFixed(1), "Score"]}

@@ -19,7 +19,7 @@ SESSION_COOKIE_NAME = "tf_session"
 def auth_enabled() -> bool:
     """Check whether authentication is turned on via environment variable."""
 
-    return os.getenv("TREND_FRIEND_AUTH_ENABLED", "false").lower() == "true"
+    return os.getenv("SIGNAL_EYE_AUTH_ENABLED", "false").lower() == "true"
 
 
 def get_current_user(

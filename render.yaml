@@ -1,23 +1,23 @@
 services:
   - type: web
-    name: trend-friend-api
+    name: signal-eye-api
     runtime: docker
     plan: starter
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /api/v1/health
     disk:
-      name: trend-friend-data
+      name: signal-eye-data
       mountPath: /data
       sizeGB: 1
     envVars:
-      - key: TREND_FRIEND_DATABASE_PATH
-        value: /data/trend_friend.db
-      - key: TREND_FRIEND_CORS_ORIGINS
-        value: https://trend-friend-zeta.vercel.app
-      - key: TREND_FRIEND_REDDIT_USER_AGENT
+      - key: SIGNAL_EYE_DATABASE_PATH
+        value: /data/signal_eye.db
+      - key: SIGNAL_EYE_CORS_ORIGINS
+        value: https://signal-eye-zeta.vercel.app
+      - key: SIGNAL_EYE_REDDIT_USER_AGENT
         sync: false
-      - key: TREND_FRIEND_REFRESH_SECRET
+      - key: SIGNAL_EYE_REFRESH_SECRET
         generateValue: true
       - key: GITHUB_TOKEN
         sync: false

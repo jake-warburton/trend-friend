@@ -1,6 +1,6 @@
-# Trend Friend MVP
+# Signal Eye MVP
 
-Trend Friend is a local-first trend intelligence MVP that aggregates free signals from across the web, extracts recurring topics, computes transparent momentum scores, and displays a ranked list of emerging trends.
+Signal Eye is a local-first trend intelligence MVP that aggregates free signals from across the web, extracts recurring topics, computes transparent momentum scores, and displays a ranked list of emerging trends.
 
 The implementation is intentionally simple:
 
@@ -75,14 +75,14 @@ cp .env.example .env
 
 Supported environment variables:
 
-- `TREND_FRIEND_DATABASE_PATH`: SQLite database location. Default: `data/trend_friend.db`
-- `TREND_FRIEND_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
-- `TREND_FRIEND_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
-- `TREND_FRIEND_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
-- `TREND_FRIEND_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
-- `TREND_FRIEND_REDDIT_USER_AGENT`: User agent for Reddit requests
-- `TREND_FRIEND_CORS_ORIGINS`: Comma-separated allowed origins for the REST API
-- `TREND_FRIEND_REFRESH_SECRET`: Optional shared secret required by `POST /api/v1/refresh`
+- `SIGNAL_EYE_DATABASE_PATH`: SQLite database location. Default: `data/signal_eye.db`
+- `SIGNAL_EYE_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
+- `SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
+- `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
+- `SIGNAL_EYE_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
+- `SIGNAL_EYE_REDDIT_USER_AGENT`: User agent for Reddit requests
+- `SIGNAL_EYE_CORS_ORIGINS`: Comma-separated allowed origins for the REST API
+- `SIGNAL_EYE_REFRESH_SECRET`: Optional shared secret required by `POST /api/v1/refresh`
 - `GITHUB_TOKEN`: Optional token for higher GitHub API rate limits
 - `TWITTER_BEARER_TOKEN`: Optional token for live Twitter/X ingestion
 
@@ -141,12 +141,39 @@ curl http://localhost:8000/api/v1/health
 If the frontend is deployed separately from the Python backend, set:
 
 ```bash
-TREND_FRIEND_API_URL=https://your-api-host.example.com
+SIGNAL_EYE_API_URL=https://your-api-host.example.com
 ```
 
 on the frontend deployment so Next.js reads from the hosted API instead of local JSON exports.
 
-For a hosted setup guide, see [docs/HOSTING.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/HOSTING.md).
+For a hosted setup guide, see [docs/HOSTING.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/HOSTING.md).
+
+## Free Hosting Path
+
+If you want to avoid paying for a backend host, keep the frontend on Vercel and refresh the generated data with GitHub Actions.
+
+This repo now includes:
+
+- [refresh-data.yml](/Users/jakewarburton/Documents/repos/signal-eye/.github/workflows/refresh-data.yml)
+
+How it works:
+
+1. GitHub Actions runs the Python ingestion pipeline on a schedule.
+2. It refreshes `data/signal_eye.db` so historical trend state persists between runs.
+3. It exports fresh `web/data/*.json`.
+4. It commits those generated files back to the repo.
+5. Vercel redeploys from the updated repo and serves the refreshed static snapshots.
+
+For this free path:
+
+- do **not** set `SIGNAL_EYE_API_URL` in Vercel
+- keep the app in file mode
+- add these GitHub repository secrets if you want live enrichment:
+  - `SIGNAL_EYE_REDDIT_USER_AGENT`
+  - `GITHUB_TOKEN_API`
+  - `TWITTER_BEARER_TOKEN`
+
+The included workflow defaults to every 15 minutes to keep repo churn reasonable. You can tighten or loosen the cron expression in [refresh-data.yml](/Users/jakewarburton/Documents/repos/signal-eye/.github/workflows/refresh-data.yml).
 
 ## Running Codex Autopilot
 
@@ -280,8 +307,8 @@ This makes the project runnable in offline or rate-limited environments and keep
 
 1. Create a new adapter in `app/sources/`.
 2. Normalize external records into `RawSourceItem`.
-3. Add the adapter to `fetch_source_items()` in [app/jobs/ingest.py](/Users/jakewarburton/Documents/repos/trend-friend/app/jobs/ingest.py).
-4. Map the source to a `signal_type` in [app/topics/extract.py](/Users/jakewarburton/Documents/repos/trend-friend/app/topics/extract.py) if needed.
+3. Add the adapter to `fetch_source_items()` in [app/jobs/ingest.py](/Users/jakewarburton/Documents/repos/signal-eye/app/jobs/ingest.py).
+4. Map the source to a `signal_type` in [app/topics/extract.py](/Users/jakewarburton/Documents/repos/signal-eye/app/topics/extract.py) if needed.
 5. Add normalization tests in `tests/test_sources.py`.
 
 Because all sources feed the same shared models, scoring, ranking, persistence, and UI do not need structural changes for most new adapters.

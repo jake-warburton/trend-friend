@@ -80,7 +80,7 @@ export async function GET() {
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv",
-      "Content-Disposition": `attachment; filename="trend-friend-export-${date}.csv"`,
+      "Content-Disposition": `attachment; filename="signal-eye-export-${date}.csv"`,
     },
   });
 }

@@ -1,1 +1,1 @@
-"""REST API for Trend Friend."""
+"""REST API for Signal Eye."""

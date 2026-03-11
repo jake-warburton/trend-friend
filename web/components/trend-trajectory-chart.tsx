@@ -20,6 +20,7 @@ type TrendTrajectoryChartProps = {
 };
 
 const PALETTE = ["#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#9b8cff"];
+const HISTORY_BUCKET_MINUTES = 5;
 
 type ChartTrend = TrendDetailRecord & {
   chartHistory: Array<{ capturedAt: string; scoreTotal: number }>;
@@ -29,12 +30,18 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
   const historyByTrendId = new Map<string, Array<{ capturedAt: string; scoreTotal: number }>>();
 
   for (const snapshot of history.snapshots) {
+    const bucketedCapturedAt = bucketSnapshotTimestamp(snapshot.capturedAt);
     for (const trend of snapshot.trends) {
       const points = historyByTrendId.get(trend.id) ?? [];
-      points.push({
-        capturedAt: snapshot.capturedAt,
-        scoreTotal: trend.score.total,
-      });
+      const existingPoint = points.find((point) => point.capturedAt === bucketedCapturedAt);
+      if (existingPoint) {
+        existingPoint.scoreTotal = trend.score.total;
+      } else {
+        points.push({
+          capturedAt: bucketedCapturedAt,
+          scoreTotal: trend.score.total,
+        });
+      }
       historyByTrendId.set(trend.id, points);
     }
   }
@@ -52,14 +59,15 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     return <p className="chart-empty">Not enough history to chart trajectories yet.</p>;
   }
 
-  // Collect all unique dates across all trends
-  const dateSet = new Set<string>();
+  // Collect all unique snapshot timestamps across all trends
+  const timestampSet = new Set<string>();
   for (const trend of topTrends) {
     for (const point of trend.chartHistory) {
-      dateSet.add(point.capturedAt.slice(0, 10));
+      timestampSet.add(point.capturedAt);
     }
   }
-  const dates = [...dateSet].sort();
+  const timestamps = [...timestampSet].sort();
+  const sameDayHistory = new Set(timestamps.map((timestamp) => timestamp.slice(0, 10))).size === 1;
 
   // Determine the maximum number of forecast points across all trends
   let maxForecastLen = 0;
@@ -69,11 +77,13 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     }
   }
 
-  // Build chart data: one row per date, one key per trend
-  const data: Record<string, string | number | undefined>[] = dates.map((date) => {
-    const row: Record<string, string | number | undefined> = { date: formatShortDate(date) };
+  // Build chart data: one row per snapshot timestamp, one key per trend
+  const data: Record<string, string | number | undefined>[] = timestamps.map((timestamp) => {
+    const row: Record<string, string | number | undefined> = {
+      date: formatSnapshotLabel(timestamp, sameDayHistory),
+    };
     for (const trend of topTrends) {
-      const point = trend.chartHistory.find((p) => p.capturedAt.slice(0, 10) === date);
+      const point = trend.chartHistory.find((p) => p.capturedAt === timestamp);
       if (point) {
         row[trend.name] = point.scoreTotal;
       }
@@ -144,10 +154,10 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
           />
           <Tooltip
             contentStyle={{
-              background: "#0e1420",
-              border: "1px solid #1e2838",
+              background: "var(--surface-tooltip)",
+              border: "1px solid var(--border-strong)",
               borderRadius: 8,
-              color: "#e0e4ea",
+              color: "var(--copy)",
               fontSize: 12,
             }}
             formatter={(value, name) => {
@@ -199,9 +209,25 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
   );
 }
 
-function formatShortDate(value: string) {
+function formatSnapshotLabel(value: string, sameDayHistory: boolean) {
+  const date = new Date(value);
+  if (sameDayHistory) {
+    return new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
+  }
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
-  }).format(new Date(value));
+  }).format(date);
+}
+
+function bucketSnapshotTimestamp(value: string) {
+  const date = new Date(value);
+  date.setSeconds(0, 0);
+  const roundedMinutes = Math.floor(date.getMinutes() / HISTORY_BUCKET_MINUTES) * HISTORY_BUCKET_MINUTES;
+  date.setMinutes(roundedMinutes);
+  return date.toISOString();
 }

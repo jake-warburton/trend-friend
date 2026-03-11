@@ -1,0 +1,56 @@
+name: Refresh Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      SIGNAL_EYE_DATABASE_PATH: data/signal_eye.db
+      SIGNAL_EYE_WEB_DATA_PATH: web/data
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_API || '' }}
+      TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN || '' }}
+      SIGNAL_EYE_REDDIT_USER_AGENT: ${{ secrets.SIGNAL_EYE_REDDIT_USER_AGENT || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Refresh trend data
+        run: |
+          mkdir -p data web/data
+          export SIGNAL_EYE_REDDIT_USER_AGENT="${SIGNAL_EYE_REDDIT_USER_AGENT:-signal-eye-github-action/1.0}"
+          python3 scripts/run_ingestion.py
+          python3 scripts/export_web_data.py
+
+      - name: Commit refreshed data
+        run: |
+          if git diff --quiet -- data/signal_eye.db web/data; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/signal_eye.db web/data
+          git commit -m "chore(data): refresh generated snapshots [skip ci]"
+          git push

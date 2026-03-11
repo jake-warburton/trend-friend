@@ -12,7 +12,7 @@ def render_dashboard(scores: list[TrendScoreResult]) -> str:
 
     updated_at = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = [
-        "Trend Friend MVP",
+        "Signal Eye MVP",
         f"Last updated: {updated_at}",
         "",
         "Rank | Topic                  | Score | Social | Dev   | Knowl | Sources",

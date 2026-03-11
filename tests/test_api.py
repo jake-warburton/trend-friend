@@ -172,7 +172,7 @@ class APITests(unittest.TestCase):
         )
         self.assertIn("access-control-allow-origin", response.headers)
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_watchlists_are_scoped_to_authenticated_user(self) -> None:
         first = TestClient(self.app)
         second = TestClient(self.app)
@@ -195,7 +195,7 @@ class APITests(unittest.TestCase):
             {"Core Watchlist", "Owner Two"},
         )
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_user_can_revoke_own_share(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
@@ -215,7 +215,7 @@ class APITests(unittest.TestCase):
         after_response = client.get("/api/v1/watchlists")
         self.assertEqual(after_response.json()["watchlists"][0]["shares"], [])
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_user_can_toggle_share_visibility(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
@@ -230,7 +230,7 @@ class APITests(unittest.TestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertTrue(update_response.json()["public"])
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_user_can_toggle_share_attribution(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123", "displayName": "Owner One"})
@@ -245,7 +245,7 @@ class APITests(unittest.TestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertTrue(update_response.json()["showCreator"])
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_watchlist_payload_includes_share_activity(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
@@ -259,7 +259,7 @@ class APITests(unittest.TestCase):
         self.assertGreaterEqual(len(events), 2)
         self.assertEqual(events[0]["eventType"], "visibility_updated")
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_user_can_set_default_share_expiry(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
@@ -272,7 +272,7 @@ class APITests(unittest.TestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.json()["watchlists"][0]["defaultShareExpiryDays"], 7)
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_user_can_rotate_share_token(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
@@ -287,7 +287,7 @@ class APITests(unittest.TestCase):
         payload = client.get("/api/v1/watchlists").json()
         self.assertEqual(payload["watchlists"][0]["shareEvents"][0]["eventType"], "rotated")
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_watchlist_payload_includes_share_access_metrics(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})

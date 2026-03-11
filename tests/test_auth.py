@@ -186,14 +186,14 @@ class AuthAPITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.json()["user"]["isAdmin"])
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_me_uses_session_cookie(self) -> None:
         self.client.post("/api/v1/auth/register", json={"username": "user1", "password": "password123"})
         response = self.client.get("/api/v1/auth/me")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["user"]["username"], "user1")
 
-    @patch.dict("os.environ", {"TREND_FRIEND_AUTH_ENABLED": "true"})
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_logout_revokes_session_cookie(self) -> None:
         self.client.post("/api/v1/auth/register", json={"username": "user1", "password": "password123"})
         response = self.client.post("/api/v1/auth/logout")
