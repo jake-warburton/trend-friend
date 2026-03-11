@@ -39,6 +39,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Validate required secrets
+        run: |
+          if [ -z "${SIGNAL_EYE_DATABASE_URL}" ]; then
+            echo "Missing required Actions secret: SIGNAL_EYE_DATABASE_URL"
+            exit 1
+          fi
+
       - name: Refresh trend data
         run: |
           mkdir -p web/data
