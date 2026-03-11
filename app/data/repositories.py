@@ -1896,7 +1896,7 @@ class TrendScoreRepository:
             evidence_url=best.evidence_url or "",
         )
 
-    def get_topic_geo_summary(self, topic: str, limit: int = 5) -> list[TrendGeoSummary]:
+    def get_topic_geo_summary(self, topic: str, limit: int = 20) -> list[TrendGeoSummary]:
         """Return aggregated location coverage for a topic."""
 
         from app.topics.geo import GEO_CONFIDENCE_MINIMUM

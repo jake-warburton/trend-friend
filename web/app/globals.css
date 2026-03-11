@@ -1602,20 +1602,9 @@ input {
 }
 
 .explorer-expand-geo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   padding: 4px 12px 0;
-  font-size: 0.72rem;
-  color: var(--muted);
-}
-
-.explorer-expand-geo small {
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.58rem;
-  letter-spacing: 0.04em;
-  opacity: 0.7;
+  overflow: hidden;
+  border-radius: 6px;
 }
 
 .explorer-expand-actions {
@@ -2220,4 +2209,95 @@ input {
 .sparkline-empty {
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+/* ── Geo Map ──────────────────────────────────────── */
+
+.geo-map-container {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.geo-map-tooltip {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #0e1420;
+  border: 1px solid #1e2838;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  color: var(--fg);
+  min-width: 150px;
+}
+
+.geo-map-tooltip strong {
+  font-size: 0.82rem;
+  margin-bottom: 2px;
+}
+
+.geo-map-tooltip span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.geo-map-tooltip small {
+  color: var(--muted);
+  font-size: 0.65rem;
+  margin-top: 2px;
+}
+
+.geo-intensity-bar {
+  width: 100%;
+  height: 4px;
+  background: #1e2838;
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.geo-intensity-bar > div {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.geo-map-compact {
+  height: 120px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.geo-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  padding: 12px 0 0;
+}
+
+.geo-legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+.geo-legend-item strong {
+  font-size: 0.78rem;
+}
+
+.geo-legend-item small {
+  color: var(--muted);
+  font-size: 0.68rem;
 }

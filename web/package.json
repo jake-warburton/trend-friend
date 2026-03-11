@@ -14,12 +14,14 @@
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-simple-maps": "^3.0.0",
     "recharts": "^3.8.0"
   },
   "devDependencies": {
     "@types/node": "^25.4.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/react-simple-maps": "^3.0.6",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.1.6",
     "tsx": "^4.20.6",

@@ -19,6 +19,7 @@ import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
+import { GeoMapCompact } from "@/components/geo-map-compact";
 
 import type {
   AlertEvent,
@@ -1242,8 +1243,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                             {detail.geoSummary.length > 0 && (
                               <div className="explorer-expand-geo">
-                                <small>Trending in</small>
-                                <span>{detail.geoSummary.slice(0, 4).map((g) => g.label).join(", ")}</span>
+                                <GeoMapCompact data={detail.geoSummary} />
                               </div>
                             )}
 
