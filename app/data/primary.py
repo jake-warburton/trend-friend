@@ -1,19 +1,13 @@
-"""Primary database entry points.
-
-This module is the boundary for selecting the runtime database backend.
-Today it still initializes SQLite. The eventual Postgres cutover should
-replace the implementation here first, then flow through the repository layer.
-"""
+"""Primary database entry points."""
 
 from __future__ import annotations
 
-import sqlite3
-
 from app.config import Settings
+from app.data.connection import DatabaseConnection
 from app.data.database import connect_database, initialize_database
 
 
-def connect_primary_database(settings: Settings) -> sqlite3.Connection:
+def connect_primary_database(settings: Settings) -> DatabaseConnection:
     """Return the configured primary database connection.
 
     Postgres is intentionally not partially supported. If a non-SQLite URL is

@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-import sqlite3
 from datetime import datetime
 
+from app.data.connection import DatabaseConnection
 from app.models import ApiKey, User, UserSession
 
 
 class UserRepository:
     """Persist and retrieve user accounts and API keys."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def create_user(

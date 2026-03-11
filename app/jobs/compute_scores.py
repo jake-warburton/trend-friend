@@ -7,6 +7,7 @@ from time import perf_counter
 from datetime import datetime, timezone
 
 from app.config import Settings
+from app.data.connection import DatabaseConnection
 from app.data.primary import connect_primary_database
 from app.data.repositories import (
     PipelineRunRepository,
@@ -111,7 +112,7 @@ def _build_previous_state(
 
 
 def _run_alert_evaluation(
-    connection: object,
+    connection: DatabaseConnection,
     repository: TrendScoreRepository,
     ranked_scores: list[TrendScoreResult],
     previous_state: dict,

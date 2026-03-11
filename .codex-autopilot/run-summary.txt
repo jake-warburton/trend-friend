@@ -1,27 +1,27 @@
 Codex autopilot summary
-root_dir=/Users/jakewarburton/Documents/repos/trend-friend
+root_dir=/Users/jakewarburton/Documents/repos/signal-eye
 iterations=1
 workers=topics,scoring,dx
-worktree_base=/Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees
-log_dir=/Users/jakewarburton/Documents/repos/trend-friend/.codex-autopilot
+worktree_base=/Users/jakewarburton/Documents/repos/signal-eye/.codex-worktrees
+log_dir=/Users/jakewarburton/Documents/repos/signal-eye/.codex-autopilot
 exit_code=1
 generated_at=2026-03-10T11:35:24Z
 
 worker=topics
 branch=autopilot/topics-20260310113259
-worktree=/Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees/topics
-log=/Users/jakewarburton/Documents/repos/trend-friend/.codex-autopilot/topics/runner.out
+worktree=/Users/jakewarburton/Documents/repos/signal-eye/.codex-worktrees/topics
+log=/Users/jakewarburton/Documents/repos/signal-eye/.codex-autopilot/topics/runner.out
 status=failed
 
 worker=scoring
 branch=autopilot/scoring-20260310113259
-worktree=/Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees/scoring
-log=/Users/jakewarburton/Documents/repos/trend-friend/.codex-autopilot/scoring/runner.out
+worktree=/Users/jakewarburton/Documents/repos/signal-eye/.codex-worktrees/scoring
+log=/Users/jakewarburton/Documents/repos/signal-eye/.codex-autopilot/scoring/runner.out
 status=failed
 
 worker=dx
 branch=autopilot/dx-20260310113259
-worktree=/Users/jakewarburton/Documents/repos/trend-friend/.codex-worktrees/dx
-log=/Users/jakewarburton/Documents/repos/trend-friend/.codex-autopilot/dx/runner.out
+worktree=/Users/jakewarburton/Documents/repos/signal-eye/.codex-worktrees/dx
+log=/Users/jakewarburton/Documents/repos/signal-eye/.codex-autopilot/dx/runner.out
 status=failed
 

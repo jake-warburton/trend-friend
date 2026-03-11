@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import secrets
-import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.dependencies import get_db, get_settings
 from app.auth.middleware import auth_enabled, require_auth
 from app.auth.repository import UserRepository
+from app.data.connection import DatabaseConnection
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
 from app.models import User
 from app.watchlists_payloads import (
@@ -27,7 +27,7 @@ def share_watchlist(
     watchlist_id: int,
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Create a share link for a watchlist."""
 
@@ -57,7 +57,7 @@ def revoke_watchlist_share(
     watchlist_id: int,
     share_id: int,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Revoke an existing share link for a watchlist."""
 
@@ -79,7 +79,7 @@ def update_watchlist_share_visibility(
     share_id: int,
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Update whether a share is listed in the public directory."""
 
@@ -104,7 +104,7 @@ def update_watchlist_share_attribution(
     share_id: int,
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Update whether a share exposes its creator display name."""
 
@@ -129,7 +129,7 @@ def update_watchlist_share_expiration(
     share_id: int,
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Update expiration time for a share."""
 
@@ -151,7 +151,7 @@ def rotate_watchlist_share(
     watchlist_id: int,
     share_id: int,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Rotate the token for an existing share."""
 
@@ -175,7 +175,7 @@ def update_watchlist_share_defaults(
     watchlist_id: int,
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Persist default share settings for one watchlist."""
 
@@ -202,7 +202,7 @@ def update_watchlist_share_defaults(
 
 
 @router.get("/shared/{share_token}")
-def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_shared_watchlist(share_token: str, db: DatabaseConnection = Depends(get_db)) -> dict:
     """View a shared watchlist by its share token."""
 
     repo = WatchlistRepository(db)
@@ -234,7 +234,7 @@ def get_shared_watchlist(share_token: str, db: sqlite3.Connection = Depends(get_
 
 
 @router.get("/community/watchlists")
-def list_public_watchlists(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_public_watchlists(db: DatabaseConnection = Depends(get_db)) -> dict:
     """List all publicly shared watchlists."""
 
     repo = WatchlistRepository(db)
@@ -253,7 +253,7 @@ def list_public_watchlists(db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.get("/community/trends/{trend_id}")
-def get_public_trend_page(trend_id: str, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_public_trend_page(trend_id: str, db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return public trend data for embedding or sharing."""
 
     settings = get_settings()
@@ -301,14 +301,14 @@ def get_public_trend_page(trend_id: str, db: sqlite3.Connection = Depends(get_db
     raise HTTPException(status_code=404, detail="Trend not found")
 
 
-def _resolve_owner_display_name(db: sqlite3.Connection, share) -> str | None:
+def _resolve_owner_display_name(db: DatabaseConnection, share) -> str | None:
     if share.created_by is None:
         return None
     user = UserRepository(db).get_user_by_id(share.created_by)
     return user.display_name if user is not None else None
 
 
-def _resolve_owner_display_names(db: sqlite3.Connection, shares: list) -> dict[int, str]:
+def _resolve_owner_display_names(db: DatabaseConnection, shares: list) -> dict[int, str]:
     repository = UserRepository(db)
     resolved: dict[int, str] = {}
     for share in shares:

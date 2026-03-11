@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import sqlite3
-
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
@@ -11,13 +9,14 @@ from app.auth.middleware import SESSION_COOKIE_NAME, require_admin, require_auth
 from app.auth.passwords import hash_password, verify_password
 from app.auth.repository import UserRepository
 from app.auth.tokens import generate_api_key, generate_session_token, hash_session_token
+from app.data.connection import DatabaseConnection
 from app.models import User
 
 router = APIRouter(tags=["auth"])
 
 
 @router.post("/auth/register")
-def register_user(body: dict, response: Response, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def register_user(body: dict, response: Response, db: DatabaseConnection = Depends(get_db)) -> dict:
     """Register a new user account."""
 
     username = body.get("username", "").strip()
@@ -55,7 +54,7 @@ def register_user(body: dict, response: Response, db: sqlite3.Connection = Depen
 
 
 @router.post("/auth/login")
-def login_user(body: dict, response: Response, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(get_db)) -> dict:
     """Authenticate with username and password."""
 
     username = body.get("username", "").strip()
@@ -89,7 +88,7 @@ def get_current_user_info(user: User = Depends(require_auth)) -> dict:
 def logout_user(
     request: Request,
     response: Response,
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Revoke the current session cookie when present."""
 
@@ -102,7 +101,7 @@ def logout_user(
 
 
 @router.post("/auth/api-keys")
-def create_api_key(body: dict, user: User = Depends(require_auth), db: sqlite3.Connection = Depends(get_db)) -> dict:
+def create_api_key(body: dict, user: User = Depends(require_auth), db: DatabaseConnection = Depends(get_db)) -> dict:
     """Create a new API key for the current user."""
 
     name = body.get("name", "").strip()
@@ -128,7 +127,7 @@ def create_api_key(body: dict, user: User = Depends(require_auth), db: sqlite3.C
 
 
 @router.get("/auth/api-keys")
-def list_api_keys(user: User = Depends(require_auth), db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_api_keys(user: User = Depends(require_auth), db: DatabaseConnection = Depends(get_db)) -> dict:
     """List API keys for the current user."""
 
     repo = UserRepository(db)
@@ -152,7 +151,7 @@ def list_api_keys(user: User = Depends(require_auth), db: sqlite3.Connection = D
 def revoke_api_key(
     key_id: int,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Revoke an API key."""
 
@@ -165,7 +164,7 @@ def revoke_api_key(
 
 
 @router.get("/auth/users")
-def list_users(user: User = Depends(require_admin), db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_users(user: User = Depends(require_admin), db: DatabaseConnection = Depends(get_db)) -> dict:
     """List all users (admin only)."""
 
     repo = UserRepository(db)

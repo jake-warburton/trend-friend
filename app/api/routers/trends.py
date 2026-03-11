@@ -1,13 +1,12 @@
 """Trend API routes."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db, get_settings
+from app.data.connection import DatabaseConnection
 from app.data.repositories import SignalRepository, TrendScoreRepository
 from app.exports.serializers import (
     build_latest_trends_payload,
@@ -21,7 +20,7 @@ router = APIRouter(tags=["trends"])
 
 
 @router.get("/trends")
-def list_trends(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_trends(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return the explorer list of trends."""
 
     settings = get_settings()
@@ -34,7 +33,7 @@ def list_trends(db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.get("/trends/latest")
-def list_latest_trends(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_latest_trends(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return the simple ranked trend list."""
 
     settings = get_settings()
@@ -46,7 +45,7 @@ def list_latest_trends(db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.get("/trends/history")
-def list_trend_history(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_trend_history(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return historical trend snapshots."""
 
     settings = get_settings()
@@ -61,7 +60,7 @@ def list_trend_history(db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.get("/trends/{slug}")
-def get_trend_detail(slug: str, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_trend_detail(slug: str, db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return detail data for a single trend."""
 
     settings = get_settings()

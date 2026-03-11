@@ -7,7 +7,6 @@ import hmac
 import json
 import logging
 import os
-import sqlite3
 import time
 import uuid
 from datetime import datetime, timezone
@@ -15,6 +14,7 @@ from typing import Callable
 from urllib import error, request
 
 from app.alerts.evaluate import AlertEvent
+from app.data.connection import DatabaseConnection
 from app.data.repositories import NotificationRepository, WatchlistRepository
 from app.models import NotificationChannel, RunDigest
 
@@ -30,7 +30,7 @@ PostJson = Callable[[str, dict, int], int]
 
 
 def deliver_post_run_notifications(
-    connection: sqlite3.Connection,
+    connection: DatabaseConnection,
     run_at: datetime,
     alert_events: list[AlertEvent],
     digest: RunDigest,
@@ -61,7 +61,7 @@ def deliver_post_run_notifications(
 
 
 def send_test_notification(
-    connection: sqlite3.Connection,
+    connection: DatabaseConnection,
     channel: NotificationChannel,
     post_json: PostJson | None = None,
 ) -> tuple[int | None, str | None]:

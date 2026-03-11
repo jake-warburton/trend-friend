@@ -1,8 +1,6 @@
 """Notification channel API routes."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import timezone
 from urllib.parse import urlparse
 
@@ -10,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db
 from app.auth.middleware import auth_enabled, require_auth
+from app.data.connection import DatabaseConnection
 from app.data.repositories import NotificationRepository
 from app.models import User
 from app.notifications.deliver import CHANNEL_TYPE_WEBHOOK, send_test_notification
@@ -34,7 +33,7 @@ def _validate_webhook_url(destination: str) -> None:
 @router.get("/notifications/channels")
 def list_notification_channels(
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Return configured notification channels and recent delivery attempts."""
 
@@ -68,7 +67,7 @@ def list_notification_channels(
 def create_notification_channel(
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Create a webhook notification channel."""
 
@@ -103,7 +102,7 @@ def create_notification_channel(
 def delete_notification_channel(
     channel_id: int,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Delete one notification channel."""
 
@@ -117,7 +116,7 @@ def delete_notification_channel(
 def test_notification_channel(
     channel_id: int,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Send a sample payload to one configured notification channel."""
 

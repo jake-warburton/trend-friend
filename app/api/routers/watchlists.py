@@ -1,13 +1,11 @@
 """Watchlist API routes."""
 
 from __future__ import annotations
-
-import sqlite3
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db
 from app.auth.middleware import auth_enabled, require_auth
+from app.data.connection import DatabaseConnection
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
 from app.models import User
 from app.watchlists_payloads import build_watchlist_payload
@@ -16,7 +14,7 @@ router = APIRouter(tags=["watchlists"])
 
 
 @router.get("/watchlists")
-def list_watchlists(user: User = Depends(require_auth), db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_watchlists(user: User = Depends(require_auth), db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return all watchlists with items, alert rules, and current matches."""
 
     watchlist_repo = WatchlistRepository(db)
@@ -36,7 +34,7 @@ def list_watchlists(user: User = Depends(require_auth), db: sqlite3.Connection =
 def create_watchlist(
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Create a new watchlist."""
 
@@ -59,7 +57,7 @@ def create_watchlist(
 def manage_watchlist_item(
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Add or remove an item from a watchlist."""
 

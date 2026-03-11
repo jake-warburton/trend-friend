@@ -1,13 +1,12 @@
 """Breakout prediction API route."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_db, get_settings
+from app.data.connection import DatabaseConnection
 from app.data.repositories import TrendScoreRepository
 from app.scoring.opportunity import score_opportunities
 from app.scoring.predictor import predict_breakouts
@@ -16,7 +15,7 @@ router = APIRouter(tags=["predictions"])
 
 
 @router.get("/predictions/breakout")
-def get_breakout_predictions(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_breakout_predictions(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return breakout predictions for current trends."""
 
     settings = get_settings()
@@ -65,7 +64,7 @@ def get_breakout_predictions(db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.get("/predictions/opportunity")
-def get_opportunity_scores(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_opportunity_scores(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return opportunity/actionability scores for current trends."""
 
     settings = get_settings()

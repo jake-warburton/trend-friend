@@ -1,14 +1,13 @@
 """CSV export API routes."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from app.api.dependencies import get_db, get_settings
+from app.data.connection import DatabaseConnection
 from app.data.repositories import TrendScoreRepository
 from app.exports.csv_export import build_csv_filename, trends_to_csv
 from app.exports.serializers import build_trend_explorer_payload
@@ -17,7 +16,7 @@ router = APIRouter(tags=["exports"])
 
 
 @router.get("/export/trends.csv")
-def export_trends_csv(db: sqlite3.Connection = Depends(get_db)) -> Response:
+def export_trends_csv(db: DatabaseConnection = Depends(get_db)) -> Response:
     """Return all ranked trends as a downloadable CSV file."""
 
     settings = get_settings()

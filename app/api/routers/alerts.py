@@ -1,8 +1,6 @@
 """Alert API routes."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.dependencies import get_db
 from app.alerts.evaluate import SUPPORTED_RULE_TYPES
 from app.auth.middleware import auth_enabled, require_auth
+from app.data.connection import DatabaseConnection
 from app.data.repositories import WatchlistRepository
 from app.models import User
 
@@ -25,7 +24,7 @@ def list_alerts(
     unread_only: bool = False,
     limit: int = 50,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Return recent alert events."""
 
@@ -59,7 +58,7 @@ def list_alerts(
 def mark_alerts_read(
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Mark alert events as read."""
 
@@ -72,7 +71,7 @@ def mark_alerts_read(
 
 
 @router.get("/alerts/rules")
-def list_alert_rules(user: User = Depends(require_auth), db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_alert_rules(user: User = Depends(require_auth), db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return all configured alert rules."""
 
     repo = WatchlistRepository(db)
@@ -97,7 +96,7 @@ def list_alert_rules(user: User = Depends(require_auth), db: sqlite3.Connection 
 def create_alert_rule(
     body: dict,
     user: User = Depends(require_auth),
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> dict:
     """Create a new alert rule."""
 

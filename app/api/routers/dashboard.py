@@ -1,13 +1,12 @@
 """Dashboard overview API route."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_db, get_settings
+from app.data.connection import DatabaseConnection
 from app.data.repositories import (
     PipelineRunRepository,
     SignalRepository,
@@ -25,7 +24,7 @@ PIPELINE_RUN_LIMIT = 6
 
 
 @router.get("/dashboard/overview")
-def get_dashboard_overview(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_dashboard_overview(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return the dashboard landing page payload."""
 
     settings = get_settings()

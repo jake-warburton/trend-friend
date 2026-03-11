@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import os
-import sqlite3
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request
 
 from app.api.dependencies import get_db
+from app.data.connection import DatabaseConnection
 from app.auth.repository import UserRepository
 from app.auth.tokens import hash_api_key, hash_session_token
 from app.models import User
@@ -24,7 +24,7 @@ def auth_enabled() -> bool:
 
 def get_current_user(
     request: Request,
-    db: sqlite3.Connection = Depends(get_db),
+    db: DatabaseConnection = Depends(get_db),
 ) -> Optional[User]:
     """Extract and validate the current user from the request.
 
@@ -77,7 +77,7 @@ def require_admin(user: User = Depends(require_auth)) -> User:
     return user
 
 
-def _authenticate_api_key(token: str, db: sqlite3.Connection) -> User:
+def _authenticate_api_key(token: str, db: DatabaseConnection) -> User:
     """Validate an API key and return its associated user."""
 
     key_hash = hash_api_key(token)
@@ -94,7 +94,7 @@ def _authenticate_api_key(token: str, db: sqlite3.Connection) -> User:
     return user
 
 
-def _authenticate_session(token: str, db: sqlite3.Connection) -> User:
+def _authenticate_session(token: str, db: DatabaseConnection) -> User:
     """Validate a session cookie and return its associated user."""
 
     token_hash = hash_session_token(token)

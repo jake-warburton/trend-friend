@@ -6,6 +6,7 @@ import threading
 from typing import Generator
 
 from app.config import Settings, load_settings
+from app.data.connection import DatabaseConnection
 from app.data.primary import connect_primary_database
 
 _settings: Settings | None = None
@@ -21,7 +22,7 @@ def get_settings() -> Settings:
     return _settings
 
 
-def get_db() -> Generator[object, None, None]:
+def get_db() -> Generator[DatabaseConnection, None, None]:
     """Yield a per-request database connection."""
 
     settings = get_settings()

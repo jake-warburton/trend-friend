@@ -1,13 +1,12 @@
 """Source health API routes."""
 
 from __future__ import annotations
-
-import sqlite3
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_db, get_settings
+from app.data.connection import DatabaseConnection
 from app.data.repositories import (
     SignalRepository,
     SourceIngestionRunRepository,
@@ -22,7 +21,7 @@ router = APIRouter(tags=["sources"])
 
 
 @router.get("/sources")
-def list_sources(db: sqlite3.Connection = Depends(get_db)) -> dict:
+def list_sources(db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return source health summaries."""
 
     settings = get_settings()
@@ -46,7 +45,7 @@ def list_sources(db: sqlite3.Connection = Depends(get_db)) -> dict:
 
 
 @router.get("/sources/{source_id}")
-def get_source_detail(source_id: str, db: sqlite3.Connection = Depends(get_db)) -> dict:
+def get_source_detail(source_id: str, db: DatabaseConnection = Depends(get_db)) -> dict:
     """Return detail data for a single source."""
 
     settings = get_settings()
