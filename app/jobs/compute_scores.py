@@ -7,7 +7,7 @@ from time import perf_counter
 from datetime import datetime, timezone
 
 from app.config import Settings
-from app.data.database import connect_database, initialize_database
+from app.data.primary import connect_primary_database
 from app.data.repositories import (
     PipelineRunRepository,
     SignalRepository,
@@ -40,8 +40,7 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     captured_at = datetime.now(tz=timezone.utc)
     successful_source_count = sum(1 for run in source_runs if run.success)
 
-    connection = connect_database(settings.database_path)
-    initialize_database(connection)
+    connection = connect_primary_database(settings)
     SourceIngestionRunRepository(connection).append_runs(source_runs)
     SignalRepository(connection).replace_signals(normalized_signals)
     repository = TrendScoreRepository(connection)

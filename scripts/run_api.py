@@ -18,7 +18,7 @@ def main() -> None:
 
     configure_logging()
     host = os.getenv("TREND_FRIEND_API_HOST", "0.0.0.0")
-    port = int(os.getenv("TREND_FRIEND_API_PORT", "8000"))
+    port = int(os.getenv("PORT", os.getenv("TREND_FRIEND_API_PORT", "8000")))
     reload = os.getenv("TREND_FRIEND_API_RELOAD", "true").lower() == "true"
 
     uvicorn.run(

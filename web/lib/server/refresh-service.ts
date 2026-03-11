@@ -74,7 +74,12 @@ export function getRefreshErrorStatus(error: unknown): number {
 
 async function defaultApiPost<T>(apiPath: string, body: unknown): Promise<T> {
   const { apiPost } = await import("@/lib/api-client");
-  return apiPost<T>(apiPath, body);
+  const refreshSecret = process.env.TREND_FRIEND_REFRESH_SECRET;
+  return apiPost<T>(apiPath, body, {
+    headers: refreshSecret
+      ? { "X-Trend-Friend-Refresh-Secret": refreshSecret }
+      : undefined,
+  });
 }
 
 async function runIngestion(): Promise<void> {

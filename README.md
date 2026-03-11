@@ -81,7 +81,10 @@ Supported environment variables:
 - `TREND_FRIEND_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
 - `TREND_FRIEND_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
 - `TREND_FRIEND_REDDIT_USER_AGENT`: User agent for Reddit requests
+- `TREND_FRIEND_CORS_ORIGINS`: Comma-separated allowed origins for the REST API
+- `TREND_FRIEND_REFRESH_SECRET`: Optional shared secret required by `POST /api/v1/refresh`
 - `GITHUB_TOKEN`: Optional token for higher GitHub API rate limits
+- `TWITTER_BEARER_TOKEN`: Optional token for live Twitter/X ingestion
 
 ## Running The MVP
 
@@ -116,6 +119,34 @@ python3 scripts/run_scheduler.py
 ```
 
 The scheduler runs ingestion every 30 minutes until stopped.
+
+## Running The REST API
+
+Run the FastAPI backend locally:
+
+```bash
+python3 scripts/run_api.py
+```
+
+The API is available at `http://localhost:8000/api/v1`.
+
+Health check:
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
+## Hosting
+
+If the frontend is deployed separately from the Python backend, set:
+
+```bash
+TREND_FRIEND_API_URL=https://your-api-host.example.com
+```
+
+on the frontend deployment so Next.js reads from the hosted API instead of local JSON exports.
+
+For a hosted setup guide, see [docs/HOSTING.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/HOSTING.md).
 
 ## Running Codex Autopilot
 

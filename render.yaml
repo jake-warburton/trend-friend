@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: trend-friend-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    disk:
+      name: trend-friend-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: TREND_FRIEND_DATABASE_PATH
+        value: /data/trend_friend.db
+      - key: TREND_FRIEND_CORS_ORIGINS
+        value: https://trend-friend-zeta.vercel.app
+      - key: TREND_FRIEND_REDDIT_USER_AGENT
+        sync: false
+      - key: TREND_FRIEND_REFRESH_SECRET
+        generateValue: true
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: TWITTER_BEARER_TOKEN
+        sync: false

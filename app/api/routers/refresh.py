@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import threading
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Header, HTTPException
 
 from app.api.dependencies import get_settings
 from app.config import Settings
@@ -18,18 +18,22 @@ _refresh_lock = threading.Lock()
 
 
 @router.post("/refresh")
-def trigger_refresh() -> dict:
+def trigger_refresh(
+    x_trend_friend_refresh_secret: str | None = Header(default=None, alias="X-Trend-Friend-Refresh-Secret"),
+) -> dict:
     """Run the ingestion and scoring pipeline.
 
     Only one refresh can run at a time. Returns 409 if a refresh is
     already in progress.
     """
 
+    settings = get_settings()
+    _verify_refresh_secret(settings, x_trend_friend_refresh_secret)
+
     if not acquire_refresh_lock():
         raise HTTPException(status_code=409, detail="A refresh is already in progress")
 
     try:
-        settings = get_settings()
         ranked_scores = run_trend_pipeline(settings)
         _export_web_data(settings)
         return {
@@ -57,12 +61,21 @@ def release_refresh_lock() -> None:
         _refresh_lock.release()
 
 
+def _verify_refresh_secret(settings: Settings, provided_secret: str | None) -> None:
+    """Require the configured refresh secret when present."""
+
+    if not settings.refresh_secret:
+        return
+    if provided_secret != settings.refresh_secret:
+        raise HTTPException(status_code=403, detail="Invalid refresh secret")
+
+
 def _export_web_data(settings: Settings) -> None:
     """Re-export JSON files for the Next.js frontend (backward compatibility)."""
 
     from datetime import datetime, timezone
 
-    from app.data.database import connect_database, initialize_database
+    from app.data.primary import connect_primary_database
     from app.data.repositories import (
         PipelineRunRepository,
         SignalRepository,
@@ -80,8 +93,7 @@ def _export_web_data(settings: Settings) -> None:
         build_trend_history_payload,
     )
 
-    connection = connect_database(settings.database_path)
-    initialize_database(connection)
+    connection = connect_primary_database(settings)
     signal_repository = SignalRepository(connection)
     pipeline_run_repository = PipelineRunRepository(connection)
     source_run_repository = SourceIngestionRunRepository(connection)

@@ -13,6 +13,7 @@ class Settings:
     """Centralized runtime settings."""
 
     app_name: str
+    database_url: Optional[str]
     database_path: Path
     web_data_path: Path
     request_timeout_seconds: int
@@ -26,6 +27,7 @@ class Settings:
     reddit_user_agent: str
     poll_interval_minutes: int
     health_file_path: Path
+    refresh_secret: Optional[str]
 
 
 def load_settings() -> Settings:
@@ -34,6 +36,7 @@ def load_settings() -> Settings:
     load_dotenv_file(Path(".env"))
     return Settings(
         app_name="Trend Friend",
+        database_url=os.getenv("TREND_FRIEND_DATABASE_URL"),
         database_path=Path(os.getenv("TREND_FRIEND_DATABASE_PATH", "data/trend_friend.db")),
         web_data_path=Path(os.getenv("TREND_FRIEND_WEB_DATA_PATH", "web/data")),
         request_timeout_seconds=int(os.getenv("TREND_FRIEND_REQUEST_TIMEOUT_SECONDS", "10")),
@@ -47,6 +50,7 @@ def load_settings() -> Settings:
         reddit_user_agent=os.getenv("TREND_FRIEND_REDDIT_USER_AGENT", "trend-friend-mvp/1.0"),
         poll_interval_minutes=int(os.getenv("TREND_FRIEND_POLL_INTERVAL_MINUTES", "30")),
         health_file_path=Path(os.getenv("TREND_FRIEND_HEALTH_FILE_PATH", "data/last_run.json")),
+        refresh_secret=os.getenv("TREND_FRIEND_REFRESH_SECRET"),
     )
 
 
