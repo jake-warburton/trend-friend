@@ -1185,9 +1185,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
                 const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
                 return (
-                <article className="explorer-card" key={trend.id}>
+                <article className="explorer-card" data-status={trend.status} key={trend.id}>
                   <div className="explorer-card-top">
-                    <div className="trend-cell">
+                    <div className="trend-cell explorer-card-head">
+                      <div className="explorer-card-kicker">
+                        <span className="explorer-rank-chip">#{trend.rank}</span>
+                        <span className={movementClassName(trend.rankChange)}>
+                          {formatRankChange(trend.rankChange)} rank
+                        </span>
+                        <span className="trend-date-chip">
+                          {trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}
+                        </span>
+                      </div>
                       <div className="trend-title-row">
                         <strong>
                           <Link className="trend-link" href={`/trends/${trend.id}`}>
@@ -1205,6 +1214,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                         >
                           {defaultWatchlist?.items.some((item) => item.trendId === trend.id) ? "Tracked" : "Track"}
                         </button>
+                      </div>
+                      <div className="explorer-badge-row">
                         <span className={trendStatusClassName(trend.status)}>
                           {formatTrendStatus(trend.status)}
                         </span>
@@ -1225,18 +1236,17 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           <span className="trend-date-chip">{audienceBadge}</span>
                         ) : null}
                         <span className="trend-date-chip">{formatCategory(trend.category)}</span>
-                        <span className="trend-date-chip">
-                          {trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}
-                        </span>
                       </div>
                     </div>
 
                     <div className="explorer-metrics-row">
                       <div className="explorer-metric explorer-metric-inline">
+                        <span>Position</span>
                         <strong>#{trend.rank}</strong>
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
+                        <span>Momentum</span>
                         <div className="movement-inline">
                           <strong className={movementClassName(trend.rankChange)}>
                             {formatRankChange(trend.rankChange)}
@@ -1246,6 +1256,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
+                        <span>Total score</span>
                         <div className="score-inline">
                           <strong>{trend.score.total.toFixed(1)}</strong>
                           <small>
@@ -1256,10 +1267,12 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
+                        <span>Signals</span>
                         <strong>{trend.coverage.signalCount}</strong>
                       </div>
 
                       <div className="explorer-metric explorer-metric-inline">
+                        <span>Trajectory</span>
                         <Sparkline data={(trend.recentHistory ?? []).map((p) => p.scoreTotal)} />
                       </div>
 
@@ -1281,6 +1294,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
+                      <span className="explorer-evidence-label">Signal brief</span>
                       {primaryEvidenceLink?.evidenceUrl ? (
                         <a
                           className="trend-link"

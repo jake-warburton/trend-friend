@@ -1251,54 +1251,115 @@ input {
 }
 
 .explorer-card {
-  padding: 7px 8px;
+  position: relative;
+  padding: 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, rgba(14, 18, 26, 0.96), rgba(10, 13, 20, 0.94));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(94, 107, 255, 0.12), transparent 36%),
+    linear-gradient(180deg, rgba(16, 21, 31, 0.98), rgba(9, 13, 20, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02);
   transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.explorer-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 18px 0 0 18px;
+  background: rgba(140, 160, 190, 0.18);
+}
+
+.explorer-card[data-status="breakout"]::before {
+  background: linear-gradient(180deg, #00c4ff, rgba(0, 196, 255, 0.22));
+}
+
+.explorer-card[data-status="rising"]::before {
+  background: linear-gradient(180deg, #65d18e, rgba(101, 209, 142, 0.22));
+}
+
+.explorer-card[data-status="cooling"]::before {
+  background: linear-gradient(180deg, #ff7575, rgba(255, 117, 117, 0.24));
+}
+
+.explorer-card[data-status="new"]::before {
+  background: linear-gradient(180deg, #8ab4ff, rgba(138, 180, 255, 0.24));
 }
 
 .explorer-card:hover {
   border-color: rgba(140, 160, 190, 0.22);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
 }
 
 .explorer-card-top {
   display: grid;
-  gap: 0;
-  grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.92fr);
-  align-items: center;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.16fr) minmax(300px, 0.94fr);
+  align-items: start;
 }
 
 .trend-cell,
 .score-cell {
   display: grid;
-  gap: 3px;
+  gap: 8px;
+}
+
+.explorer-card-head {
+  min-width: 0;
+}
+
+.explorer-card-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.explorer-rank-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid rgba(94, 107, 255, 0.24);
+  border-radius: var(--radius-pill);
+  background: rgba(94, 107, 255, 0.16);
+  color: #d9e2ff;
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .trend-title-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .trend-title-row strong {
-  font-size: 0.84rem;
-  line-height: 1.1;
+  font-size: 1rem;
+  line-height: 1.08;
+}
+
+.explorer-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .trend-date-chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
+  padding: 3px 7px;
   border: 1px solid rgba(140, 160, 190, 0.08);
   border-radius: var(--radius-pill);
   background: rgba(8, 18, 35, 0.42);
   color: var(--muted);
-  font-size: 0.54rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1372,59 +1433,56 @@ input {
 
 .explorer-metrics-row {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: max-content;
-  gap: 4px;
-  justify-content: end;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 8px;
+  justify-content: stretch;
   align-items: stretch;
 }
 
 .explorer-metric-inline {
-  padding: 5px 6px;
+  min-width: 0;
+  padding: 8px 10px;
   border: 1px solid rgba(140, 160, 190, 0.08);
-  border-radius: 9px;
-  background: rgba(8, 18, 35, 0.46);
-  min-height: 34px;
-  width: fit-content;
+  border-radius: 14px;
+  background: rgba(8, 18, 35, 0.5);
+  min-height: 48px;
 }
 
 .explorer-metric strong {
   width: fit-content;
-  font-size: 0.76rem;
+  font-size: 0.84rem;
 }
 
 .score-inline {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+  display: grid;
+  gap: 2px;
   min-width: 0;
-  white-space: nowrap;
 }
 
 .movement-inline {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+  display: grid;
+  gap: 2px;
   min-width: 0;
-  white-space: nowrap;
 }
 
 .score-inline small {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .movement-inline small {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .explorer-card-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px;
-  align-items: center;
-  margin-top: 4px;
+  gap: 10px;
+  align-items: end;
+  margin-top: 10px;
 }
 
 .forecast-note {
@@ -1470,6 +1528,7 @@ input {
   margin-top: 0;
   justify-content: flex-end;
   flex-wrap: wrap;
+  align-content: flex-start;
 }
 
 .export-button {
@@ -1513,10 +1572,10 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   background: var(--surface);
   color: var(--muted);
   font-size: 1rem;
@@ -1663,10 +1722,20 @@ input {
 
 .evidence-preview-inline {
   min-width: 0;
-  padding: 4px 6px;
+  padding: 10px 12px;
   border: 1px solid rgba(140, 160, 190, 0.07);
-  border-radius: 9px;
-  background: rgba(8, 18, 35, 0.38);
+  border-radius: 14px;
+  background: rgba(8, 18, 35, 0.44);
+}
+
+.explorer-evidence-label {
+  display: inline-flex;
+  margin-bottom: 4px;
+  color: var(--accent-strong);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .evidence-preview-inline span {
@@ -1674,7 +1743,14 @@ input {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
-  font-size: 0.64rem;
+  font-size: 0.68rem;
+}
+
+.evidence-preview-inline .explorer-evidence-label {
+  display: inline-flex;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: initial;
 }
 
 .detail-page {
@@ -2124,6 +2200,15 @@ input {
   .detail-panel {
     padding: 14px;
     border-radius: var(--radius-md);
+  }
+
+  .explorer-card {
+    padding: 10px;
+    border-radius: var(--radius-md);
+  }
+
+  .explorer-card::before {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
   }
 
   .score-grid {
