@@ -37,6 +37,7 @@ test("buildCommunitySpotlights returns popular, search-driven, and global entrie
           averageConfidence: 1,
         },
       ],
+      audienceSummary: [{ segmentType: "market", label: "b2b", signalCount: 3 }],
     },
     {
       id: 2,
@@ -78,6 +79,7 @@ test("buildCommunitySpotlights returns popular, search-driven, and global entrie
           averageConfidence: 0.9,
         },
       ],
+      audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 4 }],
     },
   ];
 
@@ -85,11 +87,13 @@ test("buildCommunitySpotlights returns popular, search-driven, and global entrie
 
   assert.deepEqual(
     spotlights.map((spotlight) => spotlight.title),
-    ["Popular this week", "Search-driven", "Global interest"],
+    ["Popular this week", "Search-driven", "Global interest", "Developer audience", "B2B signal"],
   );
   assert.equal(spotlights[0]?.watchlist.name, "Popular Robotics");
   assert.equal(spotlights[1]?.watchlist.name, "AI Search");
   assert.equal(spotlights[2]?.watchlist.name, "AI Search");
+  assert.equal(spotlights[3]?.watchlist.name, "AI Search");
+  assert.equal(spotlights[4]?.watchlist.name, "Popular Robotics");
 });
 
 test("buildCommunitySpotlights omits spotlight buckets with no matching watchlists", () => {
@@ -125,6 +129,7 @@ test("buildCommunitySpotlights omits spotlight buckets with no matching watchlis
           averageConfidence: 1,
         },
       ],
+      audienceSummary: [{ segmentType: "market", label: "b2c", signalCount: 2 }],
     },
   ];
 

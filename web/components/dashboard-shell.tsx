@@ -996,6 +996,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 const detail = detailsByTrendId.get(trend.id);
                 const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
                 const wikipediaLink = getWikipediaLinkFromDetail(detail);
+                const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
+                const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
                 return (
                 <article className="explorer-card" key={trend.id}>
                   <div className="explorer-card-top">
@@ -1032,6 +1034,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           <span className={`seasonality-badge seasonality-badge-${seasonalityBadge.tone}`}>
                             {seasonalityBadge.label}
                           </span>
+                        ) : null}
+                        {audienceBadge ? (
+                          <span className="trend-date-chip">{audienceBadge}</span>
                         ) : null}
                         <span className="trend-date-chip">{formatCategory(trend.category)}</span>
                         <span className="trend-date-chip">
@@ -1107,6 +1112,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                           Source: {formatSourceLabel(primaryEvidenceLink.source)}
                         </span>
                       ) : null}
+                      {audienceSummary ? <span className="source-summary-copy">{audienceSummary}</span> : null}
                       {wikipediaLink ? (
                         <a
                           className="trend-link"
@@ -2266,7 +2272,55 @@ export function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
     });
   }
 
+  const developerAudience = watchlists.find((watchlist) =>
+    (watchlist.audienceSummary ?? []).some((segment) => segment.label === "developer"),
+  );
+  if (developerAudience) {
+    spotlights.push({
+      title: "Developer audience",
+      description: "Strongest with developers and technical builders.",
+      href: "/community?audience=developer",
+      watchlist: developerAudience,
+    });
+  }
+
+  const businessAudience = watchlists.find((watchlist) =>
+    (watchlist.audienceSummary ?? []).some((segment) => segment.label === "b2b"),
+  );
+  if (businessAudience) {
+    spotlights.push({
+      title: "B2B signal",
+      description: "Leaning toward enterprise and business demand.",
+      href: "/community?audience=b2b",
+      watchlist: businessAudience,
+    });
+  }
+
   return spotlights;
+}
+
+function buildTrendAudienceBadge(summary: TrendDetailRecord["audienceSummary"]) {
+  const lead = summary[0];
+  if (!lead) {
+    return null;
+  }
+  if (lead.segmentType === "audience") {
+    return formatAudienceLabel(lead.label);
+  }
+  if (lead.segmentType === "market") {
+    return formatAudienceLabel(lead.label);
+  }
+  return `${formatAudienceLabel(lead.label)} language`;
+}
+
+function summarizeTrendAudience(summary: TrendDetailRecord["audienceSummary"]) {
+  if (summary.length === 0) {
+    return null;
+  }
+  return summary
+    .slice(0, 2)
+    .map((item) => `${formatAudiencePrefix(item.segmentType)} ${formatAudienceLabel(item.label)}`)
+    .join(" · ");
 }
 
 function buildShareExpiryIso(preset: string) {
