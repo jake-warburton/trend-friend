@@ -16,6 +16,7 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       SIGNAL_EYE_DATABASE_URL: ${{ secrets.SIGNAL_EYE_DATABASE_URL }}
       SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
       SIGNAL_EYE_WEB_DATA_PATH: web/data
@@ -27,6 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -55,4 +57,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add web/data
           git commit -m "chore(data): refresh generated snapshots [skip ci]"
-          git push
+          git push origin HEAD:${GITHUB_REF_NAME}
