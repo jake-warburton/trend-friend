@@ -172,6 +172,8 @@ class TopicNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(signals[0].geo_country_code, "US")
         self.assertEqual(signals[0].evidence_url, "https://example.com")
+        self.assertIn("enterprise", signals[0].audience_flags)
+        self.assertIn("b2b", signals[0].market_flags)
         self.assertIn("geo:explicit", signals[0].geo_flags)
         self.assertIn("geo:country:US", signals[0].geo_flags)
 
@@ -190,6 +192,8 @@ class TopicNormalizationTests(unittest.TestCase):
             ]
         )
         self.assertEqual(signals[0].geo_country_code, "GB")
+        self.assertIn("founder", signals[0].audience_flags)
+        self.assertIn("europe-market", signals[0].market_flags)
         self.assertEqual(signals[0].geo_detection_mode, "inferred")
         self.assertIn("geo:region:London", signals[0].geo_flags)
 

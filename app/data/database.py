@@ -29,6 +29,9 @@ def initialize_database(connection: sqlite3.Connection) -> None:
             timestamp TEXT NOT NULL,
             evidence TEXT NOT NULL,
             evidence_url TEXT NULL,
+            language_code TEXT NULL,
+            audience_flags_json TEXT NOT NULL DEFAULT '[]',
+            market_flags_json TEXT NOT NULL DEFAULT '[]',
             geo_flags_json TEXT NOT NULL DEFAULT '[]',
             geo_country_code TEXT NULL,
             geo_region TEXT NULL,
@@ -280,6 +283,24 @@ def initialize_database(connection: sqlite3.Connection) -> None:
         table_name="signals",
         column_name="evidence_url",
         column_sql="TEXT NULL",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="language_code",
+        column_sql="TEXT NULL",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="audience_flags_json",
+        column_sql="TEXT NOT NULL DEFAULT '[]'",
+    )
+    ensure_column(
+        connection,
+        table_name="signals",
+        column_name="market_flags_json",
+        column_sql="TEXT NOT NULL DEFAULT '[]'",
     )
     ensure_column(
         connection,

@@ -28,6 +28,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   }
 
   const geoSummary = trend.geoSummary ?? [];
+  const audienceSummary = trend.audienceSummary ?? [];
   const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
   const primaryEvidenceLink = getPrimaryEvidenceLink(trend);
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
@@ -220,6 +221,36 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
         </section>
 
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Audience</p>
+              <h2>Who and where this seems relevant</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {audienceSummary.length === 0 ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>No audience or market signals yet</strong>
+                  <span>We only show conservative non-sensitive segments like developer, founder, B2B, or region-led demand.</span>
+                </div>
+              </article>
+            ) : (
+              audienceSummary.map((item) => (
+                <article className="detail-list-item" key={`${item.segmentType}-${item.label}`}>
+                  <div>
+                    <strong>{formatAudienceSegment(item)}</strong>
+                    <span>{formatAudienceSegmentType(item.segmentType)}</span>
+                  </div>
+                  <small>{item.signalCount} signals</small>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+
         {wikipediaLink ? (
           <section className="detail-panel">
             <div className="section-heading">
@@ -332,6 +363,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                       {formatGeoLabel(item)} · {item.geoDetectionMode} · {Math.round(item.geoConfidence * 100)}%
                     </span>
                   ) : null}
+                  {(item.audienceFlags?.length ?? 0) > 0 || (item.marketFlags?.length ?? 0) > 0 || item.languageCode ? (
+                    <span>{formatEvidenceAudience(item)}</span>
+                  ) : null}
                 </div>
                 <small>{formatTimestamp(item.timestamp)}</small>
               </article>
@@ -417,6 +451,39 @@ function formatGeoLabel(item: {
     return item.geoCountryCode;
   }
   return "Unknown location";
+}
+
+function formatAudienceSegment(item: TrendDetailRecord["audienceSummary"][number]) {
+  if (item.segmentType === "language") {
+    return `Language: ${item.label}`;
+  }
+  return formatCategory(item.label);
+}
+
+function formatAudienceSegmentType(segmentType: string) {
+  if (segmentType === "audience") {
+    return "Audience segment";
+  }
+  if (segmentType === "market") {
+    return "Market segment";
+  }
+  return "Language";
+}
+
+function formatEvidenceAudience(item: TrendDetailRecord["evidenceItems"][number]) {
+  const parts: string[] = [];
+  const audienceFlags = item.audienceFlags ?? [];
+  const marketFlags = item.marketFlags ?? [];
+  if (item.languageCode) {
+    parts.push(`Language ${item.languageCode.toUpperCase()}`);
+  }
+  if (audienceFlags.length > 0) {
+    parts.push(audienceFlags.slice(0, 2).map(formatCategory).join(" · "));
+  }
+  if (marketFlags.length > 0) {
+    parts.push(marketFlags.slice(0, 2).map(formatCategory).join(" · "));
+  }
+  return parts.join(" · ");
 }
 
 function formatRankChange(value: number | null) {

@@ -29,6 +29,7 @@ from app.exports.contracts import (
     TrendCoveragePayload,
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
+    TrendAudienceSegmentPayload,
     TrendEvidenceItemPayload,
     TrendForecastPayload,
     TrendGeoSummaryPayload,
@@ -413,6 +414,14 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             )
             for item in trend.geo_summary
         ],
+        audience_summary=[
+            TrendAudienceSegmentPayload(
+                segment_type=item.segment_type,
+                label=item.label,
+                signal_count=item.signal_count,
+            )
+            for item in trend.audience_summary
+        ],
         evidence_items=[
             TrendEvidenceItemPayload(
                 source=item.source,
@@ -421,6 +430,9 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                 value=round(item.value, 1),
                 evidence=item.evidence,
                 evidence_url=item.evidence_url,
+                language_code=item.language_code,
+                audience_flags=list(item.audience_flags),
+                market_flags=list(item.market_flags),
                 geo_flags=list(item.geo_flags),
                 geo_country_code=item.geo_country_code,
                 geo_region=item.geo_region,

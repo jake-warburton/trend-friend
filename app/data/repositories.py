@@ -11,6 +11,7 @@ from app.models import (
     AlertEventRecord,
     AlertRule,
     BreakoutPredictionSummary,
+    TrendAudienceSegment,
     NotificationChannel,
     NotificationLogEntry,
     NormalizedSignal,
@@ -54,9 +55,10 @@ class SignalRepository:
             """
             INSERT INTO signals (
                 topic, source, signal_type, value, timestamp, evidence,
-                evidence_url, geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
+                evidence_url, language_code, audience_flags_json, market_flags_json,
+                geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -67,6 +69,9 @@ class SignalRepository:
                     signal.timestamp.isoformat(),
                     signal.evidence,
                     signal.evidence_url,
+                    signal.language_code,
+                    json.dumps(list(signal.audience_flags)),
+                    json.dumps(list(signal.market_flags)),
                     json.dumps(list(signal.geo_flags)),
                     signal.geo_country_code,
                     signal.geo_region,
@@ -84,7 +89,8 @@ class SignalRepository:
         rows = self.connection.execute(
             """
             SELECT topic, source, signal_type, value, timestamp, evidence,
-                   evidence_url, geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
+                   evidence_url, language_code, audience_flags_json, market_flags_json,
+                   geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             FROM signals
             """
         ).fetchall()
@@ -97,6 +103,9 @@ class SignalRepository:
                 timestamp=datetime.fromisoformat(row["timestamp"]),
                 evidence=row["evidence"],
                 evidence_url=row["evidence_url"],
+                language_code=row["language_code"],
+                audience_flags=tuple(json.loads(row["audience_flags_json"])),
+                market_flags=tuple(json.loads(row["market_flags_json"])),
                 geo_flags=tuple(json.loads(row["geo_flags_json"])),
                 geo_country_code=row["geo_country_code"],
                 geo_region=row["geo_region"],
@@ -1737,6 +1746,7 @@ class TrendScoreRepository:
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
                     source_contributions=self.get_topic_source_contributions(score.topic, score),
                     geo_summary=self.get_topic_geo_summary(score.topic),
+                    audience_summary=self.get_topic_audience_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
                     primary_evidence=self.get_primary_evidence(score.topic),
                     related_trends=[],
@@ -1851,6 +1861,7 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT source, signal_type, timestamp, value, evidence, evidence_url,
+                   language_code, audience_flags_json, market_flags_json,
                    geo_flags_json, geo_country_code, geo_region, geo_detection_mode, geo_confidence
             FROM signals
             WHERE topic = ?
@@ -1867,6 +1878,9 @@ class TrendScoreRepository:
                 value=row["value"],
                 evidence=row["evidence"],
                 evidence_url=row["evidence_url"],
+                language_code=row["language_code"],
+                audience_flags=tuple(json.loads(row["audience_flags_json"])),
+                market_flags=tuple(json.loads(row["market_flags_json"])),
                 geo_flags=tuple(json.loads(row["geo_flags_json"])),
                 geo_country_code=row["geo_country_code"],
                 geo_region=row["geo_region"],
@@ -1934,6 +1948,33 @@ class TrendScoreRepository:
             for row in rows
             if row["geo_label"]
         ]
+
+    def get_topic_audience_summary(self, topic: str, limit: int = 8) -> list[TrendAudienceSegment]:
+        """Return aggregated audience, market, and language coverage for a trend."""
+
+        rows = self.connection.execute(
+            """
+            SELECT language_code, audience_flags_json, market_flags_json
+            FROM signals
+            WHERE topic = ?
+            """,
+            (topic,),
+        ).fetchall()
+        counts: dict[tuple[str, str], int] = {}
+        for row in rows:
+            if row["language_code"]:
+                label = str(row["language_code"]).upper()
+                counts[("language", label)] = counts.get(("language", label), 0) + 1
+            for flag in json.loads(row["audience_flags_json"]):
+                counts[("audience", flag)] = counts.get(("audience", flag), 0) + 1
+            for flag in json.loads(row["market_flags_json"]):
+                counts[("market", flag)] = counts.get(("market", flag), 0) + 1
+        segments = [
+            TrendAudienceSegment(segment_type=segment_type, label=label, signal_count=signal_count)
+            for (segment_type, label), signal_count in counts.items()
+        ]
+        segments.sort(key=lambda item: (-item.signal_count, item.segment_type, item.label))
+        return segments[:limit]
 
     @staticmethod
     def _score_from_row(row: sqlite3.Row) -> TrendScoreResult:
@@ -2099,6 +2140,7 @@ class TrendScoreRepository:
                 source_breakdown=record.source_breakdown,
                 source_contributions=record.source_contributions,
                 geo_summary=record.geo_summary,
+                audience_summary=record.audience_summary,
                 evidence_items=record.evidence_items,
                 primary_evidence=record.primary_evidence,
                 related_trends=related_map.get(record.id, []),

@@ -19,6 +19,7 @@ from app.exports.serializers import (
 )
 from app.models import (
     BreakoutPredictionSummary,
+    TrendAudienceSegment,
     SeasonalityResult,
     TrendDetailRecord,
     TrendEvidenceItem,
@@ -162,8 +163,12 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
         self.assertEqual(payload["trends"][0]["geoSummary"][0]["countryCode"], "US")
         self.assertEqual(payload["trends"][0]["geoSummary"][0]["signalCount"], 1)
+        self.assertEqual(payload["trends"][0]["audienceSummary"][0]["segmentType"], "audience")
+        self.assertEqual(payload["trends"][0]["audienceSummary"][0]["label"], "developer")
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["signalType"], "social")
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["evidenceUrl"], "https://example.com/ai-agents")
+        self.assertEqual(payload["trends"][0]["evidenceItems"][0]["languageCode"], "en")
+        self.assertIn("developer", payload["trends"][0]["evidenceItems"][0]["audienceFlags"])
         self.assertEqual(payload["trends"][0]["primaryEvidence"]["evidenceUrl"], "https://example.com/ai-agents")
         self.assertEqual(payload["trends"][0]["evidenceItems"][0]["geoCountryCode"], "US")
         self.assertIn("geo:explicit", payload["trends"][0]["evidenceItems"][0]["geoFlags"])
@@ -423,6 +428,18 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 average_confidence=0.95,
             )
         ],
+        audience_summary=[
+            TrendAudienceSegment(
+                segment_type="audience",
+                label="developer",
+                signal_count=2,
+            ),
+            TrendAudienceSegment(
+                segment_type="market",
+                label="b2b",
+                signal_count=2,
+            ),
+        ],
         evidence_items=[
             TrendEvidenceItem(
                 source="reddit",
@@ -431,6 +448,9 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 value=12.0,
                 evidence="AI agents evidence",
                 evidence_url="https://example.com/ai-agents",
+                language_code="en",
+                audience_flags=("developer", "founder"),
+                market_flags=("b2b",),
                 geo_flags=("geo:explicit", "geo:country:US", "geo:region:US"),
                 geo_country_code="US",
                 geo_region="US",
@@ -474,6 +494,9 @@ def build_signal(topic: str, source: str, signal_type: str, value: float) -> Nor
         value=value,
         timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
         evidence=f"{topic} evidence",
+        language_code="en",
+        audience_flags=("developer",) if source == "github" else ("founder",),
+        market_flags=("b2b",),
     )
 
 

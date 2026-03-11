@@ -229,6 +229,9 @@ class TrendEvidenceItemPayload:
     value: float
     evidence: str
     evidence_url: str | None
+    language_code: str | None
+    audience_flags: list[str]
+    market_flags: list[str]
     geo_flags: list[str]
     geo_country_code: str | None
     geo_region: str | None
@@ -247,6 +250,15 @@ class TrendGeoSummaryPayload:
     explicit_count: int
     inferred_count: int
     average_confidence: float
+
+
+@dataclass(frozen=True)
+class TrendAudienceSegmentPayload:
+    """Aggregated audience and market metadata for a trend."""
+
+    segment_type: str
+    label: str
+    signal_count: int
 
 
 @dataclass(frozen=True)
@@ -285,6 +297,7 @@ class TrendDetailRecordPayload:
     source_breakdown: list[TrendSourceBreakdownPayload]
     source_contributions: list[TrendSourceContributionPayload]
     geo_summary: list[TrendGeoSummaryPayload]
+    audience_summary: list[TrendAudienceSegmentPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     primary_evidence: TrendPrimaryEvidencePayload | None
     related_trends: list[RelatedTrendPayload]
@@ -657,6 +670,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
     payload["sourceContributions"] = payload.pop("source_contributions")
     payload["geoSummary"] = payload.pop("geo_summary")
+    payload["audienceSummary"] = payload.pop("audience_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["primaryEvidence"] = payload.pop("primary_evidence")
     payload["relatedTrends"] = payload.pop("related_trends")
@@ -680,11 +694,17 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     for item in payload["evidenceItems"]:
         item["signalType"] = item.pop("signal_type")
         item["evidenceUrl"] = item.pop("evidence_url")
+        item["languageCode"] = item.pop("language_code")
+        item["audienceFlags"] = item.pop("audience_flags")
+        item["marketFlags"] = item.pop("market_flags")
         item["geoFlags"] = item.pop("geo_flags")
         item["geoCountryCode"] = item.pop("geo_country_code")
         item["geoRegion"] = item.pop("geo_region")
         item["geoDetectionMode"] = item.pop("geo_detection_mode")
         item["geoConfidence"] = item.pop("geo_confidence")
+    for item in payload["audienceSummary"]:
+        item["segmentType"] = item.pop("segment_type")
+        item["signalCount"] = item.pop("signal_count")
     if payload["primaryEvidence"] is not None:
         payload["primaryEvidence"]["signalType"] = payload["primaryEvidence"].pop("signal_type")
         payload["primaryEvidence"]["evidenceUrl"] = payload["primaryEvidence"].pop("evidence_url")

@@ -233,6 +233,9 @@ export type TrendEvidenceItem = {
   value: number;
   evidence: string;
   evidenceUrl: string | null;
+  languageCode?: string | null;
+  audienceFlags?: string[];
+  marketFlags?: string[];
   geoFlags: string[];
   geoCountryCode: string | null;
   geoRegion: string | null;
@@ -248,6 +251,12 @@ export type TrendGeoSummary = {
   explicitCount: number;
   inferredCount: number;
   averageConfidence: number;
+};
+
+export type TrendAudienceSegment = {
+  segmentType: string;
+  label: string;
+  signalCount: number;
 };
 
 export type TrendSourceContribution = {
@@ -289,6 +298,7 @@ export type TrendDetailRecord = {
   sourceBreakdown: TrendSourceBreakdown[];
   sourceContributions: TrendSourceContribution[];
   geoSummary: TrendGeoSummary[];
+  audienceSummary: TrendAudienceSegment[];
   evidenceItems: TrendEvidenceItem[];
   primaryEvidence?: TrendEvidenceItem | null;
   relatedTrends: RelatedTrend[];

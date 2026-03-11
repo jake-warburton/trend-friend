@@ -35,6 +35,9 @@ class NormalizedSignal:
     timestamp: datetime
     evidence: str
     evidence_url: str | None = None
+    language_code: str | None = None
+    audience_flags: tuple[str, ...] = ()
+    market_flags: tuple[str, ...] = ()
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None
@@ -204,6 +207,9 @@ class TrendEvidenceItem:
     value: float
     evidence: str
     evidence_url: str | None = None
+    language_code: str | None = None
+    audience_flags: tuple[str, ...] = ()
+    market_flags: tuple[str, ...] = ()
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None
@@ -234,6 +240,15 @@ class TrendGeoSummary:
     explicit_count: int
     inferred_count: int
     average_confidence: float
+
+
+@dataclass(frozen=True)
+class TrendAudienceSegment:
+    """Aggregated audience or market segment coverage for a trend."""
+
+    segment_type: str
+    label: str
+    signal_count: int
 
 
 @dataclass(frozen=True)
@@ -273,6 +288,7 @@ class TrendDetailRecord:
     source_breakdown: list[TrendSourceBreakdown]
     source_contributions: list[TrendSourceContribution]
     geo_summary: list[TrendGeoSummary]
+    audience_summary: list[TrendAudienceSegment]
     evidence_items: list[TrendEvidenceItem]
     primary_evidence: TrendPrimaryEvidence | None
     related_trends: list[RelatedTrend]

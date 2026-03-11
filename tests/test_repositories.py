@@ -42,6 +42,9 @@ class RepositoryTests(unittest.TestCase):
                 42.0,
                 timestamp,
                 "AI agents",
+                language_code="en",
+                audience_flags=("developer", "founder"),
+                market_flags=("b2b",),
                 geo_flags=("geo:inferred", "geo:country:GB", "geo:region:London"),
                 geo_country_code="GB",
                 geo_region="London",
@@ -55,6 +58,7 @@ class RepositoryTests(unittest.TestCase):
         stored_signals = repository.list_signals()
         self.assertEqual(stored_signals, signals)
         self.assertEqual(stored_signals[0].geo_region, "London")
+        self.assertEqual(stored_signals[0].language_code, "en")
 
     def test_source_ingestion_run_repository_returns_latest_runs_per_source(self) -> None:
         repository = SourceIngestionRunRepository(self.connection)
@@ -230,6 +234,9 @@ class RepositoryTests(unittest.TestCase):
                     12.0,
                     latest_captured_at,
                     "Reddit evidence",
+                    language_code="en",
+                    audience_flags=("developer", "founder"),
+                    market_flags=("b2b", "europe-market"),
                     geo_flags=("geo:inferred", "geo:country:GB", "geo:region:London"),
                     geo_country_code="GB",
                     geo_region="London",
@@ -257,6 +264,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].volatility, "spiking")
         self.assertEqual(records[0].geo_summary[0].country_code, "GB")
         self.assertEqual(records[0].geo_summary[0].signal_count, 1)
+        self.assertEqual(records[0].audience_summary[0].segment_type, "audience")
+        self.assertEqual(records[0].audience_summary[0].label, "developer")
         self.assertEqual(records[0].source_breakdown[0].source, "github")
         self.assertEqual(records[0].source_contributions[0].source, "reddit")
         self.assertEqual(records[0].source_contributions[0].score_share_percent, 36.7)

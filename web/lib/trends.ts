@@ -396,7 +396,11 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
     evidenceItems: (trend.evidenceItems ?? []).map((item) => ({
       ...item,
       evidenceUrl: item.evidenceUrl ?? null,
+      languageCode: item.languageCode ?? null,
+      audienceFlags: item.audienceFlags ?? [],
+      marketFlags: item.marketFlags ?? [],
     })),
+    audienceSummary: trend.audienceSummary ?? [],
     primaryEvidence: trend.primaryEvidence
       ? {
           ...trend.primaryEvidence,
