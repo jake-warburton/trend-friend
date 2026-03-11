@@ -16,7 +16,8 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     env:
-      SIGNAL_EYE_DATABASE_PATH: data/signal_eye.db
+      SIGNAL_EYE_DATABASE_URL: ${{ secrets.SIGNAL_EYE_DATABASE_URL }}
+      SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
       SIGNAL_EYE_WEB_DATA_PATH: web/data
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_API || '' }}
       TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN || '' }}
@@ -38,19 +39,20 @@ jobs:
 
       - name: Refresh trend data
         run: |
-          mkdir -p data web/data
+          mkdir -p web/data
           export SIGNAL_EYE_REDDIT_USER_AGENT="${SIGNAL_EYE_REDDIT_USER_AGENT:-signal-eye-github-action/1.0}"
+          python3 scripts/check_supabase.py
           python3 scripts/run_ingestion.py
           python3 scripts/export_web_data.py
 
       - name: Commit refreshed data
         run: |
-          if git diff --quiet -- data/signal_eye.db web/data; then
+          if git diff --quiet -- web/data; then
             echo "No data changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f data/signal_eye.db web/data
+          git add web/data
           git commit -m "chore(data): refresh generated snapshots [skip ci]"
           git push

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
-import sqlite3
 from datetime import datetime, timedelta, timezone
+from typing import Any, Mapping
 
+from app.data.connection import DatabaseConnection
+from app.data.write_helpers import execute_insert_and_return_id
 from app.topics.categorize import categorize_topic
 from app.models import (
     AlertEventRecord,
@@ -40,11 +42,23 @@ from app.models import (
     WatchlistShare,
 )
 
+RowMapping = Mapping[str, Any]
+
+
+def sql_placeholders(connection: DatabaseConnection, count: int) -> str:
+    """Return a positional placeholder list for the current connection dialect.
+
+    Centralizing this keeps repository logic independent from one concrete
+    database engine.
+    """
+
+    return connection.dialect.placeholders(count)
+
 
 class SignalRepository:
     """Persist normalized topic signals."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def replace_signals(self, signals: list[NormalizedSignal]) -> None:
@@ -119,7 +133,7 @@ class SignalRepository:
 class SourceIngestionRunRepository:
     """Persist and retrieve source ingestion outcomes."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def append_runs(self, runs: list[SourceIngestionRun]) -> None:
@@ -217,7 +231,7 @@ class SourceIngestionRunRepository:
 class PipelineRunRepository:
     """Persist and retrieve full pipeline execution summaries."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def append_run(self, run: PipelineRun) -> None:
@@ -284,7 +298,7 @@ class PipelineRunRepository:
 class NotificationRepository:
     """Persist and retrieve notification channels plus delivery logs."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def list_channels(self, owner_user_id: int | None = None) -> list[NotificationChannel]:
@@ -358,7 +372,8 @@ class NotificationRepository:
     ) -> NotificationChannel:
         """Create and return a notification channel."""
 
-        cursor = self.connection.execute(
+        channel_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO notification_channels (owner_user_id, channel_type, destination, label, enabled)
             VALUES (?, ?, ?, ?, ?)
@@ -372,7 +387,7 @@ class NotificationRepository:
             FROM notification_channels
             WHERE id = ?
             """,
-            (int(cursor.lastrowid),),
+            (channel_id,),
         ).fetchone()
         return self._channel_from_row(row)
 
@@ -402,7 +417,8 @@ class NotificationRepository:
     ) -> NotificationLogEntry:
         """Persist one delivery attempt."""
 
-        cursor = self.connection.execute(
+        log_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO notification_log (channel_id, sent_at, payload_json, status_code, error)
             VALUES (?, ?, ?, ?, ?)
@@ -416,7 +432,7 @@ class NotificationRepository:
             FROM notification_log
             WHERE id = ?
             """,
-            (int(cursor.lastrowid),),
+            (log_id,),
         ).fetchone()
         return self._log_from_row(row)
 
@@ -440,7 +456,7 @@ class NotificationRepository:
         return [self._log_from_row(row) for row in rows]
 
     @staticmethod
-    def _channel_from_row(row: sqlite3.Row) -> NotificationChannel:
+    def _channel_from_row(row: RowMapping) -> NotificationChannel:
         return NotificationChannel(
             id=row["id"],
             owner_user_id=row["owner_user_id"],
@@ -452,7 +468,7 @@ class NotificationRepository:
         )
 
     @staticmethod
-    def _log_from_row(row: sqlite3.Row) -> NotificationLogEntry:
+    def _log_from_row(row: RowMapping) -> NotificationLogEntry:
         return NotificationLogEntry(
             id=row["id"],
             channel_id=row["channel_id"],
@@ -466,7 +482,7 @@ class NotificationRepository:
 class WatchlistRepository:
     """Persist and retrieve watchlists and simple alert rules."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def ensure_default_watchlist(self, name: str = "Core Watchlist", owner_user_id: int | None = None) -> Watchlist:
@@ -600,13 +616,7 @@ class WatchlistRepository:
     def add_item(self, watchlist_id: int, trend_id: str, trend_name: str) -> Watchlist:
         """Add a trend to a watchlist and return the updated watchlist."""
 
-        self.connection.execute(
-            """
-            INSERT OR IGNORE INTO watchlist_items (watchlist_id, trend_id, trend_name)
-            VALUES (?, ?, ?)
-            """,
-            (watchlist_id, trend_id, trend_name),
-        )
+        self._insert_watchlist_item_if_missing(watchlist_id, trend_id, trend_name)
         self.connection.execute(
             "UPDATE watchlists SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
             (watchlist_id,),
@@ -698,7 +708,8 @@ class WatchlistRepository:
     ) -> AlertRule:
         """Create and return an alert rule."""
 
-        cursor = self.connection.execute(
+        alert_rule_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO alert_rules (watchlist_id, name, rule_type, threshold, enabled)
             VALUES (?, ?, ?, ?, ?)
@@ -712,7 +723,7 @@ class WatchlistRepository:
             FROM alert_rules
             WHERE id = ?
             """,
-            (int(cursor.lastrowid),),
+            (alert_rule_id,),
         ).fetchone()
         return AlertRule(
             id=row["id"],
@@ -807,7 +818,7 @@ class WatchlistRepository:
 
         if not event_ids:
             return 0
-        placeholders = ",".join("?" for _ in event_ids)
+        placeholders = sql_placeholders(self.connection, len(event_ids))
         if owner_user_id is None:
             cursor = self.connection.execute(
                 f"""
@@ -855,7 +866,8 @@ class WatchlistRepository:
             watchlist = self.get_watchlist(watchlist_id)
             expires_at = self._resolve_default_share_expiry(watchlist)
 
-        cursor = self.connection.execute(
+        share_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO watchlist_shares (watchlist_id, share_token, created_by, is_public, show_creator, expires_at)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -870,7 +882,7 @@ class WatchlistRepository:
             ),
         )
         self.connection.commit()
-        share = self.get_share_by_id(int(cursor.lastrowid))  # type: ignore[assignment]
+        share = self.get_share_by_id(share_id)  # type: ignore[assignment]
         if share is not None:
             visibility_label = "public" if share.is_public else "private"
             creator_label = "with attribution" if share.show_creator else "anonymous"
@@ -1027,15 +1039,7 @@ class WatchlistRepository:
             (accessed_at.isoformat(), share_id),
         )
         access_date = accessed_at.date().isoformat()
-        self.connection.execute(
-            """
-            INSERT INTO watchlist_share_daily_access (share_id, access_date, access_count)
-            VALUES (?, ?, 1)
-            ON CONFLICT(share_id, access_date)
-            DO UPDATE SET access_count = access_count + 1
-            """,
-            (share_id, access_date),
-        )
+        self._upsert_share_daily_access(share_id, access_date)
         self.connection.commit()
         if cursor.rowcount == 0:
             return None
@@ -1243,7 +1247,8 @@ class WatchlistRepository:
     ) -> WatchlistShareEvent:
         """Persist and return a share audit event."""
 
-        cursor = self.connection.execute(
+        share_event_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO watchlist_share_events (share_id, watchlist_id, actor_user_id, event_type, detail)
             VALUES (?, ?, ?, ?, ?)
@@ -1257,7 +1262,7 @@ class WatchlistRepository:
             FROM watchlist_share_events
             WHERE id = ?
             """,
-            (int(cursor.lastrowid),),
+            (share_event_id,),
         ).fetchone()
         return self._share_event_from_row(row)
 
@@ -1288,7 +1293,7 @@ class WatchlistRepository:
         return [self._share_event_from_row(row) for row in rows]
 
     @staticmethod
-    def _share_from_row(row: sqlite3.Row) -> WatchlistShare:
+    def _share_from_row(row: RowMapping) -> WatchlistShare:
         return WatchlistShare(
             id=row["id"],
             watchlist_id=row["watchlist_id"],
@@ -1303,7 +1308,7 @@ class WatchlistRepository:
         )
 
     @staticmethod
-    def _share_event_from_row(row: sqlite3.Row) -> WatchlistShareEvent:
+    def _share_event_from_row(row: RowMapping) -> WatchlistShareEvent:
         return WatchlistShareEvent(
             id=row["id"],
             share_id=row["share_id"],
@@ -1334,14 +1339,14 @@ class WatchlistRepository:
 
         if not watchlist_ids:
             return {}
-        placeholders = ",".join("?" for _ in watchlist_ids)
+        placeholders = sql_placeholders(self.connection, len(watchlist_ids))
         rows = self.connection.execute(
             f"SELECT id, owner_user_id FROM watchlists WHERE id IN ({placeholders})",
             tuple(watchlist_ids),
         ).fetchall()
         return {row["id"]: row["owner_user_id"] for row in rows}
 
-    def _watchlist_from_row(self, row: sqlite3.Row) -> Watchlist:
+    def _watchlist_from_row(self, row: RowMapping) -> Watchlist:
         """Build a watchlist model with nested items."""
 
         item_rows = self.connection.execute(
@@ -1376,6 +1381,29 @@ class WatchlistRepository:
             return None
         return datetime.now(timezone.utc) + timedelta(days=watchlist.default_share_duration_days)
 
+    def _insert_watchlist_item_if_missing(self, watchlist_id: int, trend_id: str, trend_name: str) -> None:
+        """Insert one watchlist item if it does not already exist."""
+
+        self.connection.execute(
+            self.connection.dialect.insert_or_ignore_statement(
+                "watchlist_items",
+                ("watchlist_id", "trend_id", "trend_name"),
+            ),
+            (watchlist_id, trend_id, trend_name),
+        )
+
+    def _upsert_share_daily_access(self, share_id: int, access_date: str) -> None:
+        """Upsert the per-day share access row."""
+
+        self.connection.execute(
+            self.connection.dialect.incrementing_upsert_statement(
+                "watchlist_share_daily_access",
+                ("share_id", "access_date"),
+                "access_count",
+            ),
+            (share_id, access_date),
+        )
+
 
 class TrendScoreRepository:
     """Persist and retrieve ranked trend scores."""
@@ -1389,7 +1417,7 @@ class TrendScoreRepository:
         "wikipedia": 1,
     }
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
     def replace_scores(self, scores: list[TrendScoreResult]) -> None:
@@ -1425,11 +1453,11 @@ class TrendScoreRepository:
     def append_snapshot(self, scores: list[TrendScoreResult], captured_at: datetime) -> int:
         """Persist a timestamped ranked snapshot for historical views."""
 
-        cursor = self.connection.execute(
+        run_id = execute_insert_and_return_id(
+            self.connection,
             "INSERT INTO trend_runs (captured_at) VALUES (?)",
             (captured_at.isoformat(),),
         )
-        run_id = int(cursor.lastrowid)
         self.connection.executemany(
             """
             INSERT INTO trend_score_snapshots (
@@ -1978,8 +2006,8 @@ class TrendScoreRepository:
         return segments[:limit]
 
     @staticmethod
-    def _score_from_row(row: sqlite3.Row) -> TrendScoreResult:
-        """Build a score model from a SQLite row."""
+    def _score_from_row(row: RowMapping) -> TrendScoreResult:
+        """Build a score model from one database row."""
 
         return TrendScoreResult(
             topic=row["topic"],

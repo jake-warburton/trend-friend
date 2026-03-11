@@ -15,6 +15,7 @@ class Settings:
     app_name: str
     database_url: Optional[str]
     database_path: Path
+    enable_postgres_runtime: bool
     web_data_path: Path
     request_timeout_seconds: int
     max_items_per_source: int
@@ -39,6 +40,7 @@ def load_settings() -> Settings:
         app_name="Signal Eye",
         database_url=os.getenv("SIGNAL_EYE_DATABASE_URL"),
         database_path=Path(os.getenv("SIGNAL_EYE_DATABASE_PATH", "data/signal_eye.db")),
+        enable_postgres_runtime=os.getenv("SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME", "false").lower() == "true",
         web_data_path=Path(os.getenv("SIGNAL_EYE_WEB_DATA_PATH", "web/data")),
         request_timeout_seconds=int(os.getenv("SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS", "10")),
         max_items_per_source=int(os.getenv("SIGNAL_EYE_MAX_ITEMS_PER_SOURCE", "30")),

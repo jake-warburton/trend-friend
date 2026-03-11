@@ -57,6 +57,14 @@ Tasks:
 - create a Postgres schema equivalent for all current tables
 - replace `PRAGMA`-based column checks with explicit migrations
 
+Current status:
+
+- SQLite now has a versioned migration runner in [app/data/migrations.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/migrations.py)
+- the base SQLite schema now lives in [app/data/sqlite_migrations/0001_initial_schema.sql](/Users/jakewarburton/Documents/repos/trend-friend/app/data/sqlite_migrations/0001_initial_schema.sql)
+- legacy SQLite backfills are still handled by a SQLite-only compatibility migration in [app/data/database.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/database.py)
+- Postgres now has an initial adapter in [app/data/postgres.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/postgres.py) and a base schema migration in [app/data/postgres_migrations/0001_initial_schema.sql](/Users/jakewarburton/Documents/repos/trend-friend/app/data/postgres_migrations/0001_initial_schema.sql)
+- `SIGNAL_EYE_DATABASE_URL` still intentionally fails after schema initialization because repository SQL portability is not finished
+
 ### Stage 3: Query portability
 
 Goal: make repository SQL run against Postgres.
@@ -68,6 +76,12 @@ Tasks:
 - replace `cursor.lastrowid` assumptions
 - convert boolean integer storage to real booleans where appropriate
 - decide whether JSON stays as text or becomes `jsonb`
+
+Current status:
+
+- the Postgres adapter now rewrites SQLite-style `?` placeholders to `%s`
+- inserted-id writes now go through [app/data/write_helpers.py](/Users/jakewarburton/Documents/repos/trend-friend/app/data/write_helpers.py) so the main insert paths can use `RETURNING id` on Postgres instead of relying on `lastrowid`
+- remaining work is still required for broader SQL portability, especially SQLite-specific write/update semantics and any queries that assume SQLite behavior beyond placeholders
 
 ### Stage 4: Dual-run verification
 

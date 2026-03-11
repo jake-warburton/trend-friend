@@ -14,11 +14,13 @@ This project is not Postgres-ready yet, but Supabase is the target database plat
 1. Create a Supabase project for Signal Eye.
 2. Copy the Postgres connection string.
 3. Store it as `SIGNAL_EYE_DATABASE_URL` in local `.env` and GitHub Actions secrets.
-4. Do not switch runtime traffic to it yet.
+4. Use the Session Pooler connection string if you are on an IPv4-only network.
+5. Keep `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME=false` until you have validated the current runtime path.
 
 Recommended secrets:
 
 - `SIGNAL_EYE_DATABASE_URL`
+- `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME`
 - `SIGNAL_EYE_REDDIT_USER_AGENT`
 - `GITHUB_TOKEN`
 - `TWITTER_BEARER_TOKEN`
@@ -32,13 +34,53 @@ Before Supabase can be used, complete the migration items in [docs/POSTGRES_MIGR
 3. make repository SQL portable to Postgres
 4. verify refresh, exports, and history reads against Postgres
 
+Current local verification command:
+
+```bash
+python3 scripts/check_supabase.py
+```
+
+That script:
+
+- reads `SIGNAL_EYE_DATABASE_URL` from `.env`
+- connects to Supabase
+- applies the current Postgres migration set
+- verifies that `schema_migrations` and the `trend_scores` table exist
+
+Core repository smoke test:
+
+```bash
+python3 scripts/check_supabase_trend_scores.py
+```
+
+That script:
+
+- writes one isolated `trend_runs` + `trend_score_snapshots` payload
+- reads it back through `TrendScoreRepository`
+- deletes the smoke-test rows afterward
+
 ## Phase 3: GitHub Actions integration
 
-Once Postgres support is real:
+The scheduled workflow now uses Supabase as the source of truth.
 
-1. update [refresh-data.yml](/Users/jakewarburton/Documents/repos/trend-friend/.github/workflows/refresh-data.yml) to use `SIGNAL_EYE_DATABASE_URL`
-2. stop relying on a committed SQLite database file
-3. keep exporting `web/data/*.json` for the frontend during the transition
+Required GitHub Actions secrets:
+
+- `SIGNAL_EYE_DATABASE_URL`
+- `SIGNAL_EYE_REDDIT_USER_AGENT`
+- `GITHUB_TOKEN_API` if you want higher GitHub ingestion limits
+- `TWITTER_BEARER_TOKEN` if you want live Twitter/X ingestion
+
+Current workflow behavior:
+
+1. runs `python3 scripts/check_supabase.py`
+2. runs the ingestion pipeline with `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME=true`
+3. exports `web/data/*.json` from Supabase-backed state
+4. commits only the refreshed `web/data` payloads
+
+That means:
+
+- SQLite is no longer needed for the scheduled free-hosting path
+- Vercel can stay in static snapshot mode
 
 ## Phase 4: Frontend read model
 

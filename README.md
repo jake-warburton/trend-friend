@@ -76,6 +76,8 @@ cp .env.example .env
 Supported environment variables:
 
 - `SIGNAL_EYE_DATABASE_PATH`: SQLite database location. Default: `data/signal_eye.db`
+- `SIGNAL_EYE_DATABASE_URL`: Optional Supabase/Postgres connection string
+- `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME`: Opt-in flag for running the current backend against `SIGNAL_EYE_DATABASE_URL`. Default: `false`
 - `SIGNAL_EYE_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
 - `SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
 - `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
@@ -159,8 +161,8 @@ This repo now includes:
 How it works:
 
 1. GitHub Actions runs the Python ingestion pipeline on a schedule.
-2. It refreshes `data/signal_eye.db` so historical trend state persists between runs.
-3. It exports fresh `web/data/*.json`.
+2. It writes trend state into Supabase via `SIGNAL_EYE_DATABASE_URL`.
+3. It exports fresh `web/data/*.json` from Supabase-backed state.
 4. It commits those generated files back to the repo.
 5. Vercel redeploys from the updated repo and serves the refreshed static snapshots.
 
@@ -168,10 +170,11 @@ For this free path:
 
 - do **not** set `SIGNAL_EYE_API_URL` in Vercel
 - keep the app in file mode
-- add these GitHub repository secrets if you want live enrichment:
+- add these GitHub repository secrets:
+  - `SIGNAL_EYE_DATABASE_URL`
   - `SIGNAL_EYE_REDDIT_USER_AGENT`
-  - `GITHUB_TOKEN_API`
-  - `TWITTER_BEARER_TOKEN`
+  - `GITHUB_TOKEN_API` if you want higher GitHub ingestion limits
+  - `TWITTER_BEARER_TOKEN` if you want live Twitter/X ingestion
 
 The included workflow defaults to every 15 minutes to keep repo churn reasonable. You can tighten or loosen the cron expression in [refresh-data.yml](/Users/jakewarburton/Documents/repos/signal-eye/.github/workflows/refresh-data.yml).
 

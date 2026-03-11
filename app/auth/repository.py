@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any, Mapping
 
 from app.data.connection import DatabaseConnection
+from app.data.write_helpers import execute_insert_and_return_id
 from app.models import ApiKey, User, UserSession
+
+RowMapping = Mapping[str, Any]
 
 
 class UserRepository:
@@ -23,7 +27,8 @@ class UserRepository:
     ) -> User:
         """Create and return a new user."""
 
-        cursor = self.connection.execute(
+        user_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO users (username, password_hash, display_name, is_admin)
             VALUES (?, ?, ?, ?)
@@ -31,7 +36,7 @@ class UserRepository:
             (username, password_hash, display_name, int(is_admin)),
         )
         self.connection.commit()
-        return self.get_user_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
+        return self.get_user_by_id(user_id)  # type: ignore[return-value]
 
     def get_user_by_id(self, user_id: int) -> User | None:
         """Return a user by id."""
@@ -72,7 +77,8 @@ class UserRepository:
     ) -> ApiKey:
         """Create and return a new API key."""
 
-        cursor = self.connection.execute(
+        api_key_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO api_keys (user_id, key_hash, key_prefix, name)
             VALUES (?, ?, ?, ?)
@@ -80,7 +86,7 @@ class UserRepository:
             (user_id, key_hash, key_prefix, name),
         )
         self.connection.commit()
-        return self.get_api_key_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
+        return self.get_api_key_by_id(api_key_id)  # type: ignore[return-value]
 
     def get_api_key_by_id(self, key_id: int) -> ApiKey | None:
         """Return an API key by id."""
@@ -143,7 +149,8 @@ class UserRepository:
     def create_session(self, user_id: int, token_hash: str) -> UserSession:
         """Create and return a new user session."""
 
-        cursor = self.connection.execute(
+        session_id = execute_insert_and_return_id(
+            self.connection,
             """
             INSERT INTO user_sessions (user_id, token_hash)
             VALUES (?, ?)
@@ -151,7 +158,7 @@ class UserRepository:
             (user_id, token_hash),
         )
         self.connection.commit()
-        return self.get_session_by_id(int(cursor.lastrowid))  # type: ignore[return-value]
+        return self.get_session_by_id(session_id)  # type: ignore[return-value]
 
     def get_session_by_id(self, session_id: int) -> UserSession | None:
         """Return a session by id."""
@@ -201,7 +208,7 @@ class UserRepository:
         self.connection.commit()
 
     @staticmethod
-    def _user_from_row(row: sqlite3.Row) -> User:
+    def _user_from_row(row: RowMapping) -> User:
         return User(
             id=row["id"],
             username=row["username"],
@@ -212,7 +219,7 @@ class UserRepository:
         )
 
     @staticmethod
-    def _api_key_from_row(row: sqlite3.Row) -> ApiKey:
+    def _api_key_from_row(row: RowMapping) -> ApiKey:
         return ApiKey(
             id=row["id"],
             user_id=row["user_id"],
@@ -225,7 +232,7 @@ class UserRepository:
         )
 
     @staticmethod
-    def _session_from_row(row: sqlite3.Row) -> UserSession:
+    def _session_from_row(row: RowMapping) -> UserSession:
         return UserSession(
             id=row["id"],
             user_id=row["user_id"],
