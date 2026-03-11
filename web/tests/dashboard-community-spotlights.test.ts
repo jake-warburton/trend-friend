@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
   buildAudienceFilterOptions,
+  buildCommunityExportHref,
   buildCommunitySpotlights,
+  buildSharedWatchlistExportHref,
   buildLanguageFilterOptions,
   buildMarketFilterOptions,
   listActiveExplorerFilters,
@@ -103,6 +105,15 @@ test("buildCommunitySpotlights returns popular, search-driven, and global entrie
   assert.equal(spotlights[2]?.watchlist.name, "AI Search");
   assert.equal(spotlights[3]?.watchlist.name, "AI Search");
   assert.equal(spotlights[4]?.watchlist.name, "Popular Robotics");
+});
+
+test("community export helpers build stable dashboard download URLs", () => {
+  assert.equal(buildCommunityExportHref(), "/api/export/community");
+  assert.equal(buildSharedWatchlistExportHref("share-123"), "/api/export/shared/share-123");
+  assert.equal(
+    buildSharedWatchlistExportHref("space token"),
+    "/api/export/shared/space%20token",
+  );
 });
 
 test("buildCommunitySpotlights omits spotlight buckets with no matching watchlists", () => {

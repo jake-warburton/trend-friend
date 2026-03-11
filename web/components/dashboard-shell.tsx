@@ -2067,6 +2067,9 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
               <Link className="mini-action-button community-link-button" href="/community">
                 Browse all
               </Link>
+              <a className="mini-action-button community-link-button" download href={buildCommunityExportHref()}>
+                Export CSV
+              </a>
             </div>
 
           <div className="snapshot-list">
@@ -2080,9 +2083,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       <section className="snapshot-card community-spotlight-card" key={spotlight.title}>
                         <header>
                           <strong>{spotlight.title}</strong>
-                          <Link className="mini-action-button community-link-button" href={spotlight.href}>
-                            Open
-                          </Link>
+                          <div className="community-entry-links">
+                            <Link className="mini-action-button community-link-button" href={spotlight.href}>
+                              Open
+                            </Link>
+                            <a
+                              className="mini-action-button community-link-button"
+                              download
+                              href={buildSharedWatchlistExportHref(spotlight.watchlist.shareToken)}
+                            >
+                              CSV
+                            </a>
+                          </div>
                         </header>
                         <p className="source-summary-copy">{spotlight.description}</p>
                         <p className="source-summary-copy">
@@ -2137,6 +2149,18 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       <p className="source-summary-copy">Last opened {formatCompactTimestamp(watchlist.lastAccessedAt)}</p>
                     ) : null}
                     <p className="source-summary-copy">{formatCompactTimestamp(watchlist.createdAt)}</p>
+                    <div className="community-entry-links">
+                      <Link className="mini-action-button community-link-button" href={`/shared/${watchlist.shareToken}`}>
+                        Open
+                      </Link>
+                      <a
+                        className="mini-action-button community-link-button"
+                        download
+                        href={buildSharedWatchlistExportHref(watchlist.shareToken)}
+                      >
+                        Export CSV
+                      </a>
+                    </div>
                   </section>
                 ))}
               </>
@@ -2491,6 +2515,14 @@ export function buildCommunitySpotlights(watchlists: PublicWatchlistSummary[]) {
   }
 
   return spotlights;
+}
+
+export function buildCommunityExportHref() {
+  return "/api/export/community";
+}
+
+export function buildSharedWatchlistExportHref(shareToken: string) {
+  return `/api/export/shared/${encodeURIComponent(shareToken)}`;
 }
 
 export function buildAudienceFilterOptions(details: TrendDetailRecord[]) {
