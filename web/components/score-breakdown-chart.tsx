@@ -57,10 +57,16 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
               borderRadius: 8,
               color: "var(--copy)",
               fontSize: 12,
+              padding: "8px 12px",
+            }}
+            labelStyle={{
+              color: "var(--copy)",
+              fontSize: 12,
+              fontWeight: 600,
             }}
             formatter={(value) => [Number(value).toFixed(1), "Score"]}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} activeBar={{ opacity: 0.8 }}>
             {data.map((entry) => (
               <Cell key={entry.label} fill={COMPONENT_COLORS[entry.label] ?? "#5e6bff"} />
             ))}
