@@ -3053,7 +3053,8 @@ input {
     margin-top: 0;
     grid-template-columns: auto 1fr;
     gap: 12px;
-    padding: 12px 16px;
+    min-height: 54px;
+    padding: 8px 16px;
   }
 
   .nav-bar-links {
@@ -3062,8 +3063,8 @@ input {
 
   .nav-bar-blend {
     width: min(100% - 24px, 1440px);
-    margin-top: 4px;
-    padding: 8px 0 10px;
+    margin-top: 0;
+    padding: 2px 0 4px;
   }
 
   .hero-panel,
