@@ -2426,6 +2426,28 @@ input {
     border-radius: var(--radius-md);
   }
 
+  .explorer-card-head,
+  .explorer-card-kicker,
+  .trend-title-row,
+  .explorer-badge-row {
+    min-width: 0;
+  }
+
+  .trend-title-row strong,
+  .trend-link,
+  .trend-date-chip,
+  .trend-summary-chip {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .trend-summary-chip {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    line-height: 1.2;
+  }
+
   .explorer-card::before {
     border-radius: var(--radius-md) 0 0 var(--radius-md);
   }
