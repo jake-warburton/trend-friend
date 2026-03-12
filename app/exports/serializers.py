@@ -515,7 +515,19 @@ def slugify(topic: str) -> str:
 def format_trend_name(topic: str) -> str:
     """Return a display-friendly topic name."""
 
-    return " ".join(part.capitalize() for part in topic.split())
+    acronym_map = {
+        "ai": "AI",
+        "api": "API",
+        "sdk": "SDK",
+        "ml": "ML",
+        "llm": "LLM",
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "ev": "EV",
+        "vr": "VR",
+        "ar": "AR",
+    }
+    return " ".join(acronym_map.get(part.lower(), part.capitalize()) for part in topic.split())
 
 
 def build_source_summaries(
