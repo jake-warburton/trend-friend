@@ -285,6 +285,14 @@ def infer_canonical_topics(tokens: list[str]) -> list[str]:
         inferred_topics.append("copyleft erosion")
     if "stargate" in token_set and "data" in token_set:
         inferred_topics.append("stargate data")
+    if {"model", "context", "protocol"} <= token_set:
+        inferred_topics.append("model context protocol")
+    if {"battery", "energy", "storage"} <= token_set:
+        inferred_topics.append("battery energy storage")
+    if {"retrieval", "augmented", "generation"} <= token_set:
+        inferred_topics.append("retrieval augmented generation")
+    if {"large", "language", "models"} <= token_set:
+        inferred_topics.append("large language models")
     return inferred_topics
 
 

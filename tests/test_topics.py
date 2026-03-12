@@ -110,6 +110,23 @@ class TopicNormalizationTests(unittest.TestCase):
             ["saas analytics", "pricing models"],
         )
 
+    def test_extract_candidate_topics_detects_high_signal_trigrams(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics("Model Context Protocol servers are proliferating across developer tooling")[0],
+            "model context protocol",
+        )
+        self.assertEqual(
+            extract_candidate_topics("Battery energy storage systems are getting cheaper in Europe")[0],
+            "battery energy storage",
+        )
+
+    def test_extract_candidate_topics_prefers_canonical_trigram_over_weaker_fragments(self) -> None:
+        topics = extract_candidate_topics(
+            "Retrieval augmented generation pipelines now power more enterprise search products"
+        )
+        self.assertIn("retrieval augmented generation", topics)
+        self.assertNotEqual(topics[0], "enterprise search")
+
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [
@@ -145,6 +162,21 @@ class TopicNormalizationTests(unittest.TestCase):
         ]
         aggregate = aggregate_topic_signals(signals)[0]
         self.assertEqual(aggregate.display_name, "MacBook NEO")
+
+    def test_aggregate_topic_signals_title_cases_non_acronym_words(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = [
+            NormalizedSignal(
+                "ai agents",
+                "reddit",
+                "social",
+                100.0,
+                timestamp,
+                "AI agents are replacing repetitive office workflows",
+            )
+        ]
+        aggregate = aggregate_topic_signals(signals)[0]
+        self.assertEqual(aggregate.display_name, "AI Agents")
 
     def test_aggregate_topic_signals_merges_overlapping_same_headline_variants(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
