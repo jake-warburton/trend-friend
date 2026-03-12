@@ -28,12 +28,15 @@ test("buildTrendScoreChartData appends forecast points after the latest history 
   const data = buildTrendScoreChartData(HISTORY, FORECAST);
 
   assert.equal(data.length, 5);
-  assert.equal(data[0]?.forecast, null);
+  assert.equal(data[0]?.forecast, 20.4);
+  assert.equal(data[0]?.isProjected, false);
   assert.equal(data[1]?.score, 42.4);
   assert.equal(data[1]?.forecast, 42.4);
+  assert.equal(data[1]?.isProjected, false);
   assert.equal(data[2]?.date, "Run +1");
   assert.equal(data[2]?.score, null);
   assert.equal(data[2]?.forecast, 47.2);
+  assert.equal(data[2]?.isProjected, true);
   assert.equal(data[4]?.forecast, 56.0);
 });
 
@@ -41,6 +44,6 @@ test("buildTrendScoreChartData falls back to history-only data without a forecas
   const data = buildTrendScoreChartData(HISTORY, null);
 
   assert.equal(data.length, 2);
-  assert.equal(data[0]?.forecast, null);
-  assert.equal(data[1]?.forecast, null);
+  assert.equal(data[0]?.forecast, 20.4);
+  assert.equal(data[1]?.forecast, 42.4);
 });

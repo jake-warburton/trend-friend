@@ -25,6 +25,7 @@ type TrendScoreChartDatum = {
   score: number | null;
   forecast: number | null;
   rank: number | null;
+  isProjected: boolean;
 };
 
 export function buildTrendScoreChartData(
@@ -34,17 +35,14 @@ export function buildTrendScoreChartData(
   const data: TrendScoreChartDatum[] = history.map((point) => ({
     date: formatShortDate(point.capturedAt),
     score: point.scoreTotal,
-    forecast: null,
+    forecast: point.scoreTotal,
     rank: point.rank,
+    isProjected: false,
   }));
 
   if (!forecast || forecast.predictedScores.length === 0 || data.length === 0) {
     return data;
   }
-
-  // Anchor the forecast exactly at the last real point so the dashed
-  // projection continues from the observed series without overlapping it.
-  data[data.length - 1].forecast = data[data.length - 1].score;
 
   forecast.predictedScores.forEach((score, index) => {
     data.push({
@@ -52,6 +50,7 @@ export function buildTrendScoreChartData(
       score: null,
       forecast: score,
       rank: null,
+      isProjected: true,
     });
   });
 
@@ -101,9 +100,14 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               color: "var(--copy)",
               fontSize: 12,
             }}
-            formatter={(value, name) => {
+            formatter={(value, name, item) => {
               if (name === "score") return [Number(value).toFixed(1), "Score"];
-              if (name === "forecast") return [Number(value).toFixed(1), "Forecast (projected)"];
+              if (name === "forecast") {
+                if (!item.payload.isProjected) {
+                  return null;
+                }
+                return [Number(value).toFixed(1), "Forecast (projected)"];
+              }
               return [String(value), String(name)];
             }}
           />
