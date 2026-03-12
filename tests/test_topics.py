@@ -38,11 +38,12 @@ class TopicNormalizationTests(unittest.TestCase):
 
     def test_extract_candidate_topics_prefers_repository_topic_for_github_titles(self) -> None:
         topics = extract_candidate_topics(
-            "PostHog/posthog PostHog is an all-in-one developer platform for building successful products."
+            "PostHog/posthog PostHog is an all-in-one developer platform for building successful products.",
+            source_name="github",
         )
         self.assertEqual(topics, ["posthog"])
         self.assertEqual(
-            extract_candidate_topics("elixir-lang/elixir Elixir is a dynamic, functional language"),
+            extract_candidate_topics("elixir-lang/elixir Elixir is a dynamic, functional language", source_name="github"),
             ["elixir"],
         )
 
@@ -126,6 +127,26 @@ class TopicNormalizationTests(unittest.TestCase):
         )
         self.assertIn("retrieval augmented generation", topics)
         self.assertNotEqual(topics[0], "enterprise search")
+
+    def test_extract_candidate_topics_uses_tighter_limits_for_hacker_news(self) -> None:
+        topics = extract_candidate_topics(
+            "Founders discuss pricing models while vertical SaaS analytics adoption accelerates",
+            source_name="hacker_news",
+        )
+        self.assertEqual(topics, ["saas analytics"])
+
+    def test_extract_candidate_topics_prefers_canonical_google_trends_terms_with_less_fanout(self) -> None:
+        topics = extract_candidate_topics(
+            "Retrieval augmented generation enterprise search",
+            source_name="google_trends",
+        )
+        self.assertEqual(topics, ["retrieval augmented generation", "enterprise search"])
+
+    def test_extract_candidate_topics_skips_unigram_fallback_for_noisy_headline_sources(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics("Watching people build", source_name="hacker_news"),
+            [],
+        )
 
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

@@ -16,6 +16,20 @@ from app.topics.normalize import (
 
 MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
+SOURCE_TOPIC_LIMITS = {
+    "google_trends": 2,
+    "hacker_news": 2,
+    "twitter": 2,
+}
+SOURCE_BIGRAM_LIMITS = {
+    "google_trends": 1,
+    "hacker_news": 1,
+    "twitter": 1,
+}
+SOURCE_LOW_SIGNAL_TOKENS = {
+    "hacker_news": {"watching", "people", "report", "reports", "footage"},
+    "twitter": {"watching", "people", "report", "reports", "footage"},
+}
 BIGRAM_HEAD_TOKENS = {
     "analytics",
     "automation",
@@ -156,10 +170,13 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
 }
 
 
-def extract_candidate_topics(title: str) -> list[str]:
+def extract_candidate_topics(title: str, source_name: str | None = None) -> list[str]:
     """Extract unigram and bigram candidates from a title."""
 
     tokens = remove_stop_words(tokenize_text(title))
+    if source_name:
+        blocked_tokens = SOURCE_LOW_SIGNAL_TOKENS.get(source_name, set())
+        tokens = [token for token in tokens if token not in blocked_tokens]
     if not tokens:
         return []
     candidates: list[str] = []
@@ -170,22 +187,24 @@ def extract_candidate_topics(title: str) -> list[str]:
     candidates.extend(canonical_topics)
     if not repository_topic:
         candidates.extend(infer_meaningful_bigrams(tokens))
-    if not candidates:
+    if not candidates and source_name not in {"google_trends", "hacker_news", "twitter"}:
         candidates.extend(infer_meaningful_unigrams(tokens))
     seen: set[str] = set()
     ordered_candidates: list[str] = []
     added_bigrams = 0
+    max_topics = SOURCE_TOPIC_LIMITS.get(source_name or "", MAX_TOPICS_PER_ITEM)
+    max_bigrams = SOURCE_BIGRAM_LIMITS.get(source_name or "", MAX_BIGRAMS_PER_ITEM)
     for candidate in candidates:
         normalized = normalize_topic_name(candidate)
         if normalized and is_meaningful_topic(normalized) and normalized not in seen:
             is_non_canonical_bigram = " " in normalized and normalized not in canonical_topics
-            if is_non_canonical_bigram and added_bigrams >= MAX_BIGRAMS_PER_ITEM:
+            if is_non_canonical_bigram and added_bigrams >= max_bigrams:
                 continue
             seen.add(normalized)
             ordered_candidates.append(normalized)
             if is_non_canonical_bigram:
                 added_bigrams += 1
-            if len(ordered_candidates) >= MAX_TOPICS_PER_ITEM:
+            if len(ordered_candidates) >= max_topics:
                 break
     return ordered_candidates
 
@@ -303,7 +322,7 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
     for item in items:
         geo = assign_geo_flags(item)
         audience = assign_audience_flags(item, geo)
-        for topic in extract_candidate_topics(item.title):
+        for topic in extract_candidate_topics(item.title, source_name=item.source):
             signals.append(
                 NormalizedSignal(
                     topic=topic,
