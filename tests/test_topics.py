@@ -404,6 +404,20 @@ class GeoQualityControlTests(unittest.TestCase):
         self.assertEqual(result.country_code, "GB")
         self.assertEqual(result.confidence, GEO_CONFIDENCE_EXPLICIT)
 
+    def test_list_metadata_values_do_not_break_geo_inference(self) -> None:
+        item = RawSourceItem(
+            source="stackoverflow",
+            external_id="so-tags",
+            title="How do I deploy this app in Dubai?",
+            url="https://stackoverflow.com/questions/1",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+            metadata={"tags": ["python", "docker", "uae"]},
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.country_code, "AE")
+        self.assertEqual(result.region, "United Arab Emirates")
+
     def test_url_country_domain_can_infer_country(self) -> None:
         item = RawSourceItem(
             source="reddit",

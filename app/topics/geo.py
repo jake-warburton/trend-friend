@@ -175,9 +175,9 @@ def assign_geo_flags(item: RawSourceItem) -> GeoAssignment:
     return GeoAssignment()
 
 
-def _geo_from_metadata(metadata: dict[str, str]) -> GeoAssignment | None:
+def _geo_from_metadata(metadata: dict[str, object]) -> GeoAssignment | None:
     for key in ("region", "country", "geo", "location", "locale"):
-        value = metadata.get(key, "").strip()
+        value = _metadata_text(metadata.get(key))
         if not value:
             continue
         assignment = _assignment_from_value(value, detection_mode="explicit", confidence=GEO_CONFIDENCE_EXPLICIT)
@@ -187,7 +187,10 @@ def _geo_from_metadata(metadata: dict[str, str]) -> GeoAssignment | None:
 
 
 def _geo_from_inference_hints(item: RawSourceItem) -> GeoAssignment | None:
-    text_assignment = _geo_from_text(f"{item.title} {' '.join(item.metadata.values())}".strip())
+    metadata_text = " ".join(
+        value for value in (_metadata_text(metadata_value) for metadata_value in item.metadata.values()) if value
+    )
+    text_assignment = _geo_from_text(f"{item.title} {metadata_text}".strip())
     url_assignment = _geo_from_url(item.url)
     locale_assignment = _geo_from_metadata_locale(item.metadata)
 
@@ -229,11 +232,11 @@ def _geo_from_url(url: str) -> GeoAssignment | None:
     )
 
 
-def _geo_from_metadata_locale(metadata: dict[str, str]) -> GeoAssignment | None:
+def _geo_from_metadata_locale(metadata: dict[str, object]) -> GeoAssignment | None:
     locale_values = [
-        metadata.get("locale", "").strip(),
-        metadata.get("lang", "").strip(),
-        metadata.get("language", "").strip(),
+        _metadata_text(metadata.get("locale")),
+        _metadata_text(metadata.get("lang")),
+        _metadata_text(metadata.get("language")),
     ]
     for value in locale_values:
         if not value:
@@ -249,8 +252,18 @@ def _geo_from_metadata_locale(metadata: dict[str, str]) -> GeoAssignment | None:
             region=COUNTRY_CODE_REGIONS[country_code],
             detection_mode="inferred",
             confidence=GEO_CONFIDENCE_INFERRED_BROAD,
-        )
+    )
     return None
+
+
+def _metadata_text(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(part for part in (_metadata_text(item) for item in value) if part)
+    return str(value).strip()
 
 
 def _combine_inferred_assignments(*assignments: GeoAssignment | None) -> GeoAssignment | None:
