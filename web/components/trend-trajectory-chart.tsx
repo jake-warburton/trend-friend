@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   CartesianGrid,
   Legend,
@@ -25,6 +27,7 @@ const CHART_AXIS_COLOR = "var(--chart-axis)";
 const CHART_GRID_COLOR = "var(--chart-grid)";
 const LEGEND_TEXT_COLOR = "#ffffff";
 const LEGEND_HEIGHT = 52;
+const MOBILE_BREAKPOINT_PX = 640;
 
 type TrajectoryLegendEntry = {
   value?: string;
@@ -36,6 +39,16 @@ type ChartTrend = TrendDetailRecord & {
 };
 
 export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajectoryChartProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX}px)`);
+    const handleChange = () => setIsMobile(mediaQuery.matches);
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   const historyByTrendId = new Map<string, Array<{ capturedAt: string; scoreTotal: number }>>();
 
   for (const snapshot of history.snapshots) {
@@ -142,6 +155,7 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     ),
     1,
   );
+  const tickInterval = isMobile ? Math.max(1, Math.floor(data.length / 4)) : "preserveStartEnd";
 
   return (
     <div className="chart-container">
@@ -150,6 +164,8 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis
             dataKey="date"
+            interval={tickInterval}
+            minTickGap={isMobile ? 28 : 12}
             tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
             axisLine={{ stroke: CHART_GRID_COLOR }}
             tickLine={false}
