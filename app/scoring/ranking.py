@@ -7,7 +7,7 @@ from app.scoring.quality import is_low_evidence_trend
 
 PROTECTED_TOP_RANK_COUNT = 25
 LOW_EVIDENCE_TAIL_PENALTY = 6.0
-MIN_LOW_EVIDENCE_TAIL_SCORE = 12.0
+MIN_LOW_EVIDENCE_TAIL_SCORE = 18.0
 
 
 def rank_topics_by_score(
@@ -31,10 +31,7 @@ def rank_topics_by_score(
     selected_tail, gated_tail = _partition_tail_scores(tail_scores)
 
     remaining_slots = max(0, limit - len(protected_scores))
-    final_tail = selected_tail[:remaining_slots]
-    if len(final_tail) < remaining_slots:
-        final_tail.extend(gated_tail[: remaining_slots - len(final_tail)])
-    return protected_scores + final_tail
+    return protected_scores + selected_tail[:remaining_slots]
 
 
 def _sort_tail_scores(scores: list[TrendScoreResult]) -> list[TrendScoreResult]:

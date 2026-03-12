@@ -133,6 +133,44 @@ class TrendScoringTests(unittest.TestCase):
         self.assertEqual(ranked[-1].topic, "alternate-tail-topic")
         self.assertNotIn("thin-tail-topic", [score.topic for score in ranked])
 
+    def test_rank_topics_by_score_allows_shorter_result_when_tail_quality_is_poor(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        protected_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        weak_tail_scores = [
+            TrendScoreResult(
+                topic=f"thin-tail-{index}",
+                total_score=11.0 - (index * 0.1),
+                search_score=0.0,
+                social_score=11.0 - (index * 0.1),
+                developer_score=0.0,
+                knowledge_score=0.0,
+                diversity_score=0.0,
+                evidence=["Thin evidence"],
+                source_counts={"reddit": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(5)
+        ]
+
+        ranked = rank_topics_by_score(protected_scores + weak_tail_scores, limit=30)
+
+        self.assertEqual(len(ranked), 25)
+        self.assertTrue(all(score.topic.startswith("topic-") for score in ranked))
+
     def test_calculate_trend_scores_prefers_specific_exact_phrases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         specific = TopicAggregate(
