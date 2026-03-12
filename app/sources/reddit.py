@@ -1,15 +1,28 @@
-"""Reddit source adapter using the public JSON listing API."""
+"""Reddit source adapter using the public Atom/RSS feed.
+
+Reddit's JSON API now blocks unauthenticated bot requests (403).
+The Atom feed at /hot.rss remains publicly accessible and returns
+titles, permalinks, timestamps, and subreddit labels — enough for
+topic extraction.  Engagement scores are unavailable via RSS so
+posts that made it to "hot" receive a base engagement value that
+scales by position in the feed (higher-ranked = hotter).
+"""
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from app.models import RawSourceItem
 from app.sources.base import SourceAdapter
 
+ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
+BASE_ENGAGEMENT = 500
+"""Baseline engagement value for a post that made Reddit's hot feed."""
+
 
 class RedditSourceAdapter(SourceAdapter):
-    """Fetch hot Reddit posts via RSS and normalize them."""
+    """Fetch hot Reddit posts via Atom RSS and normalize them."""
 
     source_name = "reddit"
     TREND_SUBREDDITS = [
@@ -25,43 +38,66 @@ class RedditSourceAdapter(SourceAdapter):
 
     def fetch(self) -> list[RawSourceItem]:
         try:
-            return self._fetch_listing()
+            return self._fetch_rss()
         except Exception as error:
             self.log_fallback(error)
             return self.normalize_items(self.sample_payload())
 
-    def _fetch_listing(self) -> list[RawSourceItem]:
-        """Fetch multiple bounded listing pages from Reddit's public JSON endpoint."""
+    def _fetch_rss(self) -> list[RawSourceItem]:
+        """Fetch the combined multi-subreddit Atom feed."""
 
         subreddit_path = "+".join(self.TREND_SUBREDDITS)
-        url = f"https://www.reddit.com/r/{subreddit_path}/hot.json?raw_json=1&limit=100"
+        limit = min(self.settings.max_items_per_source, 100)
+        url = f"https://www.reddit.com/r/{subreddit_path}/hot.rss?limit={limit}"
         headers = {
             "User-Agent": self.settings.reddit_user_agent,
-            "Accept": "application/json",
+            "Accept": "application/atom+xml",
         }
+
+        raw = self.get_url(url, headers=headers)
+        root = ET.fromstring(raw.decode("utf-8"))
+        entries = root.findall("atom:entry", ATOM_NS)
+        self.raw_item_count = len(entries)
+
         items: list[RawSourceItem] = []
         seen_ids: set[str] = set()
-        after: str | None = None
-        seen_after_tokens: set[str] = set()
 
-        for _ in range(max(1, self.settings.reddit_page_limit)):
-            page_url = url if after is None else f"{url}&after={after}"
-            payload = self.get_json(page_url, headers=headers)
-            page_items = self.normalize_items(payload, limit=self.settings.max_items_per_source)
-            self.raw_item_count += len(payload.get("data", {}).get("children", []))
-            for item in page_items:
-                if item.external_id in seen_ids:
-                    continue
-                seen_ids.add(item.external_id)
-                items.append(item)
-                self.kept_item_count += 1
-                if len(items) >= self.settings.max_items_per_source:
-                    return items
-            after_value = payload.get("data", {}).get("after")
-            after = str(after_value).strip() if after_value else None
-            if not after or after in seen_after_tokens:
+        for position, entry in enumerate(entries):
+            title_el = entry.find("atom:title", ATOM_NS)
+            link_el = entry.find("atom:link", ATOM_NS)
+            updated_el = entry.find("atom:updated", ATOM_NS)
+            id_el = entry.find("atom:id", ATOM_NS)
+            cat_el = entry.find("atom:category", ATOM_NS)
+
+            title = (title_el.text or "").strip() if title_el is not None else ""
+            link = (link_el.get("href", "") if link_el is not None else "")
+            updated = (updated_el.text or "") if updated_el is not None else ""
+            external_id = (id_el.text or "").strip() if id_el is not None else ""
+            subreddit = (cat_el.get("term", "") if cat_el is not None else "")
+
+            if not title or not external_id:
+                continue
+            if external_id in seen_ids:
+                continue
+            seen_ids.add(external_id)
+
+            # Higher position in the hot feed → higher engagement estimate
+            engagement = max(BASE_ENGAGEMENT - position * 10, 50)
+
+            items.append(
+                RawSourceItem(
+                    source=self.source_name,
+                    external_id=external_id,
+                    title=title,
+                    url=link,
+                    timestamp=self._parse_updated(updated),
+                    engagement_score=float(engagement),
+                    metadata={"subreddit": subreddit},
+                )
+            )
+            self.kept_item_count += 1
+            if len(items) >= self.settings.max_items_per_source:
                 break
-            seen_after_tokens.add(after)
 
         return items
 

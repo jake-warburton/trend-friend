@@ -223,80 +223,53 @@ class SourceNormalizationTests(unittest.TestCase):
         items = adapter.normalize_items(payload)
         self.assertEqual([item.external_id for item in items], ["pm-btc"])
 
-    def test_reddit_adapter_fetches_multiple_pages_with_dedupe(self) -> None:
-        settings = replace(self.settings, max_items_per_source=4, reddit_page_limit=3)
+    def test_reddit_adapter_parses_rss_and_deduplicates(self) -> None:
+        settings = replace(self.settings, max_items_per_source=4)
+
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <title>First item</title>
+            <link href="https://www.reddit.com/r/technology/comments/r1"/>
+            <updated>2024-02-29T10:00:00+00:00</updated>
+            <id>t3_r1</id>
+            <category term="technology"/>
+          </entry>
+          <entry>
+            <title>Second item</title>
+            <link href="https://www.reddit.com/r/programming/comments/r2"/>
+            <updated>2024-02-29T11:00:00+00:00</updated>
+            <id>t3_r2</id>
+            <category term="programming"/>
+          </entry>
+          <entry>
+            <title>Duplicate</title>
+            <link href="https://www.reddit.com/r/technology/comments/r1"/>
+            <updated>2024-02-29T10:00:00+00:00</updated>
+            <id>t3_r1</id>
+            <category term="technology"/>
+          </entry>
+          <entry>
+            <title>Third item</title>
+            <link href="https://www.reddit.com/r/startups/comments/r3"/>
+            <updated>2024-02-29T12:00:00+00:00</updated>
+            <id>t3_r3</id>
+            <category term="startups"/>
+          </entry>
+        </feed>"""
 
         class TestAdapter(RedditSourceAdapter):
-            def __init__(self, settings):
-                super().__init__(settings)
-                self.calls: list[str] = []
-
-            def get_json(self, url: str, headers=None):
-                self.calls.append(url)
-                if "after=t3_page1" in url:
-                    return {
-                        "data": {
-                            "after": None,
-                            "children": [
-                                {
-                                    "data": {
-                                        "id": "r2",
-                                        "title": "Duplicate from page one",
-                                        "permalink": "/r/technology/comments/r2",
-                                        "created_utc": 1_709_203_600,
-                                        "score": 50,
-                                        "num_comments": 10,
-                                        "subreddit": "technology",
-                                    }
-                                },
-                                {
-                                    "data": {
-                                        "id": "r3",
-                                        "title": "Third item",
-                                        "permalink": "/r/technology/comments/r3",
-                                        "created_utc": 1_709_204_000,
-                                        "score": 60,
-                                        "num_comments": 12,
-                                        "subreddit": "technology",
-                                    }
-                                },
-                            ],
-                        }
-                    }
-                return {
-                    "data": {
-                        "after": "t3_page1",
-                        "children": [
-                            {
-                                "data": {
-                                    "id": "r1",
-                                    "title": "First item",
-                                    "permalink": "/r/technology/comments/r1",
-                                    "created_utc": 1_709_200_000,
-                                    "score": 40,
-                                    "num_comments": 8,
-                                    "subreddit": "technology",
-                                }
-                            },
-                            {
-                                "data": {
-                                    "id": "r2",
-                                    "title": "Second item",
-                                    "permalink": "/r/technology/comments/r2",
-                                    "created_utc": 1_709_203_600,
-                                    "score": 50,
-                                    "num_comments": 10,
-                                    "subreddit": "technology",
-                                }
-                            },
-                        ],
-                    }
-                }
+            def get_url(self, url: str, headers=None):
+                return rss_xml
 
         adapter = TestAdapter(settings)
         items = adapter.fetch()
-        self.assertEqual([item.external_id for item in items], ["r1", "r2", "r3"])
-        self.assertEqual(len(adapter.calls), 2)
+        self.assertEqual([item.external_id for item in items], ["t3_r1", "t3_r2", "t3_r3"])
+        self.assertEqual(adapter.raw_item_count, 4)
+        self.assertEqual(adapter.kept_item_count, 3)
+        self.assertEqual(items[0].metadata["subreddit"], "technology")
+        # Position-based engagement: first item gets highest score
+        self.assertGreater(items[0].engagement_score, items[2].engagement_score)
 
     def test_hacker_news_adapter_respects_page_depth_limit(self) -> None:
         settings = replace(self.settings, max_items_per_source=35, hacker_news_page_limit=2)
