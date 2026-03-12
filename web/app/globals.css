@@ -1368,6 +1368,10 @@ input {
   letter-spacing: -0.03em;
 }
 
+.analytics-card > .section-heading {
+  margin-bottom: 18px;
+}
+
 .mini-bar-list {
   display: grid;
   gap: 8px;
