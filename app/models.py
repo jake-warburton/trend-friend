@@ -71,6 +71,7 @@ class TopicAggregate:
     average_signal_value: float
     latest_timestamp: datetime
     evidence: list[str]
+    display_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +88,7 @@ class TrendScoreResult:
     evidence: list[str]
     source_counts: dict[str, int]
     latest_timestamp: datetime
+    display_name: str | None = None
 
 
 @dataclass(frozen=True)

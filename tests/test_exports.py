@@ -67,6 +67,12 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["name"], "AI Agents")
         self.assertEqual(payload["trends"][0]["latestSignalAt"], "2026-03-08T00:00:00Z")
 
+    def test_build_latest_trends_payload_prefers_preserved_display_name(self) -> None:
+        generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
+        score = build_score("macbook neo", display_name="MacBook NEO")
+        payload = build_latest_trends_payload(generated_at=generated_at, scores=[score]).to_dict()
+        self.assertEqual(payload["trends"][0]["name"], "MacBook NEO")
+
     def test_write_export_payloads_writes_latest_and_history_files(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
         latest_payload = build_latest_trends_payload(generated_at=generated_at, scores=[build_score("ai agents")])
@@ -274,7 +280,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(reddit_record.top_trends[0].id, "ai-agents")
 
 
-def build_score(topic: str) -> TrendScoreResult:
+def build_score(topic: str, display_name: str | None = None) -> TrendScoreResult:
     """Create a stable score fixture."""
 
     return TrendScoreResult(
@@ -288,6 +294,7 @@ def build_score(topic: str) -> TrendScoreResult:
         evidence=[f"{topic} evidence"],
         source_counts={"github": 1, "reddit": 1},
         latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        display_name=display_name,
     )
 
 

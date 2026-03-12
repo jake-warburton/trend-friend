@@ -59,6 +59,7 @@ def calculate_trend_scores(
                 evidence=aggregate.evidence,
                 source_counts=aggregate.source_counts,
                 latest_timestamp=aggregate.latest_timestamp,
+                display_name=aggregate.display_name,
             )
         )
     return results

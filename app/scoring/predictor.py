@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from app.models import SeasonalityResult, TrendHistoryPoint, TrendScoreResult
+from app.topics.display import build_display_name
 
 
 @dataclass(frozen=True)
@@ -151,7 +152,7 @@ def _predict_single(
     if not signals:
         signals.append("No strong momentum signals")
 
-    trend_name = _format_trend_name(topic)
+    trend_name = score.display_name or build_display_name(topic, score.evidence)
 
     return BreakoutPrediction(
         trend_id=_slugify(topic),
@@ -197,19 +198,3 @@ def _sigmoid(x: float) -> float:
 def _slugify(topic: str) -> str:
     normalized = "".join(c.lower() if c.isalnum() else "-" for c in topic)
     return "-".join(part for part in normalized.split("-") if part) or "trend"
-
-
-def _format_trend_name(topic: str) -> str:
-    acronym_map = {
-        "ai": "AI",
-        "api": "API",
-        "sdk": "SDK",
-        "ml": "ML",
-        "llm": "LLM",
-        "b2b": "B2B",
-        "b2c": "B2C",
-        "ev": "EV",
-        "vr": "VR",
-        "ar": "AR",
-    }
-    return " ".join(acronym_map.get(part.lower(), part.capitalize()) for part in topic.split())

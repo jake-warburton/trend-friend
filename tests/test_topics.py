@@ -130,6 +130,21 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(aggregate.source_counts, {"reddit": 1, "wikipedia": 1})
         self.assertEqual(aggregate.signal_counts, {"social": 1, "knowledge": 1})
 
+    def test_aggregate_topic_signals_preserves_display_name_from_evidence(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = [
+            NormalizedSignal(
+                "macbook neo",
+                "google_trends",
+                "search",
+                100.0,
+                timestamp,
+                "MacBook NEO benchmark leak points to a spring release",
+            )
+        ]
+        aggregate = aggregate_topic_signals(signals)[0]
+        self.assertEqual(aggregate.display_name, "MacBook NEO")
+
     def test_aggregate_topic_signals_merges_overlapping_same_headline_variants(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [

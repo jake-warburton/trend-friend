@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from app.models import NormalizedSignal, TopicAggregate
+from app.topics.display import build_display_name
 from app.topics.normalize import normalize_topic_name
 
 
@@ -79,6 +80,7 @@ def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggreg
                 average_signal_value=total_signal_value / len(topic_signals),
                 latest_timestamp=latest_timestamp,
                 evidence=evidence[:3],
+                display_name=build_display_name(topic_name, [signal.evidence for signal in topic_signals]),
             )
         )
     return aggregates

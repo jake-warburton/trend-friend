@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from app.data.connection import DatabaseConnection
 from app.data.write_helpers import execute_insert_and_return_id
 from app.topics.categorize import categorize_topic
+from app.topics.display import build_display_name
 from app.models import (
     AlertEventRecord,
     AlertRule,
@@ -1677,7 +1678,7 @@ class TrendScoreRepository:
             records.append(
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
-                    name=self._format_trend_name(score.topic),
+                    name=score.display_name or build_display_name(score.topic, score.evidence),
                     category=self._build_category(score.topic, score.source_counts),
                     status=self._build_trend_status(momentum),
                     volatility=self._build_volatility_label(momentum),
@@ -1766,7 +1767,7 @@ class TrendScoreRepository:
             records.append(
                 TrendDetailRecord(
                     id=slug,
-                    name=self._format_trend_name(score.topic),
+                    name=score.display_name or build_display_name(score.topic, score.evidence),
                     category=self._build_category(score.topic, score.source_counts),
                     status=status_by_topic[score.topic],
                     volatility=self._build_volatility_label(momentum),
@@ -2033,6 +2034,7 @@ class TrendScoreRepository:
     def _score_from_row(row: RowMapping) -> TrendScoreResult:
         """Build a score model from one database row."""
 
+        evidence = json.loads(row["evidence_json"])
         return TrendScoreResult(
             topic=row["topic"],
             total_score=row["total_score"],
@@ -2042,8 +2044,9 @@ class TrendScoreRepository:
             knowledge_score=row["knowledge_score"],
             diversity_score=row["diversity_score"],
             source_counts=json.loads(row["source_counts_json"]),
-            evidence=json.loads(row["evidence_json"]),
+            evidence=evidence,
             latest_timestamp=datetime.fromisoformat(row["latest_timestamp"]),
+            display_name=build_display_name(row["topic"], evidence),
         )
 
     @staticmethod
@@ -2126,12 +2129,6 @@ class TrendScoreRepository:
             item.timestamp.timestamp(),
             len(item.evidence),
         )
-
-    @staticmethod
-    def _format_trend_name(topic: str) -> str:
-        """Return a display-friendly topic name."""
-
-        return " ".join(part.capitalize() for part in topic.split())
 
     def _attach_related_trends(self, records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
         """Attach compact related-trend recommendations to each detail record."""

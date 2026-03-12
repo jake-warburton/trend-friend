@@ -58,6 +58,7 @@ from app.models import (
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.topics.display import build_display_name, fallback_display_name
 
 
 def build_latest_trends_payload(
@@ -229,7 +230,7 @@ def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:
 
     return TrendRecord(
         id=slugify(score.topic),
-        name=format_trend_name(score.topic),
+        name=score.display_name or build_display_name(score.topic, score.evidence),
         rank=rank,
         score=TrendScoreComponents(
             total=round(score.total_score, 1),
@@ -512,24 +513,6 @@ def slugify(topic: str) -> str:
     return normalized or "trend"
 
 
-def format_trend_name(topic: str) -> str:
-    """Return a display-friendly topic name."""
-
-    acronym_map = {
-        "ai": "AI",
-        "api": "API",
-        "sdk": "SDK",
-        "ml": "ML",
-        "llm": "LLM",
-        "b2b": "B2B",
-        "b2c": "B2C",
-        "ev": "EV",
-        "vr": "VR",
-        "ar": "AR",
-    }
-    return " ".join(acronym_map.get(part.lower(), part.capitalize()) for part in topic.split())
-
-
 def build_source_summaries(
     signals: list[NormalizedSignal],
     source_runs: list[SourceIngestionRun],
@@ -602,7 +585,7 @@ def build_source_watch_records(sources: list[DashboardOverviewSourcePayload]) ->
 
     watch_items: list[SourceWatchRecord] = []
     for source in sources:
-        title = format_trend_name(source.source.replace("_", " "))
+        title = fallback_display_name(source.source.replace("_", " "))
         if source.error_message:
             watch_items.append(
                 SourceWatchRecord(
@@ -696,7 +679,7 @@ def build_dashboard_charts_payload(
         ],
         status_breakdown=[
             DashboardOverviewChartDatumPayload(
-                label=format_trend_name(status),
+                    label=fallback_display_name(status),
                 value=float(count),
             )
             for status, count in sorted(status_counts.items(), key=lambda item: (-item[1], item[0]))
@@ -792,7 +775,7 @@ def build_dashboard_operations_payload(
                 ranked_trend_count=run.ranked_trend_count,
                 status="healthy" if run.failed_source_count == 0 else "degraded",
                 top_trend_id=slugify(run.top_topic) if run.top_topic else None,
-                top_trend_name=format_trend_name(run.top_topic) if run.top_topic else None,
+                top_trend_name=fallback_display_name(run.top_topic) if run.top_topic else None,
                 top_score=round(run.top_score, 1) if run.top_score is not None else None,
             )
             for run in pipeline_runs
