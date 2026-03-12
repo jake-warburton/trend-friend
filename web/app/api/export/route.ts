@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { loadTrendExplorer } from "@/lib/trends";
+import { isRecurringTrend } from "@/lib/seasonality-ui";
 import type { TrendExplorerRecord } from "@/lib/types";
 
 const CSV_COLUMNS = [
@@ -71,9 +72,70 @@ function summarizeSegments(summary: NonNullable<TrendExplorerRecord["audienceSum
     .join(",");
 }
 
-export async function GET() {
+export async function GET(request: Request = new Request("http://localhost/api/export")) {
+  const { searchParams } = new URL(request.url);
   const explorer = await loadTrendExplorer();
-  const rows = [CSV_COLUMNS.join(","), ...explorer.trends.map(trendToCsvRow)];
+
+  let trends = explorer.trends;
+
+  // Apply filters from query parameters
+  const source = searchParams.get("source");
+  if (source) {
+    trends = trends.filter((t) => t.sources.includes(source));
+  }
+
+  const category = searchParams.get("category");
+  if (category) {
+    trends = trends.filter((t) => t.category === category);
+  }
+
+  const q = searchParams.get("q");
+  if (q) {
+    const normalizedQ = q.toLowerCase();
+    trends = trends.filter(
+      (t) =>
+        t.name.toLowerCase().includes(normalizedQ) ||
+        t.evidencePreview.some((item) => item.toLowerCase().includes(normalizedQ)),
+    );
+  }
+
+  const min = searchParams.get("min");
+  if (min) {
+    const minScore = Number(min);
+    trends = trends.filter((t) => t.score.total >= minScore);
+  }
+
+  const hideRecurring = searchParams.get("hideRecurring");
+  if (hideRecurring === "1") {
+    trends = trends.filter((t) => !isRecurringTrend(t.seasonality));
+  }
+
+  // Note: audience, market, language, and geo filters require trend detail data
+  // which is not available at this level. These would need to be applied
+  // at the data loading stage or require fetching detail records separately.
+  // For now, only apply filters that work with explorer.trends data.
+
+  // Sort trends
+  const sortBy = searchParams.get("sort") || "rank";
+  if (sortBy === "score") {
+    trends.sort((left, right) => right.score.total - left.score.total || left.rank - right.rank);
+  } else if (sortBy === "mover") {
+    trends.sort(
+      (left, right) =>
+        (right.rankChange ?? Number.NEGATIVE_INFINITY) - (left.rankChange ?? Number.NEGATIVE_INFINITY) ||
+        left.rank - right.rank,
+    );
+  } else if (sortBy === "newest") {
+    trends.sort((left, right) => {
+      const leftDate = left.firstSeenAt ? new Date(left.firstSeenAt).getTime() : Number.NEGATIVE_INFINITY;
+      const rightDate = right.firstSeenAt ? new Date(right.firstSeenAt).getTime() : Number.NEGATIVE_INFINITY;
+      return rightDate - leftDate || left.rank - right.rank;
+    });
+  } else {
+    trends.sort((left, right) => left.rank - right.rank);
+  }
+
+  const rows = [CSV_COLUMNS.join(","), ...trends.map(trendToCsvRow)];
   const csv = rows.join("\n") + "\n";
   const date = new Date().toISOString().slice(0, 10);
 

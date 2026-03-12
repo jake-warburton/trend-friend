@@ -6,12 +6,13 @@ import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { GeoMapClient } from "@/components/geo-map-client";
 import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
-import { hasOverviewChanged } from "@/lib/auto-refresh";
+import { detectChangedTrendIds, hasOverviewChanged } from "@/lib/auto-refresh";
+import type { OverviewRefreshMeta } from "@/lib/auto-refresh";
 import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
@@ -53,6 +54,9 @@ const LazyGeoMapCompact = dynamic(
   () => import("@/components/geo-map-compact").then((mod) => mod.GeoMapCompact),
   { ssr: false, loading: () => null },
 );
+
+const OVERVIEW_POLL_INTERVAL_MS = 60_000;
+const UPDATED_TRENDS_FLASH_MS = 5_000;
 
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
@@ -126,7 +130,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     generatedAt: initialData.overview.generatedAt,
     lastRunAt: initialData.overview.operations.lastRunAt,
   });
+  const [liveUpdateState, setLiveUpdateState] = useState<"idle" | "checking" | "updating" | "updated">("idle");
+  const [changedTrendIds, setChangedTrendIds] = useState<string[]>([]);
   const [expandedTrendId, setExpandedTrendId] = useState<string | null>(null);
+  const [, startAutoRefresh] = useTransition();
+  const overviewMetaRef = useRef<OverviewRefreshMeta>({
+    generatedAt: initialData.overview.generatedAt,
+    operations: { lastRunAt: initialData.overview.operations.lastRunAt },
+  });
+  const explorerTrendRef = useRef(
+    initialData.explorer.trends.map((trend) => ({ id: trend.id, rank: trend.rank, score: { total: trend.score.total } })),
+  );
+  const initialRenderRef = useRef(true);
+  const updatedBadgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
@@ -252,6 +268,21 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 
   const filteredTrends = baseFilteredTrends;
 
+  const exportHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (selectedSource !== "all") params.set("source", selectedSource);
+    if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedAudience !== "all") params.set("audience", selectedAudience);
+    if (selectedMarket !== "all") params.set("market", selectedMarket);
+    if (selectedLanguage !== "all") params.set("language", selectedLanguage);
+    if (selectedGeoCountry !== "all") params.set("geo", selectedGeoCountry);
+    if (keyword) params.set("q", keyword);
+    if (minimumScore && minimumScore > 0) params.set("min", String(minimumScore));
+    if (hideRecurring) params.set("hideRecurring", "1");
+    params.set("sort", sortBy);
+    return `/api/export?${params.toString()}`;
+  }, [selectedSource, selectedCategory, selectedAudience, selectedMarket, selectedLanguage, selectedGeoCountry, keyword, minimumScore, hideRecurring, sortBy]);
+
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
   }
@@ -337,11 +368,74 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   }, [filteredTrends, expandedTrendId]);
 
   useEffect(() => {
-    setOverviewMeta({
+    const nextOverviewMeta = {
       generatedAt: initialData.overview.generatedAt,
-      lastRunAt: initialData.overview.operations.lastRunAt,
+      operations: { lastRunAt: initialData.overview.operations.lastRunAt },
+    };
+    const nextExplorerTrends = initialData.explorer.trends.map((trend) => ({
+      id: trend.id,
+      rank: trend.rank,
+      score: { total: trend.score.total },
+    }));
+
+    const overviewChanged = hasOverviewChanged(overviewMetaRef.current, nextOverviewMeta);
+    const changedIds = detectChangedTrendIds(explorerTrendRef.current, nextExplorerTrends);
+
+    overviewMetaRef.current = nextOverviewMeta;
+    explorerTrendRef.current = nextExplorerTrends;
+    setOverviewMeta({
+      generatedAt: nextOverviewMeta.generatedAt,
+      lastRunAt: nextOverviewMeta.operations.lastRunAt,
     });
-  }, [initialData.overview]);
+
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
+
+    if (overviewChanged) {
+      setLiveUpdateState("updated");
+      setChangedTrendIds(changedIds);
+      if (updatedBadgeTimeoutRef.current) {
+        clearTimeout(updatedBadgeTimeoutRef.current);
+      }
+      updatedBadgeTimeoutRef.current = setTimeout(() => {
+        setLiveUpdateState("idle");
+        setChangedTrendIds([]);
+      }, UPDATED_TRENDS_FLASH_MS);
+    }
+  }, [initialData.overview, initialData.explorer.trends]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(async () => {
+      setLiveUpdateState((current) => (current === "updating" ? current : "checking"));
+      try {
+        const response = await fetch("/api/dashboard/overview", { cache: "no-store" });
+        if (!response.ok) {
+          setLiveUpdateState("idle");
+          return;
+        }
+        const nextOverview = (await response.json()) as OverviewRefreshMeta;
+        if (!hasOverviewChanged(overviewMetaRef.current, nextOverview)) {
+          setLiveUpdateState("idle");
+          return;
+        }
+        setLiveUpdateState("updating");
+        startAutoRefresh(() => {
+          router.refresh();
+        });
+      } catch {
+        setLiveUpdateState("idle");
+      }
+    }, OVERVIEW_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+      if (updatedBadgeTimeoutRef.current) {
+        clearTimeout(updatedBadgeTimeoutRef.current);
+      }
+    };
+  }, [router, startAutoRefresh]);
 
   useEffect(() => {
     setShareExpiryPreset(defaultShareExpiryPreset(defaultWatchlist));
@@ -841,6 +935,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             {isDataStale(overviewMeta.lastRunAt) && (
               <span className="stale-warning">Data may be stale</span>
             )}
+            {liveUpdateState === "checking" ? <span className="live-update-note">Checking for updates…</span> : null}
+            {liveUpdateState === "updating" ? <span className="live-update-note pulse-text">Applying live update…</span> : null}
+            {liveUpdateState === "updated" ? (
+              <span className="live-update-note live-update-note-success">
+                {changedTrendIds.length > 0 ? `${changedTrendIds.length} trends updated` : "Updated just now"}
+              </span>
+            ) : null}
           </article>
           <div className="stat-card">
             <span>Tracked</span>
@@ -1031,7 +1132,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           <div className="section-heading">
             <h2>Explorer</h2>
             <div className="section-heading-actions">
-              <a className="mini-action-button export-button" href="/api/export" download>
+              <a className="mini-action-button export-button" href={exportHref} download>
                 Export CSV
               </a>
               <span className="section-heading-meta">{filteredTrends.length} live</span>
@@ -1269,7 +1370,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   formatCategory(trend.category),
                 ].filter((item): item is string => Boolean(item));
                 return (
-                <article className="explorer-card" data-status={trend.status} key={trend.id}>
+                <article
+                  className={changedTrendIds.includes(trend.id) ? "explorer-card explorer-card-updated" : "explorer-card"}
+                  data-status={trend.status}
+                  key={trend.id}
+                >
                   <div className="explorer-card-top">
                     <div className="trend-cell explorer-card-head">
                       <div className="explorer-card-kicker">
