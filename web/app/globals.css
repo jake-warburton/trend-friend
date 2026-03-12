@@ -3211,6 +3211,10 @@ input {
 
   .explorer-card-top {
     position: relative;
+    padding-right: 0;
+  }
+
+  .explorer-card-head {
     padding-right: 34px;
   }
 
@@ -3235,7 +3239,8 @@ input {
     grid-template-columns: 1fr;
     gap: 6px;
     align-items: start;
-    padding-left: 3px;
+    width: 100%;
+    padding-left: 0;
   }
 
   .explorer-metrics-panel {
@@ -3245,11 +3250,11 @@ input {
 
   .explorer-metric-card {
     gap: 2px;
-    padding: 5px 7px;
+    padding: 5px 8px;
   }
 
   .explorer-metrics-panel > .explorer-metric-card:first-child {
-    padding-left: 2px;
+    padding-left: 0;
   }
 
   .explorer-metric-label {
