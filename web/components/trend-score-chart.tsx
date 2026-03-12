@@ -42,13 +42,9 @@ export function buildTrendScoreChartData(
     return data;
   }
 
-  // Include the last two actual points in the forecast series so the
-  // monotone spline has enough slope context to smoothly continue
-  // the trajectory of the real line into the forecast.
-  const tailCount = Math.min(3, data.length);
-  for (let i = data.length - tailCount; i < data.length; i++) {
-    data[i].forecast = data[i].score;
-  }
+  // Anchor the forecast exactly at the last real point so the dashed
+  // projection continues from the observed series without overlapping it.
+  data[data.length - 1].forecast = data[data.length - 1].score;
 
   forecast.predictedScores.forEach((score, index) => {
     data.push({

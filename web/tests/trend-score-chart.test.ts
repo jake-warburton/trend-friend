@@ -28,8 +28,7 @@ test("buildTrendScoreChartData appends forecast points after the latest history 
   const data = buildTrendScoreChartData(HISTORY, FORECAST);
 
   assert.equal(data.length, 5);
-  // Last two actual points carry forecast values for smooth spline entry
-  assert.equal(data[0]?.forecast, 20.4);
+  assert.equal(data[0]?.forecast, null);
   assert.equal(data[1]?.score, 42.4);
   assert.equal(data[1]?.forecast, 42.4);
   assert.equal(data[2]?.date, "Run +1");
