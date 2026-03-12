@@ -61,6 +61,7 @@ const UPDATED_TRENDS_FLASH_MS = 5_000;
 
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
+  { label: "arXiv", value: "arxiv" },
   { label: "Reddit", value: "reddit" },
   { label: "Hacker News", value: "hacker_news" },
   { label: "GitHub", value: "github" },

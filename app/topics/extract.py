@@ -380,6 +380,7 @@ def signal_type_for_source(source_name: str) -> str:
     """Map a source name to a stable signal type."""
 
     return {
+        "arxiv": "knowledge",
         "github": "developer",
         "google_trends": "search",
         "hacker_news": "social",
