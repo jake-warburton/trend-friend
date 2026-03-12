@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-12T14:09:44.460931Z",
+  "generatedAt": "2026-03-12T16:40:46.314344Z",
   "trends": [
     {
       "id": "ai-agents",
@@ -9,26 +9,27 @@
       "volatility": "spiking",
       "rank": 1,
       "score": {
-        "total": 131.2,
-        "social": 84.1,
-        "developer": 20.0,
+        "total": 463.8,
+        "social": 419.1,
+        "developer": 11.6,
         "knowledge": 0.0,
         "search": 0.0,
-        "diversity": 24.0
+        "diversity": 30.0
       },
       "momentum": {
         "previousRank": 1,
         "rankChange": 0,
-        "absoluteDelta": 46.3,
-        "percentDelta": 54.6
+        "absoluteDelta": 351.4,
+        "percentDelta": 312.7
       },
       "coverage": {
-        "sourceCount": 4,
-        "signalCount": 9
+        "sourceCount": 5,
+        "signalCount": 31
       },
       "sources": [
         "github",
         "hacker_news",
+        "producthunt",
         "reddit",
         "twitter"
       ],
@@ -41,26 +42,26 @@
       "previousRank": 1,
       "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
-      "latestSignalAt": "2026-03-12T14:08:53Z",
+      "latestSignalAt": "2026-03-12T16:39:20Z",
       "evidencePreview": [
         "Meta buys 'social media network for AI' Moltbook, and says the deal will bring \"new ways for AI agents to work for people and businesses\".",
-        "Meta buys Moltbook, viral social network where AI agents interact"
+        "we scanned a blender mcp server (17k stars) and found some interesting ai agent security issues"
       ],
       "audienceSummary": [
         {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 4
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 11
         },
         {
           "label": "developer",
           "segmentType": "audience",
-          "signalCount": 3
+          "signalCount": 5
         },
         {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 3
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 5
         },
         {
           "label": "b2b",
@@ -68,30 +69,30 @@
           "signalCount": 3
         },
         {
-          "label": "EN",
-          "segmentType": "language",
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 3
+        },
+        {
+          "label": "enterprise",
+          "segmentType": "audience",
+          "signalCount": 2
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
           "signalCount": 2
         },
         {
           "label": "consumer",
           "segmentType": "audience",
           "signalCount": 1
-        },
-        {
-          "label": "enterprise",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "global",
-          "segmentType": "market",
-          "signalCount": 1
         }
       ],
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-12T13:41:12Z",
-        "value": 21.0,
+        "value": 145.0,
         "evidence": "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work",
         "signalType": "social",
         "evidenceUrl": "https://github.com/obsessiondb/rudel"
@@ -99,103 +100,89 @@
       "recentHistory": [
         {
           "rank": 1,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 131.2
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 463.8
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
-          "scoreTotal": 84.9
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
+          "scoreTotal": 112.4
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "bitcoin",
-      "name": "Bitcoin",
-      "category": "fintech-crypto",
-      "status": "rising",
-      "volatility": "stable",
+      "id": "ai-memory",
+      "name": "AI Memory",
+      "category": "ai-machine-learning",
+      "status": "new",
+      "volatility": "emerging",
       "rank": 2,
       "score": {
-        "total": 47.2,
-        "social": 0.0,
+        "total": 40.5,
+        "social": 26.3,
         "developer": 0.0,
         "knowledge": 0.0,
-        "search": 38.2,
-        "diversity": 6.0
+        "search": 0.0,
+        "diversity": 12.0
       },
       "momentum": {
-        "previousRank": 3,
-        "rankChange": 1,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
       },
       "coverage": {
-        "sourceCount": 1,
+        "sourceCount": 2,
         "signalCount": 3
       },
       "sources": [
-        "polymarket"
+        "producthunt",
+        "reddit"
       ],
       "seasonality": null,
-      "previousRank": 3,
-      "rankChange": 1,
-      "firstSeenAt": "2026-03-12T13:59:43.325528Z",
-      "latestSignalAt": "2026-04-01T04:00:00Z",
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T14:48:43Z",
       "evidencePreview": [
-        "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
-        "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?"
+        "Built an AI memory system based on cognitive science instead of vector databases",
+        "Personal AI Memory V2: Captures and stores your AI Conversation from LLM platforms"
       ],
       "audienceSummary": [
         {
-          "label": "consumer",
-          "segmentType": "audience",
-          "signalCount": 3
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 3
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 3
-        },
-        {
           "label": "EN",
           "segmentType": "language",
-          "signalCount": 2
+          "signalCount": 1
+        },
+        {
+          "label": "b2b",
+          "segmentType": "market",
+          "signalCount": 1
         }
       ],
       "primaryEvidence": {
-        "source": "polymarket",
-        "timestamp": "2026-03-12T16:00:00Z",
-        "value": 1189050.3,
-        "evidence": "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
-        "signalType": "search",
-        "evidenceUrl": "https://polymarket.com/event/bitcoin-above-62k-on-march-12"
+        "source": "reddit",
+        "timestamp": "2026-03-12T14:48:43Z",
+        "value": 470.0,
+        "evidence": "Built an AI memory system based on cognitive science instead of vector databases",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/artificial/comments/1rrss36/built_an_ai_memory_system_based_on_cognitive/"
       },
       "recentHistory": [
         {
           "rank": 2,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 47.2
-        },
-        {
-          "rank": 3,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
-          "scoreTotal": 47.2
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 40.5
         }
       ],
-      "forecastDirection": "steady"
+      "forecastDirection": null
     },
     {
       "id": "baseball-classic",
       "name": "Baseball Classic",
       "category": "science-research",
-      "status": "rising",
+      "status": "steady",
       "volatility": "stable",
       "rank": 3,
       "score": {
@@ -207,8 +194,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 4,
-        "rankChange": 1,
+        "previousRank": 3,
+        "rankChange": 0,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -225,8 +212,8 @@
         "recurrenceCount": 0,
         "avgGapRuns": 0.0
       },
-      "previousRank": 4,
-      "rankChange": 1,
+      "previousRank": 3,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
       "latestSignalAt": "2026-03-11T00:00:00Z",
       "evidencePreview": [
@@ -251,12 +238,12 @@
       "recentHistory": [
         {
           "rank": 3,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 38.0
         },
         {
-          "rank": 4,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
+          "rank": 3,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 38.0
         }
       ],
@@ -266,22 +253,22 @@
       "id": "data-leak",
       "name": "Data Leak",
       "category": "data-analytics",
-      "status": "breakout",
-      "volatility": "spiking",
+      "status": "cooling",
+      "volatility": "stable",
       "rank": 4,
       "score": {
-        "total": 31.2,
-        "social": 16.9,
+        "total": 30.2,
+        "social": 16.0,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 12.0
       },
       "momentum": {
-        "previousRank": 49,
-        "rankChange": 45,
-        "absoluteDelta": 17.4,
-        "percentDelta": 126.1
+        "previousRank": 4,
+        "rankChange": 0,
+        "absoluteDelta": -0.9,
+        "percentDelta": -2.9
       },
       "coverage": {
         "sourceCount": 2,
@@ -295,10 +282,10 @@
         "tag": "recurring",
         "confidence": 0.73,
         "recurrenceCount": 1,
-        "avgGapRuns": 1.1
+        "avgGapRuns": 1.0
       },
-      "previousRank": 49,
-      "rankChange": 45,
+      "previousRank": 4,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-12T10:43:12.629917Z",
       "latestSignalAt": "2026-03-12T09:46:00Z",
       "evidencePreview": [
@@ -320,7 +307,7 @@
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-12T09:46:00Z",
-        "value": 158.0,
+        "value": 213.0,
         "evidence": "1B identity records exposed in ID verification data leak",
         "signalType": "social",
         "evidenceUrl": "https://www.aol.com/articles/1-billion-identity-records-exposed-152505381.html"
@@ -328,24 +315,105 @@
       "recentHistory": [
         {
           "rank": 4,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 31.2
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 30.2
         },
         {
-          "rank": 49,
-          "capturedAt": "2026-03-12T13:01:03.991193Z",
-          "scoreTotal": 13.8
+          "rank": 4,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
+          "scoreTotal": 31.2
         }
       ],
-      "forecastDirection": "accelerating"
+      "forecastDirection": null
+    },
+    {
+      "id": "bitcoin",
+      "name": "Bitcoin",
+      "category": "fintech-crypto",
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 5,
+      "score": {
+        "total": 28.2,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 19.2,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 2,
+        "rankChange": -3,
+        "absoluteDelta": -19.0,
+        "percentDelta": -40.2
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 4
+      },
+      "sources": [
+        "polymarket"
+      ],
+      "seasonality": null,
+      "previousRank": 2,
+      "rankChange": -3,
+      "firstSeenAt": "2026-03-12T13:59:43.325528Z",
+      "latestSignalAt": "2026-04-01T04:00:00Z",
+      "evidencePreview": [
+        "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+        "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 4
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 4
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 4
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 3
+        }
+      ],
+      "primaryEvidence": {
+        "source": "polymarket",
+        "timestamp": "2026-03-12T16:00:00Z",
+        "value": 66.1,
+        "evidence": "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+        "signalType": "search",
+        "evidenceUrl": "https://polymarket.com/event/bitcoin-above-62k-on-march-12"
+      },
+      "recentHistory": [
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 28.2
+        },
+        {
+          "rank": 2,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
+          "scoreTotal": 47.2
+        }
+      ],
+      "forecastDirection": "steady"
     },
     {
       "id": "robotics",
       "name": "Robotics",
       "category": "hardware-robotics",
       "status": "cooling",
-      "volatility": "spiking",
-      "rank": 5,
+      "volatility": "stable",
+      "rank": 6,
       "score": {
         "total": 27.9,
         "social": 20.4,
@@ -355,10 +423,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 2,
-        "rankChange": -3,
-        "absoluteDelta": -20.0,
-        "percentDelta": -41.7
+        "previousRank": 5,
+        "rankChange": -1,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -373,8 +441,8 @@
         "recurrenceCount": 0,
         "avgGapRuns": 0.0
       },
-      "previousRank": 2,
-      "rankChange": -3,
+      "previousRank": 5,
+      "rankChange": -1,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
       "latestSignalAt": "2026-03-09T14:30:00Z",
       "evidencePreview": [
@@ -412,25 +480,84 @@
       },
       "recentHistory": [
         {
-          "rank": 5,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 6,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 27.9
         },
         {
-          "rank": 2,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
-          "scoreTotal": 48.0
+          "rank": 5,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
+          "scoreTotal": 27.9
         }
       ],
-      "forecastDirection": "steady"
+      "forecastDirection": null
+    },
+    {
+      "id": "billion-revenue",
+      "name": "Billion Revenue",
+      "category": "general-tech",
+      "status": "rising",
+      "volatility": "volatile",
+      "rank": 7,
+      "score": {
+        "total": 25.5,
+        "social": 18.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 9,
+        "rankChange": 2,
+        "absoluteDelta": 0.9,
+        "percentDelta": 3.7
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": 9,
+      "rankChange": 2,
+      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
+      "latestSignalAt": "2026-03-12T13:35:57Z",
+      "evidencePreview": [
+        "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year"
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-12T13:35:57Z",
+        "value": 500.0,
+        "evidence": "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rrqxkp/youtube_expands_unskippable_30second_ads_to_tvs/"
+      },
+      "recentHistory": [
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 25.5
+        },
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
+          "scoreTotal": 24.6
+        }
+      ],
+      "forecastDirection": null
     },
     {
       "id": "language-models",
       "name": "Language Models",
       "category": "ai-machine-learning",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 6,
+      "status": "cooling",
+      "volatility": "volatile",
+      "rank": 8,
       "score": {
         "total": 25.4,
         "social": 0.0,
@@ -440,10 +567,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 6,
+        "rankChange": -2,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -453,8 +580,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 6,
+      "rankChange": -2,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:49:45Z",
       "evidencePreview": [
@@ -483,6 +610,11 @@
       },
       "recentHistory": [
         {
+          "rank": 8,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 25.4
+        },
+        {
           "rank": 6,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 25.4
@@ -494,22 +626,22 @@
       "id": "ai-push",
       "name": "AI Push",
       "category": "ai-machine-learning",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 7,
+      "status": "cooling",
+      "volatility": "volatile",
+      "rank": 9,
       "score": {
-        "total": 25.3,
-        "social": 17.8,
+        "total": 24.8,
+        "social": 17.3,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 7,
+        "rankChange": -2,
+        "absoluteDelta": -0.5,
+        "percentDelta": -2.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -519,8 +651,8 @@
         "reddit"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 7,
+      "rankChange": -2,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-12T11:08:55Z",
       "evidencePreview": [
@@ -543,8 +675,13 @@
       },
       "recentHistory": [
         {
+          "rank": 9,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 24.8
+        },
+        {
           "rank": 7,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 25.3
         }
       ],
@@ -554,22 +691,22 @@
       "id": "workers-ahead",
       "name": "Workers Ahead",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 8,
+      "status": "cooling",
+      "volatility": "volatile",
+      "rank": 10,
       "score": {
-        "total": 25.3,
-        "social": 17.8,
+        "total": 24.8,
+        "social": 17.3,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 8,
+        "rankChange": -2,
+        "absoluteDelta": -0.5,
+        "percentDelta": -2.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -579,8 +716,8 @@
         "reddit"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 8,
+      "rankChange": -2,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-12T11:08:55Z",
       "evidencePreview": [
@@ -603,23 +740,28 @@
       },
       "recentHistory": [
         {
+          "rank": 10,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 24.8
+        },
+        {
           "rank": 8,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 25.3
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "paid-marketing",
-      "name": "Paid Marketing",
-      "category": "general-tech",
+      "id": "project-manager",
+      "name": "Project Manager",
+      "category": "enterprise-saas",
       "status": "new",
       "volatility": "emerging",
-      "rank": 9,
+      "rank": 11,
       "score": {
-        "total": 24.4,
-        "social": 16.9,
+        "total": 24.1,
+        "social": 16.6,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -636,11 +778,71 @@
         "signalCount": 2
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T08:46:53Z",
+      "evidencePreview": [
+        "Sara: Project management without the project manager."
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-11T08:46:53Z",
+        "value": 290.0,
+        "evidence": "Sara: Project management without the project manager.",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/sara-the-pm-that-never-sleeps"
+      },
+      "recentHistory": [
+        {
+          "rank": 11,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 24.1
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "paid-marketing",
+      "name": "Paid Marketing",
+      "category": "general-tech",
+      "status": "cooling",
+      "volatility": "volatile",
+      "rank": 12,
+      "score": {
+        "total": 24.0,
+        "social": 16.5,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 10,
+        "rankChange": -2,
+        "absoluteDelta": -0.3,
+        "percentDelta": -1.2
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": 10,
+      "rankChange": -2,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-12T12:29:40Z",
       "evidencePreview": [
@@ -666,84 +868,35 @@
       "primaryEvidence": {
         "source": "reddit",
         "timestamp": "2026-03-12T12:29:40Z",
-        "value": 330.0,
+        "value": 280.0,
         "evidence": "How many of you resort to paid marketing for their B2C business?",
         "signalType": "social",
         "evidenceUrl": "https://www.reddit.com/r/Entrepreneur/comments/1rrpg4z/how_many_of_you_resort_to_paid_marketing_for/"
       },
       "recentHistory": [
         {
-          "rank": 9,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 24.4
-        }
-      ],
-      "forecastDirection": null
-    },
-    {
-      "id": "billion-revenue",
-      "name": "Billion Revenue",
-      "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 10,
-      "score": {
-        "total": 24.3,
-        "social": 16.8,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "reddit"
-      ],
-      "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T13:35:57Z",
-      "evidencePreview": [
-        "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year"
-      ],
-      "audienceSummary": [],
-      "primaryEvidence": {
-        "source": "reddit",
-        "timestamp": "2026-03-12T13:35:57Z",
-        "value": 310.0,
-        "evidence": "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year",
-        "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rrqxkp/youtube_expands_unskippable_30second_ads_to_tvs/"
-      },
-      "recentHistory": [
+          "rank": 12,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 24.0
+        },
         {
           "rank": 10,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 24.3
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "data-centers",
-      "name": "Data Centers",
-      "category": "data-analytics",
+      "id": "cad-models",
+      "name": "CAD Models",
+      "category": "ai-machine-learning",
       "status": "new",
       "volatility": "emerging",
-      "rank": 11,
+      "rank": 13,
       "score": {
-        "total": 24.1,
-        "social": 16.6,
+        "total": 23.9,
+        "social": 16.4,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -760,15 +913,15 @@
         "signalCount": 2
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T01:43:05Z",
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T00:37:03Z",
       "evidencePreview": [
-        "Florida lawmakers debate who will pay the price of AI data centers"
+        "Whisker: Create and edit CAD models into production-ready prototypes"
       ],
       "audienceSummary": [
         {
@@ -778,18 +931,18 @@
         }
       ],
       "primaryEvidence": {
-        "source": "reddit",
-        "timestamp": "2026-03-12T01:43:05Z",
-        "value": 290.0,
-        "evidence": "Florida lawmakers debate who will pay the price of AI data centers",
+        "source": "producthunt",
+        "timestamp": "2026-03-12T00:37:03Z",
+        "value": 275.0,
+        "evidence": "Whisker: Create and edit CAD models into production-ready prototypes",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/artificial/comments/1rrdj4k/florida_lawmakers_debate_who_will_pay_the_price/"
+        "evidenceUrl": "https://www.producthunt.com/products/whisker"
       },
       "recentHistory": [
         {
-          "rank": 11,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 24.1
+          "rank": 13,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.9
         }
       ],
       "forecastDirection": null
@@ -798,9 +951,9 @@
       "id": "stopped-function",
       "name": "Stopped Function",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 12,
+      "status": "cooling",
+      "volatility": "volatile",
+      "rank": 14,
       "score": {
         "total": 23.9,
         "social": 17.9,
@@ -810,10 +963,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 12,
+        "rankChange": -2,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -823,8 +976,8 @@
         "reddit"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 12,
+      "rankChange": -2,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-12T06:02:16Z",
       "evidencePreview": [
@@ -852,88 +1005,93 @@
       },
       "recentHistory": [
         {
+          "rank": 14,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.9
+        },
+        {
           "rank": 12,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 23.9
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "without-permission",
-      "name": "Without Permission",
+      "id": "demand-sandboxes",
+      "name": "Demand Sandboxes",
       "category": "general-tech",
-      "status": "cooling",
-      "volatility": "spiking",
-      "rank": 13,
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 15,
       "score": {
-        "total": 23.5,
-        "social": 16.0,
+        "total": 23.7,
+        "social": 16.2,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 4,
-        "rankChange": -9,
-        "absoluteDelta": -9.5,
-        "percentDelta": -28.8
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
       },
       "coverage": {
         "sourceCount": 1,
         "signalCount": 2
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "seasonality": null,
-      "previousRank": 4,
-      "rankChange": -9,
-      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
-      "latestSignalAt": "2026-03-11T14:34:34Z",
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T03:56:29Z",
       "evidencePreview": [
-        "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019"
+        "PaperPod: On-demand sandboxes for AI Agents"
       ],
       "audienceSummary": [
         {
-          "label": "us-market",
-          "segmentType": "market",
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
           "signalCount": 1
         }
       ],
       "primaryEvidence": {
-        "source": "reddit",
-        "timestamp": "2026-03-11T14:34:34Z",
-        "value": 230.0,
-        "evidence": "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019",
+        "source": "producthunt",
+        "timestamp": "2026-03-12T03:56:29Z",
+        "value": 250.0,
+        "evidence": "PaperPod: On-demand sandboxes for AI Agents",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rqvfr9/yugioh_accuses_white_house_of_using_anime_footage/"
+        "evidenceUrl": "https://www.producthunt.com/products/paperpod"
       },
       "recentHistory": [
         {
-          "rank": 13,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 23.5
-        },
-        {
-          "rank": 4,
-          "capturedAt": "2026-03-11T21:05:06.026471Z",
-          "scoreTotal": 33.0
+          "rank": 15,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.7
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "investment-cofound",
-      "name": "Investment Cofound",
-      "category": "fintech-crypto",
+      "id": "alphaevolve-fraction",
+      "name": "Alphaevolve Fraction",
+      "category": "general-tech",
       "status": "new",
       "volatility": "emerging",
-      "rank": 14,
+      "rank": 16,
       "score": {
-        "total": 23.3,
-        "social": 17.3,
+        "total": 23.6,
+        "social": 17.6,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -955,47 +1113,222 @@
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T10:16:00Z",
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T13:57:32Z",
       "evidencePreview": [
-        "capital investment to cofound I will not promote"
+        "[R] LEVI: Beating GEPA/OpenEvolve/AlphaEvolve at a fraction of the cost"
       ],
       "audienceSummary": [
         {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
+          "label": "EN",
+          "segmentType": "language",
           "signalCount": 1
         }
       ],
       "primaryEvidence": {
         "source": "reddit",
-        "timestamp": "2026-03-12T10:16:00Z",
-        "value": 380.0,
-        "evidence": "capital investment to cofound I will not promote",
+        "timestamp": "2026-03-12T13:57:32Z",
+        "value": 430.0,
+        "evidence": "[R] LEVI: Beating GEPA/OpenEvolve/AlphaEvolve at a fraction of the cost",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/startups/comments/1rrmuoh/capital_investment_to_cofound_i_will_not_promote/"
+        "evidenceUrl": "https://www.reddit.com/r/MachineLearning/comments/1rrrgjm/r_levi_beating_gepaopenevolvealphaevolve_at_a/"
       },
       "recentHistory": [
         {
-          "rank": 14,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 23.3
+          "rank": 16,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.6
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "ai-models",
-      "name": "AI Models",
+      "id": "ram-agentic",
+      "name": "RAM Agentic",
       "category": "ai-machine-learning",
       "status": "new",
       "volatility": "emerging",
-      "rank": 15,
+      "rank": 17,
+      "score": {
+        "total": 23.5,
+        "social": 16.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T12:42:35Z",
+      "evidencePreview": [
+        "96GB (V)RAM agentic coding users, gpt-oss-120b vs qwen3.5 27b/122b"
+      ],
+      "audienceSummary": [
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-12T12:42:35Z",
+        "value": 230.0,
+        "evidence": "96GB (V)RAM agentic coding users, gpt-oss-120b vs qwen3.5 27b/122b",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/LocalLLaMA/comments/1rrppv1/96gb_vram_agentic_coding_users_gptoss120b_vs/"
+      },
+      "recentHistory": [
+        {
+          "rank": 17,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.5
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "prava-payments",
+      "name": "Prava Payments",
+      "category": "fintech-crypto",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 18,
+      "score": {
+        "total": 23.4,
+        "social": 15.9,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T01:10:05Z",
+      "evidencePreview": [
+        "Prava: Payments stack for AI agents"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-12T01:10:05Z",
+        "value": 220.0,
+        "evidence": "Prava: Payments stack for AI agents",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/prava-2"
+      },
+      "recentHistory": [
+        {
+          "rank": 18,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.4
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "ai-native",
+      "name": "AI Native",
+      "category": "ai-machine-learning",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 19,
+      "score": {
+        "total": 23.2,
+        "social": 15.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-02-26T02:44:02Z",
+      "evidencePreview": [
+        "Runner AI: Build, optimize, and scale your AI-native store"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-02-26T02:44:02Z",
+        "value": 210.0,
+        "evidence": "Runner AI: Build, optimize, and scale your AI-native store",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/runner-ai-2"
+      },
+      "recentHistory": [
+        {
+          "rank": 19,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.2
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "free-offerings",
+      "name": "Free Offerings",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 20,
       "score": {
         "total": 23.2,
         "social": 15.8,
@@ -1020,39 +1353,50 @@
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-11T19:51:15Z",
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T09:00:21Z",
       "evidencePreview": [
-        "Nvidia Will Spend $26 Billion to Build Open-Weight AI Models, Filings Show"
+        "Thank You Thursday! Free Offerings and More - March 12, 2026"
       ],
-      "audienceSummary": [],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "europe-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
       "primaryEvidence": {
         "source": "reddit",
-        "timestamp": "2026-03-11T19:51:15Z",
+        "timestamp": "2026-03-12T09:00:21Z",
         "value": 210.0,
-        "evidence": "Nvidia Will Spend $26 Billion to Build Open-Weight AI Models, Filings Show",
+        "evidence": "Thank You Thursday! Free Offerings and More - March 12, 2026",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/LocalLLaMA/comments/1rr4by8/nvidia_will_spend_26_billion_to_build_openweight/"
+        "evidenceUrl": "https://www.reddit.com/r/Entrepreneur/comments/1rrlm3r/thank_you_thursday_free_offerings_and_more_march/"
       },
       "recentHistory": [
         {
-          "rank": 15,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 20,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 23.2
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "don-mention",
-      "name": "DON Mention",
+      "id": "interactive-visuals",
+      "name": "Interactive Visuals",
       "category": "general-tech",
       "status": "new",
       "volatility": "emerging",
-      "rank": 16,
+      "rank": 21,
       "score": {
-        "total": 23.2,
-        "social": 17.2,
+        "total": 23.1,
+        "social": 15.6,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -1069,52 +1413,171 @@
         "signalCount": 2
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T03:06:09Z",
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-02-20T14:11:35Z",
       "evidencePreview": [
-        "Dubai's influencers have a new rule: Don't mention the war"
+        "OrangeLabs: Analyze, interpret, and create interactive visuals from data"
       ],
       "audienceSummary": [
         {
           "label": "EN",
           "segmentType": "language",
           "signalCount": 1
-        },
-        {
-          "label": "global",
-          "segmentType": "market",
-          "signalCount": 1
         }
       ],
       "primaryEvidence": {
-        "source": "reddit",
-        "timestamp": "2026-03-12T03:06:09Z",
-        "value": 370.0,
-        "evidence": "Dubai's influencers have a new rule: Don't mention the war",
+        "source": "producthunt",
+        "timestamp": "2026-02-20T14:11:35Z",
+        "value": 200.0,
+        "evidence": "OrangeLabs: Analyze, interpret, and create interactive visuals from data",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rrfegj/dubais_influencers_have_a_new_rule_dont_mention/"
+        "evidenceUrl": "https://www.producthunt.com/products/orangelabs"
       },
       "recentHistory": [
         {
-          "rank": 16,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 23.2
+          "rank": 21,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.1
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "ram-market",
-      "name": "RAM Market",
+      "id": "investment-cofound",
+      "name": "Investment Cofound",
+      "category": "fintech-crypto",
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 22,
+      "score": {
+        "total": 23.1,
+        "social": 17.1,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 14,
+        "rankChange": -8,
+        "absoluteDelta": -0.2,
+        "percentDelta": -0.9
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "reddit"
+      ],
+      "seasonality": null,
+      "previousRank": 14,
+      "rankChange": -8,
+      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
+      "latestSignalAt": "2026-03-12T10:16:00Z",
+      "evidencePreview": [
+        "capital investment to cofound I will not promote"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "reddit",
+        "timestamp": "2026-03-12T10:16:00Z",
+        "value": 350.0,
+        "evidence": "capital investment to cofound I will not promote",
+        "signalType": "social",
+        "evidenceUrl": "https://www.reddit.com/r/startups/comments/1rrmuoh/capital_investment_to_cofound_i_will_not_promote/"
+      },
+      "recentHistory": [
+        {
+          "rank": 22,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 23.1
+        },
+        {
+          "rank": 14,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
+          "scoreTotal": 23.3
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "site-actually",
+      "name": "Site Actually",
       "category": "general-tech",
       "status": "new",
       "volatility": "emerging",
-      "rank": 17,
+      "rank": 23,
+      "score": {
+        "total": 22.8,
+        "social": 15.3,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T23:12:35Z",
+      "evidencePreview": [
+        "Grepped: Make your vibe coded site actually look nice"
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-11T23:12:35Z",
+        "value": 175.0,
+        "evidence": "Grepped: Make your vibe coded site actually look nice",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/grepped"
+      },
+      "recentHistory": [
+        {
+          "rank": 23,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 22.8
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "websites-minutes",
+      "name": "Websites Minutes",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 24,
       "score": {
         "total": 22.7,
         "social": 16.7,
@@ -1134,50 +1597,44 @@
         "signalCount": 2
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T03:23:01Z",
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T06:59:44Z",
       "evidencePreview": [
-        "Valve says almost 6,000 games made over $100K on Steam in 2025 | And \"If you have a line on a bunch of RAM, we are in the market and would like to buy it.\""
+        "Astrio: Modernize your outdated websites in minutes, not weeks"
       ],
-      "audienceSummary": [
-        {
-          "label": "EN",
-          "segmentType": "language",
-          "signalCount": 1
-        }
-      ],
+      "audienceSummary": [],
       "primaryEvidence": {
-        "source": "reddit",
-        "timestamp": "2026-03-12T03:23:01Z",
+        "source": "producthunt",
+        "timestamp": "2026-03-12T06:59:44Z",
         "value": 300.0,
-        "evidence": "Valve says almost 6,000 games made over $100K on Steam in 2025 | And \"If you have a line on a bunch of RAM, we are in the market and would like to buy it.\"",
+        "evidence": "Astrio: Modernize your outdated websites in minutes, not weeks",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/technology/comments/1rrfr4d/valve_says_almost_6000_games_made_over_100k_on/"
+        "evidenceUrl": "https://www.producthunt.com/products/astrio-beta"
       },
       "recentHistory": [
         {
-          "rank": 17,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 24,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 22.7
         }
       ],
       "forecastDirection": null
     },
     {
-      "id": "thousands-queuing",
-      "name": "Thousands Queuing",
-      "category": "general-tech",
+      "id": "polished-content",
+      "name": "Polished Content",
+      "category": "consumer-tech",
       "status": "new",
       "volatility": "emerging",
-      "rank": 18,
+      "rank": 25,
       "score": {
-        "total": 21.9,
-        "social": 15.9,
+        "total": 22.6,
+        "social": 15.1,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -1194,30 +1651,139 @@
         "signalCount": 2
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T14:04:13Z",
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T03:14:48Z",
       "evidencePreview": [
-        "People are getting OpenClaw installed for free in China. Thousands are queuing for OpenClaw setup."
+        "Yap-It: Turn voice notes into polished content in one tap"
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-11T03:14:48Z",
+        "value": 165.0,
+        "evidence": "Yap-It: Turn voice notes into polished content in one tap",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/yap-it"
+      },
+      "recentHistory": [
+        {
+          "rank": 25,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 22.6
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "ai-written",
+      "name": "AI Written",
+      "category": "ai-machine-learning",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 26,
+      "score": {
+        "total": 22.5,
+        "social": 15.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T00:59:08Z",
+      "evidencePreview": [
+        "oobo: Git layer that preserves the why behind AI-written code"
       ],
       "audienceSummary": [
         {
           "label": "EN",
           "segmentType": "language",
           "signalCount": 1
-        },
+        }
+      ],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-12T00:59:08Z",
+        "value": 160.0,
+        "evidence": "oobo: Git layer that preserves the why behind AI-written code",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/ooboai-oobo"
+      },
+      "recentHistory": [
         {
-          "label": "europe-market",
-          "segmentType": "market",
+          "rank": 26,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 22.5
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "best-computer",
+      "name": "Best Computer",
+      "category": "infrastructure-cloud",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 27,
+      "score": {
+        "total": 22.5,
+        "social": 15.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T05:16:56Z",
+      "evidencePreview": [
+        "Coasty: #1 OS World Benchmark, the best Computer Using Agents at $0"
+      ],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
           "signalCount": 1
         },
         {
-          "label": "global",
-          "segmentType": "market",
+          "label": "EN",
+          "segmentType": "language",
           "signalCount": 1
         },
         {
@@ -1227,18 +1793,132 @@
         }
       ],
       "primaryEvidence": {
-        "source": "reddit",
-        "timestamp": "2026-03-12T14:04:13Z",
-        "value": 220.0,
-        "evidence": "People are getting OpenClaw installed for free in China. Thousands are queuing for OpenClaw setup.",
+        "source": "producthunt",
+        "timestamp": "2026-03-12T05:16:56Z",
+        "value": 155.0,
+        "evidence": "Coasty: #1 OS World Benchmark, the best Computer Using Agents at $0",
         "signalType": "social",
-        "evidenceUrl": "https://www.reddit.com/r/artificial/comments/1rrrmnv/people_are_getting_openclaw_installed_for_free_in/"
+        "evidenceUrl": "https://www.producthunt.com/products/coasty-2"
       },
       "recentHistory": [
         {
-          "rank": 18,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 21.9
+          "rank": 27,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 22.5
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "client-codex",
+      "name": "Client Codex",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 28,
+      "score": {
+        "total": 22.4,
+        "social": 16.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T03:53:45Z",
+      "evidencePreview": [
+        "Codex Chat: An open-source macOS client for Codex"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-12T03:53:45Z",
+        "value": 265.0,
+        "evidence": "Codex Chat: An open-source macOS client for Codex",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/codex-chat-oss"
+      },
+      "recentHistory": [
+        {
+          "rank": 28,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 22.4
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "retell-forever",
+      "name": "Retell Forever",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 29,
+      "score": {
+        "total": 22.2,
+        "social": 16.2,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T05:49:26Z",
+      "evidencePreview": [
+        "Retell: Watch it Once. Retell it Forever."
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "producthunt",
+        "timestamp": "2026-03-12T05:49:26Z",
+        "value": 255.0,
+        "evidence": "Retell: Watch it Once. Retell it Forever.",
+        "signalType": "social",
+        "evidenceUrl": "https://www.producthunt.com/products/retell-2"
+      },
+      "recentHistory": [
+        {
+          "rank": 29,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 22.2
         }
       ],
       "forecastDirection": null
@@ -1249,7 +1929,7 @@
       "category": "science-research",
       "status": "cooling",
       "volatility": "spiking",
-      "rank": 19,
+      "rank": 30,
       "score": {
         "total": 20.6,
         "social": 0.0,
@@ -1259,8 +1939,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 7,
-        "rankChange": -12,
+        "previousRank": 19,
+        "rankChange": -11,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -1273,12 +1953,12 @@
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.91,
         "recurrenceCount": 0,
         "avgGapRuns": 0.1
       },
-      "previousRank": 7,
-      "rankChange": -12,
+      "previousRank": 19,
+      "rankChange": -11,
       "firstSeenAt": "2026-03-12T02:51:10.206069Z",
       "latestSignalAt": "2026-03-11T00:00:00Z",
       "evidencePreview": [
@@ -1301,177 +1981,77 @@
       },
       "recentHistory": [
         {
-          "rank": 19,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 30,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 20.6
         },
         {
-          "rank": 7,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
+          "rank": 19,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 20.6
         }
       ],
       "forecastDirection": "steady"
     },
     {
-      "id": "pytorch",
-      "name": "Pytorch",
-      "category": "developer-tools",
-      "status": "cooling",
-      "volatility": "spiking",
-      "rank": 20,
+      "id": "functions-exported",
+      "name": "Functions Exported",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 31,
       "score": {
-        "total": 20.2,
+        "total": 19.8,
         "social": 0.0,
-        "developer": 12.8,
+        "developer": 12.3,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 5,
-        "rankChange": -15,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
       },
       "coverage": {
         "sourceCount": 1,
-        "signalCount": 1
+        "signalCount": 2
       },
       "sources": [
-        "github"
+        "stackoverflow"
       ],
       "seasonality": null,
-      "previousRank": 5,
-      "rankChange": -15,
-      "firstSeenAt": "2026-03-11T21:49:35.814749Z",
-      "latestSignalAt": "2026-03-12T14:08:52Z",
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-10T11:23:29Z",
       "evidencePreview": [
-        "pytorch/pytorch Tensors and Dynamic neural networks in Python with strong GPU acceleration"
+        "Why is the module name a part of a mangled name for functions exported from C++20 modules?"
       ],
       "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
         {
           "label": "EN",
           "segmentType": "language",
           "signalCount": 1
-        },
-        {
-          "label": "b2b",
-          "segmentType": "market",
-          "signalCount": 1
-        },
-        {
-          "label": "europe-market",
-          "segmentType": "market",
-          "signalCount": 1
         }
       ],
       "primaryEvidence": {
-        "source": "github",
-        "timestamp": "2026-03-12T14:08:52Z",
-        "value": 125386.0,
-        "evidence": "pytorch/pytorch Tensors and Dynamic neural networks in Python with strong GPU acceleration",
+        "source": "stackoverflow",
+        "timestamp": "2026-03-10T11:23:29Z",
+        "value": 142.2,
+        "evidence": "Why is the module name a part of a mangled name for functions exported from C++20 modules?",
         "signalType": "developer",
-        "evidenceUrl": "https://github.com/pytorch/pytorch"
+        "evidenceUrl": "https://stackoverflow.com/questions/79904504/why-is-the-module-name-a-part-of-a-mangled-name-for-functions-exported-from-c2"
       },
       "recentHistory": [
         {
-          "rank": 20,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 20.2
-        },
-        {
-          "rank": 5,
-          "capturedAt": "2026-03-12T13:09:00.390716Z",
-          "scoreTotal": 20.2
+          "rank": 31,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 19.8
         }
       ],
       "forecastDirection": null
-    },
-    {
-      "id": "federal-reserve",
-      "name": "Federal Reserve",
-      "category": "fintech-crypto",
-      "status": "cooling",
-      "volatility": "spiking",
-      "rank": 21,
-      "score": {
-        "total": 20.0,
-        "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 14.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 8,
-        "rankChange": -13,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 1
-      },
-      "sources": [
-        "polymarket"
-      ],
-      "seasonality": null,
-      "previousRank": 8,
-      "rankChange": -13,
-      "firstSeenAt": "2026-03-12T13:59:43.325528Z",
-      "latestSignalAt": "2026-03-18T00:00:00Z",
-      "evidencePreview": [
-        "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
-      ],
-      "audienceSummary": [
-        {
-          "label": "consumer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "EN",
-          "segmentType": "language",
-          "signalCount": 1
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "polymarket",
-        "timestamp": "2026-03-18T00:00:00Z",
-        "value": 10049486.8,
-        "evidence": "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?",
-        "signalType": "search",
-        "evidenceUrl": "https://polymarket.com/event/will-the-fed-increase-interest-rates-by-25-bps-after-the-march-2026-meeting"
-      },
-      "recentHistory": [
-        {
-          "rank": 21,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 20.0
-        },
-        {
-          "rank": 8,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
-          "scoreTotal": 20.0
-        }
-      ],
-      "forecastDirection": "steady"
     },
     {
       "id": "kinsk-footballer",
@@ -1479,7 +2059,7 @@
       "category": "science-research",
       "status": "cooling",
       "volatility": "spiking",
-      "rank": 22,
+      "rank": 32,
       "score": {
         "total": 19.6,
         "social": 0.0,
@@ -1489,8 +2069,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 10,
-        "rankChange": -12,
+        "previousRank": 21,
+        "rankChange": -11,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -1507,8 +2087,8 @@
         "recurrenceCount": 0,
         "avgGapRuns": 0.1
       },
-      "previousRank": 10,
-      "rankChange": -12,
+      "previousRank": 21,
+      "rankChange": -11,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
       "latestSignalAt": "2026-03-11T00:00:00Z",
       "evidencePreview": [
@@ -1531,13 +2111,13 @@
       },
       "recentHistory": [
         {
-          "rank": 22,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 32,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 19.6
         },
         {
-          "rank": 10,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
+          "rank": 21,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 19.6
         }
       ],
@@ -1549,7 +2129,7 @@
       "category": "science-research",
       "status": "cooling",
       "volatility": "spiking",
-      "rank": 23,
+      "rank": 33,
       "score": {
         "total": 19.2,
         "social": 0.0,
@@ -1559,8 +2139,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 11,
-        "rankChange": -12,
+        "previousRank": 22,
+        "rankChange": -11,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -1577,8 +2157,8 @@
         "recurrenceCount": 0,
         "avgGapRuns": 0.1
       },
-      "previousRank": 11,
-      "rankChange": -12,
+      "previousRank": 22,
+      "rankChange": -11,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
       "latestSignalAt": "2026-03-11T00:00:00Z",
       "evidencePreview": [
@@ -1601,175 +2181,30 @@
       },
       "recentHistory": [
         {
-          "rank": 23,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 33,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 19.2
         },
         {
-          "rank": 11,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
+          "rank": 22,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 19.2
         }
       ],
       "forecastDirection": "steady"
     },
     {
-      "id": "crude-oil",
-      "name": "Crude Oil",
-      "category": "fintech-crypto",
-      "status": "cooling",
-      "volatility": "spiking",
-      "rank": 24,
-      "score": {
-        "total": 18.9,
-        "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 11.4,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 12,
-        "rankChange": -12,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 1
-      },
-      "sources": [
-        "polymarket"
-      ],
-      "seasonality": null,
-      "previousRank": 12,
-      "rankChange": -12,
-      "firstSeenAt": "2026-03-12T13:59:43.325528Z",
-      "latestSignalAt": "2026-03-31T00:00:00Z",
-      "evidencePreview": [
-        "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
-      ],
-      "audienceSummary": [
-        {
-          "label": "consumer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "polymarket",
-        "timestamp": "2026-03-31T00:00:00Z",
-        "value": 513882.4,
-        "evidence": "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?",
-        "signalType": "search",
-        "evidenceUrl": "https://polymarket.com/event/will-crude-oil-cl-hit-high-200-by-end-of-march-926"
-      },
-      "recentHistory": [
-        {
-          "rank": 24,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 18.9
-        },
-        {
-          "rank": 12,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
-          "scoreTotal": 18.9
-        }
-      ],
-      "forecastDirection": "steady"
-    },
-    {
-      "id": "filament",
-      "name": "Filament",
-      "category": "developer-tools",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 25,
-      "score": {
-        "total": 18.8,
-        "social": 0.0,
-        "developer": 11.3,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 1
-      },
-      "sources": [
-        "github"
-      ],
-      "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
-      "firstSeenAt": "2026-03-12T14:09:44.460931Z",
-      "latestSignalAt": "2026-03-12T14:08:56Z",
-      "evidencePreview": [
-        "filamentphp/filament A powerful open-source UI framework for Laravel \u2022 Build and ship apps & admin panels fast with Livewire"
-      ],
-      "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "b2b",
-          "segmentType": "market",
-          "signalCount": 1
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "github",
-        "timestamp": "2026-03-12T14:08:56Z",
-        "value": 33855.0,
-        "evidence": "filamentphp/filament A powerful open-source UI framework for Laravel \u2022 Build and ship apps & admin panels fast with Livewire",
-        "signalType": "developer",
-        "evidenceUrl": "https://github.com/filamentphp/filament"
-      },
-      "recentHistory": [
-        {
-          "rank": 25,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 18.8
-        }
-      ],
-      "forecastDirection": null
-    },
-    {
-      "id": "knowledge-grounded",
-      "name": "Knowledge Grounded",
+      "id": "chromadb-persistentclient",
+      "name": "ChromaDB PersistentClient",
       "category": "general-tech",
       "status": "new",
       "volatility": "emerging",
-      "rank": 26,
+      "rank": 34,
       "score": {
-        "total": 15.2,
+        "total": 19.0,
         "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 7.7,
+        "developer": 11.5,
+        "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
@@ -1784,11 +2219,918 @@
         "signalCount": 2
       },
       "sources": [
-        "arxiv"
+        "stackoverflow"
       ],
       "seasonality": null,
       "previousRank": null,
       "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-09T03:01:17Z",
+      "evidencePreview": [
+        "Resolving Concurrency Bottlenecks in LangChain's RunnableParallel with ChromaDB PersistentClient"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-09T03:01:17Z",
+        "value": 97.4,
+        "evidence": "Resolving Concurrency Bottlenecks in LangChain's RunnableParallel with ChromaDB PersistentClient",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79903575/resolving-concurrency-bottlenecks-in-langchains-runnableparallel-with-chromadb"
+      },
+      "recentHistory": [
+        {
+          "rank": 34,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 19.0
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "execution-contexts",
+      "name": "Execution Contexts",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 35,
+      "score": {
+        "total": 18.7,
+        "social": 0.0,
+        "developer": 11.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T19:13:50Z",
+      "evidencePreview": [
+        "How to correctly migrate awaitables between different execution contexts?"
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-11T19:13:50Z",
+        "value": 86.6,
+        "evidence": "How to correctly migrate awaitables between different execution contexts?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79905678/how-to-correctly-migrate-awaitables-between-different-execution-contexts"
+      },
+      "recentHistory": [
+        {
+          "rank": 35,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 18.7
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "binaries-generally",
+      "name": "Binaries Generally",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 36,
+      "score": {
+        "total": 18.2,
+        "social": 0.0,
+        "developer": 10.7,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-09T18:02:08Z",
+      "evidencePreview": [
+        "Why exactly are Rust binaries generally larger than a C binaries?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-09T18:02:08Z",
+        "value": 67.7,
+        "evidence": "Why exactly are Rust binaries generally larger than a C binaries?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79904047/why-exactly-are-rust-binaries-generally-larger-than-a-c-binaries"
+      },
+      "recentHistory": [
+        {
+          "rank": 36,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 18.2
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "generate-optimised",
+      "name": "Generate Optimised",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 37,
+      "score": {
+        "total": 17.8,
+        "social": 0.0,
+        "developer": 10.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-09T09:55:13Z",
+      "evidencePreview": [
+        "If I build numpy with `-Dcpu-baseline=\"none\"`, will it still generate optimised code paths for newer CPUs?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-09T09:55:13Z",
+        "value": 56.1,
+        "evidence": "If I build numpy with `-Dcpu-baseline=\"none\"`, will it still generate optimised code paths for newer CPUs?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79903777/if-i-build-numpy-with-dcpu-baseline-none-will-it-still-generate-optimised"
+      },
+      "recentHistory": [
+        {
+          "rank": 37,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 17.8
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "without-holding",
+      "name": "Without Holding",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 38,
+      "score": {
+        "total": 17.8,
+        "social": 0.0,
+        "developer": 10.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-10T13:38:22Z",
+      "evidencePreview": [
+        "Can a php-website 'call' a php file to run on its own (without holding up the website)?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-10T13:38:22Z",
+        "value": 55.6,
+        "evidence": "Can a php-website 'call' a php file to run on its own (without holding up the website)?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79905403/can-a-php-website-call-a-php-file-to-run-on-its-own-without-holding-up-the-we"
+      },
+      "recentHistory": [
+        {
+          "rank": 38,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 17.8
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "waveform-program",
+      "name": "Waveform Program",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 39,
+      "score": {
+        "total": 17.6,
+        "social": 0.0,
+        "developer": 10.1,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-08T23:13:30Z",
+      "evidencePreview": [
+        "How do I get rid of this crackle/pop noise when my waveform program goes silent?"
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-08T23:13:30Z",
+        "value": 50.8,
+        "evidence": "How do I get rid of this crackle/pop noise when my waveform program goes silent?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79903506/how-do-i-get-rid-of-this-crackle-pop-noise-when-my-waveform-program-goes-silent"
+      },
+      "recentHistory": [
+        {
+          "rank": 39,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 17.6
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "string-view",
+      "name": "String View",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 40,
+      "score": {
+        "total": 17.4,
+        "social": 0.0,
+        "developer": 9.9,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-05T22:57:19Z",
+      "evidencePreview": [
+        "The Ephemeral View: Performance Over Safety in std::string_view Ownership"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-05T22:57:19Z",
+        "value": 46.9,
+        "evidence": "The Ephemeral View: Performance Over Safety in std::string_view Ownership",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79901915/the-ephemeral-view-performance-over-safety-in-stdstring-view-ownership"
+      },
+      "recentHistory": [
+        {
+          "rank": 40,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 17.4
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "add-calendar",
+      "name": "ADD Calendar",
+      "category": "enterprise-saas",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 41,
+      "score": {
+        "total": 17.1,
+        "social": 0.0,
+        "developer": 9.6,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-10T09:49:18Z",
+      "evidencePreview": [
+        "MS Graph add calendar event using C#"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-10T09:49:18Z",
+        "value": 40.9,
+        "evidence": "MS Graph add calendar event using C#",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79904450/ms-graph-add-calendar-event-using-c"
+      },
+      "recentHistory": [
+        {
+          "rank": 41,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 17.1
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "compatibility-pytorch",
+      "name": "Compatibility Pytorch",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 42,
+      "score": {
+        "total": 16.9,
+        "social": 0.0,
+        "developer": 10.9,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T16:11:36Z",
+      "evidencePreview": [
+        "Optimizing a Gaussian penalty function for HSL color compatibility in PyTorch/NumPy"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-11T16:11:36Z",
+        "value": 75.8,
+        "evidence": "Optimizing a Gaussian penalty function for HSL color compatibility in PyTorch/NumPy",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79905540/optimizing-a-gaussian-penalty-function-for-hsl-color-compatibility-in-pytorch-nu"
+      },
+      "recentHistory": [
+        {
+          "rank": 42,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.9
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "property-reflection",
+      "name": "Property Reflection",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 43,
+      "score": {
+        "total": 16.5,
+        "social": 0.0,
+        "developer": 10.5,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-07T10:40:54Z",
+      "evidencePreview": [
+        "Is there a way to get a ref struct property using reflection?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-07T10:40:54Z",
+        "value": 62.1,
+        "evidence": "Is there a way to get a ref struct property using reflection?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79902750/is-there-a-way-to-get-a-ref-struct-property-using-reflection"
+      },
+      "recentHistory": [
+        {
+          "rank": 43,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.5
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "assertion-predefined",
+      "name": "Assertion Predefined",
+      "category": "fintech-crypto",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 44,
+      "score": {
+        "total": 16.4,
+        "social": 0.0,
+        "developer": 10.4,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T18:11:50Z",
+      "evidencePreview": [
+        "Why doesn't this look-behind assertion with a predefined regular expression work as expected?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-11T18:11:50Z",
+        "value": 60.8,
+        "evidence": "Why doesn't this look-behind assertion with a predefined regular expression work as expected?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79905633/why-doesnt-this-look-behind-assertion-with-a-predefined-regular-expression-work"
+      },
+      "recentHistory": [
+        {
+          "rank": 44,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.4
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "literals-roundtiestoeven",
+      "name": "Literals Roundtiestoeven",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 45,
+      "score": {
+        "total": 16.4,
+        "social": 0.0,
+        "developer": 10.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-06T14:21:18Z",
+      "evidencePreview": [
+        "Do compilers always round floating-point literals using roundTiesToEven?"
+      ],
+      "audienceSummary": [
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-06T14:21:18Z",
+        "value": 58.2,
+        "evidence": "Do compilers always round floating-point literals using roundTiesToEven?",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79902330/do-compilers-always-round-floating-point-literals-using-roundtiestoeven"
+      },
+      "recentHistory": [
+        {
+          "rank": 45,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.4
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "running-asyncio",
+      "name": "Running Asyncio",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 46,
+      "score": {
+        "total": 16.3,
+        "social": 0.0,
+        "developer": 10.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-10T12:18:30Z",
+      "evidencePreview": [
+        "Why does python 3.13.8 raise an IndentationError when running in asyncio mode on the terminal"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-10T12:18:30Z",
+        "value": 56.0,
+        "evidence": "Why does python 3.13.8 raise an IndentationError when running in asyncio mode on the terminal",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79904535/why-does-python-3-13-8-raise-an-indentationerror-when-running-in-asyncio-mode-on"
+      },
+      "recentHistory": [
+        {
+          "rank": 46,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.3
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "problem-unevaluatedexpr",
+      "name": "Problem Unevaluatedexpr",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 47,
+      "score": {
+        "total": 16.2,
+        "social": 0.0,
+        "developer": 10.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-11T21:11:11Z",
+      "evidencePreview": [
+        "Display problem using UnevaluatedExpr in Sympy with python"
+      ],
+      "audienceSummary": [
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-11T21:11:11Z",
+        "value": 55.5,
+        "evidence": "Display problem using UnevaluatedExpr in Sympy with python",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79905748/display-problem-using-unevaluatedexpr-in-sympy-with-python"
+      },
+      "recentHistory": [
+        {
+          "rank": 47,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.2
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "functioning-launchpad",
+      "name": "Functioning Launchpad",
+      "category": "general-tech",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 48,
+      "score": {
+        "total": 16.1,
+        "social": 0.0,
+        "developer": 10.1,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-07T22:37:02Z",
+      "evidencePreview": [
+        "I2C not functioning on TI Launchpad EK-TM4C1294XL"
+      ],
+      "audienceSummary": [],
+      "primaryEvidence": {
+        "source": "stackoverflow",
+        "timestamp": "2026-03-07T22:37:02Z",
+        "value": 51.0,
+        "evidence": "I2C not functioning on TI Launchpad EK-TM4C1294XL",
+        "signalType": "developer",
+        "evidenceUrl": "https://stackoverflow.com/questions/79903019/i2c-not-functioning-on-ti-launchpad-ek-tm4c1294xl"
+      },
+      "recentHistory": [
+        {
+          "rank": 48,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 16.1
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "knowledge-grounded",
+      "name": "Knowledge Grounded",
+      "category": "general-tech",
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 49,
+      "score": {
+        "total": 15.2,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 7.7,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 26,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "arxiv"
+      ],
+      "seasonality": null,
+      "previousRank": 26,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:50:38Z",
       "evidencePreview": [
@@ -1821,6 +3163,11 @@
       },
       "recentHistory": [
         {
+          "rank": 49,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 15.2
+        },
+        {
           "rank": 26,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 15.2
@@ -1832,9 +3179,9 @@
       "id": "vector-quantization",
       "name": "Vector Quantization",
       "category": "data-analytics",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 27,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 50,
       "score": {
         "total": 15.1,
         "social": 0.0,
@@ -1844,10 +3191,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 27,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -1857,8 +3204,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 27,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:48:45Z",
       "evidencePreview": [
@@ -1881,6 +3228,11 @@
       },
       "recentHistory": [
         {
+          "rank": 50,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 15.1
+        },
+        {
           "rank": 27,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 15.1
@@ -1892,9 +3244,9 @@
       "id": "relevance-feedback",
       "name": "Relevance Feedback",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 28,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 51,
       "score": {
         "total": 15.1,
         "social": 0.0,
@@ -1904,10 +3256,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 28,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -1917,8 +3269,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 28,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:31:50Z",
       "evidencePreview": [
@@ -1951,6 +3303,11 @@
       },
       "recentHistory": [
         {
+          "rank": 51,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 15.1
+        },
+        {
           "rank": 28,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 15.1
@@ -1962,9 +3319,9 @@
       "id": "transcriptomics-mapping",
       "name": "Transcriptomics Mapping",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 29,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 52,
       "score": {
         "total": 15.0,
         "social": 0.0,
@@ -1974,10 +3331,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 29,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -1987,8 +3344,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 29,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:23:54Z",
       "evidencePreview": [
@@ -2021,6 +3378,11 @@
       },
       "recentHistory": [
         {
+          "rank": 52,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 15.0
+        },
+        {
           "rank": 29,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 15.0
@@ -2032,9 +3394,9 @@
       "id": "accelerate-stationary",
       "name": "Accelerate Stationary",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 30,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 53,
       "score": {
         "total": 14.9,
         "social": 0.0,
@@ -2044,10 +3406,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 30,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2057,8 +3419,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 30,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:20:28Z",
       "evidencePreview": [
@@ -2086,6 +3448,11 @@
       },
       "recentHistory": [
         {
+          "rank": 53,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.9
+        },
+        {
           "rank": 30,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.9
@@ -2097,9 +3464,9 @@
       "id": "dynamical-systems",
       "name": "Dynamical Systems",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 31,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 54,
       "score": {
         "total": 14.8,
         "social": 0.0,
@@ -2109,10 +3476,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 31,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2122,8 +3489,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 31,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:16:48Z",
       "evidencePreview": [
@@ -2151,6 +3518,11 @@
       },
       "recentHistory": [
         {
+          "rank": 54,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.8
+        },
+        {
           "rank": 31,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.8
@@ -2162,9 +3534,9 @@
       "id": "continuous-signals",
       "name": "Continuous Signals",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 32,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 55,
       "score": {
         "total": 14.8,
         "social": 0.0,
@@ -2174,10 +3546,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 32,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2187,8 +3559,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 32,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:14:57Z",
       "evidencePreview": [
@@ -2216,6 +3588,11 @@
       },
       "recentHistory": [
         {
+          "rank": 55,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.8
+        },
+        {
           "rank": 32,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.8
@@ -2227,9 +3604,9 @@
       "id": "terrestrial-networks",
       "name": "Terrestrial Networks",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 33,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 56,
       "score": {
         "total": 14.8,
         "social": 0.0,
@@ -2239,10 +3616,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 33,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2252,8 +3629,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 33,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:13:41Z",
       "evidencePreview": [
@@ -2270,6 +3647,11 @@
       },
       "recentHistory": [
         {
+          "rank": 56,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.8
+        },
+        {
           "rank": 33,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.8
@@ -2281,9 +3663,9 @@
       "id": "purpose-dexterous",
       "name": "Purpose Dexterous",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 34,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 57,
       "score": {
         "total": 14.7,
         "social": 0.0,
@@ -2293,10 +3675,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 34,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2306,8 +3688,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 34,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T16:55:49Z",
       "evidencePreview": [
@@ -2335,6 +3717,11 @@
       },
       "recentHistory": [
         {
+          "rank": 57,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.7
+        },
+        {
           "rank": 34,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.7
@@ -2346,9 +3733,9 @@
       "id": "iterative-selection",
       "name": "Iterative Selection",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 35,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 58,
       "score": {
         "total": 14.2,
         "social": 0.0,
@@ -2358,10 +3745,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 35,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2371,8 +3758,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 35,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T16:19:07Z",
       "evidencePreview": [
@@ -2395,6 +3782,11 @@
       },
       "recentHistory": [
         {
+          "rank": 58,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.2
+        },
+        {
           "rank": 35,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.2
@@ -2406,9 +3798,9 @@
       "id": "series-anomaly",
       "name": "Series Anomaly",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 36,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 59,
       "score": {
         "total": 14.2,
         "social": 0.0,
@@ -2418,10 +3810,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 36,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2431,8 +3823,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 36,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T16:08:56Z",
       "evidencePreview": [
@@ -2455,6 +3847,11 @@
       },
       "recentHistory": [
         {
+          "rank": 59,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 14.2
+        },
+        {
           "rank": 36,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 14.2
@@ -2466,9 +3863,9 @@
       "id": "video-music",
       "name": "Video Music",
       "category": "consumer-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 37,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 60,
       "score": {
         "total": 13.7,
         "social": 0.0,
@@ -2478,10 +3875,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 37,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2491,8 +3888,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 37,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:59:40Z",
       "evidencePreview": [
@@ -2515,6 +3912,11 @@
       },
       "recentHistory": [
         {
+          "rank": 60,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 13.7
+        },
+        {
           "rank": 37,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 13.7
@@ -2526,9 +3928,9 @@
       "id": "set-representation",
       "name": "SET Representation",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 38,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 61,
       "score": {
         "total": 13.7,
         "social": 0.0,
@@ -2538,10 +3940,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 38,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2551,8 +3953,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 38,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:57:44Z",
       "evidencePreview": [
@@ -2575,6 +3977,11 @@
       },
       "recentHistory": [
         {
+          "rank": 61,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 13.7
+        },
+        {
           "rank": 38,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 13.7
@@ -2586,9 +3993,9 @@
       "id": "innovation-engineering",
       "name": "Innovation Engineering",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 39,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 62,
       "score": {
         "total": 13.4,
         "social": 0.0,
@@ -2598,10 +4005,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 39,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2611,8 +4018,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 39,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:20:30Z",
       "evidencePreview": [
@@ -2635,6 +4042,11 @@
       },
       "recentHistory": [
         {
+          "rank": 62,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 13.4
+        },
+        {
           "rank": 39,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 13.4
@@ -2646,9 +4058,9 @@
       "id": "configuration-eavesdropper",
       "name": "Configuration Eavesdropper",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 40,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 63,
       "score": {
         "total": 13.2,
         "social": 0.0,
@@ -2658,10 +4070,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 40,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2671,8 +4083,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 40,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T17:02:40Z",
       "evidencePreview": [
@@ -2695,6 +4107,11 @@
       },
       "recentHistory": [
         {
+          "rank": 63,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 13.2
+        },
+        {
           "rank": 40,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 13.2
@@ -2706,9 +4123,9 @@
       "id": "prediction-molecular",
       "name": "Prediction Molecular",
       "category": "general-tech",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 41,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 64,
       "score": {
         "total": 12.9,
         "social": 0.0,
@@ -2718,10 +4135,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 41,
+        "rankChange": -23,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2731,8 +4148,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 41,
+      "rankChange": -23,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T16:40:50Z",
       "evidencePreview": [
@@ -2760,6 +4177,11 @@
       },
       "recentHistory": [
         {
+          "rank": 64,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 12.9
+        },
+        {
           "rank": 41,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 12.9
@@ -2768,17 +4190,17 @@
       "forecastDirection": null
     },
     {
-      "id": "dominance-universal",
-      "name": "Dominance Universal",
-      "category": "general-tech",
+      "id": "goose",
+      "name": "Goose",
+      "category": "developer-tools",
       "status": "new",
       "volatility": "emerging",
-      "rank": 42,
+      "rank": 65,
       "score": {
-        "total": 12.9,
+        "total": 18.9,
         "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 6.9,
+        "developer": 11.4,
+        "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
@@ -2790,14 +4212,89 @@
       },
       "coverage": {
         "sourceCount": 1,
+        "signalCount": 1
+      },
+      "sources": [
+        "github"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T16:39:20Z",
+      "evidencePreview": [
+        "block/goose an open source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "b2b",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "github",
+        "timestamp": "2026-03-12T16:39:20Z",
+        "value": 35936.0,
+        "evidence": "block/goose an open source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM",
+        "signalType": "developer",
+        "evidenceUrl": "https://github.com/block/goose"
+      },
+      "recentHistory": [
+        {
+          "rank": 65,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 18.9
+        }
+      ],
+      "forecastDirection": null
+    },
+    {
+      "id": "dominance-universal",
+      "name": "Dominance Universal",
+      "category": "general-tech",
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 66,
+      "score": {
+        "total": 12.9,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 6.9,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 42,
+        "rankChange": -24,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "coverage": {
+        "sourceCount": 1,
         "signalCount": 2
       },
       "sources": [
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 42,
+      "rankChange": -24,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T16:24:20Z",
       "evidencePreview": [
@@ -2820,6 +4317,11 @@
       },
       "recentHistory": [
         {
+          "rank": 66,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 12.9
+        },
+        {
           "rank": 42,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 12.9
@@ -2831,9 +4333,9 @@
       "id": "data-kernel",
       "name": "Data Kernel",
       "category": "data-analytics",
-      "status": "new",
-      "volatility": "emerging",
-      "rank": 43,
+      "status": "cooling",
+      "volatility": "spiking",
+      "rank": 67,
       "score": {
         "total": 12.8,
         "social": 0.0,
@@ -2843,10 +4345,10 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": null,
-        "rankChange": null,
-        "absoluteDelta": null,
-        "percentDelta": null
+        "previousRank": 43,
+        "rankChange": -24,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 1,
@@ -2856,8 +4358,8 @@
         "arxiv"
       ],
       "seasonality": null,
-      "previousRank": null,
-      "rankChange": null,
+      "previousRank": 43,
+      "rankChange": -24,
       "firstSeenAt": "2026-03-12T14:09:44.460931Z",
       "latestSignalAt": "2026-03-11T16:22:00Z",
       "evidencePreview": [
@@ -2885,6 +4387,11 @@
       },
       "recentHistory": [
         {
+          "rank": 67,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 12.8
+        },
+        {
           "rank": 43,
           "capturedAt": "2026-03-12T14:09:44.460931Z",
           "scoreTotal": 12.8
@@ -2893,92 +4400,12 @@
       "forecastDirection": null
     },
     {
-      "id": "homebrew-cask",
-      "name": "Homebrew Cask",
-      "category": "developer-tools",
-      "status": "cooling",
-      "volatility": "spiking",
-      "rank": 44,
-      "score": {
-        "total": 18.8,
-        "social": 0.0,
-        "developer": 11.3,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 7,
-        "rankChange": -37,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 1
-      },
-      "sources": [
-        "github"
-      ],
-      "seasonality": {
-        "tag": "recurring",
-        "confidence": 1.0,
-        "recurrenceCount": 2,
-        "avgGapRuns": 11.8
-      },
-      "previousRank": 7,
-      "rankChange": -37,
-      "firstSeenAt": "2026-03-11T22:59:22.876485Z",
-      "latestSignalAt": "2026-03-12T14:09:17Z",
-      "evidencePreview": [
-        "Homebrew/homebrew-cask \ud83c\udf7b A CLI workflow for the administration of macOS applications distributed as binaries"
-      ],
-      "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "b2b",
-          "segmentType": "market",
-          "signalCount": 1
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "github",
-        "timestamp": "2026-03-12T14:09:17Z",
-        "value": 33247.0,
-        "evidence": "Homebrew/homebrew-cask \ud83c\udf7b A CLI workflow for the administration of macOS applications distributed as binaries",
-        "signalType": "developer",
-        "evidenceUrl": "https://github.com/Homebrew/homebrew-cask"
-      },
-      "recentHistory": [
-        {
-          "rank": 44,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
-          "scoreTotal": 18.8
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-12T13:14:43.518607Z",
-          "scoreTotal": 18.8
-        }
-      ],
-      "forecastDirection": "steady"
-    },
-    {
       "id": "ai-edited",
       "name": "AI Edited",
       "category": "ai-machine-learning",
       "status": "cooling",
       "volatility": "spiking",
-      "rank": 45,
+      "rank": 68,
       "score": {
         "total": 18.7,
         "social": 11.2,
@@ -2988,8 +4415,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 13,
-        "rankChange": -32,
+        "previousRank": 24,
+        "rankChange": -44,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -3002,12 +4429,12 @@
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.96,
+        "confidence": 0.97,
         "recurrenceCount": 0,
         "avgGapRuns": 0.1
       },
-      "previousRank": 13,
-      "rankChange": -32,
+      "previousRank": 24,
+      "rankChange": -44,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
       "latestSignalAt": "2026-03-11T19:29:29Z",
       "evidencePreview": [
@@ -3038,24 +4465,94 @@
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-11T19:29:29Z",
-        "value": 5267.0,
+        "value": 5494.0,
         "evidence": "Don't post generated/AI-edited comments. HN is for conversation between humans",
         "signalType": "social",
         "evidenceUrl": "https://news.ycombinator.com/newsguidelines.html#generated"
       },
       "recentHistory": [
         {
-          "rank": 45,
-          "capturedAt": "2026-03-12T14:09:44.460931Z",
+          "rank": 68,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
           "scoreTotal": 18.7
         },
         {
-          "rank": 13,
-          "capturedAt": "2026-03-12T14:04:44.179578Z",
+          "rank": 24,
+          "capturedAt": "2026-03-12T14:10:51.022489Z",
           "scoreTotal": 18.7
         }
       ],
       "forecastDirection": "steady"
+    },
+    {
+      "id": "dagster",
+      "name": "Dagster",
+      "category": "developer-tools",
+      "status": "new",
+      "volatility": "emerging",
+      "rank": 69,
+      "score": {
+        "total": 18.1,
+        "social": 0.0,
+        "developer": 10.6,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": null,
+        "rankChange": null,
+        "absoluteDelta": null,
+        "percentDelta": null
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 1
+      },
+      "sources": [
+        "github"
+      ],
+      "seasonality": null,
+      "previousRank": null,
+      "rankChange": null,
+      "firstSeenAt": "2026-03-12T16:40:46.314344Z",
+      "latestSignalAt": "2026-03-12T16:39:21Z",
+      "evidencePreview": [
+        "dagster-io/dagster An orchestration platform for the development, production, and observation of data assets."
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        },
+        {
+          "label": "b2b",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "github",
+        "timestamp": "2026-03-12T16:39:21Z",
+        "value": 17115.0,
+        "evidence": "dagster-io/dagster An orchestration platform for the development, production, and observation of data assets.",
+        "signalType": "developer",
+        "evidenceUrl": "https://github.com/dagster-io/dagster"
+      },
+      "recentHistory": [
+        {
+          "rank": 69,
+          "capturedAt": "2026-03-12T16:40:46.314344Z",
+          "scoreTotal": 18.1
+        }
+      ],
+      "forecastDirection": null
     }
   ]
 }

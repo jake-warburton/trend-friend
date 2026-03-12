@@ -339,6 +339,25 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(signals[0].geo_detection_mode, "inferred")
         self.assertIn("geo:region:London", signals[0].geo_flags)
 
+    def test_build_signals_from_items_handles_list_metadata_values(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = build_signals_from_items(
+            [
+                RawSourceItem(
+                    source="stackoverflow",
+                    external_id="so-1",
+                    title="How do I deploy this app in Dubai?",
+                    url="https://stackoverflow.com/questions/1",
+                    timestamp=timestamp,
+                    engagement_score=10.0,
+                    metadata={"tags": ["python", "docker", "uae"], "lang": "en"},
+                )
+            ]
+        )
+        self.assertTrue(signals)
+        self.assertEqual(signals[0].geo_country_code, "AE")
+        self.assertEqual(signals[0].language_code, "en")
+
 
 class GeoQualityControlTests(unittest.TestCase):
     """Geo tagging should be conservative with confidence thresholds."""

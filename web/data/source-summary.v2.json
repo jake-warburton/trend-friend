@@ -3,13 +3,13 @@
     {
       "source": "arxiv",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:44.181988Z",
-      "latestSuccessAt": "2026-03-12T14:09:44.181988Z",
+      "latestFetchAt": "2026-03-12T16:40:44.451879Z",
+      "latestSuccessAt": "2026-03-12T16:40:44.451879Z",
       "rawItemCount": 30,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 100.0,
-      "durationMs": 202,
+      "durationMs": 187,
       "rawTopicCount": 59,
       "mergedTopicCount": 40,
       "duplicateTopicCount": 19,
@@ -19,6 +19,21 @@
       "signalCount": 61,
       "trendCount": 59,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:44.451879Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 187,
+          "rawTopicCount": 59,
+          "mergedTopicCount": 40,
+          "duplicateTopicCount": 19,
+          "duplicateTopicRate": 32.2,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:44.181988Z",
@@ -39,31 +54,31 @@
         {
           "id": "language-models",
           "name": "Language Models",
-          "rank": 6,
+          "rank": 8,
           "scoreTotal": 25.4
         },
         {
           "id": "knowledge-grounded",
           "name": "Knowledge Grounded",
-          "rank": 26,
+          "rank": 49,
           "scoreTotal": 15.2
         },
         {
           "id": "vector-quantization",
           "name": "Vector Quantization",
-          "rank": 27,
+          "rank": 50,
           "scoreTotal": 15.1
         },
         {
           "id": "relevance-feedback",
           "name": "Relevance Feedback",
-          "rank": 28,
+          "rank": 51,
           "scoreTotal": 15.1
         },
         {
           "id": "transcriptomics-mapping",
           "name": "Transcriptomics Mapping",
-          "rank": 29,
+          "rank": 52,
           "scoreTotal": 15.0
         }
       ]
@@ -71,22 +86,52 @@
     {
       "source": "github",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:37.273976Z",
-      "latestSuccessAt": "2026-03-12T14:09:37.273976Z",
+      "latestFetchAt": "2026-03-12T16:40:39.582521Z",
+      "latestSuccessAt": "2026-03-12T16:40:39.582521Z",
       "rawItemCount": 30,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 100.0,
-      "durationMs": 1072,
-      "rawTopicCount": 27,
-      "mergedTopicCount": 27,
+      "durationMs": 117,
+      "rawTopicCount": 29,
+      "mergedTopicCount": 29,
       "duplicateTopicCount": 0,
       "duplicateTopicRate": 0.0,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 28,
-      "trendCount": 27,
+      "signalCount": 29,
+      "trendCount": 29,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:39.582521Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 117,
+          "rawTopicCount": 29,
+          "mergedTopicCount": 29,
+          "duplicateTopicCount": 0,
+          "duplicateTopicRate": 0.0,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:45.468469Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 1140,
+          "rawTopicCount": 27,
+          "mergedTopicCount": 27,
+          "duplicateTopicCount": 0,
+          "duplicateTopicRate": 0.0,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:37.273976Z",
@@ -146,36 +191,6 @@
           "duplicateTopicRate": 0.0,
           "usedFallback": false,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:36.974723Z",
-          "rawItemCount": 30,
-          "itemCount": 30,
-          "keptItemCount": 30,
-          "yieldRatePercent": 100.0,
-          "durationMs": 1687,
-          "rawTopicCount": 30,
-          "mergedTopicCount": 30,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": false,
-          "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:49:37.402293Z",
-          "rawItemCount": 30,
-          "itemCount": 30,
-          "keptItemCount": 30,
-          "yieldRatePercent": 100.0,
-          "durationMs": 1242,
-          "rawTopicCount": 27,
-          "mergedTopicCount": 27,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": false,
-          "errorMessage": null
         }
       ],
       "topTrends": [
@@ -183,47 +198,71 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 131.2
+          "scoreTotal": 463.8
         },
         {
-          "id": "pytorch",
-          "name": "Pytorch",
-          "rank": 20,
-          "scoreTotal": 20.2
+          "id": "goose",
+          "name": "Goose",
+          "rank": 65,
+          "scoreTotal": 18.9
         },
         {
-          "id": "filament",
-          "name": "Filament",
-          "rank": 25,
-          "scoreTotal": 18.8
-        },
-        {
-          "id": "homebrew-cask",
-          "name": "Homebrew Cask",
-          "rank": 44,
-          "scoreTotal": 18.8
+          "id": "dagster",
+          "name": "Dagster",
+          "rank": 69,
+          "scoreTotal": 18.1
         }
       ]
     },
     {
       "source": "google_trends",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:38.733147Z",
-      "latestSuccessAt": "2026-03-12T14:09:38.733147Z",
+      "latestFetchAt": "2026-03-12T16:40:40.085045Z",
+      "latestSuccessAt": "2026-03-12T16:40:40.085045Z",
       "rawItemCount": 0,
       "latestItemCount": 30,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 5448,
-      "rawTopicCount": 24,
-      "mergedTopicCount": 24,
+      "durationMs": 4366,
+      "rawTopicCount": 25,
+      "mergedTopicCount": 25,
       "duplicateTopicCount": 0,
       "duplicateTopicRate": 0.0,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 24,
-      "trendCount": 24,
+      "signalCount": 25,
+      "trendCount": 25,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:40.085045Z",
+          "rawItemCount": 0,
+          "itemCount": 30,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 4366,
+          "rawTopicCount": 25,
+          "mergedTopicCount": 25,
+          "duplicateTopicCount": 0,
+          "duplicateTopicRate": 0.0,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:47.029247Z",
+          "rawItemCount": 0,
+          "itemCount": 30,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 3944,
+          "rawTopicCount": 24,
+          "mergedTopicCount": 24,
+          "duplicateTopicCount": 0,
+          "duplicateTopicRate": 0.0,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:38.733147Z",
@@ -283,36 +322,6 @@
           "duplicateTopicRate": 0.0,
           "usedFallback": false,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:39.084961Z",
-          "rawItemCount": 0,
-          "itemCount": 30,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 5818,
-          "rawTopicCount": 22,
-          "mergedTopicCount": 22,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": false,
-          "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:49:38.791879Z",
-          "rawItemCount": 0,
-          "itemCount": 30,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 5360,
-          "rawTopicCount": 20,
-          "mergedTopicCount": 20,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": false,
-          "errorMessage": null
         }
       ],
       "topTrends": []
@@ -320,22 +329,52 @@
     {
       "source": "hacker_news",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:24.935459Z",
-      "latestSuccessAt": "2026-03-12T14:09:24.935459Z",
+      "latestFetchAt": "2026-03-12T16:40:25.991232Z",
+      "latestSuccessAt": "2026-03-12T16:40:25.991232Z",
       "rawItemCount": 90,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 33.3,
-      "durationMs": 12335,
-      "rawTopicCount": 30,
-      "mergedTopicCount": 29,
+      "durationMs": 13590,
+      "rawTopicCount": 31,
+      "mergedTopicCount": 30,
       "duplicateTopicCount": 1,
-      "duplicateTopicRate": 3.3,
+      "duplicateTopicRate": 3.2,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 30,
-      "trendCount": 30,
+      "signalCount": 31,
+      "trendCount": 31,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:25.991232Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 13590,
+          "rawTopicCount": 31,
+          "mergedTopicCount": 30,
+          "duplicateTopicCount": 1,
+          "duplicateTopicRate": 3.2,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:40.432398Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 5035,
+          "rawTopicCount": 30,
+          "mergedTopicCount": 29,
+          "duplicateTopicCount": 1,
+          "duplicateTopicRate": 3.3,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:24.935459Z",
@@ -395,36 +434,6 @@
           "duplicateTopicRate": 3.3,
           "usedFallback": false,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:24.443369Z",
-          "rawItemCount": 90,
-          "itemCount": 30,
-          "keptItemCount": 30,
-          "yieldRatePercent": 33.3,
-          "durationMs": 12529,
-          "rawTopicCount": 31,
-          "mergedTopicCount": 30,
-          "duplicateTopicCount": 1,
-          "duplicateTopicRate": 3.2,
-          "usedFallback": false,
-          "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:49:24.454572Z",
-          "rawItemCount": 90,
-          "itemCount": 30,
-          "keptItemCount": 30,
-          "yieldRatePercent": 33.3,
-          "durationMs": 12947,
-          "rawTopicCount": 30,
-          "mergedTopicCount": 30,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": false,
-          "errorMessage": null
         }
       ],
       "topTrends": [
@@ -432,18 +441,18 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 131.2
+          "scoreTotal": 463.8
         },
         {
           "id": "data-leak",
           "name": "Data Leak",
           "rank": 4,
-          "scoreTotal": 31.2
+          "scoreTotal": 30.2
         },
         {
           "id": "ai-edited",
           "name": "AI Edited",
-          "rank": 45,
+          "rank": 68,
           "scoreTotal": 18.7
         }
       ]
@@ -451,22 +460,52 @@
     {
       "source": "polymarket",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:38.347135Z",
-      "latestSuccessAt": "2026-03-12T14:09:38.347135Z",
+      "latestFetchAt": "2026-03-12T16:40:39.700442Z",
+      "latestSuccessAt": "2026-03-12T16:40:39.700442Z",
       "rawItemCount": 30,
-      "latestItemCount": 6,
-      "keptItemCount": 6,
-      "yieldRatePercent": 20.0,
-      "durationMs": 258,
-      "rawTopicCount": 4,
-      "mergedTopicCount": 4,
+      "latestItemCount": 9,
+      "keptItemCount": 9,
+      "yieldRatePercent": 30.0,
+      "durationMs": 269,
+      "rawTopicCount": 5,
+      "mergedTopicCount": 5,
       "duplicateTopicCount": 0,
       "duplicateTopicRate": 0.0,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 6,
-      "trendCount": 4,
+      "signalCount": 8,
+      "trendCount": 5,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:39.700442Z",
+          "rawItemCount": 30,
+          "itemCount": 9,
+          "keptItemCount": 9,
+          "yieldRatePercent": 30.0,
+          "durationMs": 269,
+          "rawTopicCount": 5,
+          "mergedTopicCount": 5,
+          "duplicateTopicCount": 0,
+          "duplicateTopicRate": 0.0,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:46.609454Z",
+          "rawItemCount": 30,
+          "itemCount": 6,
+          "keptItemCount": 6,
+          "yieldRatePercent": 20.0,
+          "durationMs": 309,
+          "rawTopicCount": 4,
+          "mergedTopicCount": 4,
+          "duplicateTopicCount": 0,
+          "duplicateTopicRate": 0.0,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:38.347135Z",
@@ -526,63 +565,134 @@
           "duplicateTopicRate": 0.0,
           "usedFallback": false,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:38.662782Z",
-          "rawItemCount": 30,
-          "itemCount": 9,
-          "keptItemCount": 9,
-          "yieldRatePercent": 30.0,
-          "durationMs": 280,
-          "rawTopicCount": 6,
-          "mergedTopicCount": 6,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": false,
-          "errorMessage": null
         }
       ],
       "topTrends": [
         {
           "id": "bitcoin",
           "name": "Bitcoin",
+          "rank": 5,
+          "scoreTotal": 28.2
+        }
+      ]
+    },
+    {
+      "source": "producthunt",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-12T16:40:46.044728Z",
+      "latestSuccessAt": "2026-03-12T16:40:46.044728Z",
+      "rawItemCount": 50,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 60.0,
+      "durationMs": 146,
+      "rawTopicCount": 58,
+      "mergedTopicCount": 35,
+      "duplicateTopicCount": 23,
+      "duplicateTopicRate": 39.7,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 71,
+      "trendCount": 58,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:46.044728Z",
+          "rawItemCount": 50,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 60.0,
+          "durationMs": 146,
+          "rawTopicCount": 58,
+          "mergedTopicCount": 35,
+          "duplicateTopicCount": 23,
+          "duplicateTopicRate": 39.7,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "scoreTotal": 463.8
+        },
+        {
+          "id": "ai-memory",
+          "name": "AI Memory",
           "rank": 2,
-          "scoreTotal": 47.2
+          "scoreTotal": 40.5
         },
         {
-          "id": "federal-reserve",
-          "name": "Federal Reserve",
-          "rank": 21,
-          "scoreTotal": 20.0
+          "id": "project-manager",
+          "name": "Project Manager",
+          "rank": 11,
+          "scoreTotal": 24.1
         },
         {
-          "id": "crude-oil",
-          "name": "Crude Oil",
-          "rank": 24,
-          "scoreTotal": 18.9
+          "id": "cad-models",
+          "name": "CAD Models",
+          "rank": 13,
+          "scoreTotal": 23.9
+        },
+        {
+          "id": "demand-sandboxes",
+          "name": "Demand Sandboxes",
+          "rank": 15,
+          "scoreTotal": 23.7
         }
       ]
     },
     {
       "source": "reddit",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:24.189862Z",
-      "latestSuccessAt": "2026-03-12T14:09:24.189862Z",
+      "latestFetchAt": "2026-03-12T16:40:24.988070Z",
+      "latestSuccessAt": "2026-03-12T16:40:24.988070Z",
       "rawItemCount": 30,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 100.0,
-      "durationMs": 745,
-      "rawTopicCount": 59,
-      "mergedTopicCount": 47,
-      "duplicateTopicCount": 12,
-      "duplicateTopicRate": 20.3,
+      "durationMs": 1002,
+      "rawTopicCount": 58,
+      "mergedTopicCount": 49,
+      "duplicateTopicCount": 9,
+      "duplicateTopicRate": 15.5,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 62,
-      "trendCount": 59,
+      "signalCount": 61,
+      "trendCount": 58,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:24.988070Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 1002,
+          "rawTopicCount": 58,
+          "mergedTopicCount": 49,
+          "duplicateTopicCount": 9,
+          "duplicateTopicRate": 15.5,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:39.858215Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 573,
+          "rawTopicCount": 59,
+          "mergedTopicCount": 47,
+          "duplicateTopicCount": 12,
+          "duplicateTopicRate": 20.3,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:24.189862Z",
@@ -642,36 +752,6 @@
           "duplicateTopicRate": 0.0,
           "usedFallback": true,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:24.227363Z",
-          "rawItemCount": 0,
-          "itemCount": 2,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 215,
-          "rawTopicCount": 2,
-          "mergedTopicCount": 2,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": true,
-          "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:49:24.228111Z",
-          "rawItemCount": 0,
-          "itemCount": 2,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 226,
-          "rawTopicCount": 2,
-          "mergedTopicCount": 2,
-          "duplicateTopicCount": 0,
-          "duplicateTopicRate": 0.0,
-          "usedFallback": true,
-          "errorMessage": null
         }
       ],
       "topTrends": [
@@ -679,39 +759,107 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 131.2
+          "scoreTotal": 463.8
+        },
+        {
+          "id": "ai-memory",
+          "name": "AI Memory",
+          "rank": 2,
+          "scoreTotal": 40.5
         },
         {
           "id": "data-leak",
           "name": "Data Leak",
           "rank": 4,
-          "scoreTotal": 31.2
+          "scoreTotal": 30.2
+        },
+        {
+          "id": "billion-revenue",
+          "name": "Billion Revenue",
+          "rank": 7,
+          "scoreTotal": 25.5
         },
         {
           "id": "ai-push",
           "name": "AI Push",
-          "rank": 7,
-          "scoreTotal": 25.3
-        },
-        {
-          "id": "workers-ahead",
-          "name": "Workers Ahead",
-          "rank": 8,
-          "scoreTotal": 25.3
-        },
-        {
-          "id": "paid-marketing",
-          "name": "Paid Marketing",
           "rank": 9,
-          "scoreTotal": 24.4
+          "scoreTotal": 24.8
+        }
+      ]
+    },
+    {
+      "source": "stackoverflow",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-12T16:40:44.639490Z",
+      "latestSuccessAt": "2026-03-12T16:40:44.639490Z",
+      "rawItemCount": 30,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 100.0,
+      "durationMs": 1405,
+      "rawTopicCount": 59,
+      "mergedTopicCount": 43,
+      "duplicateTopicCount": 16,
+      "duplicateTopicRate": 27.1,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 59,
+      "trendCount": 59,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:44.639490Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 1405,
+          "rawTopicCount": 59,
+          "mergedTopicCount": 43,
+          "duplicateTopicCount": 16,
+          "duplicateTopicRate": 27.1,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "functions-exported",
+          "name": "Functions Exported",
+          "rank": 31,
+          "scoreTotal": 19.8
+        },
+        {
+          "id": "chromadb-persistentclient",
+          "name": "ChromaDB PersistentClient",
+          "rank": 34,
+          "scoreTotal": 19.0
+        },
+        {
+          "id": "execution-contexts",
+          "name": "Execution Contexts",
+          "rank": 35,
+          "scoreTotal": 18.7
+        },
+        {
+          "id": "binaries-generally",
+          "name": "Binaries Generally",
+          "rank": 36,
+          "scoreTotal": 18.2
+        },
+        {
+          "id": "generate-optimised",
+          "name": "Generate Optimised",
+          "rank": 37,
+          "scoreTotal": 17.8
         }
       ]
     },
     {
       "source": "twitter",
       "status": "degraded",
-      "latestFetchAt": "2026-03-12T14:09:44.181790Z",
-      "latestSuccessAt": "2026-03-12T14:09:44.181790Z",
+      "latestFetchAt": "2026-03-12T16:40:44.451602Z",
+      "latestSuccessAt": "2026-03-12T16:40:44.451602Z",
       "rawItemCount": 0,
       "latestItemCount": 3,
       "keptItemCount": 0,
@@ -726,6 +874,36 @@
       "signalCount": 5,
       "trendCount": 5,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:44.451602Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "rawTopicCount": 5,
+          "mergedTopicCount": 4,
+          "duplicateTopicCount": 1,
+          "duplicateTopicRate": 20.0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:50.974046Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "rawTopicCount": 5,
+          "mergedTopicCount": 4,
+          "duplicateTopicCount": 1,
+          "duplicateTopicRate": 20.0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:44.181790Z",
@@ -785,36 +963,6 @@
           "duplicateTopicRate": 20.0,
           "usedFallback": true,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:44.903493Z",
-          "rawItemCount": 0,
-          "itemCount": 3,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 0,
-          "rawTopicCount": 5,
-          "mergedTopicCount": 4,
-          "duplicateTopicCount": 1,
-          "duplicateTopicRate": 20.0,
-          "usedFallback": true,
-          "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:49:44.152844Z",
-          "rawItemCount": 0,
-          "itemCount": 3,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 0,
-          "rawTopicCount": 5,
-          "mergedTopicCount": 4,
-          "duplicateTopicCount": 1,
-          "duplicateTopicRate": 20.0,
-          "usedFallback": true,
-          "errorMessage": null
         }
       ],
       "topTrends": [
@@ -822,12 +970,12 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 131.2
+          "scoreTotal": 463.8
         },
         {
           "id": "robotics",
           "name": "Robotics",
-          "rank": 5,
+          "rank": 6,
           "scoreTotal": 27.9
         }
       ]
@@ -835,13 +983,13 @@
     {
       "source": "wikipedia",
       "status": "healthy",
-      "latestFetchAt": "2026-03-12T14:09:38.605744Z",
-      "latestSuccessAt": "2026-03-12T14:09:38.605744Z",
+      "latestFetchAt": "2026-03-12T16:40:39.969626Z",
+      "latestSuccessAt": "2026-03-12T16:40:39.969626Z",
       "rawItemCount": 0,
       "latestItemCount": 25,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 127,
+      "durationMs": 115,
       "rawTopicCount": 28,
       "mergedTopicCount": 24,
       "duplicateTopicCount": 4,
@@ -851,6 +999,36 @@
       "signalCount": 30,
       "trendCount": 28,
       "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T16:40:39.969626Z",
+          "rawItemCount": 0,
+          "itemCount": 25,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 115,
+          "rawTopicCount": 28,
+          "mergedTopicCount": 24,
+          "duplicateTopicCount": 4,
+          "duplicateTopicRate": 14.3,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-12T14:10:46.919331Z",
+          "rawItemCount": 0,
+          "itemCount": 25,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 109,
+          "rawTopicCount": 28,
+          "mergedTopicCount": 24,
+          "duplicateTopicCount": 4,
+          "duplicateTopicRate": 14.3,
+          "usedFallback": false,
+          "errorMessage": null
+        },
         {
           "success": true,
           "fetchedAt": "2026-03-12T14:09:38.605744Z",
@@ -910,36 +1088,6 @@
           "duplicateTopicRate": 14.3,
           "usedFallback": false,
           "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:54:38.943764Z",
-          "rawItemCount": 0,
-          "itemCount": 25,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 140,
-          "rawTopicCount": 28,
-          "mergedTopicCount": 24,
-          "duplicateTopicCount": 4,
-          "duplicateTopicRate": 14.3,
-          "usedFallback": false,
-          "errorMessage": null
-        },
-        {
-          "success": true,
-          "fetchedAt": "2026-03-12T13:49:38.645065Z",
-          "rawItemCount": 0,
-          "itemCount": 25,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 146,
-          "rawTopicCount": 28,
-          "mergedTopicCount": 24,
-          "duplicateTopicCount": 4,
-          "duplicateTopicRate": 14.3,
-          "usedFallback": false,
-          "errorMessage": null
         }
       ],
       "topTrends": [
@@ -952,23 +1100,23 @@
         {
           "id": "scoring-leaders",
           "name": "Scoring Leaders",
-          "rank": 19,
+          "rank": 30,
           "scoreTotal": 20.6
         },
         {
           "id": "kinsk-footballer",
           "name": "Kinsk Footballer",
-          "rank": 22,
+          "rank": 32,
           "scoreTotal": 19.6
         },
         {
           "id": "bessette-kennedy",
           "name": "Bessette Kennedy",
-          "rank": 23,
+          "rank": 33,
           "scoreTotal": 19.2
         }
       ]
     }
   ],
-  "generatedAt": "2026-03-12T14:09:44.460931Z"
+  "generatedAt": "2026-03-12T16:40:46.314344Z"
 }

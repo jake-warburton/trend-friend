@@ -1,52 +1,53 @@
 {
-  "generatedAt": "2026-03-12T14:09:44.460931Z",
+  "generatedAt": "2026-03-12T16:40:46.314344Z",
   "trends": [
     {
       "id": "ai-agents",
       "name": "AI Agents",
       "rank": 1,
       "score": {
-        "total": 131.2,
-        "social": 84.1,
-        "developer": 20.0,
+        "total": 463.8,
+        "social": 419.1,
+        "developer": 11.6,
         "knowledge": 0.0,
         "search": 0.0,
-        "diversity": 24.0
+        "diversity": 30.0
       },
       "sources": [
         "github",
         "hacker_news",
+        "producthunt",
         "reddit",
         "twitter"
       ],
       "evidence": [
         "Meta buys 'social media network for AI' Moltbook, and says the deal will bring \"new ways for AI agents to work for people and businesses\".",
-        "Meta buys Moltbook, viral social network where AI agents interact",
+        "we scanned a blender mcp server (17k stars) and found some interesting ai agent security issues",
         "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work"
       ],
-      "latestSignalAt": "2026-03-12T14:08:53Z"
+      "latestSignalAt": "2026-03-12T16:39:20Z"
     },
     {
-      "id": "bitcoin",
-      "name": "Bitcoin",
+      "id": "ai-memory",
+      "name": "AI Memory",
       "rank": 2,
       "score": {
-        "total": 47.2,
-        "social": 0.0,
+        "total": 40.5,
+        "social": 26.3,
         "developer": 0.0,
         "knowledge": 0.0,
-        "search": 38.2,
-        "diversity": 6.0
+        "search": 0.0,
+        "diversity": 12.0
       },
       "sources": [
-        "polymarket"
+        "producthunt",
+        "reddit"
       ],
       "evidence": [
-        "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
-        "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?",
-        "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+        "Built an AI memory system based on cognitive science instead of vector databases",
+        "Personal AI Memory V2: Captures and stores your AI Conversation from LLM platforms"
       ],
-      "latestSignalAt": "2026-04-01T04:00:00Z"
+      "latestSignalAt": "2026-03-12T14:48:43Z"
     },
     {
       "id": "baseball-classic",
@@ -74,8 +75,8 @@
       "name": "Data Leak",
       "rank": 4,
       "score": {
-        "total": 31.2,
-        "social": 16.9,
+        "total": 30.2,
+        "social": 16.0,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -92,9 +93,31 @@
       "latestSignalAt": "2026-03-12T09:46:00Z"
     },
     {
+      "id": "bitcoin",
+      "name": "Bitcoin",
+      "rank": 5,
+      "score": {
+        "total": 28.2,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 19.2,
+        "diversity": 6.0
+      },
+      "sources": [
+        "polymarket"
+      ],
+      "evidence": [
+        "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+        "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?",
+        "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+      ],
+      "latestSignalAt": "2026-04-01T04:00:00Z"
+    },
+    {
       "id": "robotics",
       "name": "Robotics",
-      "rank": 5,
+      "rank": 6,
       "score": {
         "total": 27.9,
         "social": 20.4,
@@ -112,9 +135,29 @@
       "latestSignalAt": "2026-03-09T14:30:00Z"
     },
     {
+      "id": "billion-revenue",
+      "name": "Billion Revenue",
+      "rank": 7,
+      "score": {
+        "total": 25.5,
+        "social": 18.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "reddit"
+      ],
+      "evidence": [
+        "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year"
+      ],
+      "latestSignalAt": "2026-03-12T13:35:57Z"
+    },
+    {
       "id": "language-models",
       "name": "Language Models",
-      "rank": 6,
+      "rank": 8,
       "score": {
         "total": 25.4,
         "social": 0.0,
@@ -136,10 +179,10 @@
     {
       "id": "ai-push",
       "name": "AI Push",
-      "rank": 7,
+      "rank": 9,
       "score": {
-        "total": 25.3,
-        "social": 17.8,
+        "total": 24.8,
+        "social": 17.3,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -156,10 +199,10 @@
     {
       "id": "workers-ahead",
       "name": "Workers Ahead",
-      "rank": 8,
+      "rank": 10,
       "score": {
-        "total": 25.3,
-        "social": 17.8,
+        "total": 24.8,
+        "social": 17.3,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -174,12 +217,32 @@
       "latestSignalAt": "2026-03-12T11:08:55Z"
     },
     {
+      "id": "project-manager",
+      "name": "Project Manager",
+      "rank": 11,
+      "score": {
+        "total": 24.1,
+        "social": 16.6,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "Sara: Project management without the project manager."
+      ],
+      "latestSignalAt": "2026-03-11T08:46:53Z"
+    },
+    {
       "id": "paid-marketing",
       "name": "Paid Marketing",
-      "rank": 9,
+      "rank": 12,
       "score": {
-        "total": 24.4,
-        "social": 16.9,
+        "total": 24.0,
+        "social": 16.5,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -194,49 +257,29 @@
       "latestSignalAt": "2026-03-12T12:29:40Z"
     },
     {
-      "id": "billion-revenue",
-      "name": "Billion Revenue",
-      "rank": 10,
+      "id": "cad-models",
+      "name": "CAD Models",
+      "rank": 13,
       "score": {
-        "total": 24.3,
-        "social": 16.8,
+        "total": 23.9,
+        "social": 16.4,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "evidence": [
-        "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year"
+        "Whisker: Create and edit CAD models into production-ready prototypes"
       ],
-      "latestSignalAt": "2026-03-12T13:35:57Z"
-    },
-    {
-      "id": "data-centers",
-      "name": "Data Centers",
-      "rank": 11,
-      "score": {
-        "total": 24.1,
-        "social": 16.6,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "sources": [
-        "reddit"
-      ],
-      "evidence": [
-        "Florida lawmakers debate who will pay the price of AI data centers"
-      ],
-      "latestSignalAt": "2026-03-12T01:43:05Z"
+      "latestSignalAt": "2026-03-12T00:37:03Z"
     },
     {
       "id": "stopped-function",
       "name": "Stopped Function",
-      "rank": 12,
+      "rank": 14,
       "score": {
         "total": 23.9,
         "social": 17.9,
@@ -254,9 +297,49 @@
       "latestSignalAt": "2026-03-12T06:02:16Z"
     },
     {
-      "id": "without-permission",
-      "name": "Without Permission",
-      "rank": 13,
+      "id": "demand-sandboxes",
+      "name": "Demand Sandboxes",
+      "rank": 15,
+      "score": {
+        "total": 23.7,
+        "social": 16.2,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "PaperPod: On-demand sandboxes for AI Agents"
+      ],
+      "latestSignalAt": "2026-03-12T03:56:29Z"
+    },
+    {
+      "id": "alphaevolve-fraction",
+      "name": "Alphaevolve Fraction",
+      "rank": 16,
+      "score": {
+        "total": 23.6,
+        "social": 17.6,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "reddit"
+      ],
+      "evidence": [
+        "[R] LEVI: Beating GEPA/OpenEvolve/AlphaEvolve at a fraction of the cost"
+      ],
+      "latestSignalAt": "2026-03-12T13:57:32Z"
+    },
+    {
+      "id": "ram-agentic",
+      "name": "RAM Agentic",
+      "rank": 17,
       "score": {
         "total": 23.5,
         "social": 16.0,
@@ -269,17 +352,97 @@
         "reddit"
       ],
       "evidence": [
-        "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019"
+        "96GB (V)RAM agentic coding users, gpt-oss-120b vs qwen3.5 27b/122b"
       ],
-      "latestSignalAt": "2026-03-11T14:34:34Z"
+      "latestSignalAt": "2026-03-12T12:42:35Z"
+    },
+    {
+      "id": "prava-payments",
+      "name": "Prava Payments",
+      "rank": 18,
+      "score": {
+        "total": 23.4,
+        "social": 15.9,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "Prava: Payments stack for AI agents"
+      ],
+      "latestSignalAt": "2026-03-12T01:10:05Z"
+    },
+    {
+      "id": "ai-native",
+      "name": "AI Native",
+      "rank": 19,
+      "score": {
+        "total": 23.2,
+        "social": 15.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "Runner AI: Build, optimize, and scale your AI-native store"
+      ],
+      "latestSignalAt": "2026-02-26T02:44:02Z"
+    },
+    {
+      "id": "free-offerings",
+      "name": "Free Offerings",
+      "rank": 20,
+      "score": {
+        "total": 23.2,
+        "social": 15.8,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "reddit"
+      ],
+      "evidence": [
+        "Thank You Thursday! Free Offerings and More - March 12, 2026"
+      ],
+      "latestSignalAt": "2026-03-12T09:00:21Z"
+    },
+    {
+      "id": "interactive-visuals",
+      "name": "Interactive Visuals",
+      "rank": 21,
+      "score": {
+        "total": 23.1,
+        "social": 15.6,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "OrangeLabs: Analyze, interpret, and create interactive visuals from data"
+      ],
+      "latestSignalAt": "2026-02-20T14:11:35Z"
     },
     {
       "id": "investment-cofound",
       "name": "Investment Cofound",
-      "rank": 14,
+      "rank": 22,
       "score": {
-        "total": 23.3,
-        "social": 17.3,
+        "total": 23.1,
+        "social": 17.1,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -294,49 +457,29 @@
       "latestSignalAt": "2026-03-12T10:16:00Z"
     },
     {
-      "id": "ai-models",
-      "name": "AI Models",
-      "rank": 15,
+      "id": "site-actually",
+      "name": "Site Actually",
+      "rank": 23,
       "score": {
-        "total": 23.2,
-        "social": 15.8,
+        "total": 22.8,
+        "social": 15.3,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "evidence": [
-        "Nvidia Will Spend $26 Billion to Build Open-Weight AI Models, Filings Show"
+        "Grepped: Make your vibe coded site actually look nice"
       ],
-      "latestSignalAt": "2026-03-11T19:51:15Z"
+      "latestSignalAt": "2026-03-11T23:12:35Z"
     },
     {
-      "id": "don-mention",
-      "name": "DON Mention",
-      "rank": 16,
-      "score": {
-        "total": 23.2,
-        "social": 17.2,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "sources": [
-        "reddit"
-      ],
-      "evidence": [
-        "Dubai's influencers have a new rule: Don't mention the war"
-      ],
-      "latestSignalAt": "2026-03-12T03:06:09Z"
-    },
-    {
-      "id": "ram-market",
-      "name": "RAM Market",
-      "rank": 17,
+      "id": "websites-minutes",
+      "name": "Websites Minutes",
+      "rank": 24,
       "score": {
         "total": 22.7,
         "social": 16.7,
@@ -346,37 +489,117 @@
         "diversity": 6.0
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "evidence": [
-        "Valve says almost 6,000 games made over $100K on Steam in 2025 | And \"If you have a line on a bunch of RAM, we are in the market and would like to buy it.\""
+        "Astrio: Modernize your outdated websites in minutes, not weeks"
       ],
-      "latestSignalAt": "2026-03-12T03:23:01Z"
+      "latestSignalAt": "2026-03-12T06:59:44Z"
     },
     {
-      "id": "thousands-queuing",
-      "name": "Thousands Queuing",
-      "rank": 18,
+      "id": "polished-content",
+      "name": "Polished Content",
+      "rank": 25,
       "score": {
-        "total": 21.9,
-        "social": 15.9,
+        "total": 22.6,
+        "social": 15.1,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "sources": [
-        "reddit"
+        "producthunt"
       ],
       "evidence": [
-        "People are getting OpenClaw installed for free in China. Thousands are queuing for OpenClaw setup."
+        "Yap-It: Turn voice notes into polished content in one tap"
       ],
-      "latestSignalAt": "2026-03-12T14:04:13Z"
+      "latestSignalAt": "2026-03-11T03:14:48Z"
+    },
+    {
+      "id": "ai-written",
+      "name": "AI Written",
+      "rank": 26,
+      "score": {
+        "total": 22.5,
+        "social": 15.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "oobo: Git layer that preserves the why behind AI-written code"
+      ],
+      "latestSignalAt": "2026-03-12T00:59:08Z"
+    },
+    {
+      "id": "best-computer",
+      "name": "Best Computer",
+      "rank": 27,
+      "score": {
+        "total": 22.5,
+        "social": 15.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "Coasty: #1 OS World Benchmark, the best Computer Using Agents at $0"
+      ],
+      "latestSignalAt": "2026-03-12T05:16:56Z"
+    },
+    {
+      "id": "client-codex",
+      "name": "Client Codex",
+      "rank": 28,
+      "score": {
+        "total": 22.4,
+        "social": 16.4,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "Codex Chat: An open-source macOS client for Codex"
+      ],
+      "latestSignalAt": "2026-03-12T03:53:45Z"
+    },
+    {
+      "id": "retell-forever",
+      "name": "Retell Forever",
+      "rank": 29,
+      "score": {
+        "total": 22.2,
+        "social": 16.2,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "producthunt"
+      ],
+      "evidence": [
+        "Retell: Watch it Once. Retell it Forever."
+      ],
+      "latestSignalAt": "2026-03-12T05:49:26Z"
     },
     {
       "id": "scoring-leaders",
       "name": "Scoring Leaders",
-      "rank": 19,
+      "rank": 30,
       "score": {
         "total": 20.6,
         "social": 0.0,
@@ -394,49 +617,29 @@
       "latestSignalAt": "2026-03-11T00:00:00Z"
     },
     {
-      "id": "pytorch",
-      "name": "Pytorch",
-      "rank": 20,
+      "id": "functions-exported",
+      "name": "Functions Exported",
+      "rank": 31,
       "score": {
-        "total": 20.2,
+        "total": 19.8,
         "social": 0.0,
-        "developer": 12.8,
+        "developer": 12.3,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "sources": [
-        "github"
+        "stackoverflow"
       ],
       "evidence": [
-        "pytorch/pytorch Tensors and Dynamic neural networks in Python with strong GPU acceleration"
+        "Why is the module name a part of a mangled name for functions exported from C++20 modules?"
       ],
-      "latestSignalAt": "2026-03-12T14:08:52Z"
-    },
-    {
-      "id": "federal-reserve",
-      "name": "Federal Reserve",
-      "rank": 21,
-      "score": {
-        "total": 20.0,
-        "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 14.0,
-        "diversity": 6.0
-      },
-      "sources": [
-        "polymarket"
-      ],
-      "evidence": [
-        "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
-      ],
-      "latestSignalAt": "2026-03-18T00:00:00Z"
+      "latestSignalAt": "2026-03-10T11:23:29Z"
     },
     {
       "id": "kinsk-footballer",
       "name": "Kinsk Footballer",
-      "rank": 22,
+      "rank": 32,
       "score": {
         "total": 19.6,
         "social": 0.0,
@@ -456,7 +659,7 @@
     {
       "id": "bessette-kennedy",
       "name": "Bessette Kennedy",
-      "rank": 23,
+      "rank": 33,
       "score": {
         "total": 19.2,
         "social": 0.0,
@@ -474,49 +677,309 @@
       "latestSignalAt": "2026-03-11T00:00:00Z"
     },
     {
-      "id": "crude-oil",
-      "name": "Crude Oil",
-      "rank": 24,
+      "id": "chromadb-persistentclient",
+      "name": "ChromaDB PersistentClient",
+      "rank": 34,
       "score": {
-        "total": 18.9,
+        "total": 19.0,
         "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 11.4,
-        "diversity": 6.0
-      },
-      "sources": [
-        "polymarket"
-      ],
-      "evidence": [
-        "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
-      ],
-      "latestSignalAt": "2026-03-31T00:00:00Z"
-    },
-    {
-      "id": "filament",
-      "name": "Filament",
-      "rank": 25,
-      "score": {
-        "total": 18.8,
-        "social": 0.0,
-        "developer": 11.3,
+        "developer": 11.5,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "sources": [
-        "github"
+        "stackoverflow"
       ],
       "evidence": [
-        "filamentphp/filament A powerful open-source UI framework for Laravel \u2022 Build and ship apps & admin panels fast with Livewire"
+        "Resolving Concurrency Bottlenecks in LangChain's RunnableParallel with ChromaDB PersistentClient"
       ],
-      "latestSignalAt": "2026-03-12T14:08:56Z"
+      "latestSignalAt": "2026-03-09T03:01:17Z"
+    },
+    {
+      "id": "execution-contexts",
+      "name": "Execution Contexts",
+      "rank": 35,
+      "score": {
+        "total": 18.7,
+        "social": 0.0,
+        "developer": 11.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "How to correctly migrate awaitables between different execution contexts?"
+      ],
+      "latestSignalAt": "2026-03-11T19:13:50Z"
+    },
+    {
+      "id": "binaries-generally",
+      "name": "Binaries Generally",
+      "rank": 36,
+      "score": {
+        "total": 18.2,
+        "social": 0.0,
+        "developer": 10.7,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Why exactly are Rust binaries generally larger than a C binaries?"
+      ],
+      "latestSignalAt": "2026-03-09T18:02:08Z"
+    },
+    {
+      "id": "generate-optimised",
+      "name": "Generate Optimised",
+      "rank": 37,
+      "score": {
+        "total": 17.8,
+        "social": 0.0,
+        "developer": 10.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "If I build numpy with `-Dcpu-baseline=\"none\"`, will it still generate optimised code paths for newer CPUs?"
+      ],
+      "latestSignalAt": "2026-03-09T09:55:13Z"
+    },
+    {
+      "id": "without-holding",
+      "name": "Without Holding",
+      "rank": 38,
+      "score": {
+        "total": 17.8,
+        "social": 0.0,
+        "developer": 10.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Can a php-website 'call' a php file to run on its own (without holding up the website)?"
+      ],
+      "latestSignalAt": "2026-03-10T13:38:22Z"
+    },
+    {
+      "id": "waveform-program",
+      "name": "Waveform Program",
+      "rank": 39,
+      "score": {
+        "total": 17.6,
+        "social": 0.0,
+        "developer": 10.1,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "How do I get rid of this crackle/pop noise when my waveform program goes silent?"
+      ],
+      "latestSignalAt": "2026-03-08T23:13:30Z"
+    },
+    {
+      "id": "string-view",
+      "name": "String View",
+      "rank": 40,
+      "score": {
+        "total": 17.4,
+        "social": 0.0,
+        "developer": 9.9,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "The Ephemeral View: Performance Over Safety in std::string_view Ownership"
+      ],
+      "latestSignalAt": "2026-03-05T22:57:19Z"
+    },
+    {
+      "id": "add-calendar",
+      "name": "ADD Calendar",
+      "rank": 41,
+      "score": {
+        "total": 17.1,
+        "social": 0.0,
+        "developer": 9.6,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "MS Graph add calendar event using C#"
+      ],
+      "latestSignalAt": "2026-03-10T09:49:18Z"
+    },
+    {
+      "id": "compatibility-pytorch",
+      "name": "Compatibility Pytorch",
+      "rank": 42,
+      "score": {
+        "total": 16.9,
+        "social": 0.0,
+        "developer": 10.9,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Optimizing a Gaussian penalty function for HSL color compatibility in PyTorch/NumPy"
+      ],
+      "latestSignalAt": "2026-03-11T16:11:36Z"
+    },
+    {
+      "id": "property-reflection",
+      "name": "Property Reflection",
+      "rank": 43,
+      "score": {
+        "total": 16.5,
+        "social": 0.0,
+        "developer": 10.5,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Is there a way to get a ref struct property using reflection?"
+      ],
+      "latestSignalAt": "2026-03-07T10:40:54Z"
+    },
+    {
+      "id": "assertion-predefined",
+      "name": "Assertion Predefined",
+      "rank": 44,
+      "score": {
+        "total": 16.4,
+        "social": 0.0,
+        "developer": 10.4,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Why doesn't this look-behind assertion with a predefined regular expression work as expected?"
+      ],
+      "latestSignalAt": "2026-03-11T18:11:50Z"
+    },
+    {
+      "id": "literals-roundtiestoeven",
+      "name": "Literals Roundtiestoeven",
+      "rank": 45,
+      "score": {
+        "total": 16.4,
+        "social": 0.0,
+        "developer": 10.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Do compilers always round floating-point literals using roundTiesToEven?"
+      ],
+      "latestSignalAt": "2026-03-06T14:21:18Z"
+    },
+    {
+      "id": "running-asyncio",
+      "name": "Running Asyncio",
+      "rank": 46,
+      "score": {
+        "total": 16.3,
+        "social": 0.0,
+        "developer": 10.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Why does python 3.13.8 raise an IndentationError when running in asyncio mode on the terminal"
+      ],
+      "latestSignalAt": "2026-03-10T12:18:30Z"
+    },
+    {
+      "id": "problem-unevaluatedexpr",
+      "name": "Problem Unevaluatedexpr",
+      "rank": 47,
+      "score": {
+        "total": 16.2,
+        "social": 0.0,
+        "developer": 10.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "Display problem using UnevaluatedExpr in Sympy with python"
+      ],
+      "latestSignalAt": "2026-03-11T21:11:11Z"
+    },
+    {
+      "id": "functioning-launchpad",
+      "name": "Functioning Launchpad",
+      "rank": 48,
+      "score": {
+        "total": 16.1,
+        "social": 0.0,
+        "developer": 10.1,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "stackoverflow"
+      ],
+      "evidence": [
+        "I2C not functioning on TI Launchpad EK-TM4C1294XL"
+      ],
+      "latestSignalAt": "2026-03-07T22:37:02Z"
     },
     {
       "id": "knowledge-grounded",
       "name": "Knowledge Grounded",
-      "rank": 26,
+      "rank": 49,
       "score": {
         "total": 15.2,
         "social": 0.0,
@@ -536,7 +999,7 @@
     {
       "id": "vector-quantization",
       "name": "Vector Quantization",
-      "rank": 27,
+      "rank": 50,
       "score": {
         "total": 15.1,
         "social": 0.0,
@@ -556,7 +1019,7 @@
     {
       "id": "relevance-feedback",
       "name": "Relevance Feedback",
-      "rank": 28,
+      "rank": 51,
       "score": {
         "total": 15.1,
         "social": 0.0,
@@ -576,7 +1039,7 @@
     {
       "id": "transcriptomics-mapping",
       "name": "Transcriptomics Mapping",
-      "rank": 29,
+      "rank": 52,
       "score": {
         "total": 15.0,
         "social": 0.0,
@@ -596,7 +1059,7 @@
     {
       "id": "accelerate-stationary",
       "name": "Accelerate Stationary",
-      "rank": 30,
+      "rank": 53,
       "score": {
         "total": 14.9,
         "social": 0.0,
@@ -616,7 +1079,7 @@
     {
       "id": "dynamical-systems",
       "name": "Dynamical Systems",
-      "rank": 31,
+      "rank": 54,
       "score": {
         "total": 14.8,
         "social": 0.0,
@@ -636,7 +1099,7 @@
     {
       "id": "continuous-signals",
       "name": "Continuous Signals",
-      "rank": 32,
+      "rank": 55,
       "score": {
         "total": 14.8,
         "social": 0.0,
@@ -656,7 +1119,7 @@
     {
       "id": "terrestrial-networks",
       "name": "Terrestrial Networks",
-      "rank": 33,
+      "rank": 56,
       "score": {
         "total": 14.8,
         "social": 0.0,
@@ -676,7 +1139,7 @@
     {
       "id": "purpose-dexterous",
       "name": "Purpose Dexterous",
-      "rank": 34,
+      "rank": 57,
       "score": {
         "total": 14.7,
         "social": 0.0,
@@ -696,7 +1159,7 @@
     {
       "id": "iterative-selection",
       "name": "Iterative Selection",
-      "rank": 35,
+      "rank": 58,
       "score": {
         "total": 14.2,
         "social": 0.0,
@@ -716,7 +1179,7 @@
     {
       "id": "series-anomaly",
       "name": "Series Anomaly",
-      "rank": 36,
+      "rank": 59,
       "score": {
         "total": 14.2,
         "social": 0.0,
@@ -736,7 +1199,7 @@
     {
       "id": "video-music",
       "name": "Video Music",
-      "rank": 37,
+      "rank": 60,
       "score": {
         "total": 13.7,
         "social": 0.0,
@@ -756,7 +1219,7 @@
     {
       "id": "set-representation",
       "name": "SET Representation",
-      "rank": 38,
+      "rank": 61,
       "score": {
         "total": 13.7,
         "social": 0.0,
@@ -776,7 +1239,7 @@
     {
       "id": "innovation-engineering",
       "name": "Innovation Engineering",
-      "rank": 39,
+      "rank": 62,
       "score": {
         "total": 13.4,
         "social": 0.0,
@@ -796,7 +1259,7 @@
     {
       "id": "configuration-eavesdropper",
       "name": "Configuration Eavesdropper",
-      "rank": 40,
+      "rank": 63,
       "score": {
         "total": 13.2,
         "social": 0.0,
@@ -816,7 +1279,7 @@
     {
       "id": "prediction-molecular",
       "name": "Prediction Molecular",
-      "rank": 41,
+      "rank": 64,
       "score": {
         "total": 12.9,
         "social": 0.0,
@@ -834,9 +1297,29 @@
       "latestSignalAt": "2026-03-11T16:40:50Z"
     },
     {
+      "id": "goose",
+      "name": "Goose",
+      "rank": 65,
+      "score": {
+        "total": 18.9,
+        "social": 0.0,
+        "developer": 11.4,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "block/goose an open source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM"
+      ],
+      "latestSignalAt": "2026-03-12T16:39:20Z"
+    },
+    {
       "id": "dominance-universal",
       "name": "Dominance Universal",
-      "rank": 42,
+      "rank": 66,
       "score": {
         "total": 12.9,
         "social": 0.0,
@@ -856,7 +1339,7 @@
     {
       "id": "data-kernel",
       "name": "Data Kernel",
-      "rank": 43,
+      "rank": 67,
       "score": {
         "total": 12.8,
         "social": 0.0,
@@ -874,29 +1357,9 @@
       "latestSignalAt": "2026-03-11T16:22:00Z"
     },
     {
-      "id": "homebrew-cask",
-      "name": "Homebrew Cask",
-      "rank": 44,
-      "score": {
-        "total": 18.8,
-        "social": 0.0,
-        "developer": 11.3,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "sources": [
-        "github"
-      ],
-      "evidence": [
-        "Homebrew/homebrew-cask \ud83c\udf7b A CLI workflow for the administration of macOS applications distributed as binaries"
-      ],
-      "latestSignalAt": "2026-03-12T14:09:17Z"
-    },
-    {
       "id": "ai-edited",
       "name": "AI Edited",
-      "rank": 45,
+      "rank": 68,
       "score": {
         "total": 18.7,
         "social": 11.2,
@@ -912,6 +1375,26 @@
         "Don't post generated/AI-edited comments. HN is for conversation between humans"
       ],
       "latestSignalAt": "2026-03-11T19:29:29Z"
+    },
+    {
+      "id": "dagster",
+      "name": "Dagster",
+      "rank": 69,
+      "score": {
+        "total": 18.1,
+        "social": 0.0,
+        "developer": 10.6,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "dagster-io/dagster An orchestration platform for the development, production, and observation of data assets."
+      ],
+      "latestSignalAt": "2026-03-12T16:39:21Z"
     }
   ]
 }
