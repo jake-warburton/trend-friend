@@ -2543,7 +2543,6 @@ input {
   flex-wrap: wrap;
   gap: 0;
   align-content: start;
-  border-top: 1px solid var(--inset-divider);
 }
 
 .detail-grid {
@@ -2569,8 +2568,12 @@ input {
   display: grid;
   gap: 4px;
   min-width: 180px;
-  padding: 14px 18px 0 0;
+  padding: 14px 22px 0 18px;
   border-right: 1px solid var(--inset-divider);
+}
+
+.detail-stat-item:first-child {
+  padding-left: 0;
 }
 
 .detail-stat-item:last-child {
