@@ -151,10 +151,7 @@ def _predict_single(
     if not signals:
         signals.append("No strong momentum signals")
 
-    trend_name = " ".join(
-        part.upper() if len(part) <= 3 else part.capitalize()
-        for part in topic.split()
-    )
+    trend_name = " ".join(part.capitalize() for part in topic.split())
 
     return BreakoutPrediction(
         trend_id=_slugify(topic),

@@ -102,10 +102,7 @@ def _score_single(
     if not reasoning:
         reasoning.append("Limited actionability signals")
 
-    trend_name = " ".join(
-        part.upper() if len(part) <= 3 else part.capitalize()
-        for part in topic.split()
-    )
+    trend_name = " ".join(part.capitalize() for part in topic.split())
 
     return OpportunityScore(
         trend_id=_slugify(topic),

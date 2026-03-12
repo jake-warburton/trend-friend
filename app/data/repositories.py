@@ -2131,7 +2131,7 @@ class TrendScoreRepository:
     def _format_trend_name(topic: str) -> str:
         """Return a display-friendly topic name."""
 
-        return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in topic.split())
+        return " ".join(part.capitalize() for part in topic.split())
 
     def _attach_related_trends(self, records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
         """Attach compact related-trend recommendations to each detail record."""

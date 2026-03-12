@@ -515,7 +515,7 @@ def slugify(topic: str) -> str:
 def format_trend_name(topic: str) -> str:
     """Return a display-friendly topic name."""
 
-    return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in topic.split())
+    return " ".join(part.capitalize() for part in topic.split())
 
 
 def build_source_summaries(
