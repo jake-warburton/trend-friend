@@ -189,15 +189,15 @@ class TrendScoringTests(unittest.TestCase):
             for index in range(25)
         ]
         viable_experimental = TrendScoreResult(
-            topic="experimental-topic",
+            topic="inference framework",
             total_score=16.0,
             search_score=0.0,
-            social_score=16.0,
-            developer_score=0.0,
+            social_score=0.0,
+            developer_score=16.0,
             knowledge_score=0.0,
             diversity_score=0.0,
-            evidence=["Weak but interesting evidence"],
-            source_counts={"reddit": 1},
+            evidence=["Inference framework benchmarks improve compiler-backed serving latency"],
+            source_counts={"github": 1},
             latest_timestamp=timestamp,
         )
         filtered_out = TrendScoreResult(
@@ -219,7 +219,107 @@ class TrendScoringTests(unittest.TestCase):
             limit=5,
         )
 
-        self.assertEqual([score.topic for score in experimental], ["experimental-topic"])
+        self.assertEqual([score.topic for score in experimental], ["inference framework"])
+
+    def test_rank_experimental_topics_filters_generic_single_source_fragments(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        published_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        concrete_candidate = TrendScoreResult(
+            topic="eth phishing detect",
+            total_score=15.9,
+            search_score=0.0,
+            social_score=0.0,
+            developer_score=15.9,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["ETH phishing detect flags malicious wallet drainer patterns"],
+            source_counts={"github": 1},
+            latest_timestamp=timestamp,
+        )
+        generic_fragment = TrendScoreResult(
+            topic="social networking",
+            total_score=15.6,
+            search_score=0.0,
+            social_score=15.6,
+            developer_score=0.0,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["Social networking remains a broad consumer behavior trend"],
+            source_counts={"hacker_news": 1},
+            latest_timestamp=timestamp,
+        )
+
+        experimental = rank_experimental_topics(
+            published_scores + [concrete_candidate, generic_fragment],
+            published_scores=published_scores,
+            limit=5,
+        )
+
+        self.assertEqual([score.topic for score in experimental], ["eth phishing detect"])
+
+    def test_rank_experimental_topics_rejects_general_tech_single_source_overflow(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        published_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        general_tech_candidate = TrendScoreResult(
+            topic="rewritten methodology",
+            total_score=14.7,
+            search_score=0.0,
+            social_score=7.2,
+            developer_score=0.0,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["Rewritten methodology for building clearer internal systems"],
+            source_counts={"hacker_news": 1},
+            latest_timestamp=timestamp,
+        )
+        developer_candidate = TrendScoreResult(
+            topic="wordpress core",
+            total_score=13.3,
+            search_score=0.0,
+            social_score=0.0,
+            developer_score=5.8,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["WordPress core release hardens the editor pipeline"],
+            source_counts={"github": 1},
+            latest_timestamp=timestamp,
+        )
+
+        experimental = rank_experimental_topics(
+            published_scores + [general_tech_candidate, developer_candidate],
+            published_scores=published_scores,
+            limit=5,
+        )
+
+        self.assertEqual([score.topic for score in experimental], ["wordpress core"])
 
     def test_calculate_trend_scores_prefers_specific_exact_phrases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
