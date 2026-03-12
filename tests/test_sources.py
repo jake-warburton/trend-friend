@@ -25,6 +25,22 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(items[0].source, "reddit")
         self.assertGreater(items[0].engagement_score, 0)
 
+    def test_reddit_adapter_default_subreddit_scope_is_broader_but_curated(self) -> None:
+        adapter = RedditSourceAdapter(self.settings)
+        self.assertEqual(
+            adapter.TREND_SUBREDDITS,
+            [
+                "technology",
+                "programming",
+                "MachineLearning",
+                "artificial",
+                "LocalLLaMA",
+                "opensource",
+                "startups",
+                "entrepreneur",
+            ],
+        )
+
     def test_github_adapter_handles_missing_description(self) -> None:
         adapter = GitHubSourceAdapter(self.settings)
         payload = {

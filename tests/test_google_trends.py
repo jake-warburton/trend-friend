@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 
 from app.config import load_settings
-from app.sources.google_trends import GoogleTrendsSourceAdapter
+from app.sources.google_trends import GoogleTrendsSourceAdapter, _REGIONS
 from app.topics.extract import signal_type_for_source
 
 
@@ -82,3 +82,21 @@ class GoogleTrendsAdapterTests(unittest.TestCase):
         self.assertEqual(self.adapter._parse_traffic("1,000,000"), 1000000.0)
         self.assertEqual(self.adapter._parse_traffic("0"), 0.0)
         self.assertEqual(self.adapter._parse_traffic("invalid"), 0.0)
+
+    def test_fetch_all_regions_uses_expanded_default_region_scope(self) -> None:
+        """Default Google Trends breadth should cover more than the original four markets."""
+
+        class TestAdapter(GoogleTrendsSourceAdapter):
+            def __init__(self, settings):
+                super().__init__(settings)
+                self.requested_regions: list[str] = []
+
+            def _fetch_rss(self, geo: str, country_code: str, limit: int):
+                self.requested_regions.append(geo)
+                return []
+
+        adapter = TestAdapter(self.settings)
+        adapter._fetch_all_regions()
+
+        self.assertEqual(adapter.requested_regions, [region[0] for region in _REGIONS])
+        self.assertEqual(adapter.requested_regions, ["US", "GB", "CA", "AU", "DE", "FR", "IN", "JP"])

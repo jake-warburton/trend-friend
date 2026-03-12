@@ -16,8 +16,11 @@ class RedditSourceAdapter(SourceAdapter):
         "technology",
         "programming",
         "MachineLearning",
+        "artificial",
+        "LocalLLaMA",
         "opensource",
         "startups",
+        "entrepreneur",
     ]
 
     def fetch(self) -> list[RawSourceItem]:
