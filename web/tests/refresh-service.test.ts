@@ -1,90 +1,52 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 
-import {
-  buildLocalRefreshEnv,
-  RefreshConflictError,
-  getRefreshErrorStatus,
-  refreshData,
-} from "@/lib/server/refresh-service";
+import { getRefreshErrorStatus, hasRefreshApi, refreshData } from "@/lib/server/refresh-service";
 
-test("refreshData runs ingestion and export through the local fallback when API mode is disabled", async () => {
-  const calls: string[] = [];
-
+test("refreshData returns a local revalidation payload when no backend API is configured", async () => {
   const payload = await refreshData({
     apiEnabled: false,
-    acquireLock: () => true,
-    releaseLock: () => calls.push("release"),
-    runIngestion: async () => {
-      calls.push("ingest");
+  });
+
+  assert.deepEqual(payload, { ok: true, revalidated: true });
+});
+
+test("refreshData delegates to the backend API when API mode is enabled", async () => {
+  let calledPath = "";
+  let calledBody: unknown = null;
+
+  const payload = await refreshData({
+    apiEnabled: true,
+    apiPost: async (apiPath, body) => {
+      calledPath = apiPath;
+      calledBody = body;
+      return { ok: true, upstream: true };
     },
-    runExport: async () => {
-      calls.push("export");
-    },
   });
 
-  assert.deepEqual(payload, { ok: true });
-  assert.deepEqual(calls, ["ingest", "export", "release"]);
+  assert.equal(calledPath, "/refresh");
+  assert.deepEqual(calledBody, {});
+  assert.deepEqual(payload, { ok: true, upstream: true });
 });
 
-test("refreshData returns a conflict when a local refresh is already in progress", async () => {
-  await assert.rejects(
-    refreshData({
-      apiEnabled: false,
-      acquireLock: () => false,
-    }),
-    RefreshConflictError,
-  );
+test("getRefreshErrorStatus maps API errors and defaults to 500", () => {
+  assert.equal(getRefreshErrorStatus({}), 500);
 });
 
-test("getRefreshErrorStatus maps refresh conflicts to HTTP 409", () => {
-  assert.equal(getRefreshErrorStatus(new RefreshConflictError()), 409);
-});
-
-test("buildLocalRefreshEnv enables Postgres runtime when a database url is configured", () => {
-  const env = buildLocalRefreshEnv({
-    SIGNAL_EYE_DATABASE_URL: "postgresql://example",
-  });
-
-  assert.equal(env.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME, "true");
-});
-
-test("buildLocalRefreshEnv preserves an explicit Postgres runtime flag", () => {
-  const env = buildLocalRefreshEnv({
-    SIGNAL_EYE_DATABASE_URL: "postgresql://example",
-    SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "false",
-  });
-
-  assert.equal(env.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME, "false");
-});
-
-test("buildLocalRefreshEnv prefers repo root env values over stale web env values", () => {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "signal-eye-refresh-"));
-  fs.writeFileSync(
-    path.join(tempRoot, ".env"),
-    "SIGNAL_EYE_RANKING_LIMIT=100\nSIGNAL_EYE_DATABASE_URL=postgresql://repo-root\n",
-    "utf8",
-  );
-
-  const originalCwd = process.cwd();
-  const webDir = path.join(tempRoot, "web");
-  fs.mkdirSync(webDir);
-  process.chdir(webDir);
+test("hasRefreshApi reflects the configured backend url", () => {
+  const original = process.env.SIGNAL_EYE_API_URL;
 
   try {
-    const env = buildLocalRefreshEnv({
-      SIGNAL_EYE_RANKING_LIMIT: "10",
-      SIGNAL_EYE_DATABASE_URL: "postgresql://stale-web",
-    });
+    delete process.env.SIGNAL_EYE_API_URL;
+    assert.equal(hasRefreshApi(), false);
 
-    assert.equal(env.SIGNAL_EYE_RANKING_LIMIT, "100");
-    assert.equal(env.SIGNAL_EYE_DATABASE_URL, "postgresql://repo-root");
-    assert.equal(env.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME, "true");
+    process.env.SIGNAL_EYE_API_URL = "https://example.com";
+    assert.equal(hasRefreshApi(), true);
   } finally {
-    process.chdir(originalCwd);
-    fs.rmSync(tempRoot, { recursive: true, force: true });
+    if (original == null) {
+      delete process.env.SIGNAL_EYE_API_URL;
+    } else {
+      process.env.SIGNAL_EYE_API_URL = original;
+    }
   }
 });

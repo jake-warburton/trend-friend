@@ -1,60 +1,64 @@
 {
   "summary": {
-    "trackedTrends": 25,
-    "totalSignals": 130,
-    "sourceCount": 7,
-    "averageScore": 25.1
+    "trackedTrends": 45,
+    "totalSignals": 246,
+    "sourceCount": 8,
+    "averageScore": 22.6
   },
   "highlights": {
     "topTrendId": "ai-agents",
     "topTrendName": "AI Agents",
-    "biggestMoverId": "intellij-community",
-    "biggestMoverName": "Intellij Community",
-    "newestTrendId": "tweets-march",
-    "newestTrendName": "Tweets March"
+    "biggestMoverId": "data-leak",
+    "biggestMoverName": "Data Leak",
+    "newestTrendId": "language-models",
+    "newestTrendName": "Language Models"
   },
   "charts": {
     "topTrendScores": [
       {
         "label": "AI Agents",
-        "value": 89.2
+        "value": 131.2
       },
       {
-        "label": "Robotics",
-        "value": 48.0
-      },
-      {
-        "label": "Tweets March",
-        "value": 46.8
+        "label": "Bitcoin",
+        "value": 47.2
       },
       {
         "label": "Baseball Classic",
         "value": 38.0
       },
       {
-        "label": "March Bitcoin",
-        "value": 31.5
+        "label": "Data Leak",
+        "value": 31.2
       },
       {
-        "label": "Fed Decision",
-        "value": 21.5
+        "label": "Robotics",
+        "value": 27.9
       },
       {
-        "label": "Openclaw",
-        "value": 21.4
+        "label": "Language Models",
+        "value": 25.4
       },
       {
-        "label": "Scoring Leaders",
-        "value": 20.6
+        "label": "AI Push",
+        "value": 25.3
+      },
+      {
+        "label": "Workers Ahead",
+        "value": 25.3
       }
     ],
     "sourceShare": [
       {
-        "label": "Hacker News",
-        "value": 31.0
+        "label": "Reddit",
+        "value": 62.0
       },
       {
-        "label": "Github",
+        "label": "Arxiv",
+        "value": 61.0
+      },
+      {
+        "label": "Hacker News",
         "value": 30.0
       },
       {
@@ -62,34 +66,30 @@
         "value": 30.0
       },
       {
+        "label": "Github",
+        "value": 28.0
+      },
+      {
         "label": "Google Trends",
-        "value": 23.0
-      },
-      {
-        "label": "Polymarket",
-        "value": 9.0
-      },
-      {
-        "label": "Twitter",
-        "value": 5.0
+        "value": 24.0
       }
     ],
     "statusBreakdown": [
       {
         "label": "NEW",
-        "value": 10.0
+        "value": 31.0
       },
       {
         "label": "Cooling",
-        "value": 9.0
+        "value": 10.0
       },
       {
         "label": "Breakout",
-        "value": 5.0
+        "value": 2.0
       },
       {
-        "label": "Steady",
-        "value": 1.0
+        "label": "Rising",
+        "value": 2.0
       }
     ]
   },
@@ -101,39 +101,39 @@
         "category": "ai-machine-learning",
         "status": "breakout",
         "rank": 1,
-        "scoreTotal": 89.2
+        "scoreTotal": 131.2
       },
       {
-        "id": "robotics",
-        "name": "Robotics",
-        "category": "hardware-robotics",
-        "status": "steady",
-        "rank": 2,
-        "scoreTotal": 48.0
-      },
-      {
-        "id": "tweets-march",
-        "name": "Tweets March",
+        "id": "bitcoin",
+        "name": "Bitcoin",
         "category": "fintech-crypto",
-        "status": "new",
-        "rank": 3,
-        "scoreTotal": 46.8
+        "status": "rising",
+        "rank": 2,
+        "scoreTotal": 47.2
       },
       {
         "id": "baseball-classic",
         "name": "Baseball Classic",
         "category": "science-research",
-        "status": "cooling",
-        "rank": 4,
+        "status": "rising",
+        "rank": 3,
         "scoreTotal": 38.0
       },
       {
-        "id": "march-bitcoin",
-        "name": "March Bitcoin",
-        "category": "fintech-crypto",
-        "status": "new",
+        "id": "data-leak",
+        "name": "Data Leak",
+        "category": "data-analytics",
+        "status": "breakout",
+        "rank": 4,
+        "scoreTotal": 31.2
+      },
+      {
+        "id": "robotics",
+        "name": "Robotics",
+        "category": "hardware-robotics",
+        "status": "cooling",
         "rank": 5,
-        "scoreTotal": 31.5
+        "scoreTotal": 27.9
       }
     ],
     "breakoutTrends": [
@@ -143,105 +143,106 @@
         "category": "ai-machine-learning",
         "status": "breakout",
         "rank": 1,
-        "scoreTotal": 89.2
+        "scoreTotal": 131.2
       },
       {
-        "id": "openclaw",
-        "name": "Openclaw",
-        "category": "developer-tools",
+        "id": "data-leak",
+        "name": "Data Leak",
+        "category": "data-analytics",
         "status": "breakout",
-        "rank": 7,
-        "scoreTotal": 21.4
-      },
-      {
-        "id": "intellij-community",
-        "name": "Intellij Community",
-        "category": "developer-tools",
-        "status": "breakout",
-        "rank": 15,
-        "scoreTotal": 18.5
-      },
-      {
-        "id": "screenpipe",
-        "name": "Screenpipe",
-        "category": "developer-tools",
-        "status": "breakout",
-        "rank": 17,
-        "scoreTotal": 18.2
-      },
-      {
-        "id": "deepagents",
-        "name": "Deepagents",
-        "category": "ai-machine-learning",
-        "status": "breakout",
-        "rank": 20,
-        "scoreTotal": 17.7
+        "rank": 4,
+        "scoreTotal": 31.2
       }
     ],
-    "risingTrends": [],
+    "risingTrends": [
+      {
+        "id": "bitcoin",
+        "name": "Bitcoin",
+        "category": "fintech-crypto",
+        "status": "rising",
+        "rank": 2,
+        "scoreTotal": 47.2
+      },
+      {
+        "id": "baseball-classic",
+        "name": "Baseball Classic",
+        "category": "science-research",
+        "status": "rising",
+        "rank": 3,
+        "scoreTotal": 38.0
+      }
+    ],
     "experimentalTrends": [
       {
-        "id": "libreelec-tv",
-        "name": "LibreELEC Tv",
-        "category": "developer-tools",
+        "id": "advisory-database",
+        "name": "Advisory Database",
+        "category": "data-analytics",
         "status": "experimental",
-        "rank": 26,
-        "scoreTotal": 16.5
+        "rank": 46,
+        "scoreTotal": 16.1
       },
       {
-        "id": "warframe-items",
-        "name": "Warframe Items",
+        "id": "meshtastic-android",
+        "name": "Meshtastic Android",
         "category": "developer-tools",
         "status": "experimental",
-        "rank": 27,
-        "scoreTotal": 14.1
+        "rank": 47,
+        "scoreTotal": 15.7
       },
       {
-        "id": "aspnetcore-docs-samples",
-        "name": "AspNetCore Docs Samples",
+        "id": "system-monitoring-center",
+        "name": "System Monitoring Center",
+        "category": "data-analytics",
+        "status": "experimental",
+        "rank": 48,
+        "scoreTotal": 15.1
+      },
+      {
+        "id": "purchases-flutter",
+        "name": "Purchases Flutter",
         "category": "developer-tools",
         "status": "experimental",
-        "rank": 28,
+        "rank": 49,
+        "scoreTotal": 14.9
+      },
+      {
+        "id": "v2ray-configs",
+        "name": "V2ray Configs",
+        "category": "developer-tools",
+        "status": "experimental",
+        "rank": 50,
+        "scoreTotal": 14.2
+      },
+      {
+        "id": "clearml-agent",
+        "name": "Clearml Agent",
+        "category": "ai-machine-learning",
+        "status": "experimental",
+        "rank": 51,
         "scoreTotal": 14.0
-      },
-      {
-        "id": "repo-posts",
-        "name": "Repo Posts",
-        "category": "developer-tools",
-        "status": "experimental",
-        "rank": 29,
-        "scoreTotal": 13.6
-      },
-      {
-        "id": "paypal-woocommerce",
-        "name": "Paypal Woocommerce",
-        "category": "developer-tools",
-        "status": "experimental",
-        "rank": 30,
-        "scoreTotal": 13.3
       }
     ],
     "metaTrends": [
       {
-        "category": "hardware-robotics",
-        "trendCount": 1,
-        "averageScore": 48.0,
-        "topTrendId": "robotics",
-        "topTrendName": "Robotics"
-      },
-      {
         "category": "ai-machine-learning",
-        "trendCount": 3,
-        "averageScore": 41.8,
+        "trendCount": 5,
+        "averageScore": 44.7,
         "topTrendId": "ai-agents",
         "topTrendName": "AI Agents"
       },
       {
+        "category": "hardware-robotics",
+        "trendCount": 1,
+        "averageScore": 27.9,
+        "topTrendId": "robotics",
+        "topTrendName": "Robotics"
+      },
+      {
         "category": "fintech-crypto",
-        "trendCount": 5,
-        "averageScore": 27.3,
-        "topTrendId": "tweets-march",
-        "topTrendName": "Tweets March"
+        "trendCount": 4,
+        "averageScore": 27.4,
+        "topTrendId": "bitcoin",
+        "topTrendName": "Bitcoin"
       },
       {
         "category": "science-research",
@@ -251,26 +252,102 @@
         "topTrendName": "Baseball Classic"
       },
       {
-        "category": "developer-tools",
-        "trendCount": 9,
-        "averageScore": 18.6,
-        "topTrendId": "openclaw",
-        "topTrendName": "Openclaw"
+        "category": "data-analytics",
+        "trendCount": 4,
+        "averageScore": 20.8,
+        "topTrendId": "data-leak",
+        "topTrendName": "Data Leak"
       },
       {
-        "category": "general-tech",
-        "trendCount": 2,
-        "averageScore": 17.5,
-        "topTrendId": "collin-morikawa",
-        "topTrendName": "Collin Morikawa"
+        "category": "developer-tools",
+        "trendCount": 3,
+        "averageScore": 19.3,
+        "topTrendId": "pytorch",
+        "topTrendName": "Pytorch"
       }
     ]
   },
   "operations": {
-    "lastRunAt": "2026-03-12T13:54:44.966545Z",
+    "lastRunAt": "2026-03-12T14:09:44.460931Z",
     "successRate": 100.0,
-    "averageDurationMs": 21240,
+    "averageDurationMs": 21674,
     "recentRuns": [
+      {
+        "status": "healthy",
+        "capturedAt": "2026-03-12T14:09:44.460931Z",
+        "durationMs": 21533,
+        "sourceCount": 8,
+        "successfulSourceCount": 8,
+        "failedSourceCount": 0,
+        "signalCount": 246,
+        "rankedTrendCount": 45,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents",
+        "topScore": 131.2,
+        "rawTopicCount": 232,
+        "mergedTopicCount": 195,
+        "duplicateTopicCount": 37,
+        "duplicateTopicRate": 15.9,
+        "multiSourceTrendCount": 2,
+        "lowEvidenceTrendCount": 6
+      },
+      {
+        "status": "healthy",
+        "capturedAt": "2026-03-12T14:04:44.179578Z",
+        "durationMs": 21119,
+        "sourceCount": 7,
+        "successfulSourceCount": 7,
+        "failedSourceCount": 0,
+        "signalCount": 130,
+        "rankedTrendCount": 40,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents",
+        "topScore": 84.9,
+        "rawTopicCount": 121,
+        "mergedTopicCount": 115,
+        "duplicateTopicCount": 6,
+        "duplicateTopicRate": 5.0,
+        "multiSourceTrendCount": 2,
+        "lowEvidenceTrendCount": 32
+      },
+      {
+        "status": "healthy",
+        "capturedAt": "2026-03-12T14:01:07.827445Z",
+        "durationMs": 24072,
+        "sourceCount": 7,
+        "successfulSourceCount": 7,
+        "failedSourceCount": 0,
+        "signalCount": 125,
+        "rankedTrendCount": 40,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents",
+        "topScore": 67.2,
+        "rawTopicCount": 118,
+        "mergedTopicCount": 112,
+        "duplicateTopicCount": 6,
+        "duplicateTopicRate": 5.1,
+        "multiSourceTrendCount": 2,
+        "lowEvidenceTrendCount": 33
+      },
+      {
+        "status": "healthy",
+        "capturedAt": "2026-03-12T13:59:43.325528Z",
+        "durationMs": 20292,
+        "sourceCount": 7,
+        "successfulSourceCount": 7,
+        "failedSourceCount": 0,
+        "signalCount": 123,
+        "rankedTrendCount": 25,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents",
+        "topScore": 100.5,
+        "rawTopicCount": 115,
+        "mergedTopicCount": 109,
+        "duplicateTopicCount": 6,
+        "duplicateTopicRate": 5.2,
+        "multiSourceTrendCount": 2,
+        "lowEvidenceTrendCount": 18
+      },
       {
         "status": "healthy",
         "capturedAt": "2026-03-12T13:54:44.966545Z",
@@ -308,121 +385,64 @@
         "duplicateTopicRate": 4.6,
         "multiSourceTrendCount": 2,
         "lowEvidenceTrendCount": 17
-      },
-      {
-        "status": "healthy",
-        "capturedAt": "2026-03-12T13:44:44.211210Z",
-        "durationMs": 21015,
-        "sourceCount": 6,
-        "successfulSourceCount": 6,
-        "failedSourceCount": 0,
-        "signalCount": 116,
-        "rankedTrendCount": 25,
-        "topTrendId": "ai-agents",
-        "topTrendName": "AI Agents",
-        "topScore": 70.6,
-        "rawTopicCount": 109,
-        "mergedTopicCount": 104,
-        "duplicateTopicCount": 5,
-        "duplicateTopicRate": 4.6,
-        "multiSourceTrendCount": 2,
-        "lowEvidenceTrendCount": 18
-      },
-      {
-        "status": "healthy",
-        "capturedAt": "2026-03-12T13:44:24.403818Z",
-        "durationMs": 21555,
-        "sourceCount": 6,
-        "successfulSourceCount": 6,
-        "failedSourceCount": 0,
-        "signalCount": 116,
-        "rankedTrendCount": 25,
-        "topTrendId": "ai-agents",
-        "topTrendName": "AI Agents",
-        "topScore": 70.6,
-        "rawTopicCount": 109,
-        "mergedTopicCount": 104,
-        "duplicateTopicCount": 5,
-        "duplicateTopicRate": 4.6,
-        "multiSourceTrendCount": 2,
-        "lowEvidenceTrendCount": 18
-      },
-      {
-        "status": "healthy",
-        "capturedAt": "2026-03-12T13:42:14.739833Z",
-        "durationMs": 20348,
-        "sourceCount": 6,
-        "successfulSourceCount": 6,
-        "failedSourceCount": 0,
-        "signalCount": 117,
-        "rankedTrendCount": 25,
-        "topTrendId": "robotics",
-        "topTrendName": "Robotics",
-        "topScore": 48.0,
-        "rawTopicCount": 112,
-        "mergedTopicCount": 107,
-        "duplicateTopicCount": 5,
-        "duplicateTopicRate": 4.5,
-        "multiSourceTrendCount": 2,
-        "lowEvidenceTrendCount": 18
-      },
-      {
-        "status": "healthy",
-        "capturedAt": "2026-03-12T13:39:44.744080Z",
-        "durationMs": 21495,
-        "sourceCount": 6,
-        "successfulSourceCount": 6,
-        "failedSourceCount": 0,
-        "signalCount": 118,
-        "rankedTrendCount": 25,
-        "topTrendId": "ai-agents",
-        "topTrendName": "AI Agents",
-        "topScore": 56.1,
-        "rawTopicCount": 112,
-        "mergedTopicCount": 107,
-        "duplicateTopicCount": 5,
-        "duplicateTopicRate": 4.5,
-        "multiSourceTrendCount": 2,
-        "lowEvidenceTrendCount": 18
       }
     ]
   },
   "sources": [
     {
-      "source": "hacker_news",
+      "source": "reddit",
       "status": "healthy",
-      "signalCount": 31,
-      "trendCount": 31,
-      "latestFetchAt": "2026-03-12T13:54:24.443369Z",
-      "latestSuccessAt": "2026-03-12T13:54:24.443369Z",
-      "rawItemCount": 90,
-      "latestItemCount": 30,
-      "keptItemCount": 30,
-      "yieldRatePercent": 33.3,
-      "durationMs": 12529,
-      "rawTopicCount": 31,
-      "mergedTopicCount": 30,
-      "duplicateTopicCount": 1,
-      "duplicateTopicRate": 3.2,
-      "usedFallback": false,
-      "errorMessage": null
-    },
-    {
-      "source": "github",
-      "status": "healthy",
-      "signalCount": 30,
-      "trendCount": 30,
-      "latestFetchAt": "2026-03-12T13:54:36.974723Z",
-      "latestSuccessAt": "2026-03-12T13:54:36.974723Z",
+      "signalCount": 62,
+      "trendCount": 59,
+      "latestFetchAt": "2026-03-12T14:09:24.189862Z",
+      "latestSuccessAt": "2026-03-12T14:09:24.189862Z",
       "rawItemCount": 30,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 100.0,
-      "durationMs": 1687,
+      "durationMs": 745,
+      "rawTopicCount": 59,
+      "mergedTopicCount": 47,
+      "duplicateTopicCount": 12,
+      "duplicateTopicRate": 20.3,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "arxiv",
+      "status": "healthy",
+      "signalCount": 61,
+      "trendCount": 59,
+      "latestFetchAt": "2026-03-12T14:09:44.181988Z",
+      "latestSuccessAt": "2026-03-12T14:09:44.181988Z",
+      "rawItemCount": 30,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 100.0,
+      "durationMs": 202,
+      "rawTopicCount": 59,
+      "mergedTopicCount": 40,
+      "duplicateTopicCount": 19,
+      "duplicateTopicRate": 32.2,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "hacker_news",
+      "status": "healthy",
+      "signalCount": 30,
+      "trendCount": 30,
+      "latestFetchAt": "2026-03-12T14:09:24.935459Z",
+      "latestSuccessAt": "2026-03-12T14:09:24.935459Z",
+      "rawItemCount": 90,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 33.3,
+      "durationMs": 12335,
       "rawTopicCount": 30,
-      "mergedTopicCount": 30,
-      "duplicateTopicCount": 0,
-      "duplicateTopicRate": 0.0,
+      "mergedTopicCount": 29,
+      "duplicateTopicCount": 1,
+      "duplicateTopicRate": 3.3,
       "usedFallback": false,
       "errorMessage": null
     },
@@ -431,13 +451,13 @@
       "status": "healthy",
       "signalCount": 30,
       "trendCount": 28,
-      "latestFetchAt": "2026-03-12T13:54:38.943764Z",
-      "latestSuccessAt": "2026-03-12T13:54:38.943764Z",
+      "latestFetchAt": "2026-03-12T14:09:38.605744Z",
+      "latestSuccessAt": "2026-03-12T14:09:38.605744Z",
       "rawItemCount": 0,
       "latestItemCount": 25,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 140,
+      "durationMs": 127,
       "rawTopicCount": 28,
       "mergedTopicCount": 24,
       "duplicateTopicCount": 4,
@@ -446,19 +466,38 @@
       "errorMessage": null
     },
     {
+      "source": "github",
+      "status": "healthy",
+      "signalCount": 28,
+      "trendCount": 27,
+      "latestFetchAt": "2026-03-12T14:09:37.273976Z",
+      "latestSuccessAt": "2026-03-12T14:09:37.273976Z",
+      "rawItemCount": 30,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 100.0,
+      "durationMs": 1072,
+      "rawTopicCount": 27,
+      "mergedTopicCount": 27,
+      "duplicateTopicCount": 0,
+      "duplicateTopicRate": 0.0,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
       "source": "google_trends",
       "status": "healthy",
-      "signalCount": 23,
-      "trendCount": 22,
-      "latestFetchAt": "2026-03-12T13:54:39.084961Z",
-      "latestSuccessAt": "2026-03-12T13:54:39.084961Z",
+      "signalCount": 24,
+      "trendCount": 24,
+      "latestFetchAt": "2026-03-12T14:09:38.733147Z",
+      "latestSuccessAt": "2026-03-12T14:09:38.733147Z",
       "rawItemCount": 0,
       "latestItemCount": 30,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 5818,
-      "rawTopicCount": 22,
-      "mergedTopicCount": 22,
+      "durationMs": 5448,
+      "rawTopicCount": 24,
+      "mergedTopicCount": 24,
       "duplicateTopicCount": 0,
       "duplicateTopicRate": 0.0,
       "usedFallback": false,
@@ -467,17 +506,17 @@
     {
       "source": "polymarket",
       "status": "healthy",
-      "signalCount": 9,
-      "trendCount": 6,
-      "latestFetchAt": "2026-03-12T13:54:38.662782Z",
-      "latestSuccessAt": "2026-03-12T13:54:38.662782Z",
+      "signalCount": 6,
+      "trendCount": 4,
+      "latestFetchAt": "2026-03-12T14:09:38.347135Z",
+      "latestSuccessAt": "2026-03-12T14:09:38.347135Z",
       "rawItemCount": 30,
-      "latestItemCount": 9,
-      "keptItemCount": 9,
-      "yieldRatePercent": 30.0,
-      "durationMs": 280,
-      "rawTopicCount": 6,
-      "mergedTopicCount": 6,
+      "latestItemCount": 6,
+      "keptItemCount": 6,
+      "yieldRatePercent": 20.0,
+      "durationMs": 258,
+      "rawTopicCount": 4,
+      "mergedTopicCount": 4,
       "duplicateTopicCount": 0,
       "duplicateTopicRate": 0.0,
       "usedFallback": false,
@@ -488,8 +527,8 @@
       "status": "degraded",
       "signalCount": 5,
       "trendCount": 5,
-      "latestFetchAt": "2026-03-12T13:54:44.903493Z",
-      "latestSuccessAt": "2026-03-12T13:54:44.903493Z",
+      "latestFetchAt": "2026-03-12T14:09:44.181790Z",
+      "latestSuccessAt": "2026-03-12T14:09:44.181790Z",
       "rawItemCount": 0,
       "latestItemCount": 3,
       "keptItemCount": 0,
@@ -501,34 +540,15 @@
       "duplicateTopicRate": 20.0,
       "usedFallback": true,
       "errorMessage": null
-    },
-    {
-      "source": "reddit",
-      "status": "degraded",
-      "signalCount": 2,
-      "trendCount": 2,
-      "latestFetchAt": "2026-03-12T13:54:24.227363Z",
-      "latestSuccessAt": "2026-03-12T13:54:24.227363Z",
-      "rawItemCount": 0,
-      "latestItemCount": 2,
-      "keptItemCount": 0,
-      "yieldRatePercent": 0.0,
-      "durationMs": 215,
-      "rawTopicCount": 2,
-      "mergedTopicCount": 2,
-      "duplicateTopicCount": 0,
-      "duplicateTopicRate": 0.0,
-      "usedFallback": true,
-      "errorMessage": null
     }
   ],
-  "generatedAt": "2026-03-12T13:54:44.966545Z",
+  "generatedAt": "2026-03-12T14:09:44.460931Z",
   "sourceWatch": [
     {
-      "source": "reddit",
+      "source": "polymarket",
       "severity": "warning",
-      "title": "Reddit",
-      "detail": "Latest run used fallback data"
+      "title": "Polymarket",
+      "detail": "Low kept yield from recent fetches"
     },
     {
       "source": "twitter",
@@ -540,12 +560,6 @@
       "source": "hacker_news",
       "severity": "info",
       "title": "Hacker News",
-      "detail": "Mixed kept yield from recent fetches"
-    },
-    {
-      "source": "polymarket",
-      "severity": "info",
-      "title": "Polymarket",
       "detail": "Mixed kept yield from recent fetches"
     }
   ]

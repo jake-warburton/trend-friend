@@ -1,6 +1,3067 @@
 {
-  "generatedAt": "2026-03-12T13:54:52.764585Z",
+  "generatedAt": "2026-03-12T14:09:57.921545Z",
   "snapshots": [
+    {
+      "capturedAt": "2026-03-12T14:09:44.460931Z",
+      "trends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "score": {
+            "total": 131.2,
+            "social": 84.1,
+            "developer": 20.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 24.0
+          },
+          "sources": [
+            "github",
+            "hacker_news",
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "Meta buys 'social media network for AI' Moltbook, and says the deal will bring \"new ways for AI agents to work for people and businesses\".",
+            "Meta buys Moltbook, viral social network where AI agents interact",
+            "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work"
+          ],
+          "latestSignalAt": "2026-03-12T14:08:53Z"
+        },
+        {
+          "id": "bitcoin",
+          "name": "Bitcoin",
+          "rank": 2,
+          "score": {
+            "total": 47.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 38.2,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+            "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?",
+            "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+          ],
+          "latestSignalAt": "2026-04-01T04:00:00Z"
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "rank": 3,
+          "score": {
+            "total": 38.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 33.8,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "2026 World Baseball Classic",
+            "World Baseball Classic"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "data-leak",
+          "name": "Data Leak",
+          "rank": 4,
+          "score": {
+            "total": 31.2,
+            "social": 16.9,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 12.0
+          },
+          "sources": [
+            "hacker_news",
+            "reddit"
+          ],
+          "evidence": [
+            "1 billion identity records exposed in ID verification data leak",
+            "1B identity records exposed in ID verification data leak"
+          ],
+          "latestSignalAt": "2026-03-12T09:46:00Z"
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "rank": 5,
+          "score": {
+            "total": 27.9,
+            "social": 20.4,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "Open source robotics framework reaches 10k stars on GitHub"
+          ],
+          "latestSignalAt": "2026-03-09T14:30:00Z"
+        },
+        {
+          "id": "language-models",
+          "name": "Language Models",
+          "rank": 6,
+          "score": {
+            "total": 25.4,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 16.4,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Does AI See like Art Historians? Interpreting How Vision Language Models Recognize Artistic Style",
+            "GroundCount: Grounding Vision-Language Models with Object Detection for Mitigating Counting Hallucinations",
+            "TOSSS: a CVE-based Software Security Benchmark for Large Language Models"
+          ],
+          "latestSignalAt": "2026-03-11T17:49:45Z"
+        },
+        {
+          "id": "ai-push",
+          "name": "AI Push",
+          "rank": 7,
+          "score": {
+            "total": 25.3,
+            "social": 17.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "\u2018Devastating blow\u2019: Atlassian lays off 1,600 workers ahead of AI push"
+          ],
+          "latestSignalAt": "2026-03-12T11:08:55Z"
+        },
+        {
+          "id": "workers-ahead",
+          "name": "Workers Ahead",
+          "rank": 8,
+          "score": {
+            "total": 25.3,
+            "social": 17.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "\u2018Devastating blow\u2019: Atlassian lays off 1,600 workers ahead of AI push"
+          ],
+          "latestSignalAt": "2026-03-12T11:08:55Z"
+        },
+        {
+          "id": "paid-marketing",
+          "name": "Paid Marketing",
+          "rank": 9,
+          "score": {
+            "total": 24.4,
+            "social": 16.9,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "How many of you resort to paid marketing for their B2C business?"
+          ],
+          "latestSignalAt": "2026-03-12T12:29:40Z"
+        },
+        {
+          "id": "billion-revenue",
+          "name": "Billion Revenue",
+          "rank": 10,
+          "score": {
+            "total": 24.3,
+            "social": 16.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "YouTube expands unskippable 30-second ads to TVs after $40 billion revenue year"
+          ],
+          "latestSignalAt": "2026-03-12T13:35:57Z"
+        },
+        {
+          "id": "data-centers",
+          "name": "Data Centers",
+          "rank": 11,
+          "score": {
+            "total": 24.1,
+            "social": 16.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "Florida lawmakers debate who will pay the price of AI data centers"
+          ],
+          "latestSignalAt": "2026-03-12T01:43:05Z"
+        },
+        {
+          "id": "stopped-function",
+          "name": "Stopped Function",
+          "rank": 12,
+          "score": {
+            "total": 23.9,
+            "social": 17.9,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "I was backend lead at Manus. After building agents for 2 years, I stopped using function calling entirely. Here's what I use instead."
+          ],
+          "latestSignalAt": "2026-03-12T06:02:16Z"
+        },
+        {
+          "id": "without-permission",
+          "name": "Without Permission",
+          "rank": 13,
+          "score": {
+            "total": 23.5,
+            "social": 16.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "Yu-Gi-Oh accuses White House of using anime footage \u2018without permission\u2019"
+          ],
+          "latestSignalAt": "2026-03-11T14:34:34Z"
+        },
+        {
+          "id": "investment-cofound",
+          "name": "Investment Cofound",
+          "rank": 14,
+          "score": {
+            "total": 23.3,
+            "social": 17.3,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "capital investment to cofound I will not promote"
+          ],
+          "latestSignalAt": "2026-03-12T10:16:00Z"
+        },
+        {
+          "id": "ai-models",
+          "name": "AI Models",
+          "rank": 15,
+          "score": {
+            "total": 23.2,
+            "social": 15.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "Nvidia Will Spend $26 Billion to Build Open-Weight AI Models, Filings Show"
+          ],
+          "latestSignalAt": "2026-03-11T19:51:15Z"
+        },
+        {
+          "id": "don-mention",
+          "name": "DON Mention",
+          "rank": 16,
+          "score": {
+            "total": 23.2,
+            "social": 17.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "Dubai's influencers have a new rule: Don't mention the war"
+          ],
+          "latestSignalAt": "2026-03-12T03:06:09Z"
+        },
+        {
+          "id": "ram-market",
+          "name": "RAM Market",
+          "rank": 17,
+          "score": {
+            "total": 22.7,
+            "social": 16.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "Valve says almost 6,000 games made over $100K on Steam in 2025 | And \"If you have a line on a bunch of RAM, we are in the market and would like to buy it.\""
+          ],
+          "latestSignalAt": "2026-03-12T03:23:01Z"
+        },
+        {
+          "id": "thousands-queuing",
+          "name": "Thousands Queuing",
+          "rank": 18,
+          "score": {
+            "total": 21.9,
+            "social": 15.9,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "reddit"
+          ],
+          "evidence": [
+            "People are getting OpenClaw installed for free in China. Thousands are queuing for OpenClaw setup."
+          ],
+          "latestSignalAt": "2026-03-12T14:04:13Z"
+        },
+        {
+          "id": "scoring-leaders",
+          "name": "Scoring Leaders",
+          "rank": 19,
+          "score": {
+            "total": 20.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 17.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "List of NBA single-game scoring leaders"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "pytorch",
+          "name": "Pytorch",
+          "rank": 20,
+          "score": {
+            "total": 20.2,
+            "social": 0.0,
+            "developer": 12.8,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "pytorch/pytorch Tensors and Dynamic neural networks in Python with strong GPU acceleration"
+          ],
+          "latestSignalAt": "2026-03-12T14:08:52Z"
+        },
+        {
+          "id": "federal-reserve",
+          "name": "Federal Reserve",
+          "rank": 21,
+          "score": {
+            "total": 20.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 14.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
+          ],
+          "latestSignalAt": "2026-03-18T00:00:00Z"
+        },
+        {
+          "id": "kinsk-footballer",
+          "name": "Kinsk Footballer",
+          "rank": 22,
+          "score": {
+            "total": 19.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 16.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Anton\u00edn Kinsk\u00fd (footballer, born 2003)"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "bessette-kennedy",
+          "name": "Bessette Kennedy",
+          "rank": 23,
+          "score": {
+            "total": 19.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 15.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Carolyn Bessette Kennedy"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "crude-oil",
+          "name": "Crude Oil",
+          "rank": 24,
+          "score": {
+            "total": 18.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 11.4,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
+          ],
+          "latestSignalAt": "2026-03-31T00:00:00Z"
+        },
+        {
+          "id": "filament",
+          "name": "Filament",
+          "rank": 25,
+          "score": {
+            "total": 18.8,
+            "social": 0.0,
+            "developer": 11.3,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "filamentphp/filament A powerful open-source UI framework for Laravel \u2022 Build and ship apps & admin panels fast with Livewire"
+          ],
+          "latestSignalAt": "2026-03-12T14:08:56Z"
+        },
+        {
+          "id": "knowledge-grounded",
+          "name": "Knowledge Grounded",
+          "rank": 26,
+          "score": {
+            "total": 15.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Beyond the Illusion of Consensus: From Surface Heuristics to Knowledge-Grounded Evaluation in LLM-as-a-Judge"
+          ],
+          "latestSignalAt": "2026-03-11T17:50:38Z"
+        },
+        {
+          "id": "vector-quantization",
+          "name": "Vector Quantization",
+          "rank": 27,
+          "score": {
+            "total": 15.1,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.6,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Leech Lattice Vector Quantization for Efficient LLM Compression"
+          ],
+          "latestSignalAt": "2026-03-11T17:48:45Z"
+        },
+        {
+          "id": "relevance-feedback",
+          "name": "Relevance Feedback",
+          "rank": 28,
+          "score": {
+            "total": 15.1,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.6,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "A Systematic Study of Pseudo-Relevance Feedback with LLMs"
+          ],
+          "latestSignalAt": "2026-03-11T17:31:50Z"
+        },
+        {
+          "id": "transcriptomics-mapping",
+          "name": "Transcriptomics Mapping",
+          "rank": 29,
+          "score": {
+            "total": 15.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.5,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Cross-Species Transfer Learning for Electrophysiology-to-Transcriptomics Mapping in Cortical GABAergic Interneurons"
+          ],
+          "latestSignalAt": "2026-03-11T17:23:54Z"
+        },
+        {
+          "id": "accelerate-stationary",
+          "name": "Accelerate Stationary",
+          "rank": 30,
+          "score": {
+            "total": 14.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.4,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Bayesian Optimization with Gaussian Processes to Accelerate Stationary Point Searches"
+          ],
+          "latestSignalAt": "2026-03-11T17:20:28Z"
+        },
+        {
+          "id": "dynamical-systems",
+          "name": "Dynamical Systems",
+          "rank": 31,
+          "score": {
+            "total": 14.8,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.3,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "MCMC Informed Neural Emulators for Uncertainty Quantification in Dynamical Systems"
+          ],
+          "latestSignalAt": "2026-03-11T17:16:48Z"
+        },
+        {
+          "id": "continuous-signals",
+          "name": "Continuous Signals",
+          "rank": 32,
+          "score": {
+            "total": 14.8,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.3,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "The Discrete Charm of the MLP: Binary Routing of Continuous Signals in Transformer Feed-Forward Layers"
+          ],
+          "latestSignalAt": "2026-03-11T17:14:57Z"
+        },
+        {
+          "id": "terrestrial-networks",
+          "name": "Terrestrial Networks",
+          "rank": 33,
+          "score": {
+            "total": 14.8,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.3,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Federated Learning-driven Beam Management in LEO 6G Non-Terrestrial Networks"
+          ],
+          "latestSignalAt": "2026-03-11T17:13:41Z"
+        },
+        {
+          "id": "purpose-dexterous",
+          "name": "Purpose Dexterous",
+          "rank": 34,
+          "score": {
+            "total": 14.7,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.2,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Contact Coverage-Guided Exploration for General-Purpose Dexterous Manipulation"
+          ],
+          "latestSignalAt": "2026-03-11T16:55:49Z"
+        },
+        {
+          "id": "iterative-selection",
+          "name": "Iterative Selection",
+          "rank": 35,
+          "score": {
+            "total": 14.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 6.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Historical Consensus: Preventing Posterior Collapse via Iterative Selection of Gaussian Mixture Priors"
+          ],
+          "latestSignalAt": "2026-03-11T16:19:07Z"
+        },
+        {
+          "id": "series-anomaly",
+          "name": "Series Anomaly",
+          "rank": 36,
+          "score": {
+            "total": 14.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 6.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "ECoLAD: Deployment-Oriented Evaluation for Automotive Time-Series Anomaly Detection"
+          ],
+          "latestSignalAt": "2026-03-11T16:08:56Z"
+        },
+        {
+          "id": "video-music",
+          "name": "Video Music",
+          "rank": 37,
+          "score": {
+            "total": 13.7,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "V2M-Zero: Zero-Pair Time-Aligned Video-to-Music Generation"
+          ],
+          "latestSignalAt": "2026-03-11T17:59:40Z"
+        },
+        {
+          "id": "set-representation",
+          "name": "SET Representation",
+          "rank": 38,
+          "score": {
+            "total": 13.7,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Instruction set for the representation of graphs"
+          ],
+          "latestSignalAt": "2026-03-11T17:57:44Z"
+        },
+        {
+          "id": "innovation-engineering",
+          "name": "Innovation Engineering",
+          "rank": 39,
+          "score": {
+            "total": 13.4,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.5,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Artificial Intelligence as a Catalyst for Innovation in Software Engineering"
+          ],
+          "latestSignalAt": "2026-03-11T17:20:30Z"
+        },
+        {
+          "id": "configuration-eavesdropper",
+          "name": "Configuration Eavesdropper",
+          "rank": 40,
+          "score": {
+            "total": 13.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 7.2,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "FRIEND: Federated Learning for Joint Optimization of multi-RIS Configuration and Eavesdropper Intelligent Detection in B5G Networks"
+          ],
+          "latestSignalAt": "2026-03-11T17:02:40Z"
+        },
+        {
+          "id": "prediction-molecular",
+          "name": "Prediction Molecular",
+          "rank": 41,
+          "score": {
+            "total": 12.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 6.9,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "When should we trust the annotation? Selective prediction for molecular structure retrieval from mass spectra"
+          ],
+          "latestSignalAt": "2026-03-11T16:40:50Z"
+        },
+        {
+          "id": "dominance-universal",
+          "name": "Dominance Universal",
+          "rank": 42,
+          "score": {
+            "total": 12.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 6.9,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Safe RLHF Beyond Expectation: Stochastic Dominance for Universal Spectral Risk Control"
+          ],
+          "latestSignalAt": "2026-03-11T16:24:20Z"
+        },
+        {
+          "id": "data-kernel",
+          "name": "Data Kernel",
+          "rank": 43,
+          "score": {
+            "total": 12.8,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 6.8,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "arxiv"
+          ],
+          "evidence": [
+            "Quantifying Membership Disclosure Risk for Tabular Synthetic Data Using Kernel Density Estimators"
+          ],
+          "latestSignalAt": "2026-03-11T16:22:00Z"
+        },
+        {
+          "id": "homebrew-cask",
+          "name": "Homebrew Cask",
+          "rank": 44,
+          "score": {
+            "total": 18.8,
+            "social": 0.0,
+            "developer": 11.3,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "Homebrew/homebrew-cask \ud83c\udf7b A CLI workflow for the administration of macOS applications distributed as binaries"
+          ],
+          "latestSignalAt": "2026-03-12T14:09:17Z"
+        },
+        {
+          "id": "ai-edited",
+          "name": "AI Edited",
+          "rank": 45,
+          "score": {
+            "total": 18.7,
+            "social": 11.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Don't post generated/AI-edited comments. HN is for conversation between humans"
+          ],
+          "latestSignalAt": "2026-03-11T19:29:29Z"
+        }
+      ]
+    },
+    {
+      "capturedAt": "2026-03-12T14:04:44.179578Z",
+      "trends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "score": {
+            "total": 84.9,
+            "social": 47.9,
+            "developer": 10.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 24.0
+          },
+          "sources": [
+            "github",
+            "hacker_news",
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "AI agents are replacing repetitive office workflows",
+            "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work",
+            "docker/docker-agent AI Agent Builder and Runtime by Docker Engineering"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:08Z"
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "rank": 2,
+          "score": {
+            "total": 48.0,
+            "social": 33.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 12.0
+          },
+          "sources": [
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "Open source robotics tools gain momentum in startups",
+            "Open source robotics framework reaches 10k stars on GitHub"
+          ],
+          "latestSignalAt": "2026-03-09T14:30:00Z"
+        },
+        {
+          "id": "bitcoin",
+          "name": "Bitcoin",
+          "rank": 3,
+          "score": {
+            "total": 47.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 38.2,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+            "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?",
+            "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+          ],
+          "latestSignalAt": "2026-04-01T04:00:00Z"
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "rank": 4,
+          "score": {
+            "total": 38.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 33.8,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "2026 World Baseball Classic",
+            "World Baseball Classic"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "autogpt",
+          "name": "AutoGPT",
+          "rank": 5,
+          "score": {
+            "total": 20.9,
+            "social": 0.0,
+            "developer": 13.4,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "Significant-Gravitas/AutoGPT AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our mission is to provide the tools, so that you can focus on what matters."
+          ],
+          "latestSignalAt": "2026-03-12T14:03:50Z"
+        },
+        {
+          "id": "flutter",
+          "name": "Flutter",
+          "rank": 6,
+          "score": {
+            "total": 20.8,
+            "social": 0.0,
+            "developer": 13.3,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "flutter/flutter Flutter makes it easy and fast to build beautiful apps for mobile and beyond"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:02Z"
+        },
+        {
+          "id": "scoring-leaders",
+          "name": "Scoring Leaders",
+          "rank": 7,
+          "score": {
+            "total": 20.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 17.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "List of NBA single-game scoring leaders"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "federal-reserve",
+          "name": "Federal Reserve",
+          "rank": 8,
+          "score": {
+            "total": 20.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 14.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
+          ],
+          "latestSignalAt": "2026-03-18T00:00:00Z"
+        },
+        {
+          "id": "collin-morikawa",
+          "name": "Collin Morikawa",
+          "rank": 9,
+          "score": {
+            "total": 19.8,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 12.3,
+            "diversity": 6.0
+          },
+          "sources": [
+            "google_trends"
+          ],
+          "evidence": [
+            "collin morikawa"
+          ],
+          "latestSignalAt": "2026-03-12T13:40:00Z"
+        },
+        {
+          "id": "kinsk-footballer",
+          "name": "Kinsk Footballer",
+          "rank": 10,
+          "score": {
+            "total": 19.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 16.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Anton\u00edn Kinsk\u00fd (footballer, born 2003)"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "bessette-kennedy",
+          "name": "Bessette Kennedy",
+          "rank": 11,
+          "score": {
+            "total": 19.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 15.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Carolyn Bessette Kennedy"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "crude-oil",
+          "name": "Crude Oil",
+          "rank": 12,
+          "score": {
+            "total": 18.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 11.4,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
+          ],
+          "latestSignalAt": "2026-03-31T00:00:00Z"
+        },
+        {
+          "id": "ai-edited",
+          "name": "AI Edited",
+          "rank": 13,
+          "score": {
+            "total": 18.7,
+            "social": 11.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Don't post generated/AI-edited comments. HN is for conversation between humans"
+          ],
+          "latestSignalAt": "2026-03-11T19:29:29Z"
+        },
+        {
+          "id": "server",
+          "name": "Server",
+          "rank": 14,
+          "score": {
+            "total": 18.2,
+            "social": 0.0,
+            "developer": 10.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "bitwarden/server Bitwarden infrastructure/backend (API, database, Docker, etc)."
+          ],
+          "latestSignalAt": "2026-03-12T14:04:10Z"
+        },
+        {
+          "id": "ethereum",
+          "name": "Ethereum",
+          "rank": 15,
+          "score": {
+            "total": 18.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 10.5,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Ethereum be above $2,300 on March 12? Ethereum above ___ on March 12?"
+          ],
+          "latestSignalAt": "2026-03-12T16:00:00Z"
+        },
+        {
+          "id": "enterprise-automation",
+          "name": "Enterprise Automation",
+          "rank": 16,
+          "score": {
+            "total": 17.5,
+            "social": 10.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "AI agents are transforming enterprise automation workflows at scale"
+          ],
+          "latestSignalAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "rank": 17,
+          "score": {
+            "total": 17.1,
+            "social": 9.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "The MacBook Neo"
+          ],
+          "latestSignalAt": "2026-03-11T11:37:24Z"
+        },
+        {
+          "id": "dnscontrol",
+          "name": "Dnscontrol",
+          "rank": 18,
+          "score": {
+            "total": 16.6,
+            "social": 0.0,
+            "developer": 9.1,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "StackExchange/dnscontrol Infrastructure as code for DNS!"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:10Z"
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "rank": 19,
+          "score": {
+            "total": 16.6,
+            "social": 9.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "New machine learning technique reduces training costs by 60%"
+          ],
+          "latestSignalAt": "2026-03-09T16:00:00Z"
+        },
+        {
+          "id": "easylist",
+          "name": "Easylist",
+          "rank": 20,
+          "score": {
+            "total": 16.4,
+            "social": 0.0,
+            "developer": 8.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "easylist/easylist EasyList filter subscription (EasyList, EasyPrivacy, EasyList Cookie, Fanboy's Social/Annoyances/Notifications Blocking List)"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:19Z"
+        },
+        {
+          "id": "class-language",
+          "name": "Class Language",
+          "rank": 21,
+          "score": {
+            "total": 16.3,
+            "social": 8.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Making WebAssembly a first-class language on the Web"
+          ],
+          "latestSignalAt": "2026-03-11T04:44:46Z"
+        },
+        {
+          "id": "sedona",
+          "name": "Sedona",
+          "rank": 22,
+          "score": {
+            "total": 16.2,
+            "social": 0.0,
+            "developer": 8.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "apache/sedona A cluster computing framework for processing large-scale geospatial data"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:17Z"
+        },
+        {
+          "id": "flyenv",
+          "name": "FlyEnv",
+          "rank": 23,
+          "score": {
+            "total": 16.1,
+            "social": 0.0,
+            "developer": 8.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "xpf0000/FlyEnv Lightweight Native Local Dev Toolbox for Windows, macOS & Linux. Run Apache/Nginx/Caddy/Tomcat/PHP/Node.js/Bun/Deno/Python/Java/Go/Ruby/Perl/Rust/Erlang/MySQL/PostgreSQL/MariaDB/MongoDB/Redis/RabbitMQ/Mailpit/Elasticsearch without Docker. The faster, modular alternative to XAMPP/MAMP/Laravel Herd/NVM/FNM/PHPStudy..."
+          ],
+          "latestSignalAt": "2026-03-12T14:04:12Z"
+        },
+        {
+          "id": "ai-bot",
+          "name": "AI Bot",
+          "rank": 24,
+          "score": {
+            "total": 16.1,
+            "social": 8.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "I was interviewed by an AI bot for a job"
+          ],
+          "latestSignalAt": "2026-03-11T18:17:30Z"
+        },
+        {
+          "id": "docker-agent",
+          "name": "Docker Agent",
+          "rank": 25,
+          "score": {
+            "total": 16.1,
+            "social": 0.0,
+            "developer": 8.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "docker/docker-agent AI Agent Builder and Runtime by Docker Engineering"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:08Z"
+        },
+        {
+          "id": "sakai",
+          "name": "Sakai",
+          "rank": 26,
+          "score": {
+            "total": 15.9,
+            "social": 0.0,
+            "developer": 8.4,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "sakaiproject/sakai Sakai is a freely available, feature-rich technology solution for learning, teaching, research and collaboration. Sakai is an open source software suite developed by a diverse and global adopter community."
+          ],
+          "latestSignalAt": "2026-03-12T14:03:50Z"
+        },
+        {
+          "id": "forui",
+          "name": "Forui",
+          "rank": 27,
+          "score": {
+            "total": 15.7,
+            "social": 0.0,
+            "developer": 8.2,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "duobaseio/forui Duobase's Flutter UI library"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:21Z"
+        },
+        {
+          "id": "social-networking",
+          "name": "Social Networking",
+          "rank": 28,
+          "score": {
+            "total": 15.6,
+            "social": 8.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Show HN: s@: decentralized social networking over static sites"
+          ],
+          "latestSignalAt": "2026-03-12T00:22:19Z"
+        },
+        {
+          "id": "ovn-kubernetes",
+          "name": "OVN Kubernetes",
+          "rank": 29,
+          "score": {
+            "total": 15.4,
+            "social": 0.0,
+            "developer": 7.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "ovn-kubernetes/ovn-kubernetes A robust Kubernetes networking platform"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:03Z"
+        },
+        {
+          "id": "modules",
+          "name": "Modules",
+          "rank": 30,
+          "score": {
+            "total": 15.4,
+            "social": 0.0,
+            "developer": 7.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "nf-core/modules Repository to host tool-specific module files for the Nextflow DSL2 community!"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:22Z"
+        },
+        {
+          "id": "tuleap",
+          "name": "Tuleap",
+          "rank": 31,
+          "score": {
+            "total": 15.4,
+            "social": 0.0,
+            "developer": 7.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "Enalean/tuleap Tuleap is an Open Source Suite to improve management of software developments and collaboration. With a single web-based solution, project managers, developers & quality managers can easily build, deploy software projects."
+          ],
+          "latestSignalAt": "2026-03-12T14:04:25Z"
+        },
+        {
+          "id": "true-myth",
+          "name": "True Myth",
+          "rank": 32,
+          "score": {
+            "total": 15.3,
+            "social": 0.0,
+            "developer": 7.8,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "true-myth/true-myth Safe and idiomatic TypeScript types to handle null, error, and async code handling: Maybe, Result, and Task types that are really nice."
+          ],
+          "latestSignalAt": "2026-03-12T14:04:24Z"
+        },
+        {
+          "id": "azusa-player-mobile",
+          "name": "Azusa Player Mobile",
+          "rank": 33,
+          "score": {
+            "total": 15.3,
+            "social": 0.0,
+            "developer": 7.8,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "lovegaoshi/azusa-player-mobile \u79fb\u52a8\u7aef\u7684\u62bd\u8c61b\u7ad9\u97f3\u4e50\u64ad\u653e\u5668"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:04Z"
+        },
+        {
+          "id": "instancio",
+          "name": "Instancio",
+          "rank": 34,
+          "score": {
+            "total": 15.2,
+            "social": 0.0,
+            "developer": 7.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "instancio/instancio A library that creates fully populated objects for your unit tests."
+          ],
+          "latestSignalAt": "2026-03-12T14:04:01Z"
+        },
+        {
+          "id": "exposes-changes",
+          "name": "Exposes Changes",
+          "rank": 35,
+          "score": {
+            "total": 15.2,
+            "social": 7.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Show HN: I built a tool that watches webpages and exposes changes as RSS"
+          ],
+          "latestSignalAt": "2026-03-11T16:21:06Z"
+        },
+        {
+          "id": "editor",
+          "name": "Editor",
+          "rank": 36,
+          "score": {
+            "total": 15.1,
+            "social": 0.0,
+            "developer": 7.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "playcanvas/editor Browser-based visual editor for building WebGL, WebGPU, WebXR apps"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:11Z"
+        },
+        {
+          "id": "crates-io-index",
+          "name": "Crates IO Index",
+          "rank": 37,
+          "score": {
+            "total": 15.0,
+            "social": 0.0,
+            "developer": 7.5,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "rust-lang/crates.io-index Registry index for crates.io"
+          ],
+          "latestSignalAt": "2026-03-12T14:04:12Z"
+        },
+        {
+          "id": "time-javascript",
+          "name": "Time Javascript",
+          "rank": 38,
+          "score": {
+            "total": 15.0,
+            "social": 9.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Temporal: The 9-year journey to fix time in JavaScript"
+          ],
+          "latestSignalAt": "2026-03-11T15:35:50Z"
+        },
+        {
+          "id": "evomaster",
+          "name": "EvoMaster",
+          "rank": 39,
+          "score": {
+            "total": 14.7,
+            "social": 0.0,
+            "developer": 7.2,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "WebFuzzing/EvoMaster The first open-source AI-driven tool for automatically generating system-level test cases (also known as fuzzing) for web/enterprise applications. Currently targeting whitebox and blackbox testing of Web APIs, like REST, GraphQL and RPC (e.g., gRPC and Thrift)."
+          ],
+          "latestSignalAt": "2026-03-12T14:03:51Z"
+        },
+        {
+          "id": "rewritten-methodology",
+          "name": "Rewritten Methodology",
+          "rank": 40,
+          "score": {
+            "total": 14.7,
+            "social": 7.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Tested: How Many Times Can a DVD\u00b1RW Be Rewritten? Methodology and Results"
+          ],
+          "latestSignalAt": "2026-03-08T11:44:56Z"
+        }
+      ]
+    },
+    {
+      "capturedAt": "2026-03-12T14:01:07.827445Z",
+      "trends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "score": {
+            "total": 67.2,
+            "social": 46.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 18.0
+          },
+          "sources": [
+            "hacker_news",
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "AI agents are replacing repetitive office workflows",
+            "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work",
+            "AI agents are transforming enterprise automation workflows at scale"
+          ],
+          "latestSignalAt": "2026-03-12T13:41:12Z"
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "rank": 2,
+          "score": {
+            "total": 48.0,
+            "social": 33.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 12.0
+          },
+          "sources": [
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "Open source robotics tools gain momentum in startups",
+            "Open source robotics framework reaches 10k stars on GitHub"
+          ],
+          "latestSignalAt": "2026-03-09T14:30:00Z"
+        },
+        {
+          "id": "bitcoin",
+          "name": "Bitcoin",
+          "rank": 3,
+          "score": {
+            "total": 47.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 38.2,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+            "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?",
+            "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+          ],
+          "latestSignalAt": "2026-04-01T04:00:00Z"
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "rank": 4,
+          "score": {
+            "total": 38.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 33.8,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "2026 World Baseball Classic",
+            "World Baseball Classic"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "openclaw",
+          "name": "Openclaw",
+          "rank": 5,
+          "score": {
+            "total": 21.4,
+            "social": 0.0,
+            "developer": 13.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "openclaw/openclaw Your own personal AI assistant. Any OS. Any Platform. The lobster way. \ud83e\udd9e"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:36Z"
+        },
+        {
+          "id": "scoring-leaders",
+          "name": "Scoring Leaders",
+          "rank": 6,
+          "score": {
+            "total": 20.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 17.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "List of NBA single-game scoring leaders"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "federal-reserve",
+          "name": "Federal Reserve",
+          "rank": 7,
+          "score": {
+            "total": 20.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 14.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
+          ],
+          "latestSignalAt": "2026-03-18T00:00:00Z"
+        },
+        {
+          "id": "kinsk-footballer",
+          "name": "Kinsk Footballer",
+          "rank": 8,
+          "score": {
+            "total": 19.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 16.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Anton\u00edn Kinsk\u00fd (footballer, born 2003)"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "bessette-kennedy",
+          "name": "Bessette Kennedy",
+          "rank": 9,
+          "score": {
+            "total": 19.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 15.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Carolyn Bessette Kennedy"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "crude-oil",
+          "name": "Crude Oil",
+          "rank": 10,
+          "score": {
+            "total": 18.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 11.4,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
+          ],
+          "latestSignalAt": "2026-03-31T00:00:00Z"
+        },
+        {
+          "id": "turborepo",
+          "name": "Turborepo",
+          "rank": 11,
+          "score": {
+            "total": 18.8,
+            "social": 0.0,
+            "developer": 11.3,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "vercel/turborepo Build system optimized for JavaScript\u00a0and TypeScript, written in Rust"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:33Z"
+        },
+        {
+          "id": "ai-edited",
+          "name": "AI Edited",
+          "rank": 12,
+          "score": {
+            "total": 18.7,
+            "social": 11.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Don't post generated/AI-edited comments. HN is for conversation between humans"
+          ],
+          "latestSignalAt": "2026-03-11T19:29:29Z"
+        },
+        {
+          "id": "victoriametrics",
+          "name": "VictoriaMetrics",
+          "rank": 13,
+          "score": {
+            "total": 18.1,
+            "social": 0.0,
+            "developer": 10.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "VictoriaMetrics/VictoriaMetrics VictoriaMetrics: fast, cost-effective monitoring solution and time series database"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:45Z"
+        },
+        {
+          "id": "windmill",
+          "name": "Windmill",
+          "rank": 14,
+          "score": {
+            "total": 18.1,
+            "social": 0.0,
+            "developer": 10.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "windmill-labs/windmill Open-source developer platform to power your entire infra and turn scripts into webhooks, workflows and UIs. Fastest workflow engine (13x vs Airflow). Open-source alternative to Retool and Temporal."
+          ],
+          "latestSignalAt": "2026-03-12T14:00:32Z"
+        },
+        {
+          "id": "ethereum",
+          "name": "Ethereum",
+          "rank": 15,
+          "score": {
+            "total": 18.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 10.5,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Ethereum be above $2,300 on March 12? Ethereum above ___ on March 12?"
+          ],
+          "latestSignalAt": "2026-03-12T16:00:00Z"
+        },
+        {
+          "id": "ocelot",
+          "name": "Ocelot",
+          "rank": 16,
+          "score": {
+            "total": 17.5,
+            "social": 0.0,
+            "developer": 10.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "ThreeMammals/Ocelot .NET API Gateway"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:40Z"
+        },
+        {
+          "id": "enterprise-automation",
+          "name": "Enterprise Automation",
+          "rank": 17,
+          "score": {
+            "total": 17.5,
+            "social": 10.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "AI agents are transforming enterprise automation workflows at scale"
+          ],
+          "latestSignalAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "rank": 18,
+          "score": {
+            "total": 17.1,
+            "social": 9.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "The MacBook Neo"
+          ],
+          "latestSignalAt": "2026-03-11T11:37:24Z"
+        },
+        {
+          "id": "executorch",
+          "name": "Executorch",
+          "rank": 19,
+          "score": {
+            "total": 16.8,
+            "social": 0.0,
+            "developer": 9.3,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "pytorch/executorch On-device AI across mobile, embedded and edge for PyTorch"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:40Z"
+        },
+        {
+          "id": "gh-aw",
+          "name": "GH AW",
+          "rank": 20,
+          "score": {
+            "total": 16.6,
+            "social": 0.0,
+            "developer": 9.1,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "github/gh-aw GitHub Agentic Workflows"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:55Z"
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "rank": 21,
+          "score": {
+            "total": 16.6,
+            "social": 9.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "New machine learning technique reduces training costs by 60%"
+          ],
+          "latestSignalAt": "2026-03-09T16:00:00Z"
+        },
+        {
+          "id": "nostalgiaforinfinity",
+          "name": "NostalgiaForInfinity",
+          "rank": 22,
+          "score": {
+            "total": 16.4,
+            "social": 0.0,
+            "developer": 8.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "iterativv/NostalgiaForInfinity Trading strategy for the Freqtrade crypto bot"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:40Z"
+        },
+        {
+          "id": "class-language",
+          "name": "Class Language",
+          "rank": 23,
+          "score": {
+            "total": 16.3,
+            "social": 8.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Making WebAssembly a first-class language on the Web"
+          ],
+          "latestSignalAt": "2026-03-11T04:44:46Z"
+        },
+        {
+          "id": "gacui",
+          "name": "GacUI",
+          "rank": 24,
+          "score": {
+            "total": 16.1,
+            "social": 0.0,
+            "developer": 8.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "vczh-libraries/GacUI GPU Accelerated C++ User Interface, with WYSIWYG developing tools, XML supports, built-in data binding and MVVM features."
+          ],
+          "latestSignalAt": "2026-03-12T14:00:33Z"
+        },
+        {
+          "id": "ai-bot",
+          "name": "AI Bot",
+          "rank": 25,
+          "score": {
+            "total": 16.1,
+            "social": 8.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "I was interviewed by an AI bot for a job"
+          ],
+          "latestSignalAt": "2026-03-11T18:17:30Z"
+        },
+        {
+          "id": "rustworkx",
+          "name": "Rustworkx",
+          "rank": 26,
+          "score": {
+            "total": 15.6,
+            "social": 0.0,
+            "developer": 8.1,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "Qiskit/rustworkx A high performance Python graph library implemented in Rust."
+          ],
+          "latestSignalAt": "2026-03-12T14:00:42Z"
+        },
+        {
+          "id": "social-networking",
+          "name": "Social Networking",
+          "rank": 27,
+          "score": {
+            "total": 15.6,
+            "social": 8.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Show HN: s@: decentralized social networking over static sites"
+          ],
+          "latestSignalAt": "2026-03-12T00:22:19Z"
+        },
+        {
+          "id": "chamilo-lms",
+          "name": "Chamilo LMS",
+          "rank": 28,
+          "score": {
+            "total": 15.4,
+            "social": 0.0,
+            "developer": 7.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "chamilo/chamilo-lms Chamilo is a learning management system focused on ease of use and accessibility"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:46Z"
+        },
+        {
+          "id": "exposes-changes",
+          "name": "Exposes Changes",
+          "rank": 29,
+          "score": {
+            "total": 15.2,
+            "social": 7.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Show HN: I built a tool that watches webpages and exposes changes as RSS"
+          ],
+          "latestSignalAt": "2026-03-11T16:21:06Z"
+        },
+        {
+          "id": "web-features",
+          "name": "WEB Features",
+          "rank": 30,
+          "score": {
+            "total": 15.1,
+            "social": 0.0,
+            "developer": 7.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "web-platform-dx/web-features Exploring how to present Web platform features adoptability"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:36Z"
+        },
+        {
+          "id": "gittype",
+          "name": "Gittype",
+          "rank": 31,
+          "score": {
+            "total": 15.0,
+            "social": 0.0,
+            "developer": 7.5,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "unhappychoice/gittype A CLI code-typing game that turns your source code into typing challenges"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:44Z"
+        },
+        {
+          "id": "time-javascript",
+          "name": "Time Javascript",
+          "rank": 32,
+          "score": {
+            "total": 15.0,
+            "social": 9.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Temporal: The 9-year journey to fix time in JavaScript"
+          ],
+          "latestSignalAt": "2026-03-11T15:35:50Z"
+        },
+        {
+          "id": "livesplit-autosplitters",
+          "name": "LiveSplit AutoSplitters",
+          "rank": 33,
+          "score": {
+            "total": 14.9,
+            "social": 0.0,
+            "developer": 7.4,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "LiveSplit/LiveSplit.AutoSplitters Auto Splitters for LiveSplit"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:43Z"
+        },
+        {
+          "id": "bcapps",
+          "name": "BCApps",
+          "rank": 34,
+          "score": {
+            "total": 14.9,
+            "social": 0.0,
+            "developer": 7.4,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "microsoft/BCApps Repository for collaboration on Microsoft Dynamics 365 Business Central applications."
+          ],
+          "latestSignalAt": "2026-03-12T14:00:41Z"
+        },
+        {
+          "id": "rewritten-methodology",
+          "name": "Rewritten Methodology",
+          "rank": 35,
+          "score": {
+            "total": 14.7,
+            "social": 7.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Tested: How Many Times Can a DVD\u00b1RW Be Rewritten? Methodology and Results"
+          ],
+          "latestSignalAt": "2026-03-08T11:44:56Z"
+        },
+        {
+          "id": "tari",
+          "name": "Tari",
+          "rank": 36,
+          "score": {
+            "total": 14.7,
+            "social": 0.0,
+            "developer": 7.2,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "tari-project/tari The Tari protocol"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:30Z"
+        },
+        {
+          "id": "lambda-perf",
+          "name": "Lambda Perf",
+          "rank": 37,
+          "score": {
+            "total": 14.5,
+            "social": 0.0,
+            "developer": 7.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "maxday/lambda-perf Lambda Cold Starts analysis, updated daily"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:46Z"
+        },
+        {
+          "id": "sonarlint-visualstudio",
+          "name": "Sonarlint Visualstudio",
+          "rank": 38,
+          "score": {
+            "total": 14.4,
+            "social": 0.0,
+            "developer": 6.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "SonarSource/sonarlint-visualstudio SonarLint extension for VisualStudio"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:38Z"
+        },
+        {
+          "id": "credit-defaults",
+          "name": "Credit Defaults",
+          "rank": 39,
+          "score": {
+            "total": 14.2,
+            "social": 6.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "US private credit defaults hit record 9.2% in 2025, Fitch says"
+          ],
+          "latestSignalAt": "2026-03-12T12:44:45Z"
+        },
+        {
+          "id": "automodel",
+          "name": "Automodel",
+          "rank": 40,
+          "score": {
+            "total": 14.2,
+            "social": 0.0,
+            "developer": 6.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "NVIDIA-NeMo/Automodel Pytorch Distributed native training library for LLMs/VLMs with OOTB Hugging Face support"
+          ],
+          "latestSignalAt": "2026-03-12T14:00:27Z"
+        }
+      ]
+    },
+    {
+      "capturedAt": "2026-03-12T13:59:43.325528Z",
+      "trends": [
+        {
+          "id": "ai-agents",
+          "name": "AI Agents",
+          "rank": 1,
+          "score": {
+            "total": 100.5,
+            "social": 60.8,
+            "developer": 12.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 24.0
+          },
+          "sources": [
+            "github",
+            "hacker_news",
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "AI agents are replacing repetitive office workflows",
+            "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work",
+            "google-gemini/gemini-cli An open-source AI agent that brings the power of Gemini directly into your terminal."
+          ],
+          "latestSignalAt": "2026-03-12T13:59:00Z"
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "rank": 2,
+          "score": {
+            "total": 48.0,
+            "social": 33.7,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 12.0
+          },
+          "sources": [
+            "reddit",
+            "twitter"
+          ],
+          "evidence": [
+            "Open source robotics tools gain momentum in startups",
+            "Open source robotics framework reaches 10k stars on GitHub"
+          ],
+          "latestSignalAt": "2026-03-09T14:30:00Z"
+        },
+        {
+          "id": "bitcoin",
+          "name": "Bitcoin",
+          "rank": 3,
+          "score": {
+            "total": 47.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 38.2,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+            "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?",
+            "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+          ],
+          "latestSignalAt": "2026-04-01T04:00:00Z"
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "rank": 4,
+          "score": {
+            "total": 38.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 33.8,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "2026 World Baseball Classic",
+            "World Baseball Classic"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "openclaw",
+          "name": "Openclaw",
+          "rank": 5,
+          "score": {
+            "total": 21.4,
+            "social": 0.0,
+            "developer": 13.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "openclaw/openclaw Your own personal AI assistant. Any OS. Any Platform. The lobster way. \ud83e\udd9e"
+          ],
+          "latestSignalAt": "2026-03-12T13:59:34Z"
+        },
+        {
+          "id": "scoring-leaders",
+          "name": "Scoring Leaders",
+          "rank": 6,
+          "score": {
+            "total": 20.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 17.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "List of NBA single-game scoring leaders"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "gemini-cli",
+          "name": "Gemini CLI",
+          "rank": 7,
+          "score": {
+            "total": 20.1,
+            "social": 0.0,
+            "developer": 12.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "google-gemini/gemini-cli An open-source AI agent that brings the power of Gemini directly into your terminal."
+          ],
+          "latestSignalAt": "2026-03-12T13:59:00Z"
+        },
+        {
+          "id": "federal-reserve",
+          "name": "Federal Reserve",
+          "rank": 8,
+          "score": {
+            "total": 20.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 14.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
+          ],
+          "latestSignalAt": "2026-03-18T00:00:00Z"
+        },
+        {
+          "id": "kinsk-footballer",
+          "name": "Kinsk Footballer",
+          "rank": 9,
+          "score": {
+            "total": 19.6,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 16.1,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Anton\u00edn Kinsk\u00fd (footballer, born 2003)"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "bessette-kennedy",
+          "name": "Bessette Kennedy",
+          "rank": 10,
+          "score": {
+            "total": 19.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 15.7,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "wikipedia"
+          ],
+          "evidence": [
+            "Carolyn Bessette Kennedy"
+          ],
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        },
+        {
+          "id": "crude-oil",
+          "name": "Crude Oil",
+          "rank": 11,
+          "score": {
+            "total": 18.9,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 11.4,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
+          ],
+          "latestSignalAt": "2026-03-31T00:00:00Z"
+        },
+        {
+          "id": "turborepo",
+          "name": "Turborepo",
+          "rank": 12,
+          "score": {
+            "total": 18.8,
+            "social": 0.0,
+            "developer": 11.3,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "vercel/turborepo Build system optimized for JavaScript\u00a0and TypeScript, written in Rust"
+          ],
+          "latestSignalAt": "2026-03-12T13:59:32Z"
+        },
+        {
+          "id": "ai-edited",
+          "name": "AI Edited",
+          "rank": 13,
+          "score": {
+            "total": 18.7,
+            "social": 11.2,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Don't post generated/AI-edited comments. HN is for conversation between humans"
+          ],
+          "latestSignalAt": "2026-03-11T19:29:29Z"
+        },
+        {
+          "id": "pyright",
+          "name": "Pyright",
+          "rank": 14,
+          "score": {
+            "total": 18.1,
+            "social": 0.0,
+            "developer": 10.6,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "microsoft/pyright Static Type Checker for Python"
+          ],
+          "latestSignalAt": "2026-03-12T13:58:41Z"
+        },
+        {
+          "id": "specs",
+          "name": "Specs",
+          "rank": 15,
+          "score": {
+            "total": 18.0,
+            "social": 0.0,
+            "developer": 10.5,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "CocoaPods/Specs The CocoaPods Master Repo"
+          ],
+          "latestSignalAt": "2026-03-12T13:58:56Z"
+        },
+        {
+          "id": "ethereum",
+          "name": "Ethereum",
+          "rank": 16,
+          "score": {
+            "total": 18.0,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 10.5,
+            "diversity": 6.0
+          },
+          "sources": [
+            "polymarket"
+          ],
+          "evidence": [
+            "Will the price of Ethereum be above $2,300 on March 12? Ethereum above ___ on March 12?"
+          ],
+          "latestSignalAt": "2026-03-12T16:00:00Z"
+        },
+        {
+          "id": "dolibarr",
+          "name": "Dolibarr",
+          "rank": 17,
+          "score": {
+            "total": 17.5,
+            "social": 0.0,
+            "developer": 10.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "Dolibarr/dolibarr Dolibarr ERP CRM is a modern software package to manage your company or foundation's activity (contacts, suppliers, invoices, orders, stocks, agenda, accounting, ...). it's an open source Web application (written in PHP) designed for businesses of any sizes, foundations and freelancers."
+          ],
+          "latestSignalAt": "2026-03-12T13:58:58Z"
+        },
+        {
+          "id": "enterprise-automation",
+          "name": "Enterprise Automation",
+          "rank": 18,
+          "score": {
+            "total": 17.5,
+            "social": 10.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "AI agents are transforming enterprise automation workflows at scale"
+          ],
+          "latestSignalAt": "2026-03-09T12:00:00Z"
+        },
+        {
+          "id": "maltrail",
+          "name": "Maltrail",
+          "rank": 19,
+          "score": {
+            "total": 17.4,
+            "social": 0.0,
+            "developer": 9.9,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "stamparm/maltrail Malicious traffic detection system"
+          ],
+          "latestSignalAt": "2026-03-12T13:59:27Z"
+        },
+        {
+          "id": "jooq",
+          "name": "jOOQ",
+          "rank": 20,
+          "score": {
+            "total": 17.2,
+            "social": 0.0,
+            "developer": 9.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "jOOQ/jOOQ jOOQ is the best way to write SQL in Java"
+          ],
+          "latestSignalAt": "2026-03-12T13:59:08Z"
+        },
+        {
+          "id": "nango",
+          "name": "Nango",
+          "rank": 21,
+          "score": {
+            "total": 17.2,
+            "social": 0.0,
+            "developer": 9.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "NangoHQ/nango Build product integrations with AI."
+          ],
+          "latestSignalAt": "2026-03-12T13:58:39Z"
+        },
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "rank": 22,
+          "score": {
+            "total": 17.1,
+            "social": 9.6,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "The MacBook Neo"
+          ],
+          "latestSignalAt": "2026-03-11T11:37:24Z"
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "rank": 23,
+          "score": {
+            "total": 16.6,
+            "social": 9.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "twitter"
+          ],
+          "evidence": [
+            "New machine learning technique reduces training costs by 60%"
+          ],
+          "latestSignalAt": "2026-03-09T16:00:00Z"
+        },
+        {
+          "id": "class-language",
+          "name": "Class Language",
+          "rank": 24,
+          "score": {
+            "total": 16.3,
+            "social": 8.8,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "hacker_news"
+          ],
+          "evidence": [
+            "Making WebAssembly a first-class language on the Web"
+          ],
+          "latestSignalAt": "2026-03-11T04:44:46Z"
+        },
+        {
+          "id": "vortex",
+          "name": "Vortex",
+          "rank": 25,
+          "score": {
+            "total": 16.2,
+            "social": 0.0,
+            "developer": 8.7,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "sources": [
+            "github"
+          ],
+          "evidence": [
+            "vortex-data/vortex An extensible, state of the art columnar file format. Formerly at @spiraldb, now an Incubation Stage project at LFAI&Data, part of the Linux Foundation."
+          ],
+          "latestSignalAt": "2026-03-12T13:58:54Z"
+        }
+      ]
+    },
     {
       "capturedAt": "2026-03-12T13:54:44.966545Z",
       "trends": [

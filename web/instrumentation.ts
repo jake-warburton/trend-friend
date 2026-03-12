@@ -6,15 +6,12 @@ export async function register() {
     return;
   }
 
-  const { refreshData, RefreshConflictError } = await import("@/lib/server/refresh-service");
+  const { refreshData } = await import("@/lib/server/refresh-service");
 
   setInterval(async () => {
     try {
       await refreshData();
     } catch (error) {
-      if (error instanceof RefreshConflictError) {
-        return; // another refresh is already running, skip
-      }
       console.error("[scheduled-refresh]", error instanceof Error ? error.message : error);
     }
   }, REFRESH_INTERVAL_MS);
