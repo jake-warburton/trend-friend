@@ -1,6 +1,6 @@
 :root {
-  --font-sans: "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-serif: "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif;
+  --font-sans: "Helvetica Neue", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --font-serif: "Helvetica Neue", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -177,6 +177,12 @@
   --surface-chart: #2b3038;
   --surface-tooltip: #22262d;
   --surface-input: rgba(31, 35, 42, 0.94);
+  --chart-grid: rgba(122, 132, 148, 0.14);
+  --chart-axis: #606a79;
+  --map-background: rgba(255, 255, 255, 0.02);
+  --map-stroke: rgba(122, 132, 148, 0.22);
+  --map-fill-empty: rgba(73, 80, 92, 0.22);
+  --map-fill-active-rgb: 79, 195, 247;
   --border-strong: rgba(255, 255, 255, 0.09);
   --card-hero-gradient: linear-gradient(180deg, rgba(34, 38, 46, 0.98), rgba(27, 31, 37, 0.98));
   --card-history-gradient: linear-gradient(180deg, rgba(33, 37, 44, 0.98), rgba(26, 30, 36, 0.98));
@@ -221,6 +227,12 @@
   --surface-chart: #f4f5f7;
   --surface-tooltip: #ffffff;
   --surface-input: rgba(255, 255, 255, 0.96);
+  --chart-grid: rgba(94, 108, 132, 0.12);
+  --chart-axis: #6b778c;
+  --map-background: rgba(9, 30, 66, 0.02);
+  --map-stroke: rgba(94, 108, 132, 0.2);
+  --map-fill-empty: rgba(94, 108, 132, 0.1);
+  --map-fill-active-rgb: 12, 102, 228;
   --border-strong: rgba(9, 30, 66, 0.18);
   --card-hero-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
   --card-history-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 242, 244, 0.98));
@@ -350,7 +362,7 @@ body {
   min-height: 100vh;
   color: var(--copy);
   font-family: var(--font-sans);
-  font-weight: 390;
+  font-weight: 380;
   background: var(--body-background);
 }
 
@@ -424,7 +436,7 @@ input {
 .nav-bar-brand-name {
   display: block;
   font-size: 0.98rem;
-  font-weight: 600;
+  font-weight: 560;
   letter-spacing: 0.02em;
 }
 
@@ -432,7 +444,7 @@ input {
   display: block;
   color: var(--muted);
   font-size: 0.62rem;
-  font-weight: 500;
+  font-weight: 450;
   letter-spacing: 0.04em;
 }
 
@@ -731,7 +743,7 @@ input {
 .explorer-geo-panel-head strong {
   display: block;
   font-size: 0.92rem;
-  font-weight: 580;
+  font-weight: 520;
 }
 
 .detail-button-link {
@@ -799,7 +811,7 @@ input {
 .hero-command strong {
   display: block;
   font-size: 1.08rem;
-  font-weight: 560;
+  font-weight: 520;
   line-height: 1;
 }
 
@@ -821,7 +833,7 @@ input {
 .empty-state h3 {
   margin: 0;
   font-family: var(--font-serif);
-  font-weight: 620;
+  font-weight: 520;
 }
 
 .hero-rail {
@@ -850,7 +862,7 @@ input {
   display: block;
   margin-top: 6px;
   font-size: 0.9rem;
-  font-weight: 560;
+  font-weight: 520;
   line-height: 1.2;
 }
 
@@ -897,7 +909,7 @@ input {
   display: block;
   margin-top: 6px;
   font-size: 0.9rem;
-  font-weight: 560;
+  font-weight: 520;
   line-height: 1;
 }
 
@@ -1323,7 +1335,7 @@ input {
 .mini-bar-row strong,
 .pie-legend-row strong {
   font-size: 0.74rem;
-  font-weight: 600;
+  font-weight: 520;
 }
 
 .mini-bar-track {
@@ -1401,7 +1413,7 @@ input {
   overflow: hidden;
   color: var(--copy);
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 520;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1409,6 +1421,7 @@ input {
 
 .curated-item strong {
   font-size: 0.86rem;
+  font-weight: 540;
 }
 
 .curated-item small {
@@ -1858,7 +1871,7 @@ input {
   background: var(--explorer-kicker-bg);
   color: var(--explorer-kicker-text);
   font-size: 0.58rem;
-  font-weight: 800;
+  font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1872,7 +1885,7 @@ input {
 
 .trend-title-row strong {
   font-size: 0.88rem;
-  font-weight: 580;
+  font-weight: 500;
   line-height: 1.08;
 }
 
@@ -1966,124 +1979,66 @@ input {
 }
 
 .trend-cell span,
-.score-cell span,
-.explorer-metric span,
-.explorer-metric small {
+.score-cell span {
   color: var(--muted);
   font-size: 0.54rem;
-}
-
-.explorer-metric {
-  display: grid;
-  gap: 2px;
-  align-content: start;
 }
 
 .explorer-metrics-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 5px;
-  justify-content: stretch;
-  align-items: center;
+  gap: 10px;
+  align-items: stretch;
 }
 
 .explorer-metrics-panel {
   display: grid;
-  grid-template-columns:
-    minmax(58px, auto)
-    minmax(78px, auto)
-    minmax(178px, 1.35fr)
-    minmax(58px, auto);
-  gap: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   min-width: 0;
-  padding: 5px 7px;
+  align-items: stretch;
+}
+
+.explorer-metric-card {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 10px;
   border: 1px solid var(--inset-divider);
   border-radius: 12px;
   background: var(--surface-panel);
-  min-height: 38px;
 }
 
-.explorer-metric-panel-item {
-  min-width: 0;
-  padding: 0 8px;
+.explorer-metric-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.explorer-metric-panel-item + .explorer-metric-panel-item {
-  border-left: 1px solid var(--inset-divider);
-}
-
-.explorer-metric-compact {
-  justify-self: start;
-}
-
-.explorer-metric-compact > span {
-  display: none;
-}
-
-.explorer-metric-score {
-  min-width: 0;
-}
-
-.explorer-metric-score > span {
-  display: none;
-}
-
-.explorer-metric strong {
+.explorer-metric-value,
+.explorer-metric-card .movement-pill {
   width: fit-content;
-  font-size: 0.72rem;
-  font-weight: 560;
+  max-width: 100%;
 }
 
-.score-inline {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1px 8px;
-  align-items: baseline;
+.explorer-metric-value {
+  font-size: 0.86rem;
+  font-weight: 540;
+  line-height: 1.1;
+}
+
+.explorer-metric-copy {
+  display: block;
   min-width: 0;
-}
-
-.score-inline::before {
-  content: "Total score";
-  color: var(--muted);
-  font-size: 0.54rem;
-  line-height: 1;
-}
-
-.score-inline strong {
-  grid-column: 2;
-}
-
-.movement-inline {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1px 8px;
-  align-items: baseline;
-  min-width: 0;
-}
-
-.movement-inline::before {
-  content: "Momentum";
-  color: var(--muted);
-  font-size: 0.54rem;
-  line-height: 1;
-}
-
-.movement-inline strong {
-  grid-column: 2;
-}
-
-.score-inline small {
-  grid-column: 1 / -1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.movement-inline small {
-  grid-column: 1 / -1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1.3;
 }
 
 .explorer-card-bottom {
@@ -2889,21 +2844,7 @@ input {
   }
 
   .explorer-metrics-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px 0;
-  }
-
-  .explorer-metric-panel-item:nth-child(odd) {
-    border-left: 0;
-  }
-
-  .explorer-metric-panel-item:nth-child(2n) {
-    border-left: 1px solid var(--inset-divider);
-  }
-
-  .explorer-metric-panel-item:nth-child(n + 3) {
-    padding-top: 6px;
-    border-top: 1px solid var(--inset-divider);
+    grid-template-columns: 1fr;
   }
 
   .explorer-legend {

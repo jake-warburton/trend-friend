@@ -14,6 +14,10 @@ import { buildGeoMapData, formatCountryLabel, lookupCountryCode } from "@/lib/ge
 import type { GeoMapDatum } from "@/lib/geo-map-data";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const MAP_EMPTY_FILL = "var(--map-fill-empty)";
+const MAP_STROKE = "var(--map-stroke)";
+const MAP_BACKGROUND = "var(--map-background)";
+const MAP_ACTIVE_RGB = "var(--map-fill-active-rgb)";
 
 type TooltipState = {
   datum: GeoMapDatum;
@@ -51,25 +55,25 @@ export function GeoMap({
   }, []);
 
   function getCountryFill(code: string | undefined): string {
-    if (!code) return "#151b27";
+    if (!code) return MAP_EMPTY_FILL;
     const datum = dataByCode.get(code);
-    if (!datum) return "#151b27";
+    if (!datum) return MAP_EMPTY_FILL;
     if (selectedCountryCode && selectedCountryCode === code) {
-      return "rgba(94, 107, 255, 0.86)";
+      return `rgba(${MAP_ACTIVE_RGB}, 0.82)`;
     }
     const alpha = 0.15 + datum.intensity * 0.55;
-    return `rgba(94, 107, 255, ${alpha.toFixed(2)})`;
+    return `rgba(${MAP_ACTIVE_RGB}, ${alpha.toFixed(2)})`;
   }
 
   function getCountryHoverFill(code: string | undefined): string {
-    if (!code) return "#1a2030";
+    if (!code) return MAP_EMPTY_FILL;
     const datum = dataByCode.get(code);
-    if (!datum) return "#1a2030";
+    if (!datum) return MAP_EMPTY_FILL;
     if (selectedCountryCode && selectedCountryCode === code) {
-      return "rgba(94, 107, 255, 0.92)";
+      return `rgba(${MAP_ACTIVE_RGB}, 0.88)`;
     }
     const alpha = 0.25 + datum.intensity * 0.55;
-    return `rgba(94, 107, 255, ${alpha.toFixed(2)})`;
+    return `rgba(${MAP_ACTIVE_RGB}, ${alpha.toFixed(2)})`;
   }
 
   return (
@@ -79,10 +83,10 @@ export function GeoMap({
         projectionConfig={{ scale: 160 }}
         width={800}
         height={height}
-        style={{ width: "100%", height: "auto", background: "#0b0e14" }}
+        style={{ width: "100%", height: "auto", background: MAP_BACKGROUND }}
       >
         <ZoomableGroup>
-          <Graticule stroke="#1e2838" strokeWidth={0.4} />
+          <Graticule stroke={MAP_STROKE} strokeWidth={0.4} />
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
@@ -118,7 +122,7 @@ export function GeoMap({
                     key={geo.rsmKey}
                     geography={geo}
                     fill={getCountryFill(alpha2)}
-                    stroke="#1e2838"
+                    stroke={MAP_STROKE}
                     strokeWidth={selectedCountryCode && selectedCountryCode === alpha2 ? 0.9 : 0.5}
                     onMouseMove={
                       hoverDatum

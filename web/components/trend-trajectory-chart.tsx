@@ -21,6 +21,8 @@ type TrendTrajectoryChartProps = {
 
 const PALETTE = ["#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#9b8cff"];
 const HISTORY_BUCKET_MINUTES = 5;
+const CHART_AXIS_COLOR = "var(--chart-axis)";
+const CHART_GRID_COLOR = "var(--chart-grid)";
 
 type ChartTrend = TrendDetailRecord & {
   chartHistory: Array<{ capturedAt: string; scoreTotal: number }>;
@@ -138,16 +140,16 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e2838" />
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#7a8494", fontSize: 11 }}
-            axisLine={{ stroke: "#1e2838" }}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
+            axisLine={{ stroke: CHART_GRID_COLOR }}
             tickLine={false}
           />
           <YAxis
             domain={[0, Math.ceil(maxScore * 1.1)]}
-            tick={{ fill: "#7a8494", fontSize: 11 }}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
             width={40}
@@ -170,7 +172,7 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
             labelFormatter={(label) => String(label)}
           />
           <Legend
-            wrapperStyle={{ fontSize: 11, color: "#7a8494" }}
+            wrapperStyle={{ fontSize: 11, color: CHART_AXIS_COLOR }}
             iconType="plainline"
           />
           {topTrends.map((trend, i) => (
