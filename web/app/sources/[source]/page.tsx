@@ -111,12 +111,19 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
               <strong>{summary.rawItemCount}</strong>
             </article>
             <article className="source-metric-card">
+              <span>Topic dupes</span>
+              <strong>{summary.duplicateTopicRate.toFixed(1)}%</strong>
+            </article>
+            <article className="source-metric-card">
               <span>Slowest run</span>
               <strong>{formatDuration(maxDurationMs)}</strong>
             </article>
           </div>
 
           <p className="source-summary-copy">{describeSourceYield(summary)}</p>
+          <p className="source-summary-copy">
+            {summary.rawTopicCount} raw topics reduced to {summary.mergedTopicCount} merged topics in the latest run.
+          </p>
           <div className="source-run-controls">
             <div className="source-run-control-group">
               {[

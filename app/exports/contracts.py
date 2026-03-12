@@ -408,6 +408,10 @@ class DashboardOverviewSourcePayload:
     kept_item_count: int
     yield_rate_percent: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
 
@@ -529,6 +533,10 @@ class DashboardOverviewPayload:
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
             source["durationMs"] = source.pop("duration_ms")
+            source["rawTopicCount"] = source.pop("raw_topic_count")
+            source["mergedTopicCount"] = source.pop("merged_topic_count")
+            source["duplicateTopicCount"] = source.pop("duplicate_topic_count")
+            source["duplicateTopicRate"] = source.pop("duplicate_topic_rate")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
         payload["sourceWatch"] = payload.pop("source_watch")
@@ -546,6 +554,10 @@ class SourceRunPayload:
     kept_item_count: int
     yield_rate_percent: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
 
@@ -573,6 +585,10 @@ class SourceSummaryRecordPayload:
     kept_item_count: int
     yield_rate_percent: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
     signal_count: int
@@ -601,6 +617,10 @@ class SourceSummaryPayload:
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
             source["durationMs"] = source.pop("duration_ms")
+            source["rawTopicCount"] = source.pop("raw_topic_count")
+            source["mergedTopicCount"] = source.pop("merged_topic_count")
+            source["duplicateTopicCount"] = source.pop("duplicate_topic_count")
+            source["duplicateTopicRate"] = source.pop("duplicate_topic_rate")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
             source["signalCount"] = source.pop("signal_count")
@@ -614,6 +634,10 @@ class SourceSummaryPayload:
                 run["keptItemCount"] = run.pop("kept_item_count")
                 run["yieldRatePercent"] = run.pop("yield_rate_percent")
                 run["durationMs"] = run.pop("duration_ms")
+                run["rawTopicCount"] = run.pop("raw_topic_count")
+                run["mergedTopicCount"] = run.pop("merged_topic_count")
+                run["duplicateTopicCount"] = run.pop("duplicate_topic_count")
+                run["duplicateTopicRate"] = run.pop("duplicate_topic_rate")
                 run["usedFallback"] = run.pop("used_fallback")
                 run["errorMessage"] = run.pop("error_message")
             for trend in source["topTrends"]:

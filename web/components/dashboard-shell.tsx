@@ -1890,6 +1890,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     {source.latestFetchAt ? formatCompactTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
                     {source.latestItemCount} items · {formatDuration(source.durationMs)}
                   </p>
+                  <p className="source-summary-copy">
+                    {source.rawTopicCount} raw topics · {source.mergedTopicCount} merged · {source.duplicateTopicRate.toFixed(1)}% dupes
+                  </p>
                   <p className="source-summary-copy">{summarizeSourceYield(source)}</p>
                   {source.usedFallback ? (
                     <p className="source-warning-copy">Latest successful fetch used fallback sample data.</p>

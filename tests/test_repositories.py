@@ -72,6 +72,10 @@ class RepositoryTests(unittest.TestCase):
                     item_count=10,
                     kept_item_count=10,
                     duration_ms=120,
+                    raw_topic_count=12,
+                    merged_topic_count=9,
+                    duplicate_topic_count=3,
+                    duplicate_topic_rate=25.0,
                 ),
                 SourceIngestionRun(
                     source="reddit",
@@ -81,6 +85,10 @@ class RepositoryTests(unittest.TestCase):
                     item_count=0,
                     kept_item_count=0,
                     duration_ms=950,
+                    raw_topic_count=18,
+                    merged_topic_count=12,
+                    duplicate_topic_count=6,
+                    duplicate_topic_rate=33.3,
                     error_message="timeout",
                 ),
                 SourceIngestionRun(
@@ -91,6 +99,10 @@ class RepositoryTests(unittest.TestCase):
                     item_count=4,
                     kept_item_count=4,
                     duration_ms=80,
+                    raw_topic_count=7,
+                    merged_topic_count=5,
+                    duplicate_topic_count=2,
+                    duplicate_topic_rate=28.6,
                     used_fallback=True,
                 ),
             ]
@@ -103,6 +115,10 @@ class RepositoryTests(unittest.TestCase):
         self.assertFalse(reddit_run.success)
         self.assertEqual(reddit_run.error_message, "timeout")
         self.assertEqual(reddit_run.raw_item_count, 30)
+        self.assertEqual(reddit_run.raw_topic_count, 18)
+        self.assertEqual(reddit_run.merged_topic_count, 12)
+        self.assertEqual(reddit_run.duplicate_topic_count, 6)
+        self.assertEqual(reddit_run.duplicate_topic_rate, 33.3)
         github_run = next(run for run in runs if run.source == "github")
         self.assertTrue(github_run.used_fallback)
         self.assertEqual(github_run.kept_item_count, 4)

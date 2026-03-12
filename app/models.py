@@ -56,6 +56,10 @@ class SourceIngestionRun:
     item_count: int
     kept_item_count: int
     duration_ms: int
+    raw_topic_count: int = 0
+    merged_topic_count: int = 0
+    duplicate_topic_count: int = 0
+    duplicate_topic_rate: float = 0.0
     used_fallback: bool = False
     error_message: str | None = None
 
@@ -321,6 +325,10 @@ class SourceSummaryRecord:
     kept_item_count: int
     yield_rate_percent: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
     signal_count: int

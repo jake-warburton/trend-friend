@@ -104,6 +104,10 @@ export type DashboardOverviewSource = {
   keptItemCount: number;
   yieldRatePercent: number;
   durationMs: number;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
   usedFallback: boolean;
   errorMessage: string | null;
 };
@@ -325,6 +329,10 @@ export type SourceRun = {
   keptItemCount: number;
   yieldRatePercent: number;
   durationMs: number;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
   usedFallback: boolean;
   errorMessage: string | null;
 };
@@ -346,6 +354,10 @@ export type SourceSummaryRecord = {
   keptItemCount: number;
   yieldRatePercent: number;
   durationMs: number;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
   usedFallback: boolean;
   errorMessage: string | null;
   signalCount: number;

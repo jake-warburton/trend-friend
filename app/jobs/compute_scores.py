@@ -20,7 +20,7 @@ from app.models import PipelineRun, TrendScoreResult
 from app.notifications.deliver import deliver_post_run_notifications
 from app.notifications.digest import build_run_digest
 from app.scoring.calculator import calculate_trend_scores
-from app.scoring.quality import calculate_pipeline_quality_metrics
+from app.scoring.quality import calculate_pipeline_quality_metrics, calculate_source_quality_metrics
 from app.scoring.ranking import rank_topics_by_score
 from app.topics.cluster import aggregate_topic_signals
 from app.topics.extract import build_signals_from_items
@@ -44,11 +44,30 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
         aggregates,
         ranked_scores,
     )
+    source_quality_metrics = calculate_source_quality_metrics(normalized_signals, aggregates)
     captured_at = datetime.now(tz=timezone.utc)
     successful_source_count = sum(1 for run in source_runs if run.success)
+    enriched_source_runs = [
+        SourceIngestionRun(
+            source=run.source,
+            fetched_at=run.fetched_at,
+            success=run.success,
+            raw_item_count=run.raw_item_count,
+            item_count=run.item_count,
+            kept_item_count=run.kept_item_count,
+            duration_ms=run.duration_ms,
+            raw_topic_count=source_quality_metrics.get(run.source).raw_topic_count if run.source in source_quality_metrics else 0,
+            merged_topic_count=source_quality_metrics.get(run.source).merged_topic_count if run.source in source_quality_metrics else 0,
+            duplicate_topic_count=source_quality_metrics.get(run.source).duplicate_topic_count if run.source in source_quality_metrics else 0,
+            duplicate_topic_rate=source_quality_metrics.get(run.source).duplicate_topic_rate if run.source in source_quality_metrics else 0.0,
+            used_fallback=run.used_fallback,
+            error_message=run.error_message,
+        )
+        for run in source_runs
+    ]
 
     connection = connect_primary_database(settings)
-    SourceIngestionRunRepository(connection).append_runs(source_runs)
+    SourceIngestionRunRepository(connection).append_runs(enriched_source_runs)
     SignalRepository(connection).replace_signals(normalized_signals)
     repository = TrendScoreRepository(connection)
 

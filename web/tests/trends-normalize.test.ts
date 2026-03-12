@@ -63,6 +63,45 @@ test("normalizeDashboardOverview defaults missing sources and sourceWatch", () =
   assert.deepEqual(result.sourceWatch, []);
 });
 
+test("normalizeDashboardOverview defaults missing source quality fields", () => {
+  const input: DashboardOverviewResponse = {
+    generatedAt: "2026-03-10T00:00:00Z",
+    summary: { trackedTrends: 0, totalSignals: 0, sourceCount: 0, averageScore: 0 },
+    highlights: {
+      topTrendId: null,
+      topTrendName: null,
+      biggestMoverId: null,
+      biggestMoverName: null,
+      newestTrendId: null,
+      newestTrendName: null,
+    },
+    charts: { topTrendScores: [], sourceShare: [], statusBreakdown: [] },
+    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], metaTrends: [] },
+    operations: { lastRunAt: null, successRate: 0, averageDurationMs: 0, recentRuns: [] },
+    sources: [
+      {
+        source: "reddit",
+        signalCount: 10,
+        trendCount: 5,
+        status: "healthy",
+        latestFetchAt: "2026-03-10T00:00:00Z",
+        latestSuccessAt: "2026-03-10T00:00:00Z",
+        rawItemCount: 20,
+        latestItemCount: 10,
+        keptItemCount: 8,
+        yieldRatePercent: 40,
+        durationMs: 1000,
+      } as any,
+    ],
+  };
+
+  const result = normalizeDashboardOverview(input);
+
+  assert.equal(result.sources[0].rawTopicCount, 0);
+  assert.equal(result.sources[0].mergedTopicCount, 0);
+  assert.equal(result.sources[0].duplicateTopicRate, 0);
+});
+
 test("normalizeDashboardOverview preserves provided values", () => {
   const input: DashboardOverviewResponse = {
     generatedAt: "2026-03-10T00:00:00Z",
