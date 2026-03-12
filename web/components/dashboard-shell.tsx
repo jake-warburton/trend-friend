@@ -1430,6 +1430,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   audienceBadge ?? null,
                   formatCategory(trend.category),
                 ].filter((item): item is string => Boolean(item));
+                const collapsedSourceInsights = detail
+                  ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
+                  : [];
+                const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
+                const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
                 return (
                 <article
                   className={changedTrendIds.includes(trend.id) ? "explorer-card explorer-card-updated" : "explorer-card"}
@@ -1455,6 +1460,16 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                       <div className="explorer-card-summary">
                         <span>{compactSummaryParts.join(" / ")}</span>
                       </div>
+                      {collapsedDriverSummary ? (
+                        <div className="explorer-card-driver-line">
+                          <span>{collapsedDriverSummary}</span>
+                        </div>
+                      ) : null}
+                      {collapsedCorroborationSummary ? (
+                        <div className="explorer-card-support-line">
+                          <span>{collapsedCorroborationSummary}</span>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="explorer-metrics-row">
@@ -2080,6 +2095,35 @@ function formatScoreMix(score: TrendExplorerRecord["score"]) {
     return `Driven by cross-source diversity ${score.diversity.toFixed(1)}`;
   }
   return `Led by ${mix.join(" · ")}`;
+}
+
+function formatCollapsedSourceDriverSummary(
+  insights: Array<{ title: string; scoreSharePercent: number }>,
+) {
+  if (insights.length === 0) {
+    return null;
+  }
+  return `Source drivers: ${insights
+    .map((insight) => `${insight.title} ${insight.scoreSharePercent.toFixed(0)}%`)
+    .join(" · ")}`;
+}
+
+function formatCollapsedCorroborationSummary(
+  detail: TrendDetailRecord | undefined,
+  trend: TrendExplorerRecord,
+) {
+  if (!detail) {
+    return `Corroborated by ${trend.coverage.sourceCount} source${trend.coverage.sourceCount === 1 ? "" : "s"}`;
+  }
+
+  const supportingSources = detail.sourceContributions.filter((contribution) => contribution.scoreSharePercent >= 5).length;
+  if (supportingSources >= 2) {
+    return `Corroborated by ${supportingSources} contributing sources`;
+  }
+  if (detail.sourceContributions.length === 1) {
+    return `Driven mainly by ${formatSourceLabel(detail.sourceContributions[0].source)}`;
+  }
+  return `Backed by ${trend.coverage.signalCount} signal${trend.coverage.signalCount === 1 ? "" : "s"} across ${trend.coverage.sourceCount} sources`;
 }
 
 function movementClassName(rankChange: number | null | undefined) {
