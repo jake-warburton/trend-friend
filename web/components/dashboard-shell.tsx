@@ -143,6 +143,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   );
   const initialRenderRef = useRef(true);
   const updatedBadgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const alertsDetailsRef = useRef<HTMLDetailsElement>(null);
+  const runsDetailsRef = useRef<HTMLDetailsElement>(null);
+  const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
@@ -1162,7 +1165,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <Select.Root value={selectedSource} onValueChange={(value) => setSelectedSource(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1185,7 +1188,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <Select.Root value={selectedCategory} onValueChange={(value) => setSelectedCategory(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1208,7 +1211,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1231,7 +1234,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <Select.Root value={selectedMarket} onValueChange={(value) => setSelectedMarket(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1254,7 +1257,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <Select.Root value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1277,7 +1280,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1401,11 +1404,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 
                     <div className="explorer-metrics-row">
                       <div className="explorer-metrics-panel">
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
-                          <span>Position</span>
-                          <strong>#{trend.rank}</strong>
-                        </div>
-
                         <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
                           <span>Momentum</span>
                           <div className="movement-inline">
@@ -1741,7 +1739,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </section>
               </div>
 
-              <details className="sidebar-section" open={alertCount > 0 ? true : undefined}>
+              <details className="sidebar-section" ref={alertsDetailsRef} open={alertCount > 0 ? true : undefined}>
                 <summary>
                   <div className="section-heading section-heading-spaced">
                     <h2>
@@ -1784,7 +1782,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </>
           ) : null}
 
-          <details className="sidebar-section">
+          <details className="sidebar-section" ref={runsDetailsRef}>
             <summary>
               <div className="section-heading section-heading-spaced">
                 <h2>Runs</h2>
@@ -1822,7 +1820,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </div>
           </details>
 
-          <details className="sidebar-section">
+          <details className="sidebar-section" ref={sourcesDetailsRef}>
             <summary>
               <div className="section-heading section-heading-spaced">
                 <h2>Sources</h2>
