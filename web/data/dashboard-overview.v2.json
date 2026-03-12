@@ -1,69 +1,69 @@
 {
   "summary": {
     "trackedTrends": 10,
-    "totalSignals": 154,
+    "totalSignals": 156,
     "sourceCount": 6,
-    "averageScore": 36.2
+    "averageScore": 34.8
   },
   "highlights": {
     "topTrendId": "ai-agents",
-    "topTrendName": "AI Agents",
-    "biggestMoverId": "macbook-neo",
-    "biggestMoverName": "Macbook NEO",
-    "newestTrendId": "attack-stryker",
-    "newestTrendName": "Attack Stryker"
+    "topTrendName": "AI agents",
+    "biggestMoverId": "ai-agents",
+    "biggestMoverName": "AI agents",
+    "newestTrendId": "inference-framework",
+    "newestTrendName": "Inference framework"
   },
   "charts": {
     "topTrendScores": [
       {
-        "label": "AI Agents",
-        "value": 92.5
+        "label": "AI agents",
+        "value": 50.0
       },
       {
         "label": "Robotics",
         "value": 48.0
       },
       {
-        "label": "Baseball Classic",
-        "value": 37.7
+        "label": "Iran war",
+        "value": 44.5
       },
       {
-        "label": "Macbook NEO",
-        "value": 36.2
+        "label": "MacBook Neo",
+        "value": 39.0
+      },
+      {
+        "label": "Baseball Classic",
+        "value": 38.0
       },
       {
         "label": "Reduces Training",
         "value": 27.4
       },
       {
-        "label": "Decryption Failure",
-        "value": 25.3
+        "label": "AI bot",
+        "value": 26.0
       },
       {
-        "label": "Enabling Scientific",
-        "value": 25.1
-      },
-      {
-        "label": "Attack Stryker",
-        "value": 23.5
+        "label": "Inference framework",
+        "value": 25.5
       }
     ],
     "sourceShare": [
       {
         "label": "Hacker News",
-        "value": 56.0
+        "value": 55.0
       },
       {
         "label": "Google Trends",
         "value": 31.0
       },
       {
-        "label": "Wikipedia",
+        "label": "Github",
         "value": 30.0
       },
       {
-        "label": "Github",
-        "value": 27.0
+        "label": "Wikipedia",
+        "value": 30.0
       },
       {
         "label": "Twitter",
@@ -76,19 +76,11 @@
     ],
     "statusBreakdown": [
       {
-        "label": "Cooling",
-        "value": 5.0
-      },
-      {
-        "label": "Rising",
-        "value": 2.0
-      },
-      {
         "label": "Steady",
-        "value": 2.0
+        "value": 9.0
       },
       {
-        "label": "Breakout",
+        "label": "Cooling",
         "value": 1.0
       }
     ]
@@ -97,11 +89,11 @@
     "topTrends": [
       {
         "id": "ai-agents",
-        "name": "AI Agents",
+        "name": "AI agents",
         "category": "ai-machine-learning",
         "status": "cooling",
         "rank": 1,
-        "scoreTotal": 92.5
+        "scoreTotal": 50.0
       },
       {
         "id": "robotics",
@@ -112,66 +104,33 @@
         "scoreTotal": 48.0
       },
       {
+        "id": "iran-war",
+        "name": "Iran war",
+        "category": "science-research",
+        "status": "steady",
+        "rank": 3,
+        "scoreTotal": 44.5
+      },
+      {
+        "id": "macbook-neo",
+        "name": "MacBook Neo",
+        "category": "general-tech",
+        "status": "steady",
+        "rank": 4,
+        "scoreTotal": 39.0
+      },
+      {
         "id": "baseball-classic",
         "name": "Baseball Classic",
         "category": "science-research",
         "status": "steady",
-        "rank": 3,
-        "scoreTotal": 37.7
-      },
-      {
-        "id": "macbook-neo",
-        "name": "Macbook NEO",
-        "category": "general-tech",
-        "status": "breakout",
-        "rank": 4,
-        "scoreTotal": 36.2
-      },
-      {
-        "id": "reduces-training",
-        "name": "Reduces Training",
-        "category": "general-tech",
-        "status": "cooling",
         "rank": 5,
-        "scoreTotal": 27.4
+        "scoreTotal": 38.0
       }
     ],
-    "breakoutTrends": [
-      {
-        "id": "macbook-neo",
-        "name": "Macbook NEO",
-        "category": "general-tech",
-        "status": "breakout",
-        "rank": 4,
-        "scoreTotal": 36.2
-      }
-    ],
-    "risingTrends": [
-      {
-        "id": "decryption-failure",
-        "name": "Decryption Failure",
-        "category": "general-tech",
-        "status": "rising",
-        "rank": 6,
-        "scoreTotal": 25.3
-      },
-      {
-        "id": "ai-bot",
-        "name": "AI BOT",
-        "category": "ai-machine-learning",
-        "status": "rising",
-        "rank": 9,
-        "scoreTotal": 23.1
-      }
-    ],
+    "breakoutTrends": [],
+    "risingTrends": [],
     "metaTrends": [
-      {
-        "category": "ai-machine-learning",
-        "trendCount": 2,
-        "averageScore": 57.8,
-        "topTrendId": "ai-agents",
-        "topTrendName": "AI Agents"
-      },
       {
         "category": "hardware-robotics",
         "trendCount": 1,
@@ -181,55 +140,62 @@
       },
       {
         "category": "science-research",
-        "trendCount": 1,
-        "averageScore": 37.7,
-        "topTrendId": "baseball-classic",
-        "topTrendName": "Baseball Classic"
+        "trendCount": 2,
+        "averageScore": 41.2,
+        "topTrendId": "iran-war",
+        "topTrendName": "Iran war"
+      },
+      {
+        "category": "ai-machine-learning",
+        "trendCount": 3,
+        "averageScore": 33.8,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI agents"
       },
       {
         "category": "general-tech",
-        "trendCount": 6,
-        "averageScore": 26.8,
+        "trendCount": 4,
+        "averageScore": 29.1,
         "topTrendId": "macbook-neo",
-        "topTrendName": "Macbook NEO"
+        "topTrendName": "MacBook Neo"
       }
     ]
   },
   "operations": {
-    "lastRunAt": "2026-03-11T23:59:31.251699Z",
+    "lastRunAt": "2026-03-12T10:46:10.052957Z",
     "successRate": 100.0,
-    "averageDurationMs": 8407,
+    "averageDurationMs": 12647,
     "recentRuns": [
       {
         "status": "healthy",
-        "capturedAt": "2026-03-11T23:59:31.251699Z",
-        "durationMs": 8227,
+        "capturedAt": "2026-03-12T10:46:10.052957Z",
+        "durationMs": 16990,
         "sourceCount": 6,
         "successfulSourceCount": 6,
         "failedSourceCount": 0,
-        "signalCount": 154,
-        "rankedTrendCount": 100,
+        "signalCount": 156,
+        "rankedTrendCount": 10,
         "topTrendId": "ai-agents",
         "topTrendName": "AI Agents",
-        "topScore": 92.5
+        "topScore": 50.0
       },
       {
         "status": "healthy",
-        "capturedAt": "2026-03-11T23:36:49.437659Z",
-        "durationMs": 7440,
+        "capturedAt": "2026-03-12T10:43:32.448224Z",
+        "durationMs": 17114,
         "sourceCount": 6,
         "successfulSourceCount": 6,
         "failedSourceCount": 0,
         "signalCount": 153,
-        "rankedTrendCount": 100,
+        "rankedTrendCount": 10,
         "topTrendId": "ai-agents",
         "topTrendName": "AI Agents",
-        "topScore": 115.9
+        "topScore": 66.7
       },
       {
         "status": "healthy",
-        "capturedAt": "2026-03-11T22:59:22.876485Z",
-        "durationMs": 8148,
+        "capturedAt": "2026-03-12T10:43:12.629917Z",
+        "durationMs": 9218,
         "sourceCount": 6,
         "successfulSourceCount": 6,
         "failedSourceCount": 0,
@@ -237,38 +203,25 @@
         "rankedTrendCount": 100,
         "topTrendId": "ai-agents",
         "topTrendName": "AI Agents",
-        "topScore": 112.2
+        "topScore": 50.0
       },
       {
         "status": "healthy",
-        "capturedAt": "2026-03-11T22:30:58.813699Z",
-        "durationMs": 9664,
+        "capturedAt": "2026-03-12T09:50:27.541262Z",
+        "durationMs": 9604,
         "sourceCount": 6,
         "successfulSourceCount": 6,
         "failedSourceCount": 0,
-        "signalCount": 153,
+        "signalCount": 160,
         "rankedTrendCount": 100,
         "topTrendId": "ai-agents",
         "topTrendName": "AI Agents",
-        "topScore": 92.5
+        "topScore": 96.0
       },
       {
         "status": "healthy",
-        "capturedAt": "2026-03-11T21:49:35.814749Z",
-        "durationMs": 8849,
-        "sourceCount": 6,
-        "successfulSourceCount": 6,
-        "failedSourceCount": 0,
-        "signalCount": 164,
-        "rankedTrendCount": 100,
-        "topTrendId": "ai-agents",
-        "topTrendName": "AI Agents",
-        "topScore": 119.0
-      },
-      {
-        "status": "healthy",
-        "capturedAt": "2026-03-11T21:42:18.903458Z",
-        "durationMs": 8112,
+        "capturedAt": "2026-03-12T08:54:40.362824Z",
+        "durationMs": 11738,
         "sourceCount": 6,
         "successfulSourceCount": 6,
         "failedSourceCount": 0,
@@ -276,7 +229,20 @@
         "rankedTrendCount": 100,
         "topTrendId": "ai-agents",
         "topTrendName": "AI Agents",
-        "topScore": 92.5
+        "topScore": 78.2
+      },
+      {
+        "status": "healthy",
+        "capturedAt": "2026-03-12T07:56:49.560771Z",
+        "durationMs": 11216,
+        "sourceCount": 6,
+        "successfulSourceCount": 6,
+        "failedSourceCount": 0,
+        "signalCount": 150,
+        "rankedTrendCount": 100,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents",
+        "topScore": 68.2
       }
     ]
   },
@@ -284,15 +250,15 @@
     {
       "source": "hacker_news",
       "status": "healthy",
-      "signalCount": 56,
+      "signalCount": 55,
       "trendCount": 55,
-      "latestFetchAt": "2026-03-11T23:59:25.525490Z",
-      "latestSuccessAt": "2026-03-11T23:59:25.525490Z",
+      "latestFetchAt": "2026-03-12T10:45:54.426648Z",
+      "latestSuccessAt": "2026-03-12T10:45:54.426648Z",
       "rawItemCount": 90,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 33.3,
-      "durationMs": 3180,
+      "durationMs": 12376,
       "usedFallback": false,
       "errorMessage": null
     },
@@ -301,13 +267,28 @@
       "status": "healthy",
       "signalCount": 31,
       "trendCount": 31,
-      "latestFetchAt": "2026-03-11T23:59:29.531217Z",
-      "latestSuccessAt": "2026-03-11T23:59:29.531217Z",
+      "latestFetchAt": "2026-03-12T10:46:08.108271Z",
+      "latestSuccessAt": "2026-03-12T10:46:08.108271Z",
       "rawItemCount": 0,
       "latestItemCount": 28,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 1701,
+      "durationMs": 1910,
+      "usedFallback": false,
+      "errorMessage": null
+    },
+    {
+      "source": "github",
+      "status": "healthy",
+      "signalCount": 30,
+      "trendCount": 30,
+      "latestFetchAt": "2026-03-12T10:46:06.802649Z",
+      "latestSuccessAt": "2026-03-12T10:46:06.802649Z",
+      "rawItemCount": 30,
+      "latestItemCount": 30,
+      "keptItemCount": 30,
+      "yieldRatePercent": 100.0,
+      "durationMs": 1166,
       "usedFallback": false,
       "errorMessage": null
     },
@@ -316,28 +297,13 @@
       "status": "healthy",
       "signalCount": 30,
       "trendCount": 28,
-      "latestFetchAt": "2026-03-11T23:59:29.439723Z",
-      "latestSuccessAt": "2026-03-11T23:59:29.439723Z",
+      "latestFetchAt": "2026-03-12T10:46:07.969947Z",
+      "latestSuccessAt": "2026-03-12T10:46:07.969947Z",
       "rawItemCount": 0,
-      "latestItemCount": 24,
+      "latestItemCount": 25,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 91,
-      "usedFallback": false,
-      "errorMessage": null
-    },
-    {
-      "source": "github",
-      "status": "healthy",
-      "signalCount": 27,
-      "trendCount": 27,
-      "latestFetchAt": "2026-03-11T23:59:28.706466Z",
-      "latestSuccessAt": "2026-03-11T23:59:28.706466Z",
-      "rawItemCount": 30,
-      "latestItemCount": 30,
-      "keptItemCount": 30,
-      "yieldRatePercent": 100.0,
-      "durationMs": 733,
+      "durationMs": 138,
       "usedFallback": false,
       "errorMessage": null
     },
@@ -346,8 +312,8 @@
       "status": "degraded",
       "signalCount": 8,
       "trendCount": 8,
-      "latestFetchAt": "2026-03-11T23:59:31.232869Z",
-      "latestSuccessAt": "2026-03-11T23:59:31.232869Z",
+      "latestFetchAt": "2026-03-12T10:46:10.018451Z",
+      "latestSuccessAt": "2026-03-12T10:46:10.018451Z",
       "rawItemCount": 0,
       "latestItemCount": 3,
       "keptItemCount": 0,
@@ -361,18 +327,18 @@
       "status": "degraded",
       "signalCount": 2,
       "trendCount": 2,
-      "latestFetchAt": "2026-03-11T23:59:25.391237Z",
-      "latestSuccessAt": "2026-03-11T23:59:25.391237Z",
+      "latestFetchAt": "2026-03-12T10:45:54.209875Z",
+      "latestSuccessAt": "2026-03-12T10:45:54.209875Z",
       "rawItemCount": 0,
       "latestItemCount": 2,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 133,
+      "durationMs": 216,
       "usedFallback": true,
       "errorMessage": null
     }
   ],
-  "generatedAt": "2026-03-11T23:59:31.251699Z",
+  "generatedAt": "2026-03-12T10:46:10.052957Z",
   "sourceWatch": [
     {
       "source": "reddit",

@@ -1453,9 +1453,9 @@ class TrendScoreRepository:
             """
             INSERT INTO trend_scores (
                 topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -1469,6 +1469,7 @@ class TrendScoreRepository:
                     json.dumps(score.source_counts, sort_keys=True),
                     json.dumps(score.evidence),
                     score.latest_timestamp.isoformat(),
+                    score.display_name,
                 )
                 for score in scores
             ],
@@ -1487,9 +1488,9 @@ class TrendScoreRepository:
             """
             INSERT INTO trend_score_snapshots (
                 run_id, rank_position, topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -1505,6 +1506,7 @@ class TrendScoreRepository:
                     json.dumps(score.source_counts, sort_keys=True),
                     json.dumps(score.evidence),
                     score.latest_timestamp.isoformat(),
+                    score.display_name,
                 )
                 for rank_position, score in enumerate(scores, start=1)
             ],
@@ -1518,7 +1520,7 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_scores
             ORDER BY total_score DESC, topic ASC, latest_timestamp ASC
             LIMIT ?
@@ -1540,7 +1542,7 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_score_snapshots
             WHERE run_id = ?
             ORDER BY rank_position ASC
@@ -1566,7 +1568,7 @@ class TrendScoreRepository:
             score_rows = self.connection.execute(
                 """
                 SELECT topic, total_score, search_score, social_score, developer_score,
-                       knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                       knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
                 FROM trend_score_snapshots
                 WHERE run_id = ?
                 ORDER BY rank_position ASC
@@ -2046,7 +2048,7 @@ class TrendScoreRepository:
             source_counts=json.loads(row["source_counts_json"]),
             evidence=evidence,
             latest_timestamp=datetime.fromisoformat(row["latest_timestamp"]),
-            display_name=build_display_name(row["topic"], evidence),
+            display_name=row["display_name"] or build_display_name(row["topic"], evidence),
         )
 
     @staticmethod

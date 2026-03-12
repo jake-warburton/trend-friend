@@ -120,6 +120,7 @@ class RepositoryTests(unittest.TestCase):
             evidence=["AI agents"],
             source_counts={"reddit": 1, "github": 1},
             latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            display_name="AI Agents",
         )
         repository = TrendScoreRepository(self.connection)
         repository.replace_scores([score])
@@ -176,6 +177,7 @@ class RepositoryTests(unittest.TestCase):
             evidence=["Battery recycling"],
             source_counts={"reddit": 1},
             latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            display_name="Battery Recycling",
         )
         repository.append_snapshot([score], captured_at=captured_at)
         latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=5)

@@ -1,98 +1,96 @@
 {
-  "generatedAt": "2026-03-11T23:59:31.251699Z",
+  "generatedAt": "2026-03-12T10:46:10.052957Z",
   "trends": [
     {
       "id": "ai-agents",
-      "name": "AI Agents",
+      "name": "AI agents",
       "category": "ai-machine-learning",
       "status": "cooling",
       "volatility": "volatile",
       "rank": 1,
       "score": {
-        "total": 92.5,
-        "social": 71.5,
+        "total": 50.0,
+        "social": 35.7,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
-        "diversity": 18.0
+        "diversity": 12.0
       },
       "momentum": {
         "previousRank": 1,
         "rankChange": 0,
-        "absoluteDelta": -23.3,
-        "percentDelta": -20.1
+        "absoluteDelta": -16.7,
+        "percentDelta": -25.0
       },
       "forecast": {
         "confidence": "low",
-        "mape": 32.8,
+        "mape": 94.1,
         "method": "holt",
         "predictedScores": [
-          82.09,
-          77.75,
-          73.42,
-          69.09,
-          64.75
+          13.54,
+          2.08,
+          -9.38,
+          -20.84,
+          -32.29
         ]
       },
       "opportunity": {
-        "composite": 0.498,
-        "content": 0.699,
-        "product": 0.6,
-        "investment": 0.225,
+        "composite": 0.342,
+        "content": 0.438,
+        "product": 0.315,
+        "investment": 0.266,
         "reasoning": [
-          "Strong content play (social 72, 3 evidence items)",
-          "Product opportunity (dev 0, rank #1)"
+          "Limited actionability signals"
         ]
       },
       "coverage": {
-        "sourceCount": 3,
-        "signalCount": 6
+        "sourceCount": 2,
+        "signalCount": 3
       },
       "sources": [
-        "hacker_news",
         "reddit",
         "twitter"
       ],
       "history": [
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 119.6
+          "capturedAt": "2026-03-12T05:54:32.454878Z",
+          "scoreTotal": 103.9
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 92.5
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 50.0
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 92.5
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 68.2
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 119.0
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 78.2
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 92.5
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 96.0
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 112.2
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 50.0
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 115.9
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 66.7
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 92.5
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 50.0
         }
       ],
       "seasonality": {
@@ -104,23 +102,17 @@
       "previousRank": 1,
       "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
-      "latestSignalAt": "2026-03-11T16:24:17Z",
+      "latestSignalAt": "2026-03-09T12:00:00Z",
       "breakoutPrediction": {
-        "confidence": 0.45,
+        "confidence": 0.382,
         "signals": [
-          "Multi-source coverage (3 sources)",
           "Recently emerged (<24h)",
-          "High base score (92.5)",
+          "High base score (50.0)",
           "Evergreen topic with consistent presence"
         ],
         "predictedDirection": "stable"
       },
       "sourceBreakdown": [
-        {
-          "source": "hacker_news",
-          "signalCount": 2,
-          "latestSignalAt": "2026-03-11T16:24:17Z"
-        },
         {
           "source": "reddit",
           "signalCount": 1,
@@ -134,21 +126,6 @@
       ],
       "sourceContributions": [
         {
-          "source": "hacker_news",
-          "score": {
-            "total": 41.8,
-            "social": 35.8,
-            "developer": 0.0,
-            "knowledge": 0.0,
-            "search": 0.0,
-            "diversity": 6.0
-          },
-          "signalCount": 2,
-          "latestSignalAt": "2026-03-11T16:24:17Z",
-          "estimatedScore": 41.8,
-          "scoreSharePercent": 45.1
-        },
-        {
           "source": "reddit",
           "score": {
             "total": 23.9,
@@ -161,7 +138,7 @@
           "signalCount": 1,
           "latestSignalAt": "2024-02-29T09:46:40Z",
           "estimatedScore": 23.9,
-          "scoreSharePercent": 25.8
+          "scoreSharePercent": 47.7
         },
         {
           "source": "twitter",
@@ -176,21 +153,11 @@
           "signalCount": 1,
           "latestSignalAt": "2026-03-09T12:00:00Z",
           "estimatedScore": 23.9,
-          "scoreSharePercent": 25.8
+          "scoreSharePercent": 47.7
         }
       ],
       "geoSummary": [],
       "audienceSummary": [
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 3
-        },
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 2
-        },
         {
           "label": "consumer",
           "segmentType": "audience",
@@ -202,8 +169,8 @@
           "signalCount": 1
         },
         {
-          "label": "EN",
-          "segmentType": "language",
+          "label": "founder",
+          "segmentType": "audience",
           "signalCount": 1
         },
         {
@@ -215,55 +182,9 @@
           "label": "b2c",
           "segmentType": "market",
           "signalCount": 1
-        },
-        {
-          "label": "europe-market",
-          "segmentType": "market",
-          "signalCount": 1
         }
       ],
       "evidenceItems": [
-        {
-          "source": "hacker_news",
-          "timestamp": "2026-03-11T16:24:17Z",
-          "value": 32.0,
-          "evidence": "Launch HN: Sentrial (YC W26) \u2013 Catch AI agent failures before your users do",
-          "signalType": "social",
-          "evidenceUrl": "https://www.sentrial.com/",
-          "languageCode": null,
-          "audienceFlags": [
-            "developer",
-            "founder"
-          ],
-          "marketFlags": [
-            "europe-market",
-            "us-market"
-          ],
-          "geoFlags": [],
-          "geoCountryCode": null,
-          "geoRegion": null,
-          "geoDetectionMode": "unknown",
-          "geoConfidence": 0.0
-        },
-        {
-          "source": "hacker_news",
-          "timestamp": "2026-03-11T14:39:30Z",
-          "value": 128.0,
-          "evidence": "Show HN: Open-source browser for AI agents",
-          "signalType": "social",
-          "evidenceUrl": "https://github.com/theredsix/agent-browser-protocol",
-          "languageCode": "en",
-          "audienceFlags": [
-            "developer",
-            "founder"
-          ],
-          "marketFlags": [],
-          "geoFlags": [],
-          "geoCountryCode": null,
-          "geoRegion": null,
-          "geoDetectionMode": "unknown",
-          "geoConfidence": 0.0
-        },
         {
           "source": "twitter",
           "timestamp": "2026-03-09T12:00:00Z",
@@ -305,41 +226,27 @@
         }
       ],
       "primaryEvidence": {
-        "source": "hacker_news",
-        "timestamp": "2026-03-11T14:39:30Z",
-        "value": 128.0,
-        "evidence": "Show HN: Open-source browser for AI agents",
+        "source": "reddit",
+        "timestamp": "2024-02-29T09:46:40Z",
+        "value": 4880.0,
+        "evidence": "AI agents are replacing repetitive office workflows",
         "signalType": "social",
-        "evidenceUrl": "https://github.com/theredsix/agent-browser-protocol"
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/r1"
       },
       "relatedTrends": [
-        {
-          "id": "reduces-training",
-          "name": "Reduces Training",
-          "status": "cooling",
-          "rank": 5,
-          "scoreTotal": 27.4
-        },
-        {
-          "id": "enabling-scientific",
-          "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
-        },
-        {
-          "id": "deal-acquire",
-          "name": "Deal Acquire",
-          "status": "cooling",
-          "rank": 10,
-          "scoreTotal": 23.1
-        },
         {
           "id": "robotics",
           "name": "Robotics",
           "status": "steady",
           "rank": 2,
           "scoreTotal": 48.0
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "status": "steady",
+          "rank": 6,
+          "scoreTotal": 27.4
         }
       ]
     },
@@ -365,22 +272,22 @@
         "percentDelta": 0.0
       },
       "forecast": {
-        "confidence": "high",
-        "mape": 0.0,
+        "confidence": "low",
+        "mape": 48.7,
         "method": "holt",
         "predictedScores": [
-          47.97,
-          47.97,
-          47.97,
-          47.97,
-          47.97
+          32.89,
+          29.78,
+          26.66,
+          23.54,
+          20.43
         ]
       },
       "opportunity": {
-        "composite": 0.382,
-        "content": 0.426,
-        "product": 0.576,
-        "investment": 0.15,
+        "composite": 0.341,
+        "content": 0.433,
+        "product": 0.31,
+        "investment": 0.275,
         "reasoning": [
           "Limited actionability signals"
         ]
@@ -395,43 +302,43 @@
       ],
       "history": [
         {
-          "rank": 3,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
+          "rank": 2,
+          "capturedAt": "2026-03-12T05:54:32.454878Z",
+          "scoreTotal": 64.4
+        },
+        {
+          "rank": 2,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 48.0
-        },
-        {
-          "rank": 2,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
           "scoreTotal": 48.0
         }
       ],
@@ -446,7 +353,7 @@
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
       "latestSignalAt": "2026-03-09T14:30:00Z",
       "breakoutPrediction": {
-        "confidence": 0.528,
+        "confidence": 0.507,
         "signals": [
           "Recently emerged (<24h)",
           "High base score (48.0)",
@@ -574,42 +481,49 @@
       },
       "relatedTrends": [
         {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
-        },
-        {
           "id": "reduces-training",
           "name": "Reduces Training",
-          "status": "cooling",
-          "rank": 5,
+          "status": "steady",
+          "rank": 6,
           "scoreTotal": 27.4
         },
         {
-          "id": "baseball-classic",
-          "name": "Baseball Classic",
+          "id": "ai-agents",
+          "name": "AI agents",
+          "status": "cooling",
+          "rank": 1,
+          "scoreTotal": 50.0
+        },
+        {
+          "id": "iran-war",
+          "name": "Iran war",
           "status": "steady",
           "rank": 3,
-          "scoreTotal": 37.7
+          "scoreTotal": 44.5
+        },
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "status": "steady",
+          "rank": 4,
+          "scoreTotal": 39.0
         }
       ]
     },
     {
-      "id": "baseball-classic",
-      "name": "Baseball Classic",
+      "id": "iran-war",
+      "name": "Iran war",
       "category": "science-research",
       "status": "steady",
       "volatility": "stable",
       "rank": 3,
       "score": {
-        "total": 37.7,
+        "total": 44.5,
         "social": 0.0,
         "developer": 0.0,
-        "knowledge": 33.4,
-        "search": 0.0,
-        "diversity": 6.0
+        "knowledge": 8.2,
+        "search": 22.0,
+        "diversity": 12.0
       },
       "momentum": {
         "previousRank": 3,
@@ -618,152 +532,202 @@
         "percentDelta": 0.0
       },
       "forecast": {
-        "confidence": "high",
-        "mape": 0.0,
+        "confidence": "low",
+        "mape": 39.0,
         "method": "holt",
         "predictedScores": [
-          37.67,
-          37.67,
-          37.67,
-          37.67,
-          37.67
+          48.57,
+          54.82,
+          61.07,
+          67.31,
+          73.56
         ]
       },
       "opportunity": {
-        "composite": 0.224,
-        "content": 0.075,
-        "product": 0.502,
-        "investment": 0.075,
+        "composite": 0.296,
+        "content": 0.24,
+        "product": 0.343,
+        "investment": 0.303,
         "reasoning": [
           "Limited actionability signals"
         ]
       },
       "coverage": {
-        "sourceCount": 1,
-        "signalCount": 4
+        "sourceCount": 2,
+        "signalCount": 3
       },
       "sources": [
+        "google_trends",
         "wikipedia"
       ],
       "history": [
         {
-          "rank": 4,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 37.7
+          "rank": 96,
+          "capturedAt": "2026-03-12T04:50:28.920688Z",
+          "scoreTotal": 11.8
+        },
+        {
+          "rank": 60,
+          "capturedAt": "2026-03-12T05:54:32.454878Z",
+          "scoreTotal": 11.8
+        },
+        {
+          "rank": 94,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 11.8
+        },
+        {
+          "rank": 92,
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 11.8
+        },
+        {
+          "rank": 96,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 11.8
         },
         {
           "rank": 3,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 37.7
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 44.5
         },
         {
           "rank": 3,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 37.7
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 44.5
         },
         {
           "rank": 3,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 37.7
-        },
-        {
-          "rank": 3,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 37.7
-        },
-        {
-          "rank": 3,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 37.7
-        },
-        {
-          "rank": 3,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 37.7
-        },
-        {
-          "rank": 3,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 37.7
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 44.5
         }
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 1.0,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
       "previousRank": 3,
       "rankChange": 0,
-      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
-      "latestSignalAt": "2026-03-10T00:00:00Z",
+      "firstSeenAt": "2026-03-11T21:24:39.032260Z",
+      "latestSignalAt": "2026-03-12T10:20:00Z",
       "breakoutPrediction": {
-        "confidence": 0.483,
+        "confidence": 0.61,
         "signals": [
+          "Climbing ranks (+31.0/run)",
           "Recently emerged (<24h)",
-          "High base score (37.7)",
+          "High base score (44.5)",
           "Evergreen topic with consistent presence"
         ],
         "predictedDirection": "rising"
       },
       "sourceBreakdown": [
         {
+          "source": "google_trends",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-12T10:20:00Z"
+        },
+        {
           "source": "wikipedia",
-          "signalCount": 2,
-          "latestSignalAt": "2026-03-10T00:00:00Z"
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T00:00:00Z"
         }
       ],
       "sourceContributions": [
         {
-          "source": "wikipedia",
+          "source": "google_trends",
           "score": {
-            "total": 39.4,
+            "total": 28.0,
             "social": 0.0,
             "developer": 0.0,
-            "knowledge": 33.4,
+            "knowledge": 0.0,
+            "search": 22.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-12T10:20:00Z",
+          "estimatedScore": 28.0,
+          "scoreSharePercent": 62.9
+        },
+        {
+          "source": "wikipedia",
+          "score": {
+            "total": 14.2,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 8.2,
             "search": 0.0,
             "diversity": 6.0
           },
-          "signalCount": 2,
-          "latestSignalAt": "2026-03-10T00:00:00Z",
-          "estimatedScore": 39.4,
-          "scoreSharePercent": 104.6
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T00:00:00Z",
+          "estimatedScore": 14.2,
+          "scoreSharePercent": 32.0
         }
       ],
-      "geoSummary": [],
+      "geoSummary": [
+        {
+          "label": "IN",
+          "region": null,
+          "countryCode": "IN",
+          "signalCount": 1,
+          "explicitCount": 1,
+          "inferredCount": 0,
+          "averageConfidence": 0.95
+        }
+      ],
       "audienceSummary": [
+        {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
         {
           "label": "research",
           "segmentType": "audience",
-          "signalCount": 2
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "global",
+          "segmentType": "market",
+          "signalCount": 1
         }
       ],
       "evidenceItems": [
         {
-          "source": "wikipedia",
-          "timestamp": "2026-03-10T00:00:00Z",
-          "value": 89027.0,
-          "evidence": "World Baseball Classic",
-          "signalType": "knowledge",
-          "evidenceUrl": "https://en.wikipedia.org/wiki/World_Baseball_Classic",
+          "source": "google_trends",
+          "timestamp": "2026-03-12T10:20:00Z",
+          "value": 500.0,
+          "evidence": "dubai iran war news",
+          "signalType": "search",
+          "evidenceUrl": "https://trends.google.com/trending/rss?geo=IN",
           "languageCode": null,
           "audienceFlags": [
-            "research"
+            "consumer"
           ],
-          "marketFlags": [],
+          "marketFlags": [
+            "b2c",
+            "global"
+          ],
           "geoFlags": [],
-          "geoCountryCode": null,
+          "geoCountryCode": "IN",
           "geoRegion": null,
-          "geoDetectionMode": "unknown",
-          "geoConfidence": 0.0
+          "geoDetectionMode": "explicit",
+          "geoConfidence": 0.95
         },
         {
           "source": "wikipedia",
-          "timestamp": "2026-03-10T00:00:00Z",
-          "value": 96633.0,
-          "evidence": "2026 World Baseball Classic",
+          "timestamp": "2026-03-11T00:00:00Z",
+          "value": 313905.0,
+          "evidence": "2026 Iran war",
           "signalType": "knowledge",
-          "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic",
+          "evidenceUrl": "https://en.wikipedia.org/wiki/2026_Iran_war",
           "languageCode": null,
           "audienceFlags": [
             "research"
@@ -777,63 +741,84 @@
         }
       ],
       "primaryEvidence": {
-        "source": "wikipedia",
-        "timestamp": "2026-03-10T00:00:00Z",
-        "value": 96633.0,
-        "evidence": "2026 World Baseball Classic",
-        "signalType": "knowledge",
-        "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic"
+        "source": "google_trends",
+        "timestamp": "2026-03-12T10:20:00Z",
+        "value": 500.0,
+        "evidence": "dubai iran war news",
+        "signalType": "search",
+        "evidenceUrl": "https://trends.google.com/trending/rss?geo=IN"
       },
       "relatedTrends": [
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "status": "steady",
+          "rank": 4,
+          "scoreTotal": 39.0
+        },
+        {
+          "id": "baseball-classic",
+          "name": "Baseball Classic",
+          "status": "steady",
+          "rank": 5,
+          "scoreTotal": 38.0
+        },
         {
           "id": "robotics",
           "name": "Robotics",
           "status": "steady",
           "rank": 2,
           "scoreTotal": 48.0
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "status": "steady",
+          "rank": 6,
+          "scoreTotal": 27.4
         }
       ]
     },
     {
       "id": "macbook-neo",
-      "name": "Macbook NEO",
+      "name": "MacBook Neo",
       "category": "general-tech",
-      "status": "breakout",
-      "volatility": "spiking",
+      "status": "steady",
+      "volatility": "stable",
       "rank": 4,
       "score": {
-        "total": 36.2,
-        "social": 9.4,
+        "total": 39.0,
+        "social": 10.6,
         "developer": 0.0,
         "knowledge": 0.0,
-        "search": 12.5,
+        "search": 14.1,
         "diversity": 12.0
       },
       "momentum": {
-        "previousRank": 37,
-        "rankChange": 33,
-        "absoluteDelta": 19.8,
-        "percentDelta": 120.9
+        "previousRank": 4,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "forecast": {
-        "confidence": "medium",
-        "mape": 18.4,
+        "confidence": "high",
+        "mape": 9.3,
         "method": "holt",
         "predictedScores": [
-          26.74,
-          29.16,
-          31.59,
-          34.02,
-          36.44
+          45.62,
+          48.87,
+          52.12,
+          55.36,
+          58.61
         ]
       },
       "opportunity": {
-        "composite": 0.527,
-        "content": 0.205,
-        "product": 0.481,
-        "investment": 0.85,
+        "composite": 0.301,
+        "content": 0.33,
+        "product": 0.31,
+        "investment": 0.256,
         "reasoning": [
-          "Investment signal (2 sources, breakout)"
+          "Limited actionability signals"
         ]
       },
       "coverage": {
@@ -847,71 +832,69 @@
       "history": [
         {
           "rank": 35,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 16.1
+          "capturedAt": "2026-03-12T04:50:28.920688Z",
+          "scoreTotal": 16.8
         },
         {
-          "rank": 36,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 16.1
-        },
-        {
-          "rank": 37,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 16.1
+          "rank": 30,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 16.8
         },
         {
           "rank": 34,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 16.1
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 16.9
         },
         {
-          "rank": 32,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 16.3
+          "rank": 3,
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 38.9
         },
         {
-          "rank": 34,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 16.3
-        },
-        {
-          "rank": 37,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 16.4
+          "rank": 3,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 39.0
         },
         {
           "rank": 4,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 36.2
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 39.0
+        },
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 39.0
+        },
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 39.0
         }
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
-      "previousRank": 37,
-      "rankChange": 33,
+      "previousRank": 4,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T23:40:00Z",
+      "latestSignalAt": "2026-03-12T08:30:00Z",
       "breakoutPrediction": {
-        "confidence": 0.733,
+        "confidence": 0.491,
         "signals": [
-          "Score accelerating (+19.7/run)",
-          "Climbing ranks (+9.3/run)",
           "Recently emerged (<24h)",
-          "High base score (36.2)",
+          "High base score (39.0)",
           "Evergreen topic with consistent presence"
         ],
-        "predictedDirection": "breakout"
+        "predictedDirection": "rising"
       },
       "sourceBreakdown": [
         {
           "source": "google_trends",
           "signalCount": 1,
-          "latestSignalAt": "2026-03-11T23:40:00Z"
+          "latestSignalAt": "2026-03-12T08:30:00Z"
         },
         {
           "source": "hacker_news",
@@ -923,23 +906,23 @@
         {
           "source": "google_trends",
           "score": {
-            "total": 18.5,
+            "total": 20.1,
             "social": 0.0,
             "developer": 0.0,
             "knowledge": 0.0,
-            "search": 12.5,
+            "search": 14.1,
             "diversity": 6.0
           },
           "signalCount": 1,
-          "latestSignalAt": "2026-03-11T23:40:00Z",
-          "estimatedScore": 18.5,
-          "scoreSharePercent": 51.2
+          "latestSignalAt": "2026-03-12T08:30:00Z",
+          "estimatedScore": 20.1,
+          "scoreSharePercent": 51.7
         },
         {
           "source": "hacker_news",
           "score": {
-            "total": 15.4,
-            "social": 9.4,
+            "total": 16.6,
+            "social": 10.6,
             "developer": 0.0,
             "knowledge": 0.0,
             "search": 0.0,
@@ -947,15 +930,15 @@
           },
           "signalCount": 1,
           "latestSignalAt": "2026-03-11T11:37:24Z",
-          "estimatedScore": 15.4,
+          "estimatedScore": 16.6,
           "scoreSharePercent": 42.6
         }
       ],
       "geoSummary": [
         {
-          "label": "DE",
+          "label": "GB",
           "region": null,
-          "countryCode": "DE",
+          "countryCode": "GB",
           "signalCount": 1,
           "explicitCount": 1,
           "inferredCount": 0,
@@ -997,11 +980,11 @@
       "evidenceItems": [
         {
           "source": "google_trends",
-          "timestamp": "2026-03-11T23:40:00Z",
-          "value": 200.0,
-          "evidence": "neues macbook neo",
+          "timestamp": "2026-03-12T08:30:00Z",
+          "value": 1000.0,
+          "evidence": "apple macbook neo review",
           "signalType": "search",
-          "evidenceUrl": "https://trends.google.com/trending/rss?geo=DE",
+          "evidenceUrl": "https://trends.google.com/trending/rss?geo=GB",
           "languageCode": null,
           "audienceFlags": [
             "consumer"
@@ -1011,7 +994,7 @@
             "europe-market"
           ],
           "geoFlags": [],
-          "geoCountryCode": "DE",
+          "geoCountryCode": "GB",
           "geoRegion": null,
           "geoDetectionMode": "explicit",
           "geoConfidence": 0.95
@@ -1019,7 +1002,7 @@
         {
           "source": "hacker_news",
           "timestamp": "2026-03-11T11:37:24Z",
-          "value": 947.0,
+          "value": 1417.0,
           "evidence": "The MacBook Neo",
           "signalType": "social",
           "evidenceUrl": "https://daringfireball.net/2026/03/the_macbook_neo",
@@ -1039,39 +1022,258 @@
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-11T11:37:24Z",
-        "value": 947.0,
+        "value": 1417.0,
         "evidence": "The MacBook Neo",
         "signalType": "social",
         "evidenceUrl": "https://daringfireball.net/2026/03/the_macbook_neo"
       },
       "relatedTrends": [
         {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
+          "id": "iran-war",
+          "name": "Iran war",
+          "status": "steady",
+          "rank": 3,
+          "scoreTotal": 44.5
         },
         {
-          "id": "decryption-failure",
-          "name": "Decryption Failure",
-          "status": "rising",
-          "rank": 6,
-          "scoreTotal": 25.3
+          "id": "ai-bot",
+          "name": "AI bot",
+          "status": "steady",
+          "rank": 7,
+          "scoreTotal": 26.0
+        },
+        {
+          "id": "inference-framework",
+          "name": "Inference framework",
+          "status": "steady",
+          "rank": 8,
+          "scoreTotal": 25.5
         },
         {
           "id": "enabling-scientific",
           "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
+          "status": "steady",
+          "rank": 9,
+          "scoreTotal": 25.5
+        }
+      ]
+    },
+    {
+      "id": "baseball-classic",
+      "name": "Baseball Classic",
+      "category": "science-research",
+      "status": "steady",
+      "volatility": "stable",
+      "rank": 5,
+      "score": {
+        "total": 38.0,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 33.8,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 5,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "forecast": {
+        "confidence": "high",
+        "mape": 0.0,
+        "method": "holt",
+        "predictedScores": [
+          38.0,
+          38.0,
+          38.0,
+          38.0,
+          38.0
+        ]
+      },
+      "opportunity": {
+        "composite": 0.186,
+        "content": 0.092,
+        "product": 0.236,
+        "investment": 0.233,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 4
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "history": [
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-12T05:54:32.454878Z",
+          "scoreTotal": 38.0
         },
         {
-          "id": "attack-stryker",
-          "name": "Attack Stryker",
-          "status": "cooling",
-          "rank": 8,
-          "scoreTotal": 23.5
+          "rank": 3,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 3,
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 38.0
+        }
+      ],
+      "seasonality": {
+        "tag": "evergreen",
+        "confidence": 1.0,
+        "recurrenceCount": 0,
+        "avgGapRuns": 0.0
+      },
+      "previousRank": 5,
+      "rankChange": 0,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T00:00:00Z",
+      "breakoutPrediction": {
+        "confidence": 0.457,
+        "signals": [
+          "Recently emerged (<24h)",
+          "High base score (38.0)",
+          "Evergreen topic with consistent presence"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "wikipedia",
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-11T00:00:00Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "wikipedia",
+          "score": {
+            "total": 39.8,
+            "social": 0.0,
+            "developer": 0.0,
+            "knowledge": 33.8,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 2,
+          "latestSignalAt": "2026-03-11T00:00:00Z",
+          "estimatedScore": 39.8,
+          "scoreSharePercent": 104.6
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 2
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "wikipedia",
+          "timestamp": "2026-03-11T00:00:00Z",
+          "value": 81489.0,
+          "evidence": "World Baseball Classic",
+          "signalType": "knowledge",
+          "evidenceUrl": "https://en.wikipedia.org/wiki/World_Baseball_Classic",
+          "languageCode": null,
+          "audienceFlags": [
+            "research"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        },
+        {
+          "source": "wikipedia",
+          "timestamp": "2026-03-11T00:00:00Z",
+          "value": 129143.0,
+          "evidence": "2026 World Baseball Classic",
+          "signalType": "knowledge",
+          "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic",
+          "languageCode": null,
+          "audienceFlags": [
+            "research"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "wikipedia",
+        "timestamp": "2026-03-11T00:00:00Z",
+        "value": 129143.0,
+        "evidence": "2026 World Baseball Classic",
+        "signalType": "knowledge",
+        "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic"
+      },
+      "relatedTrends": [
+        {
+          "id": "iran-war",
+          "name": "Iran war",
+          "status": "steady",
+          "rank": 3,
+          "scoreTotal": 44.5
+        },
+        {
+          "id": "robotics",
+          "name": "Robotics",
+          "status": "steady",
+          "rank": 2,
+          "scoreTotal": 48.0
+        },
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "status": "steady",
+          "rank": 4,
+          "scoreTotal": 39.0
+        },
+        {
+          "id": "reduces-training",
+          "name": "Reduces Training",
+          "status": "steady",
+          "rank": 6,
+          "scoreTotal": 27.4
         }
       ]
     },
@@ -1079,9 +1281,9 @@
       "id": "reduces-training",
       "name": "Reduces Training",
       "category": "general-tech",
-      "status": "cooling",
+      "status": "steady",
       "volatility": "stable",
-      "rank": 5,
+      "rank": 6,
       "score": {
         "total": 27.4,
         "social": 19.9,
@@ -1091,8 +1293,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 4,
-        "rankChange": -1,
+        "previousRank": 6,
+        "rankChange": 0,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -1109,10 +1311,10 @@
         ]
       },
       "opportunity": {
-        "composite": 0.292,
-        "content": 0.401,
-        "product": 0.417,
-        "investment": 0.075,
+        "composite": 0.25,
+        "content": 0.385,
+        "product": 0.198,
+        "investment": 0.16,
         "reasoning": [
           "Limited actionability signals"
         ]
@@ -1126,43 +1328,43 @@
       ],
       "history": [
         {
-          "rank": 5,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 27.4
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 27.4
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 27.4
-        },
-        {
-          "rank": 8,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 27.4
-        },
-        {
-          "rank": 5,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 27.4
-        },
-        {
-          "rank": 5,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
+          "rank": 6,
+          "capturedAt": "2026-03-12T05:54:32.454878Z",
           "scoreTotal": 27.4
         },
         {
           "rank": 4,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 27.4
+        },
+        {
+          "rank": 4,
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
           "scoreTotal": 27.4
         },
         {
           "rank": 5,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 27.4
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 27.4
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 27.4
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 27.4
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
           "scoreTotal": 27.4
         }
       ],
@@ -1172,17 +1374,17 @@
         "recurrenceCount": 0,
         "avgGapRuns": 0.0
       },
-      "previousRank": 4,
-      "rankChange": -1,
+      "previousRank": 6,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
       "latestSignalAt": "2026-03-09T16:00:00Z",
       "breakoutPrediction": {
-        "confidence": 0.465,
+        "confidence": 0.438,
         "signals": [
           "Recently emerged (<24h)",
           "Evergreen topic with consistent presence"
         ],
-        "predictedDirection": "rising"
+        "predictedDirection": "stable"
       },
       "sourceBreakdown": [
         {
@@ -1264,13 +1466,6 @@
       },
       "relatedTrends": [
         {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
-        },
-        {
           "id": "robotics",
           "name": "Robotics",
           "status": "steady",
@@ -1278,647 +1473,66 @@
           "scoreTotal": 48.0
         },
         {
-          "id": "enabling-scientific",
-          "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
-        },
-        {
-          "id": "attack-stryker",
-          "name": "Attack Stryker",
-          "status": "cooling",
-          "rank": 8,
-          "scoreTotal": 23.5
-        }
-      ]
-    },
-    {
-      "id": "decryption-failure",
-      "name": "Decryption Failure",
-      "category": "general-tech",
-      "status": "rising",
-      "volatility": "stable",
-      "rank": 6,
-      "score": {
-        "total": 25.3,
-        "social": 17.8,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 5,
-        "rankChange": -1,
-        "absoluteDelta": 0.1,
-        "percentDelta": 0.4
-      },
-      "forecast": {
-        "confidence": "high",
-        "mape": 0.4,
-        "method": "holt",
-        "predictedScores": [
-          25.37,
-          25.47,
-          25.56,
-          25.66,
-          25.76
-        ]
-      },
-      "opportunity": {
-        "composite": 0.334,
-        "content": 0.389,
-        "product": 0.392,
-        "investment": 0.228,
-        "reasoning": [
-          "Limited actionability signals"
-        ]
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "hacker_news"
-      ],
-      "history": [
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 24.7
-        },
-        {
-          "rank": 9,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 24.8
-        },
-        {
-          "rank": 10,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 24.8
-        },
-        {
-          "rank": 11,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 24.8
-        },
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 25.0
-        },
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 25.1
-        },
-        {
-          "rank": 5,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 25.2
-        },
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 25.3
-        }
-      ],
-      "seasonality": {
-        "tag": "evergreen",
-        "confidence": 0.9,
-        "recurrenceCount": 0,
-        "avgGapRuns": 0.0
-      },
-      "previousRank": 5,
-      "rankChange": -1,
-      "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T12:57:41Z",
-      "breakoutPrediction": {
-        "confidence": 0.461,
-        "signals": [
-          "Recently emerged (<24h)",
-          "Evergreen topic with consistent presence"
-        ],
-        "predictedDirection": "rising"
-      },
-      "sourceBreakdown": [
-        {
-          "source": "hacker_news",
-          "signalCount": 1,
-          "latestSignalAt": "2026-03-11T12:57:41Z"
-        }
-      ],
-      "sourceContributions": [
-        {
-          "source": "hacker_news",
-          "score": {
-            "total": 23.8,
-            "social": 17.8,
-            "developer": 0.0,
-            "knowledge": 0.0,
-            "search": 0.0,
-            "diversity": 6.0
-          },
-          "signalCount": 1,
-          "latestSignalAt": "2026-03-11T12:57:41Z",
-          "estimatedScore": 23.8,
-          "scoreSharePercent": 94.1
-        }
-      ],
-      "geoSummary": [],
-      "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 1
-        }
-      ],
-      "evidenceItems": [
-        {
-          "source": "hacker_news",
-          "timestamp": "2026-03-11T12:57:41Z",
-          "value": 466.0,
-          "evidence": "Swiss e-voting pilot can't count 2,048 ballots after decryption failure",
-          "signalType": "social",
-          "evidenceUrl": "https://www.theregister.com/2026/03/11/swiss_evote_usb_snafu/",
-          "languageCode": null,
-          "audienceFlags": [
-            "developer",
-            "founder"
-          ],
-          "marketFlags": [],
-          "geoFlags": [],
-          "geoCountryCode": null,
-          "geoRegion": null,
-          "geoDetectionMode": "unknown",
-          "geoConfidence": 0.0
-        }
-      ],
-      "primaryEvidence": {
-        "source": "hacker_news",
-        "timestamp": "2026-03-11T12:57:41Z",
-        "value": 466.0,
-        "evidence": "Swiss e-voting pilot can't count 2,048 ballots after decryption failure",
-        "signalType": "social",
-        "evidenceUrl": "https://www.theregister.com/2026/03/11/swiss_evote_usb_snafu/"
-      },
-      "relatedTrends": [
-        {
-          "id": "ai-bot",
-          "name": "AI BOT",
-          "status": "rising",
-          "rank": 9,
-          "scoreTotal": 23.1
-        },
-        {
           "id": "ai-agents",
-          "name": "AI Agents",
+          "name": "AI agents",
           "status": "cooling",
           "rank": 1,
-          "scoreTotal": 92.5
+          "scoreTotal": 50.0
+        },
+        {
+          "id": "iran-war",
+          "name": "Iran war",
+          "status": "steady",
+          "rank": 3,
+          "scoreTotal": 44.5
         },
         {
           "id": "macbook-neo",
-          "name": "Macbook NEO",
-          "status": "breakout",
+          "name": "MacBook Neo",
+          "status": "steady",
           "rank": 4,
-          "scoreTotal": 36.2
-        },
-        {
-          "id": "enabling-scientific",
-          "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
-        }
-      ]
-    },
-    {
-      "id": "enabling-scientific",
-      "name": "Enabling Scientific",
-      "category": "general-tech",
-      "status": "cooling",
-      "volatility": "stable",
-      "rank": 7,
-      "score": {
-        "total": 25.1,
-        "social": 17.6,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 6,
-        "rankChange": -1,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
-      },
-      "forecast": {
-        "confidence": "high",
-        "mape": 0.1,
-        "method": "holt",
-        "predictedScores": [
-          25.13,
-          25.17,
-          25.21,
-          25.24,
-          25.28
-        ]
-      },
-      "opportunity": {
-        "composite": 0.275,
-        "content": 0.388,
-        "product": 0.379,
-        "investment": 0.075,
-        "reasoning": [
-          "Limited actionability signals"
-        ]
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "hacker_news"
-      ],
-      "history": [
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 24.9
-        },
-        {
-          "rank": 8,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 24.9
-        },
-        {
-          "rank": 9,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 24.9
-        },
-        {
-          "rank": 10,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 24.9
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 25.0
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 25.0
-        },
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 25.1
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 25.1
-        }
-      ],
-      "seasonality": {
-        "tag": "evergreen",
-        "confidence": 0.9,
-        "recurrenceCount": 0,
-        "avgGapRuns": 0.0
-      },
-      "previousRank": 6,
-      "rankChange": -1,
-      "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T13:32:12Z",
-      "breakoutPrediction": {
-        "confidence": 0.461,
-        "signals": [
-          "Recently emerged (<24h)",
-          "Evergreen topic with consistent presence"
-        ],
-        "predictedDirection": "rising"
-      },
-      "sourceBreakdown": [
-        {
-          "source": "hacker_news",
-          "signalCount": 1,
-          "latestSignalAt": "2026-03-11T13:32:12Z"
-        }
-      ],
-      "sourceContributions": [
-        {
-          "source": "hacker_news",
-          "score": {
-            "total": 23.6,
-            "social": 17.6,
-            "developer": 0.0,
-            "knowledge": 0.0,
-            "search": 0.0,
-            "diversity": 6.0
-          },
-          "signalCount": 1,
-          "latestSignalAt": "2026-03-11T13:32:12Z",
-          "estimatedScore": 23.6,
-          "scoreSharePercent": 94.0
-        }
-      ],
-      "geoSummary": [],
-      "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 1
-        }
-      ],
-      "evidenceItems": [
-        {
-          "source": "hacker_news",
-          "timestamp": "2026-03-11T13:32:12Z",
-          "value": 428.0,
-          "evidence": "Entities enabling scientific fraud at scale (2025)",
-          "signalType": "social",
-          "evidenceUrl": "https://doi.org/10.1073/pnas.2420092122",
-          "languageCode": null,
-          "audienceFlags": [
-            "developer",
-            "founder"
-          ],
-          "marketFlags": [],
-          "geoFlags": [],
-          "geoCountryCode": null,
-          "geoRegion": null,
-          "geoDetectionMode": "unknown",
-          "geoConfidence": 0.0
-        }
-      ],
-      "primaryEvidence": {
-        "source": "hacker_news",
-        "timestamp": "2026-03-11T13:32:12Z",
-        "value": 428.0,
-        "evidence": "Entities enabling scientific fraud at scale (2025)",
-        "signalType": "social",
-        "evidenceUrl": "https://doi.org/10.1073/pnas.2420092122"
-      },
-      "relatedTrends": [
-        {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
-        },
-        {
-          "id": "deal-acquire",
-          "name": "Deal Acquire",
-          "status": "cooling",
-          "rank": 10,
-          "scoreTotal": 23.1
-        },
-        {
-          "id": "macbook-neo",
-          "name": "Macbook NEO",
-          "status": "breakout",
-          "rank": 4,
-          "scoreTotal": 36.2
-        },
-        {
-          "id": "decryption-failure",
-          "name": "Decryption Failure",
-          "status": "rising",
-          "rank": 6,
-          "scoreTotal": 25.3
-        }
-      ]
-    },
-    {
-      "id": "attack-stryker",
-      "name": "Attack Stryker",
-      "category": "general-tech",
-      "status": "cooling",
-      "volatility": "stable",
-      "rank": 8,
-      "score": {
-        "total": 23.5,
-        "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 16.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 7,
-        "rankChange": -1,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
-      },
-      "forecast": null,
-      "opportunity": {
-        "composite": 0.162,
-        "content": 0.037,
-        "product": 0.357,
-        "investment": 0.075,
-        "reasoning": [
-          "Limited actionability signals"
-        ]
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "google_trends"
-      ],
-      "history": [
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 23.5
-        },
-        {
-          "rank": 8,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 23.5
-        }
-      ],
-      "seasonality": null,
-      "previousRank": 7,
-      "rankChange": -1,
-      "firstSeenAt": "2026-03-11T23:36:49.437659Z",
-      "latestSignalAt": "2026-03-11T22:50:00Z",
-      "breakoutPrediction": {
-        "confidence": 0.524,
-        "signals": [
-          "Recently emerged (<24h)"
-        ],
-        "predictedDirection": "rising"
-      },
-      "sourceBreakdown": [
-        {
-          "source": "google_trends",
-          "signalCount": 1,
-          "latestSignalAt": "2026-03-11T22:50:00Z"
-        }
-      ],
-      "sourceContributions": [
-        {
-          "source": "google_trends",
-          "score": {
-            "total": 22.0,
-            "social": 0.0,
-            "developer": 0.0,
-            "knowledge": 0.0,
-            "search": 16.0,
-            "diversity": 6.0
-          },
-          "signalCount": 1,
-          "latestSignalAt": "2026-03-11T22:50:00Z",
-          "estimatedScore": 22.0,
-          "scoreSharePercent": 93.6
-        }
-      ],
-      "geoSummary": [
-        {
-          "label": "IN",
-          "region": null,
-          "countryCode": "IN",
-          "signalCount": 1,
-          "explicitCount": 1,
-          "inferredCount": 0,
-          "averageConfidence": 0.95
-        }
-      ],
-      "audienceSummary": [
-        {
-          "label": "consumer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 1
-        },
-        {
-          "label": "global",
-          "segmentType": "market",
-          "signalCount": 1
-        }
-      ],
-      "evidenceItems": [
-        {
-          "source": "google_trends",
-          "timestamp": "2026-03-11T22:50:00Z",
-          "value": 5000.0,
-          "evidence": "cyber attack stryker",
-          "signalType": "search",
-          "evidenceUrl": "https://trends.google.com/trending/rss?geo=IN",
-          "languageCode": null,
-          "audienceFlags": [
-            "consumer"
-          ],
-          "marketFlags": [
-            "b2c",
-            "global"
-          ],
-          "geoFlags": [],
-          "geoCountryCode": "IN",
-          "geoRegion": null,
-          "geoDetectionMode": "explicit",
-          "geoConfidence": 0.95
-        }
-      ],
-      "primaryEvidence": {
-        "source": "google_trends",
-        "timestamp": "2026-03-11T22:50:00Z",
-        "value": 5000.0,
-        "evidence": "cyber attack stryker",
-        "signalType": "search",
-        "evidenceUrl": "https://trends.google.com/trending/rss?geo=IN"
-      },
-      "relatedTrends": [
-        {
-          "id": "macbook-neo",
-          "name": "Macbook NEO",
-          "status": "breakout",
-          "rank": 4,
-          "scoreTotal": 36.2
-        },
-        {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
-        },
-        {
-          "id": "reduces-training",
-          "name": "Reduces Training",
-          "status": "cooling",
-          "rank": 5,
-          "scoreTotal": 27.4
-        },
-        {
-          "id": "enabling-scientific",
-          "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
+          "scoreTotal": 39.0
         }
       ]
     },
     {
       "id": "ai-bot",
-      "name": "AI BOT",
+      "name": "AI bot",
       "category": "ai-machine-learning",
-      "status": "rising",
+      "status": "steady",
       "volatility": "stable",
-      "rank": 9,
+      "rank": 7,
       "score": {
-        "total": 23.1,
-        "social": 15.6,
+        "total": 26.0,
+        "social": 18.5,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 10,
-        "rankChange": 1,
-        "absoluteDelta": 0.3,
-        "percentDelta": 1.3
+        "previousRank": 7,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "forecast": {
         "confidence": "high",
-        "mape": 1.8,
+        "mape": 2.2,
         "method": "holt",
         "predictedScores": [
-          23.5,
-          23.96,
-          24.41,
-          24.87,
-          25.32
+          26.51,
+          26.68,
+          26.85,
+          27.02,
+          27.18
         ]
       },
       "opportunity": {
-        "composite": 0.339,
-        "content": 0.375,
-        "product": 0.343,
-        "investment": 0.305,
+        "composite": 0.243,
+        "content": 0.378,
+        "product": 0.188,
+        "investment": 0.156,
         "reasoning": [
           "Limited actionability signals"
         ]
@@ -1932,63 +1546,63 @@
       ],
       "history": [
         {
-          "rank": 11,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 20.4
-        },
-        {
-          "rank": 13,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 20.5
-        },
-        {
-          "rank": 15,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 20.9
-        },
-        {
-          "rank": 16,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 21.1
-        },
-        {
-          "rank": 11,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 21.8
-        },
-        {
-          "rank": 12,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 22.3
-        },
-        {
-          "rank": 10,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 22.9
-        },
-        {
           "rank": 9,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 23.1
+          "capturedAt": "2026-03-12T04:50:28.920688Z",
+          "scoreTotal": 25.0
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 25.4
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 25.6
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 25.7
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 25.9
+        },
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 26.0
+        },
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 26.0
+        },
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 26.0
         }
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
-      "previousRank": 10,
-      "rankChange": 1,
+      "previousRank": 7,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
       "latestSignalAt": "2026-03-11T18:17:30Z",
       "breakoutPrediction": {
-        "confidence": 0.465,
+        "confidence": 0.436,
         "signals": [
           "Recently emerged (<24h)",
           "Evergreen topic with consistent presence"
         ],
-        "predictedDirection": "rising"
+        "predictedDirection": "stable"
       },
       "sourceBreakdown": [
         {
@@ -2001,8 +1615,8 @@
         {
           "source": "hacker_news",
           "score": {
-            "total": 21.6,
-            "social": 15.6,
+            "total": 24.5,
+            "social": 18.5,
             "developer": 0.0,
             "knowledge": 0.0,
             "search": 0.0,
@@ -2010,8 +1624,8 @@
           },
           "signalCount": 1,
           "latestSignalAt": "2026-03-11T18:17:30Z",
-          "estimatedScore": 21.6,
-          "scoreSharePercent": 93.5
+          "estimatedScore": 24.5,
+          "scoreSharePercent": 94.2
         }
       ],
       "geoSummary": [],
@@ -2036,7 +1650,7 @@
         {
           "source": "hacker_news",
           "timestamp": "2026-03-11T18:17:30Z",
-          "value": 201.0,
+          "value": 604.0,
           "evidence": "I was interviewed by an AI bot for a job",
           "signalType": "social",
           "evidenceUrl": "https://www.theverge.com/featured-video/892850/i-was-interviewed-by-an-ai-bot-for-a-job",
@@ -2056,80 +1670,80 @@
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-11T18:17:30Z",
-        "value": 201.0,
+        "value": 604.0,
         "evidence": "I was interviewed by an AI bot for a job",
         "signalType": "social",
         "evidenceUrl": "https://www.theverge.com/featured-video/892850/i-was-interviewed-by-an-ai-bot-for-a-job"
       },
       "relatedTrends": [
         {
-          "id": "decryption-failure",
-          "name": "Decryption Failure",
-          "status": "rising",
-          "rank": 6,
-          "scoreTotal": 25.3
-        },
-        {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
-        },
-        {
           "id": "macbook-neo",
-          "name": "Macbook NEO",
-          "status": "breakout",
+          "name": "MacBook Neo",
+          "status": "steady",
           "rank": 4,
-          "scoreTotal": 36.2
+          "scoreTotal": 39.0
+        },
+        {
+          "id": "inference-framework",
+          "name": "Inference framework",
+          "status": "steady",
+          "rank": 8,
+          "scoreTotal": 25.5
         },
         {
           "id": "enabling-scientific",
           "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
+          "status": "steady",
+          "rank": 9,
+          "scoreTotal": 25.5
+        },
+        {
+          "id": "bench-passing",
+          "name": "bench Passing",
+          "status": "steady",
+          "rank": 10,
+          "scoreTotal": 24.6
         }
       ]
     },
     {
-      "id": "deal-acquire",
-      "name": "Deal Acquire",
-      "category": "general-tech",
-      "status": "cooling",
+      "id": "inference-framework",
+      "name": "Inference framework",
+      "category": "ai-machine-learning",
+      "status": "steady",
       "volatility": "stable",
-      "rank": 10,
+      "rank": 8,
       "score": {
-        "total": 23.1,
-        "social": 17.1,
+        "total": 25.5,
+        "social": 18.0,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 9,
-        "rankChange": -1,
+        "previousRank": 8,
+        "rankChange": 0,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
       "forecast": {
         "confidence": "high",
-        "mape": 0.4,
-        "method": "holt",
+        "mape": 0.1,
+        "method": "ses",
         "predictedScores": [
-          23.24,
-          23.38,
-          23.52,
-          23.66,
-          23.79
+          25.53,
+          25.53,
+          25.53,
+          25.53,
+          25.53
         ]
       },
       "opportunity": {
-        "composite": 0.264,
-        "content": 0.407,
-        "product": 0.33,
-        "investment": 0.075,
+        "composite": 0.24,
+        "content": 0.376,
+        "product": 0.182,
+        "investment": 0.154,
         "reasoning": [
           "Limited actionability signals"
         ]
@@ -2143,58 +1757,243 @@
       ],
       "history": [
         {
-          "rank": 9,
-          "capturedAt": "2026-03-11T21:24:39.032260Z",
-          "scoreTotal": 22.2
-        },
-        {
-          "rank": 10,
-          "capturedAt": "2026-03-11T21:32:09.689508Z",
-          "scoreTotal": 22.3
-        },
-        {
-          "rank": 12,
-          "capturedAt": "2026-03-11T21:42:18.903458Z",
-          "scoreTotal": 22.4
-        },
-        {
-          "rank": 13,
-          "capturedAt": "2026-03-11T21:49:35.814749Z",
-          "scoreTotal": 22.5
+          "rank": 7,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 25.5
         },
         {
           "rank": 8,
-          "capturedAt": "2026-03-11T22:30:58.813699Z",
-          "scoreTotal": 22.8
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 25.5
         },
         {
+          "rank": 8,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 25.5
+        },
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 25.5
+        }
+      ],
+      "seasonality": null,
+      "previousRank": 8,
+      "rankChange": 0,
+      "firstSeenAt": "2026-03-12T09:50:27.541262Z",
+      "latestSignalAt": "2026-03-11T12:27:15Z",
+      "breakoutPrediction": {
+        "confidence": 0.542,
+        "signals": [
+          "Recently emerged (<24h)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "hacker_news",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T12:27:15Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "hacker_news",
+          "score": {
+            "total": 24.0,
+            "social": 18.0,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T12:27:15Z",
+          "estimatedScore": 24.0,
+          "scoreSharePercent": 94.1
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "hacker_news",
+          "timestamp": "2026-03-11T12:27:15Z",
+          "value": 507.0,
+          "evidence": "BitNet: Inference framework for 1-bit LLMs",
+          "signalType": "social",
+          "evidenceUrl": "https://github.com/microsoft/BitNet",
+          "languageCode": "en",
+          "audienceFlags": [
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T12:27:15Z",
+        "value": 507.0,
+        "evidence": "BitNet: Inference framework for 1-bit LLMs",
+        "signalType": "social",
+        "evidenceUrl": "https://github.com/microsoft/BitNet"
+      },
+      "relatedTrends": [
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "status": "steady",
+          "rank": 4,
+          "scoreTotal": 39.0
+        },
+        {
+          "id": "ai-bot",
+          "name": "AI bot",
+          "status": "steady",
+          "rank": 7,
+          "scoreTotal": 26.0
+        },
+        {
+          "id": "enabling-scientific",
+          "name": "Enabling Scientific",
+          "status": "steady",
           "rank": 9,
-          "capturedAt": "2026-03-11T22:59:22.876485Z",
-          "scoreTotal": 22.9
+          "scoreTotal": 25.5
         },
         {
-          "rank": 9,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 23.0
-        },
-        {
+          "id": "bench-passing",
+          "name": "bench Passing",
+          "status": "steady",
           "rank": 10,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 23.1
+          "scoreTotal": 24.6
+        }
+      ]
+    },
+    {
+      "id": "enabling-scientific",
+      "name": "Enabling Scientific",
+      "category": "general-tech",
+      "status": "steady",
+      "volatility": "stable",
+      "rank": 9,
+      "score": {
+        "total": 25.5,
+        "social": 18.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 9,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "forecast": {
+        "confidence": "high",
+        "mape": 0.5,
+        "method": "holt",
+        "predictedScores": [
+          25.56,
+          25.59,
+          25.62,
+          25.65,
+          25.68
+        ]
+      },
+      "opportunity": {
+        "composite": 0.238,
+        "content": 0.376,
+        "product": 0.177,
+        "investment": 0.154,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news"
+      ],
+      "history": [
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-12T04:50:28.920688Z",
+          "scoreTotal": 25.3
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 25.4
+        },
+        {
+          "rank": 6,
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 25.4
+        },
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 25.4
+        },
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 25.4
+        },
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 25.5
+        },
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 25.5
+        },
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 25.5
         }
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
       "previousRank": 9,
-      "rankChange": -1,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T14:58:20Z",
+      "latestSignalAt": "2026-03-11T13:32:12Z",
       "breakoutPrediction": {
-        "confidence": 0.444,
+        "confidence": 0.435,
         "signals": [
           "Recently emerged (<24h)",
           "Evergreen topic with consistent presence"
@@ -2205,24 +2004,24 @@
         {
           "source": "hacker_news",
           "signalCount": 1,
-          "latestSignalAt": "2026-03-11T14:58:20Z"
+          "latestSignalAt": "2026-03-11T13:32:12Z"
         }
       ],
       "sourceContributions": [
         {
           "source": "hacker_news",
           "score": {
-            "total": 23.1,
-            "social": 17.1,
+            "total": 24.0,
+            "social": 18.0,
             "developer": 0.0,
             "knowledge": 0.0,
             "search": 0.0,
             "diversity": 6.0
           },
           "signalCount": 1,
-          "latestSignalAt": "2026-03-11T14:58:20Z",
-          "estimatedScore": 23.1,
-          "scoreSharePercent": 100.0
+          "latestSignalAt": "2026-03-11T13:32:12Z",
+          "estimatedScore": 24.0,
+          "scoreSharePercent": 94.1
         }
       ],
       "geoSummary": [],
@@ -2241,11 +2040,11 @@
       "evidenceItems": [
         {
           "source": "hacker_news",
-          "timestamp": "2026-03-11T14:58:20Z",
-          "value": 350.0,
-          "evidence": "Google closes deal to acquire Wiz",
+          "timestamp": "2026-03-11T13:32:12Z",
+          "value": 491.0,
+          "evidence": "Entities enabling scientific fraud at scale (2025)",
           "signalType": "social",
-          "evidenceUrl": "https://www.wiz.io/blog/google-closes-deal-to-acquire-wiz",
+          "evidenceUrl": "https://doi.org/10.1073/pnas.2420092122",
           "languageCode": null,
           "audienceFlags": [
             "developer",
@@ -2261,40 +2060,247 @@
       ],
       "primaryEvidence": {
         "source": "hacker_news",
-        "timestamp": "2026-03-11T14:58:20Z",
-        "value": 350.0,
-        "evidence": "Google closes deal to acquire Wiz",
+        "timestamp": "2026-03-11T13:32:12Z",
+        "value": 491.0,
+        "evidence": "Entities enabling scientific fraud at scale (2025)",
         "signalType": "social",
-        "evidenceUrl": "https://www.wiz.io/blog/google-closes-deal-to-acquire-wiz"
+        "evidenceUrl": "https://doi.org/10.1073/pnas.2420092122"
       },
       "relatedTrends": [
         {
-          "id": "ai-agents",
-          "name": "AI Agents",
-          "status": "cooling",
-          "rank": 1,
-          "scoreTotal": 92.5
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "status": "steady",
+          "rank": 4,
+          "scoreTotal": 39.0
+        },
+        {
+          "id": "ai-bot",
+          "name": "AI bot",
+          "status": "steady",
+          "rank": 7,
+          "scoreTotal": 26.0
+        },
+        {
+          "id": "inference-framework",
+          "name": "Inference framework",
+          "status": "steady",
+          "rank": 8,
+          "scoreTotal": 25.5
+        },
+        {
+          "id": "bench-passing",
+          "name": "bench Passing",
+          "status": "steady",
+          "rank": 10,
+          "scoreTotal": 24.6
+        }
+      ]
+    },
+    {
+      "id": "bench-passing",
+      "name": "bench Passing",
+      "category": "general-tech",
+      "status": "steady",
+      "volatility": "stable",
+      "rank": 10,
+      "score": {
+        "total": 24.6,
+        "social": 17.1,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 10,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "forecast": {
+        "confidence": "high",
+        "mape": 2.7,
+        "method": "holt",
+        "predictedScores": [
+          25.22,
+          25.4,
+          25.58,
+          25.75,
+          25.93
+        ]
+      },
+      "opportunity": {
+        "composite": 0.233,
+        "content": 0.371,
+        "product": 0.169,
+        "investment": 0.152,
+        "reasoning": [
+          "Limited actionability signals"
+        ]
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news"
+      ],
+      "history": [
+        {
+          "rank": 11,
+          "capturedAt": "2026-03-12T04:50:28.920688Z",
+          "scoreTotal": 23.6
+        },
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T07:01:20.943233Z",
+          "scoreTotal": 24.1
+        },
+        {
+          "rank": 7,
+          "capturedAt": "2026-03-12T07:56:49.560771Z",
+          "scoreTotal": 24.3
+        },
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-12T08:54:40.362824Z",
+          "scoreTotal": 24.4
+        },
+        {
+          "rank": 10,
+          "capturedAt": "2026-03-12T09:50:27.541262Z",
+          "scoreTotal": 24.5
+        },
+        {
+          "rank": 10,
+          "capturedAt": "2026-03-12T10:43:12.629917Z",
+          "scoreTotal": 24.6
+        },
+        {
+          "rank": 10,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 24.6
+        },
+        {
+          "rank": 10,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 24.6
+        }
+      ],
+      "seasonality": null,
+      "previousRank": 10,
+      "rankChange": 0,
+      "firstSeenAt": "2026-03-11T21:42:18.903458Z",
+      "latestSignalAt": "2026-03-11T20:56:52Z",
+      "breakoutPrediction": {
+        "confidence": 0.517,
+        "signals": [
+          "Recently emerged (<24h)"
+        ],
+        "predictedDirection": "rising"
+      },
+      "sourceBreakdown": [
+        {
+          "source": "hacker_news",
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T20:56:52Z"
+        }
+      ],
+      "sourceContributions": [
+        {
+          "source": "hacker_news",
+          "score": {
+            "total": 23.1,
+            "social": 17.1,
+            "developer": 0.0,
+            "knowledge": 0.0,
+            "search": 0.0,
+            "diversity": 6.0
+          },
+          "signalCount": 1,
+          "latestSignalAt": "2026-03-11T20:56:52Z",
+          "estimatedScore": 23.1,
+          "scoreSharePercent": 93.9
+        }
+      ],
+      "geoSummary": [],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "evidenceItems": [
+        {
+          "source": "hacker_news",
+          "timestamp": "2026-03-11T20:56:52Z",
+          "value": 359.0,
+          "evidence": "Many SWE-bench-Passing PRs would not be merged",
+          "signalType": "social",
+          "evidenceUrl": "https://metr.org/notes/2026-03-10-many-swe-bench-passing-prs-would-not-be-merged-into-main/",
+          "languageCode": null,
+          "audienceFlags": [
+            "developer",
+            "founder"
+          ],
+          "marketFlags": [
+            "us-market"
+          ],
+          "geoFlags": [],
+          "geoCountryCode": null,
+          "geoRegion": null,
+          "geoDetectionMode": "unknown",
+          "geoConfidence": 0.0
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T20:56:52Z",
+        "value": 359.0,
+        "evidence": "Many SWE-bench-Passing PRs would not be merged",
+        "signalType": "social",
+        "evidenceUrl": "https://metr.org/notes/2026-03-10-many-swe-bench-passing-prs-would-not-be-merged-into-main/"
+      },
+      "relatedTrends": [
+        {
+          "id": "macbook-neo",
+          "name": "MacBook Neo",
+          "status": "steady",
+          "rank": 4,
+          "scoreTotal": 39.0
+        },
+        {
+          "id": "ai-bot",
+          "name": "AI bot",
+          "status": "steady",
+          "rank": 7,
+          "scoreTotal": 26.0
+        },
+        {
+          "id": "inference-framework",
+          "name": "Inference framework",
+          "status": "steady",
+          "rank": 8,
+          "scoreTotal": 25.5
         },
         {
           "id": "enabling-scientific",
           "name": "Enabling Scientific",
-          "status": "cooling",
-          "rank": 7,
-          "scoreTotal": 25.1
-        },
-        {
-          "id": "macbook-neo",
-          "name": "Macbook NEO",
-          "status": "breakout",
-          "rank": 4,
-          "scoreTotal": 36.2
-        },
-        {
-          "id": "decryption-failure",
-          "name": "Decryption Failure",
-          "status": "rising",
-          "rank": 6,
-          "scoreTotal": 25.3
+          "status": "steady",
+          "rank": 9,
+          "scoreTotal": 25.5
         }
       ]
     }

@@ -1,33 +1,32 @@
 {
-  "generatedAt": "2026-03-11T23:59:31.251699Z",
+  "generatedAt": "2026-03-12T10:46:10.052957Z",
   "trends": [
     {
       "id": "ai-agents",
-      "name": "AI Agents",
+      "name": "AI agents",
       "category": "ai-machine-learning",
       "status": "cooling",
       "volatility": "volatile",
       "rank": 1,
       "score": {
-        "total": 92.5,
-        "social": 71.5,
+        "total": 50.0,
+        "social": 35.7,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
-        "diversity": 18.0
+        "diversity": 12.0
       },
       "momentum": {
         "previousRank": 1,
         "rankChange": 0,
-        "absoluteDelta": -23.3,
-        "percentDelta": -20.1
+        "absoluteDelta": -16.7,
+        "percentDelta": -25.0
       },
       "coverage": {
-        "sourceCount": 3,
-        "signalCount": 6
+        "sourceCount": 2,
+        "signalCount": 3
       },
       "sources": [
-        "hacker_news",
         "reddit",
         "twitter"
       ],
@@ -40,22 +39,12 @@
       "previousRank": 1,
       "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
-      "latestSignalAt": "2026-03-11T16:24:17Z",
+      "latestSignalAt": "2026-03-09T12:00:00Z",
       "evidencePreview": [
         "AI agents are replacing repetitive office workflows",
-        "Show HN: Open-source browser for AI agents"
+        "AI agents are transforming enterprise automation workflows at scale"
       ],
       "audienceSummary": [
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 3
-        },
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 2
-        },
         {
           "label": "consumer",
           "segmentType": "audience",
@@ -67,8 +56,8 @@
           "signalCount": 1
         },
         {
-          "label": "EN",
-          "segmentType": "language",
+          "label": "founder",
+          "segmentType": "audience",
           "signalCount": 1
         },
         {
@@ -80,31 +69,26 @@
           "label": "b2c",
           "segmentType": "market",
           "signalCount": 1
-        },
-        {
-          "label": "europe-market",
-          "segmentType": "market",
-          "signalCount": 1
         }
       ],
       "primaryEvidence": {
-        "source": "hacker_news",
-        "timestamp": "2026-03-11T14:39:30Z",
-        "value": 128.0,
-        "evidence": "Show HN: Open-source browser for AI agents",
+        "source": "reddit",
+        "timestamp": "2024-02-29T09:46:40Z",
+        "value": 4880.0,
+        "evidence": "AI agents are replacing repetitive office workflows",
         "signalType": "social",
-        "evidenceUrl": "https://github.com/theredsix/agent-browser-protocol"
+        "evidenceUrl": "https://www.reddit.com/r/technology/comments/r1"
       },
       "recentHistory": [
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 92.5
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 50.0
         },
         {
           "rank": 1,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 115.9
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 66.7
         }
       ],
       "forecastDirection": null
@@ -185,31 +169,31 @@
       "recentHistory": [
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
           "scoreTotal": 48.0
         },
         {
           "rank": 2,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
           "scoreTotal": 48.0
         }
       ],
       "forecastDirection": "steady"
     },
     {
-      "id": "baseball-classic",
-      "name": "Baseball Classic",
+      "id": "iran-war",
+      "name": "Iran war",
       "category": "science-research",
       "status": "steady",
       "volatility": "stable",
       "rank": 3,
       "score": {
-        "total": 37.7,
+        "total": 44.5,
         "social": 0.0,
         "developer": 0.0,
-        "knowledge": 33.4,
-        "search": 0.0,
-        "diversity": 6.0
+        "knowledge": 8.2,
+        "search": 22.0,
+        "diversity": 12.0
       },
       "momentum": {
         "previousRank": 3,
@@ -218,75 +202,91 @@
         "percentDelta": 0.0
       },
       "coverage": {
-        "sourceCount": 1,
-        "signalCount": 4
+        "sourceCount": 2,
+        "signalCount": 3
       },
       "sources": [
+        "google_trends",
         "wikipedia"
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 1.0,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
       "previousRank": 3,
       "rankChange": 0,
-      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
-      "latestSignalAt": "2026-03-10T00:00:00Z",
+      "firstSeenAt": "2026-03-11T21:24:39.032260Z",
+      "latestSignalAt": "2026-03-12T10:20:00Z",
       "evidencePreview": [
-        "2026 World Baseball Classic",
-        "World Baseball Classic"
+        "2026 Iran war",
+        "dubai iran war news"
       ],
       "audienceSummary": [
         {
+          "label": "consumer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
           "label": "research",
           "segmentType": "audience",
-          "signalCount": 2
+          "signalCount": 1
+        },
+        {
+          "label": "b2c",
+          "segmentType": "market",
+          "signalCount": 1
+        },
+        {
+          "label": "global",
+          "segmentType": "market",
+          "signalCount": 1
         }
       ],
       "primaryEvidence": {
-        "source": "wikipedia",
-        "timestamp": "2026-03-10T00:00:00Z",
-        "value": 96633.0,
-        "evidence": "2026 World Baseball Classic",
-        "signalType": "knowledge",
-        "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic"
+        "source": "google_trends",
+        "timestamp": "2026-03-12T10:20:00Z",
+        "value": 500.0,
+        "evidence": "dubai iran war news",
+        "signalType": "search",
+        "evidenceUrl": "https://trends.google.com/trending/rss?geo=IN"
       },
       "recentHistory": [
         {
           "rank": 3,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 37.7
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 44.5
         },
         {
           "rank": 3,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 37.7
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 44.5
         }
       ],
-      "forecastDirection": "steady"
+      "forecastDirection": null
     },
     {
       "id": "macbook-neo",
-      "name": "Macbook NEO",
+      "name": "MacBook Neo",
       "category": "general-tech",
-      "status": "breakout",
-      "volatility": "spiking",
+      "status": "steady",
+      "volatility": "stable",
       "rank": 4,
       "score": {
-        "total": 36.2,
-        "social": 9.4,
+        "total": 39.0,
+        "social": 10.6,
         "developer": 0.0,
         "knowledge": 0.0,
-        "search": 12.5,
+        "search": 14.1,
         "diversity": 12.0
       },
       "momentum": {
-        "previousRank": 37,
-        "rankChange": 33,
-        "absoluteDelta": 19.8,
-        "percentDelta": 120.9
+        "previousRank": 4,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
       },
       "coverage": {
         "sourceCount": 2,
@@ -298,17 +298,17 @@
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
-      "previousRank": 37,
-      "rankChange": 33,
+      "previousRank": 4,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T23:40:00Z",
+      "latestSignalAt": "2026-03-12T08:30:00Z",
       "evidencePreview": [
         "The MacBook Neo",
-        "neues macbook neo"
+        "apple macbook neo review"
       ],
       "audienceSummary": [
         {
@@ -345,7 +345,7 @@
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-11T11:37:24Z",
-        "value": 947.0,
+        "value": 1417.0,
         "evidence": "The MacBook Neo",
         "signalType": "social",
         "evidenceUrl": "https://daringfireball.net/2026/03/the_macbook_neo"
@@ -353,24 +353,95 @@
       "recentHistory": [
         {
           "rank": 4,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 36.2
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 39.0
         },
         {
-          "rank": 37,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 16.4
+          "rank": 4,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 39.0
         }
       ],
-      "forecastDirection": "accelerating"
+      "forecastDirection": null
+    },
+    {
+      "id": "baseball-classic",
+      "name": "Baseball Classic",
+      "category": "science-research",
+      "status": "steady",
+      "volatility": "stable",
+      "rank": 5,
+      "score": {
+        "total": 38.0,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 33.8,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 5,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 4
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "seasonality": {
+        "tag": "evergreen",
+        "confidence": 1.0,
+        "recurrenceCount": 0,
+        "avgGapRuns": 0.0
+      },
+      "previousRank": 5,
+      "rankChange": 0,
+      "firstSeenAt": "2026-03-11T21:01:29.155088Z",
+      "latestSignalAt": "2026-03-11T00:00:00Z",
+      "evidencePreview": [
+        "2026 World Baseball Classic",
+        "World Baseball Classic"
+      ],
+      "audienceSummary": [
+        {
+          "label": "research",
+          "segmentType": "audience",
+          "signalCount": 2
+        }
+      ],
+      "primaryEvidence": {
+        "source": "wikipedia",
+        "timestamp": "2026-03-11T00:00:00Z",
+        "value": 129143.0,
+        "evidence": "2026 World Baseball Classic",
+        "signalType": "knowledge",
+        "evidenceUrl": "https://en.wikipedia.org/wiki/2026_World_Baseball_Classic"
+      },
+      "recentHistory": [
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 38.0
+        },
+        {
+          "rank": 5,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 38.0
+        }
+      ],
+      "forecastDirection": "steady"
     },
     {
       "id": "reduces-training",
       "name": "Reduces Training",
       "category": "general-tech",
-      "status": "cooling",
+      "status": "steady",
       "volatility": "stable",
-      "rank": 5,
+      "rank": 6,
       "score": {
         "total": 27.4,
         "social": 19.9,
@@ -380,8 +451,8 @@
         "diversity": 6.0
       },
       "momentum": {
-        "previousRank": 4,
-        "rankChange": -1,
+        "previousRank": 6,
+        "rankChange": 0,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -398,8 +469,8 @@
         "recurrenceCount": 0,
         "avgGapRuns": 0.0
       },
-      "previousRank": 4,
-      "rankChange": -1,
+      "previousRank": 6,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:01:29.155088Z",
       "latestSignalAt": "2026-03-09T16:00:00Z",
       "evidencePreview": [
@@ -437,263 +508,38 @@
       },
       "recentHistory": [
         {
-          "rank": 5,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
+          "rank": 6,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
           "scoreTotal": 27.4
         },
         {
-          "rank": 4,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
+          "rank": 6,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
           "scoreTotal": 27.4
         }
       ],
       "forecastDirection": "steady"
     },
     {
-      "id": "decryption-failure",
-      "name": "Decryption Failure",
-      "category": "general-tech",
-      "status": "rising",
-      "volatility": "stable",
-      "rank": 6,
-      "score": {
-        "total": 25.3,
-        "social": 17.8,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 5,
-        "rankChange": -1,
-        "absoluteDelta": 0.1,
-        "percentDelta": 0.4
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "hacker_news"
-      ],
-      "seasonality": {
-        "tag": "evergreen",
-        "confidence": 0.9,
-        "recurrenceCount": 0,
-        "avgGapRuns": 0.0
-      },
-      "previousRank": 5,
-      "rankChange": -1,
-      "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T12:57:41Z",
-      "evidencePreview": [
-        "Swiss e-voting pilot can't count 2,048 ballots after decryption failure"
-      ],
-      "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "hacker_news",
-        "timestamp": "2026-03-11T12:57:41Z",
-        "value": 466.0,
-        "evidence": "Swiss e-voting pilot can't count 2,048 ballots after decryption failure",
-        "signalType": "social",
-        "evidenceUrl": "https://www.theregister.com/2026/03/11/swiss_evote_usb_snafu/"
-      },
-      "recentHistory": [
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 25.3
-        },
-        {
-          "rank": 5,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 25.2
-        }
-      ],
-      "forecastDirection": "accelerating"
-    },
-    {
-      "id": "enabling-scientific",
-      "name": "Enabling Scientific",
-      "category": "general-tech",
-      "status": "cooling",
+      "id": "ai-bot",
+      "name": "AI bot",
+      "category": "ai-machine-learning",
+      "status": "steady",
       "volatility": "stable",
       "rank": 7,
       "score": {
-        "total": 25.1,
-        "social": 17.6,
+        "total": 26.0,
+        "social": 18.5,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 6,
-        "rankChange": -1,
-        "absoluteDelta": 0.0,
-        "percentDelta": 0.0
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "hacker_news"
-      ],
-      "seasonality": {
-        "tag": "evergreen",
-        "confidence": 0.9,
-        "recurrenceCount": 0,
-        "avgGapRuns": 0.0
-      },
-      "previousRank": 6,
-      "rankChange": -1,
-      "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T13:32:12Z",
-      "evidencePreview": [
-        "Entities enabling scientific fraud at scale (2025)"
-      ],
-      "audienceSummary": [
-        {
-          "label": "developer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "founder",
-          "segmentType": "audience",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "hacker_news",
-        "timestamp": "2026-03-11T13:32:12Z",
-        "value": 428.0,
-        "evidence": "Entities enabling scientific fraud at scale (2025)",
-        "signalType": "social",
-        "evidenceUrl": "https://doi.org/10.1073/pnas.2420092122"
-      },
-      "recentHistory": [
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 25.1
-        },
-        {
-          "rank": 6,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 25.1
-        }
-      ],
-      "forecastDirection": "accelerating"
-    },
-    {
-      "id": "attack-stryker",
-      "name": "Attack Stryker",
-      "category": "general-tech",
-      "status": "cooling",
-      "volatility": "stable",
-      "rank": 8,
-      "score": {
-        "total": 23.5,
-        "social": 0.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 16.0,
         "diversity": 6.0
       },
       "momentum": {
         "previousRank": 7,
-        "rankChange": -1,
+        "rankChange": 0,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
-      },
-      "coverage": {
-        "sourceCount": 1,
-        "signalCount": 2
-      },
-      "sources": [
-        "google_trends"
-      ],
-      "seasonality": null,
-      "previousRank": 7,
-      "rankChange": -1,
-      "firstSeenAt": "2026-03-11T23:36:49.437659Z",
-      "latestSignalAt": "2026-03-11T22:50:00Z",
-      "evidencePreview": [
-        "cyber attack stryker"
-      ],
-      "audienceSummary": [
-        {
-          "label": "consumer",
-          "segmentType": "audience",
-          "signalCount": 1
-        },
-        {
-          "label": "b2c",
-          "segmentType": "market",
-          "signalCount": 1
-        },
-        {
-          "label": "global",
-          "segmentType": "market",
-          "signalCount": 1
-        }
-      ],
-      "primaryEvidence": {
-        "source": "google_trends",
-        "timestamp": "2026-03-11T22:50:00Z",
-        "value": 5000.0,
-        "evidence": "cyber attack stryker",
-        "signalType": "search",
-        "evidenceUrl": "https://trends.google.com/trending/rss?geo=IN"
-      },
-      "recentHistory": [
-        {
-          "rank": 8,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 23.5
-        },
-        {
-          "rank": 7,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 23.5
-        }
-      ],
-      "forecastDirection": null
-    },
-    {
-      "id": "ai-bot",
-      "name": "AI BOT",
-      "category": "ai-machine-learning",
-      "status": "rising",
-      "volatility": "stable",
-      "rank": 9,
-      "score": {
-        "total": 23.1,
-        "social": 15.6,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "momentum": {
-        "previousRank": 10,
-        "rankChange": 1,
-        "absoluteDelta": 0.3,
-        "percentDelta": 1.3
       },
       "coverage": {
         "sourceCount": 1,
@@ -704,12 +550,12 @@
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
-      "previousRank": 10,
-      "rankChange": 1,
+      "previousRank": 7,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
       "latestSignalAt": "2026-03-11T18:17:30Z",
       "evidencePreview": [
@@ -735,35 +581,110 @@
       "primaryEvidence": {
         "source": "hacker_news",
         "timestamp": "2026-03-11T18:17:30Z",
-        "value": 201.0,
+        "value": 604.0,
         "evidence": "I was interviewed by an AI bot for a job",
         "signalType": "social",
         "evidenceUrl": "https://www.theverge.com/featured-video/892850/i-was-interviewed-by-an-ai-bot-for-a-job"
       },
       "recentHistory": [
         {
-          "rank": 9,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 23.1
+          "rank": 7,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 26.0
         },
         {
-          "rank": 10,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 22.9
+          "rank": 7,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 26.0
         }
       ],
       "forecastDirection": "accelerating"
     },
     {
-      "id": "deal-acquire",
-      "name": "Deal Acquire",
-      "category": "general-tech",
-      "status": "cooling",
+      "id": "inference-framework",
+      "name": "Inference framework",
+      "category": "ai-machine-learning",
+      "status": "steady",
       "volatility": "stable",
-      "rank": 10,
+      "rank": 8,
       "score": {
-        "total": 23.1,
-        "social": 17.1,
+        "total": 25.5,
+        "social": 18.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 8,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news"
+      ],
+      "seasonality": null,
+      "previousRank": 8,
+      "rankChange": 0,
+      "firstSeenAt": "2026-03-12T09:50:27.541262Z",
+      "latestSignalAt": "2026-03-11T12:27:15Z",
+      "evidencePreview": [
+        "BitNet: Inference framework for 1-bit LLMs"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "EN",
+          "segmentType": "language",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T12:27:15Z",
+        "value": 507.0,
+        "evidence": "BitNet: Inference framework for 1-bit LLMs",
+        "signalType": "social",
+        "evidenceUrl": "https://github.com/microsoft/BitNet"
+      },
+      "recentHistory": [
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 25.5
+        },
+        {
+          "rank": 8,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 25.5
+        }
+      ],
+      "forecastDirection": "steady"
+    },
+    {
+      "id": "enabling-scientific",
+      "name": "Enabling Scientific",
+      "category": "general-tech",
+      "status": "steady",
+      "volatility": "stable",
+      "rank": 9,
+      "score": {
+        "total": 25.5,
+        "social": 18.0,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -771,7 +692,7 @@
       },
       "momentum": {
         "previousRank": 9,
-        "rankChange": -1,
+        "rankChange": 0,
         "absoluteDelta": 0.0,
         "percentDelta": 0.0
       },
@@ -784,16 +705,16 @@
       ],
       "seasonality": {
         "tag": "evergreen",
-        "confidence": 0.9,
+        "confidence": 0.93,
         "recurrenceCount": 0,
-        "avgGapRuns": 0.0
+        "avgGapRuns": 0.1
       },
       "previousRank": 9,
-      "rankChange": -1,
+      "rankChange": 0,
       "firstSeenAt": "2026-03-11T21:24:39.032260Z",
-      "latestSignalAt": "2026-03-11T14:58:20Z",
+      "latestSignalAt": "2026-03-11T13:32:12Z",
       "evidencePreview": [
-        "Google closes deal to acquire Wiz"
+        "Entities enabling scientific fraud at scale (2025)"
       ],
       "audienceSummary": [
         {
@@ -809,22 +730,97 @@
       ],
       "primaryEvidence": {
         "source": "hacker_news",
-        "timestamp": "2026-03-11T14:58:20Z",
-        "value": 350.0,
-        "evidence": "Google closes deal to acquire Wiz",
+        "timestamp": "2026-03-11T13:32:12Z",
+        "value": 491.0,
+        "evidence": "Entities enabling scientific fraud at scale (2025)",
         "signalType": "social",
-        "evidenceUrl": "https://www.wiz.io/blog/google-closes-deal-to-acquire-wiz"
+        "evidenceUrl": "https://doi.org/10.1073/pnas.2420092122"
+      },
+      "recentHistory": [
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 25.5
+        },
+        {
+          "rank": 9,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 25.5
+        }
+      ],
+      "forecastDirection": "steady"
+    },
+    {
+      "id": "bench-passing",
+      "name": "bench Passing",
+      "category": "general-tech",
+      "status": "steady",
+      "volatility": "stable",
+      "rank": 10,
+      "score": {
+        "total": 24.6,
+        "social": 17.1,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "momentum": {
+        "previousRank": 10,
+        "rankChange": 0,
+        "absoluteDelta": 0.0,
+        "percentDelta": 0.0
+      },
+      "coverage": {
+        "sourceCount": 1,
+        "signalCount": 2
+      },
+      "sources": [
+        "hacker_news"
+      ],
+      "seasonality": null,
+      "previousRank": 10,
+      "rankChange": 0,
+      "firstSeenAt": "2026-03-11T21:42:18.903458Z",
+      "latestSignalAt": "2026-03-11T20:56:52Z",
+      "evidencePreview": [
+        "Many SWE-bench-Passing PRs would not be merged"
+      ],
+      "audienceSummary": [
+        {
+          "label": "developer",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "founder",
+          "segmentType": "audience",
+          "signalCount": 1
+        },
+        {
+          "label": "us-market",
+          "segmentType": "market",
+          "signalCount": 1
+        }
+      ],
+      "primaryEvidence": {
+        "source": "hacker_news",
+        "timestamp": "2026-03-11T20:56:52Z",
+        "value": 359.0,
+        "evidence": "Many SWE-bench-Passing PRs would not be merged",
+        "signalType": "social",
+        "evidenceUrl": "https://metr.org/notes/2026-03-10-many-swe-bench-passing-prs-would-not-be-merged-into-main/"
       },
       "recentHistory": [
         {
           "rank": 10,
-          "capturedAt": "2026-03-11T23:59:31.251699Z",
-          "scoreTotal": 23.1
+          "capturedAt": "2026-03-12T10:46:10.052957Z",
+          "scoreTotal": 24.6
         },
         {
-          "rank": 9,
-          "capturedAt": "2026-03-11T23:36:49.437659Z",
-          "scoreTotal": 23.0
+          "rank": 10,
+          "capturedAt": "2026-03-12T10:43:32.448224Z",
+          "scoreTotal": 24.6
         }
       ],
       "forecastDirection": "accelerating"
