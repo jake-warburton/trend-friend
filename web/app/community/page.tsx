@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { formatCategoryLabel } from "@/lib/category-labels";
 import type { PublicWatchlistSummary, PublicWatchlistsResponse } from "@/lib/types";
 import { getBaseUrl } from "@/app/shared/[token]/page";
 
@@ -750,10 +751,7 @@ function formatSourceLabel(source: string) {
 }
 
 function formatCategory(category: string) {
-  return category
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return formatCategoryLabel(category);
 }
 
 function formatSortLabel(sort: CommunitySort) {

@@ -12,6 +12,7 @@ import { GeoMapClient } from "@/components/geo-map-client";
 import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { detectChangedTrendIds, hasOverviewChanged } from "@/lib/auto-refresh";
+import { formatCategoryLabel } from "@/lib/category-labels";
 import type { OverviewRefreshMeta } from "@/lib/auto-refresh";
 import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
@@ -217,6 +218,12 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       }),
     [hideRecurring, keyword, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy],
   );
+  const selectedSourceLabel = getOptionLabel(SOURCE_FILTER_OPTIONS, selectedSource, "All sources");
+  const selectedCategoryLabel = getOptionLabel(categoryOptions, selectedCategory, "All categories");
+  const selectedAudienceLabel = getOptionLabel(audienceOptions, selectedAudience, "All audiences");
+  const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
+  const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
+  const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
 
   const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
@@ -1164,7 +1171,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Source</span>
                   <Select.Root value={selectedSource} onValueChange={(value) => setSelectedSource(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
+                      <span>{selectedSourceLabel}</span>
                       <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
@@ -1187,7 +1194,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Category</span>
                   <Select.Root value={selectedCategory} onValueChange={(value) => setSelectedCategory(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
+                      <span>{selectedCategoryLabel}</span>
                       <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
@@ -1210,7 +1217,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Audience</span>
                   <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
+                      <span>{selectedAudienceLabel}</span>
                       <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
@@ -1233,7 +1240,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Market</span>
                   <Select.Root value={selectedMarket} onValueChange={(value) => setSelectedMarket(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
+                      <span>{selectedMarketLabel}</span>
                       <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
@@ -1256,7 +1263,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Language</span>
                   <Select.Root value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
+                      <span>{selectedLanguageLabel}</span>
                       <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
@@ -1279,7 +1286,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Sort</span>
                   <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
+                      <span>{selectedSortLabel}</span>
                       <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
@@ -1989,10 +1996,7 @@ function formatSourceStatus(status: string) {
 }
 
 function formatCategory(category: string) {
-  return category
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return formatCategoryLabel(category);
 }
 
 function sourceHealthClassName(status: string) {
@@ -2409,6 +2413,14 @@ function formatExplorerSortLabel(sortBy: string) {
     newest: "Newest",
   };
   return labels[sortBy] ?? sortBy;
+}
+
+function getOptionLabel<T extends { label: string; value: string }>(
+  options: readonly T[],
+  value: string,
+  fallback: string,
+) {
+  return options.find((option) => option.value === value)?.label ?? fallback;
 }
 
 function formatGeoCountryLabel(countryCode: string) {

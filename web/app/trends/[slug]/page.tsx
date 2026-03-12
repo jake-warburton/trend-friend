@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
+import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
@@ -556,10 +557,7 @@ function formatDateOnly(value: string) {
 }
 
 function formatCategory(category: string) {
-  return category
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return formatCategoryLabel(category);
 }
 
 function formatSignalType(signalType: string) {
