@@ -186,6 +186,43 @@ class SourceNormalizationTests(unittest.TestCase):
         items = adapter.normalize_items(payload)
         self.assertEqual([item.external_id for item in items], ["pm-fed-high"])
 
+    def test_polymarket_adapter_filters_celebrity_activity_count_markets(self) -> None:
+        adapter = PolymarketSourceAdapter(self.settings)
+        payload = [
+            {
+                "title": "Elon Musk # tweets March 6 - March 13, 2026?",
+                "slug": "elon-musk-tweets-march-6-13-2026",
+                "createdAt": "2026-03-12T08:00:00Z",
+                "markets": [
+                    {
+                        "id": "pm-musk",
+                        "question": "Will Elon Musk post 80-99 tweets from March 6 to March 13, 2026?",
+                        "slug": "elon-musk-tweets-80-99",
+                        "volume24hr": "2000",
+                        "liquidity": "500",
+                        "endDate": "2026-03-13T23:59:59Z",
+                    }
+                ],
+            },
+            {
+                "title": "Bitcoin above ___ on March 12?",
+                "slug": "bitcoin-above-on-march-12",
+                "createdAt": "2026-03-12T08:00:00Z",
+                "markets": [
+                    {
+                        "id": "pm-btc",
+                        "question": "Will the price of Bitcoin be above $62,000 on March 12?",
+                        "slug": "bitcoin-above-62000",
+                        "volume24hr": "3000",
+                        "liquidity": "800",
+                        "endDate": "2026-03-12T23:59:59Z",
+                    }
+                ],
+            },
+        ]
+        items = adapter.normalize_items(payload)
+        self.assertEqual([item.external_id for item in items], ["pm-btc"])
+
     def test_reddit_adapter_fetches_multiple_pages_with_dedupe(self) -> None:
         settings = replace(self.settings, max_items_per_source=4, reddit_page_limit=3)
 
