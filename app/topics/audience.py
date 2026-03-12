@@ -29,6 +29,7 @@ _SOURCE_AUDIENCE_FLAGS: dict[str, tuple[str, ...]] = {
     "reddit": (),
     "google_trends": ("consumer",),
     "wikipedia": ("research",),
+    "polymarket": ("founder", "consumer"),
     "twitter": ("consumer", "founder"),
 }
 
@@ -68,7 +69,7 @@ def assign_audience_flags(item: RawSourceItem, geo: GeoAssignment) -> AudienceAs
 
     if "enterprise" in audience_flags or item.source == "github":
         market_flags.add("b2b")
-    if "consumer" in audience_flags or item.source == "google_trends":
+    if "consumer" in audience_flags or item.source in {"google_trends", "polymarket"}:
         market_flags.add("b2c")
 
     language_code = _detect_language_code(item, text)

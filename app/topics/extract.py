@@ -19,11 +19,13 @@ MAX_BIGRAMS_PER_ITEM = 2
 SOURCE_TOPIC_LIMITS = {
     "google_trends": 2,
     "hacker_news": 2,
+    "polymarket": 2,
     "twitter": 2,
 }
 SOURCE_BIGRAM_LIMITS = {
     "google_trends": 1,
     "hacker_news": 1,
+    "polymarket": 1,
     "twitter": 1,
 }
 SOURCE_LOW_SIGNAL_TOKENS = {
@@ -187,7 +189,7 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     candidates.extend(canonical_topics)
     if not repository_topic:
         candidates.extend(infer_meaningful_bigrams(tokens))
-    if not candidates and source_name not in {"google_trends", "hacker_news", "twitter"}:
+    if not candidates and source_name not in {"google_trends", "hacker_news", "polymarket", "twitter"}:
         candidates.extend(infer_meaningful_unigrams(tokens))
     seen: set[str] = set()
     ordered_candidates: list[str] = []
@@ -352,6 +354,7 @@ def signal_type_for_source(source_name: str) -> str:
         "github": "developer",
         "google_trends": "search",
         "hacker_news": "social",
+        "polymarket": "search",
         "reddit": "social",
         "twitter": "social",
         "wikipedia": "knowledge",

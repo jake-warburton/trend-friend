@@ -8,6 +8,7 @@ from dataclasses import replace
 from app.config import load_settings
 from app.sources.github import GitHubSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
+from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
 
@@ -81,6 +82,109 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "Artificial intelligence")
         self.assertEqual(items[0].timestamp.isoformat(), "2026-03-08T00:00:00+00:00")
+
+    def test_polymarket_adapter_normalizes_sample_payload(self) -> None:
+        adapter = PolymarketSourceAdapter(self.settings)
+        items = adapter.normalize_items(adapter.sample_payload())
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0].source, "polymarket")
+        self.assertTrue(items[0].title.endswith("?"))
+        self.assertIn("polymarket.com/event/", items[0].url)
+        self.assertGreater(items[0].engagement_score, 0)
+
+    def test_polymarket_adapter_prefers_market_question_and_volume(self) -> None:
+        adapter = PolymarketSourceAdapter(self.settings)
+        payload = [
+            {
+                "title": "AI event wrapper",
+                "slug": "ai-event-wrapper",
+                "createdAt": "2026-03-12T08:00:00Z",
+                "category": "technology",
+                "markets": [
+                    {
+                        "id": "pm-1",
+                        "question": "Will OpenAI release GPT-5 by June 2026?",
+                        "slug": "gpt-5-june-2026",
+                        "volume24hr": "1000",
+                        "liquidity": "500",
+                        "endDate": "2026-06-30T23:59:59Z",
+                    }
+                ],
+            }
+        ]
+        items = adapter.normalize_items(payload)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].external_id, "pm-1")
+        self.assertEqual(items[0].title, "Will OpenAI release GPT-5 by June 2026? AI event wrapper")
+        self.assertEqual(items[0].engagement_score, 1050.0)
+        self.assertEqual(items[0].metadata["category"], "technology")
+
+    def test_polymarket_adapter_filters_politics_and_sports_markets(self) -> None:
+        adapter = PolymarketSourceAdapter(self.settings)
+        payload = [
+            {
+                "title": "Republican Presidential Nominee 2028",
+                "slug": "republican-presidential-nominee-2028",
+                "createdAt": "2026-03-12T08:00:00Z",
+                "markets": [
+                    {
+                        "id": "pm-politics",
+                        "question": "Will Donald Trump win the 2028 Republican presidential nomination?",
+                        "slug": "trump-2028",
+                        "volume24hr": "1000",
+                        "liquidity": "500",
+                        "endDate": "2028-06-30T23:59:59Z",
+                    }
+                ],
+            },
+            {
+                "title": "Will OpenAI release GPT-5 by June 2026?",
+                "slug": "openai-release-gpt-5-by-june-2026",
+                "createdAt": "2026-03-12T08:00:00Z",
+                "markets": [
+                    {
+                        "id": "pm-tech",
+                        "question": "Will OpenAI release GPT-5 by June 2026?",
+                        "slug": "gpt-5-june-2026",
+                        "volume24hr": "1000",
+                        "liquidity": "500",
+                        "endDate": "2026-06-30T23:59:59Z",
+                    }
+                ],
+            },
+        ]
+        items = adapter.normalize_items(payload)
+        self.assertEqual([item.external_id for item in items], ["pm-tech"])
+
+    def test_polymarket_adapter_keeps_only_highest_signal_market_per_event(self) -> None:
+        adapter = PolymarketSourceAdapter(self.settings)
+        payload = [
+            {
+                "title": "Fed decision in March?",
+                "slug": "fed-decision-in-march",
+                "createdAt": "2026-03-12T08:00:00Z",
+                "markets": [
+                    {
+                        "id": "pm-fed-low",
+                        "question": "Will there be no change in Fed interest rates after the March 2026 meeting?",
+                        "slug": "fed-no-change",
+                        "volume24hr": "1000",
+                        "liquidity": "500",
+                        "endDate": "2026-03-31T23:59:59Z",
+                    },
+                    {
+                        "id": "pm-fed-high",
+                        "question": "Will the Fed decrease interest rates by 25 bps after the March 2026 meeting?",
+                        "slug": "fed-cut-25",
+                        "volume24hr": "2000",
+                        "liquidity": "600",
+                        "endDate": "2026-03-31T23:59:59Z",
+                    },
+                ],
+            }
+        ]
+        items = adapter.normalize_items(payload)
+        self.assertEqual([item.external_id for item in items], ["pm-fed-high"])
 
     def test_reddit_adapter_fetches_multiple_pages_with_dedupe(self) -> None:
         settings = replace(self.settings, max_items_per_source=4, reddit_page_limit=3)

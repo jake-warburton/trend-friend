@@ -11,6 +11,7 @@ from app.models import RawSourceItem, SourceIngestionRun
 from app.sources.github import GitHubSourceAdapter
 from app.sources.google_trends import GoogleTrendsSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
+from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.twitter import TwitterSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
@@ -25,6 +26,7 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         RedditSourceAdapter(settings),
         HackerNewsSourceAdapter(settings),
         GitHubSourceAdapter(settings),
+        PolymarketSourceAdapter(settings),
         WikipediaSourceAdapter(settings),
         GoogleTrendsSourceAdapter(settings),
         TwitterSourceAdapter(settings),

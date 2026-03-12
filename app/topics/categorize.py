@@ -139,6 +139,8 @@ def categorize_topic(topic: str, source_counts: dict[str, int] | None = None) ->
     if source_counts:
         if "github" in source_counts:
             return "developer-tools"
+        if "polymarket" in source_counts:
+            return "fintech-crypto"
         if "wikipedia" in source_counts:
             return "science-research"
         if "google_trends" in source_counts:

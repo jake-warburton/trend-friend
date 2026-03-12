@@ -1474,6 +1474,7 @@ class TrendScoreRepository:
         "hacker_news": 6,
         "reddit": 5,
         "github": 4,
+        "polymarket": 4,
         "twitter": 4,
         "google_trends": 3,
         "wikipedia": 1,

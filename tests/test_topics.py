@@ -224,6 +224,24 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(aggregates[0].topic, "coal plant")
         self.assertEqual(aggregates[0].signal_counts, {"social": 2})
 
+    def test_build_signals_from_items_maps_polymarket_to_search_signals(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="polymarket",
+                external_id="pm-1",
+                title="Will OpenAI release GPT-5 by June 2026?",
+                url="https://polymarket.com/event/gpt-5-june-2026",
+                timestamp=timestamp,
+                engagement_score=1000.0,
+                metadata={"category": "technology"},
+            )
+        ]
+        signals = build_signals_from_items(items)
+        self.assertTrue(signals)
+        self.assertEqual(signals[0].source, "polymarket")
+        self.assertEqual(signals[0].signal_type, "search")
+
     def test_build_signals_from_items_carries_explicit_geo_flags(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = build_signals_from_items(
