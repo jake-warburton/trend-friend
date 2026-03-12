@@ -94,6 +94,10 @@ class TopicNormalizationTests(unittest.TestCase):
             extract_candidate_topics("Graphing how the 10k* most common English words define each other")[0],
             "english words",
         )
+        self.assertEqual(
+            extract_candidate_topics("Dubai's influencers have a new rule: Don't mention the war", source_name="reddit"),
+            ["dubai influencers"],
+        )
 
     def test_extract_candidate_topics_prefers_domain_phrase_over_discussion_framing(self) -> None:
         self.assertEqual(

@@ -79,6 +79,8 @@ def clean_text(text: str) -> str:
     """Return lowercase ASCII-friendly text without punctuation noise."""
 
     lowered = text.lower()
+    lowered = re.sub(r"\b([a-z0-9]+)['’]s\b", r"\1", lowered)
+    lowered = re.sub(r"['’]", "", lowered)
     cleaned = re.sub(r"[^a-z0-9\s/-]", " ", lowered)
     return re.sub(r"\s+", " ", cleaned).strip()
 

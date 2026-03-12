@@ -125,6 +125,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "extends",
     "film",
     "find",
+    "have",
     "getting",
     "graphing",
     "has",
@@ -149,6 +150,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "per",
     "process",
     "promote",
+    "rule",
     "rules",
     "shuts",
     "show",
@@ -170,6 +172,8 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "years",
     "you",
     "your",
+    "dont",
+    "mention",
 }
 
 
