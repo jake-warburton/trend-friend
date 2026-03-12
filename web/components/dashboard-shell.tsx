@@ -4,6 +4,7 @@ import { Button } from "@base-ui/react/button";
 import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,6 @@ import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
-import { GeoMapCompact } from "@/components/geo-map-compact";
 
 import type {
   AlertEvent,
@@ -39,6 +39,11 @@ type DashboardShellProps = {
   initialData: DashboardData;
   canManualRefresh: boolean;
 };
+
+const LazyGeoMapCompact = dynamic(
+  () => import("@/components/geo-map-compact").then((mod) => mod.GeoMapCompact),
+  { ssr: false, loading: () => null },
+);
 
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
@@ -1322,7 +1327,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     }
                   >
                     <div className="explorer-expand-panel">
-                      {(() => {
+                      {expandedTrendId === trend.id && (() => {
                         if (!detail) return null;
                         const maxScore = Math.max(
                           detail.score.social,
@@ -1438,7 +1443,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                             {detail.geoSummary.length > 0 && (
                               <div className="explorer-expand-geo-wrap">
                                 <div className="explorer-expand-geo">
-                                  <GeoMapCompact data={detail.geoSummary} />
+                                  <LazyGeoMapCompact data={detail.geoSummary} />
                                 </div>
                               </div>
                             )}
