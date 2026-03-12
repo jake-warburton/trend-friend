@@ -182,13 +182,14 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     if not tokens:
         return []
     candidates: list[str] = []
-    candidates.extend(infer_source_specific_topics(tokens, source_name))
+    source_specific_topics = infer_source_specific_topics(tokens, source_name)
+    candidates.extend(source_specific_topics)
     canonical_topics = infer_canonical_topics(tokens)
     repository_topic = infer_repository_topic(title)
     if repository_topic:
         candidates.append(repository_topic)
     candidates.extend(canonical_topics)
-    if not repository_topic:
+    if not repository_topic and not source_specific_topics:
         candidates.extend(infer_meaningful_bigrams(tokens))
     if not candidates and source_name not in {"google_trends", "hacker_news", "polymarket", "twitter"}:
         candidates.extend(infer_meaningful_unigrams(tokens))
