@@ -152,31 +152,54 @@ For a hosted setup guide, see [docs/HOSTING.md](/Users/jakewarburton/Documents/r
 
 ## Free Hosting Path
 
-If you want to avoid paying for a backend host, keep the frontend on Vercel and refresh the generated data with GitHub Actions.
+If you want to avoid paying for a backend host, keep the frontend on Vercel, use Supabase as the source of truth, and let GitHub Actions populate the database.
 
 This repo now includes:
 
 - [refresh-data.yml](/Users/jakewarburton/Documents/repos/signal-eye/.github/workflows/refresh-data.yml)
+- [dispatch_refresh_workflow.sh](/Users/jakewarburton/Documents/repos/trend-friend/scripts/dispatch_refresh_workflow.sh)
 
 How it works:
 
 1. GitHub Actions runs the Python ingestion pipeline on a schedule.
 2. It writes trend state into Supabase via `SIGNAL_EYE_DATABASE_URL`.
-3. It exports fresh `web/data/*.json` from Supabase-backed state.
-4. It commits those generated files back to the repo.
-5. Vercel redeploys from the updated repo and serves the refreshed static snapshots.
+3. It exports published payloads into Supabase for the Next.js app to read directly.
+4. Vercel serves the frontend and reads the latest published payloads without needing a redeploy.
 
 For this free path:
 
 - do **not** set `SIGNAL_EYE_API_URL` in Vercel
-- keep the app in file mode
+- set `NEXT_PUBLIC_SUPABASE_URL` and `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY` in Vercel
 - add these GitHub repository secrets:
   - `SIGNAL_EYE_DATABASE_URL`
   - `SIGNAL_EYE_REDDIT_USER_AGENT`
   - `GITHUB_TOKEN_API` if you want higher GitHub ingestion limits
   - `TWITTER_BEARER_TOKEN` if you want live Twitter/X ingestion
 
-The included workflow defaults to every 15 minutes to keep repo churn reasonable. You can tighten or loosen the cron expression in [refresh-data.yml](/Users/jakewarburton/Documents/repos/signal-eye/.github/workflows/refresh-data.yml).
+The included workflow defaults to every 15 minutes, but GitHub's native scheduler is best-effort and can drift badly.
+
+If you want more reliable timing, use an external scheduler to trigger the workflow-dispatch endpoint instead:
+
+```bash
+GITHUB_WORKFLOW_TOKEN=github_pat_xxx ./scripts/dispatch_refresh_workflow.sh
+```
+
+Required token scope:
+
+- fine-grained PAT with `Actions: Read and write` on this repo
+
+Useful overrides:
+
+```bash
+GITHUB_REPOSITORY_OWNER=jake-warburton \
+GITHUB_REPOSITORY_NAME=trend-friend \
+GITHUB_WORKFLOW_FILE=refresh-data.yml \
+GITHUB_WORKFLOW_REF=main \
+GITHUB_WORKFLOW_TOKEN=github_pat_xxx \
+./scripts/dispatch_refresh_workflow.sh
+```
+
+That lets services like `cron-job.org` or `QStash` trigger the existing workflow on a predictable schedule without changing the pipeline logic.
 
 ## Running Codex Autopilot
 
