@@ -771,8 +771,8 @@ input {
 
 .hero-panel {
   display: grid;
-  gap: 10px;
-  padding: 12px 14px 12px;
+  gap: 8px;
+  padding: 10px 12px;
   border-radius: 28px;
   background: var(--hero-background);
   border-color: var(--hero-border);
@@ -781,7 +781,7 @@ input {
 .hero-header {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.72fr);
-  gap: 12px;
+  gap: 10px;
   align-items: stretch;
 }
 
@@ -839,7 +839,7 @@ input {
 .hero-rail {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  gap: 8px;
   align-items: stretch;
 }
 
@@ -1009,9 +1009,9 @@ input {
 .filters-panel {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-  padding: 16px 18px;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 14px 16px;
   border-radius: 22px;
   background: var(--filters-background);
   border-color: var(--panel-raised-border);
@@ -1267,27 +1267,27 @@ input {
 .analytics-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .trajectory-strip {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .curated-strip {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 0.85fr));
-  gap: 12px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .explorer-geo-strip {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .analytics-card {
-  padding: 18px 20px;
+  padding: 16px 18px;
   border: 1px solid var(--border);
   border-radius: 24px;
   background: var(--analytics-background);
@@ -1650,13 +1650,13 @@ input {
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.3fr) minmax(260px, 0.72fr);
-  gap: 14px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .ranking-panel,
 .history-panel {
-  padding: 18px 20px;
+  padding: 16px 18px;
   border-radius: 24px;
   background: var(--filters-background);
   border-color: var(--panel-raised-border);
