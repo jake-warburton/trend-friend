@@ -11,6 +11,7 @@ from app.topics.extract import build_signals_from_items, extract_candidate_topic
 from app.topics.geo import (
     GEO_CONFIDENCE_EXPLICIT,
     GEO_CONFIDENCE_INFERRED_BROAD,
+    GEO_CONFIDENCE_REINFORCED,
     GEO_CONFIDENCE_INFERRED_REGION,
     GEO_CONFIDENCE_MINIMUM,
     assign_geo_flags,
@@ -262,6 +263,60 @@ class GeoQualityControlTests(unittest.TestCase):
         self.assertEqual(result.confidence, GEO_CONFIDENCE_INFERRED_BROAD)
         self.assertIsNone(result.country_code)
         self.assertEqual(result.region, "Europe")
+
+    def test_locale_metadata_can_infer_country(self) -> None:
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-locale",
+            title="AI regulation gets tougher",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+            metadata={"locale": "en_GB"},
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.country_code, "GB")
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_EXPLICIT)
+
+    def test_url_country_domain_can_infer_country(self) -> None:
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-domain",
+            title="Developers debate chip exports",
+            url="https://www.bbc.co.uk/news/technology",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.country_code, "GB")
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_INFERRED_BROAD)
+
+    def test_combined_text_and_url_hints_raise_confidence(self) -> None:
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-combined",
+            title="London AI startup hiring rebounds",
+            url="https://www.bbc.co.uk/news/technology",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.country_code, "GB")
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_REINFORCED)
+
+    def test_additional_country_aliases_expand_coverage(self) -> None:
+        item = RawSourceItem(
+            source="reddit",
+            external_id="r-libya",
+            title="Solar projects accelerate in Libya",
+            url="https://example.com",
+            timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            engagement_score=10.0,
+        )
+        result = assign_geo_flags(item)
+        self.assertEqual(result.country_code, "LY")
+        self.assertEqual(result.region, "Libya")
+        self.assertEqual(result.confidence, GEO_CONFIDENCE_INFERRED_REGION)
 
     def test_no_geo_for_ambiguous_text(self) -> None:
         """Titles without geo references should return zero confidence."""
