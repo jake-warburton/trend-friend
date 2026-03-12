@@ -1235,6 +1235,10 @@ input {
   background: var(--analytics-background);
 }
 
+.trajectory-strip .analytics-card {
+  padding: 16px 10px 12px;
+}
+
 .curated-strip {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 0.85fr));
@@ -3365,7 +3369,7 @@ input {
 .chart-container {
   width: 100%;
   min-height: 200px;
-  padding: 8px 0;
+  padding: 0;
 }
 
 .chart-empty {
