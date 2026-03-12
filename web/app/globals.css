@@ -42,6 +42,9 @@
   --card-hero-gradient: linear-gradient(180deg, rgba(58, 87, 117, 0.98), rgba(29, 44, 64, 0.96));
   --card-history-gradient: linear-gradient(180deg, rgba(58, 87, 117, 0.96), rgba(37, 57, 82, 0.94));
   --card-gradient: linear-gradient(180deg, rgba(54, 82, 113, 0.94), rgba(35, 57, 82, 0.92));
+  --card-bg: var(--surface-panel);
+  --card-border: var(--border);
+  --text: var(--copy);
   --page-background:
     radial-gradient(circle at 15% 0%, rgba(146, 187, 221, 0.28), transparent 28%),
     radial-gradient(circle at 85% 10%, rgba(107, 163, 214, 0.18), transparent 24%),
@@ -392,6 +395,11 @@ input {
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
+.community-filter-chip:hover {
+  background: var(--surface-strong);
+  border-color: var(--accent);
+}
+
 .explorer-active-filters {
   display: flex;
   flex-wrap: wrap;
@@ -479,7 +487,7 @@ input {
 }
 
 .hero-summary-card {
-  padding: 7px 8px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--card-gradient);
@@ -523,7 +531,7 @@ input {
 }
 
 .stat-card {
-  padding: 7px 8px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
 }
 
@@ -899,7 +907,7 @@ input {
 }
 
 .analytics-card {
-  padding: 7px;
+  padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -994,7 +1002,7 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 7px;
+  padding: 8px 10px;
   border: 1px solid rgba(140, 160, 190, 0.07);
   border-radius: var(--radius-sm);
   background: var(--surface-panel-soft);
@@ -1058,6 +1066,11 @@ input {
 
 .mini-action-button {
   padding: 7px 10px;
+}
+
+.mini-action-button:hover {
+  background: var(--surface-strong);
+  color: var(--copy);
 }
 
 .watchlist-form {
@@ -1251,7 +1264,7 @@ input {
 
 .ranking-panel,
 .history-panel {
-  padding: 7px;
+  padding: 14px 16px;
   border-radius: var(--radius-md);
 }
 
@@ -1315,6 +1328,8 @@ input {
 
 .section-heading-spaced {
   margin-top: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 .section-heading h2 {
@@ -1382,7 +1397,7 @@ input {
   --explorer-left-inset: 6px;
   --explorer-evidence-label-width: 84px;
   position: relative;
-  padding: 8px 8px 8px 12px;
+  padding: 11px 11px 11px 14px;
   border: 1px solid var(--border);
   border-radius: 18px;
   background:
@@ -2443,6 +2458,12 @@ input {
   text-align: center;
 }
 
+@media (max-width: 1040px) and (min-width: 768px) {
+  .hero-rail {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 @media (max-width: 1040px) {
   .hero-panel,
   .content-grid,
@@ -2812,4 +2833,11 @@ input {
 .geo-legend-item small {
   color: var(--muted);
   font-size: 0.68rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
