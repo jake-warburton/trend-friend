@@ -258,6 +258,7 @@ function TrajectoryLegend({ payload }: { payload?: TrajectoryLegendEntry[] }) {
       style={{
         display: "flex",
         flexWrap: "wrap",
+        justifyContent: "center",
         gap: "6px",
         paddingTop: "8px",
       }}
