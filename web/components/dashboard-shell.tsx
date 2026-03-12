@@ -8,11 +8,14 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { GeoMapClient } from "@/components/geo-map-client";
 import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { hasOverviewChanged } from "@/lib/auto-refresh";
+import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceWatchlist } from "@/lib/source-health";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
@@ -69,7 +72,7 @@ const SORT_OPTIONS = [
 const WATCHLISTS_ENABLED = false;
 
 type ExplorerActiveFilter = {
-  key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "sort" | "seasonality";
+  key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "geo" | "sort" | "seasonality";
   label: string;
   value: string;
 };
@@ -83,6 +86,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [selectedAudience, setSelectedAudience] = useState<string>("all");
   const [selectedMarket, setSelectedMarket] = useState<string>("all");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
+  const [selectedGeoCountry, setSelectedGeoCountry] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
   const [hideRecurring, setHideRecurring] = useState(false);
@@ -182,13 +186,14 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         selectedAudience,
         selectedMarket,
         selectedLanguage,
+        selectedGeoCountry,
         sortBy,
         hideRecurring,
       }),
-    [hideRecurring, keyword, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy],
+    [hideRecurring, keyword, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy],
   );
 
-  const filteredTrends = useMemo(() => {
+  const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
     const minimum = minimumScore ?? 0;
     const trends = initialData.explorer.trends.filter((trend) => {
@@ -200,6 +205,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       const matchesAudience = trendMatchesAudience(detail, selectedAudience);
       const matchesMarket = trendMatchesMarket(detail, selectedMarket);
       const matchesLanguage = trendMatchesLanguage(detail, selectedLanguage);
+      const matchesGeo = trendMatchesGeo(detail, selectedGeoCountry);
       const matchesKeyword =
         normalizedKeyword.length === 0 ||
         trend.name.toLowerCase().includes(normalizedKeyword) ||
@@ -212,6 +218,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         matchesAudience &&
         matchesMarket &&
         matchesLanguage &&
+        matchesGeo &&
         matchesKeyword &&
         matchesScore &&
         matchesSeasonality
@@ -230,7 +237,14 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy]);
+  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy]);
+
+  const explorerGeoMapData = useMemo(
+    () => buildExplorerGeoMapData(baseFilteredTrends, detailsByTrendId),
+    [baseFilteredTrends, detailsByTrendId],
+  );
+
+  const filteredTrends = baseFilteredTrends;
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -261,6 +275,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       setSelectedLanguage("all");
       return;
     }
+    if (filterKey === "geo") {
+      setSelectedGeoCountry("all");
+      return;
+    }
     if (filterKey === "sort") {
       setSortBy("rank");
       return;
@@ -275,6 +293,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setSelectedAudience("all");
     setSelectedMarket("all");
     setSelectedLanguage("all");
+    setSelectedGeoCountry("all");
     setSortBy("rank");
     setMinimumScore(0);
     setHideRecurring(false);
@@ -965,6 +984,41 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         </article>
 
       </section>
+
+      {explorerGeoMapData.length > 0 ? (
+        <section className="explorer-geo-strip">
+          <div className="explorer-geo-panel">
+            <div className="explorer-geo-panel-head">
+              <div>
+                <strong>Geographic footprint</strong>
+                <p className="source-summary-copy">
+                  {explorerGeoMapData.length} countr{explorerGeoMapData.length === 1 ? "y" : "ies"} across{" "}
+                  {filteredTrends.length} visible trend{filteredTrends.length === 1 ? "" : "s"}
+                </p>
+              </div>
+              {selectedGeoCountry !== "all" ? (
+                <button
+                  className="mini-action-button"
+                  onClick={() => setSelectedGeoCountry("all")}
+                  type="button"
+                >
+                  Clear geo filter
+                </button>
+              ) : (
+                <span className="section-heading-meta">Click a country to filter</span>
+              )}
+            </div>
+            <GeoMapClient
+              height={320}
+              mapData={explorerGeoMapData}
+              onCountrySelect={(countryCode) =>
+                setSelectedGeoCountry((current) => (current === countryCode ? "all" : countryCode))
+              }
+              selectedCountryCode={selectedGeoCountry !== "all" ? selectedGeoCountry : null}
+            />
+          </div>
+        </section>
+      ) : null}
 
       <section className="content-grid">
         <div className="ranking-panel">
@@ -2106,6 +2160,7 @@ export function listActiveExplorerFilters(filters: {
   selectedAudience: string;
   selectedMarket: string;
   selectedLanguage: string;
+  selectedGeoCountry: string;
   sortBy: string;
   hideRecurring: boolean;
 }): ExplorerActiveFilter[] {
@@ -2127,6 +2182,9 @@ export function listActiveExplorerFilters(filters: {
   }
   if (filters.selectedLanguage !== "all") {
     result.push({ key: "language", label: "Language", value: formatLanguageLabel(filters.selectedLanguage) });
+  }
+  if (filters.selectedGeoCountry !== "all") {
+    result.push({ key: "geo", label: "Geo", value: formatGeoCountryLabel(filters.selectedGeoCountry) });
   }
   if (filters.sortBy !== "rank") {
     result.push({ key: "sort", label: "Sort", value: formatExplorerSortLabel(filters.sortBy) });
@@ -2214,6 +2272,10 @@ function formatExplorerSortLabel(sortBy: string) {
     newest: "Newest",
   };
   return labels[sortBy] ?? sortBy;
+}
+
+function formatGeoCountryLabel(countryCode: string) {
+  return formatCountryLabel(countryCode, getRegionName(countryCode) ?? countryCode);
 }
 
 function buildShareExpiryIso(preset: string) {

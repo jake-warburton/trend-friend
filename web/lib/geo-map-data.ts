@@ -9,6 +9,14 @@ export type GeoMapDatum = {
   averageConfidence: number;
   centroid: [number, number];
   intensity: number;
+  contributingTrends?: GeoMapTrendContribution[];
+};
+
+export type GeoMapTrendContribution = {
+  id: string;
+  name: string;
+  rank: number;
+  signalCount: number;
 };
 
 /** Centroids (lng, lat) for the most common country codes. */

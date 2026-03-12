@@ -23,14 +23,19 @@ type TooltipState = {
 
 export function GeoMap({
   data,
+  mapData,
   height = 420,
+  selectedCountryCode,
+  onCountrySelect,
 }: {
-  data: TrendGeoSummary[];
+  data?: TrendGeoSummary[];
+  mapData?: GeoMapDatum[];
   height?: number;
+  selectedCountryCode?: string | null;
+  onCountrySelect?: (countryCode: string) => void;
 }) {
-  const mapData = buildGeoMapData(data);
-  const activeCountryCodes = new Set(mapData.map((d) => d.countryCode));
-  const dataByCode = new Map(mapData.map((d) => [d.countryCode, d]));
+  const resolvedMapData = mapData ?? buildGeoMapData(data ?? []);
+  const dataByCode = new Map(resolvedMapData.map((d) => [d.countryCode, d]));
 
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
@@ -49,6 +54,9 @@ export function GeoMap({
     if (!code) return "#151b27";
     const datum = dataByCode.get(code);
     if (!datum) return "#151b27";
+    if (selectedCountryCode && selectedCountryCode === code) {
+      return "rgba(94, 107, 255, 0.86)";
+    }
     const alpha = 0.15 + datum.intensity * 0.55;
     return `rgba(94, 107, 255, ${alpha.toFixed(2)})`;
   }
@@ -57,6 +65,9 @@ export function GeoMap({
     if (!code) return "#1a2030";
     const datum = dataByCode.get(code);
     if (!datum) return "#1a2030";
+    if (selectedCountryCode && selectedCountryCode === code) {
+      return "rgba(94, 107, 255, 0.92)";
+    }
     const alpha = 0.25 + datum.intensity * 0.55;
     return `rgba(94, 107, 255, ${alpha.toFixed(2)})`;
   }
@@ -78,7 +89,6 @@ export function GeoMap({
                 const numericId = String(geo.id).padStart(3, "0");
                 const geographyName = String(geo.properties?.name ?? numericId);
                 const alpha2 = lookupCountryCode(numericId, geographyName);
-                const isActive = alpha2 ? activeCountryCodes.has(alpha2) : false;
                 const datum = alpha2 ? dataByCode.get(alpha2) : undefined;
                 const hoverDatum = datum
                   ?? (alpha2
@@ -109,19 +119,24 @@ export function GeoMap({
                     geography={geo}
                     fill={getCountryFill(alpha2)}
                     stroke="#1e2838"
-                    strokeWidth={0.5}
+                    strokeWidth={selectedCountryCode && selectedCountryCode === alpha2 ? 0.9 : 0.5}
                     onMouseMove={
                       hoverDatum
                         ? (event: React.MouseEvent) => handleMouseMove(hoverDatum, event)
                         : undefined
                     }
                     onMouseLeave={hoverDatum ? handleMouseLeave : undefined}
+                    onClick={
+                      alpha2 && datum && onCountrySelect
+                        ? () => onCountrySelect(alpha2)
+                        : undefined
+                    }
                     style={{
                       default: { outline: "none" },
                       hover: {
                         fill: getCountryHoverFill(alpha2),
                         outline: "none",
-                        cursor: hoverDatum ? "pointer" : "default",
+                        cursor: datum && onCountrySelect ? "pointer" : hoverDatum ? "pointer" : "default",
                       },
                       pressed: { outline: "none" },
                     }}
@@ -158,6 +173,16 @@ export function GeoMap({
                 />
               </div>
               <small>{Math.round(tooltip.datum.averageConfidence * 100)}% avg confidence</small>
+              {tooltip.datum.contributingTrends && tooltip.datum.contributingTrends.length > 0 ? (
+                <div className="geo-map-trend-list">
+                  {tooltip.datum.contributingTrends.map((trend) => (
+                    <div className="geo-map-trend-row" key={`${tooltip.datum.countryCode}-${trend.id}`}>
+                      <span>{trend.name}</span>
+                      <small>{trend.signalCount}</small>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </>
           ) : (
             <small>No tagged signals</small>

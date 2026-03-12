@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "Explorer", href: "/" },
-  { label: "Community", href: "/community" },
 ] as const;
 
 export function NavBar() {
