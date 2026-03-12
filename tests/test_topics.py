@@ -146,6 +146,29 @@ class TopicNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(topics, ["retrieval augmented generation", "enterprise search"])
 
+    def test_extract_candidate_topics_uses_entity_first_rules_for_google_news(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics(
+                "Ceasefire talks intensify as shipping risks rise in the Red Sea",
+                source_name="google_news",
+            ),
+            ["red sea shipping", "ceasefire talks"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Fed rate cut bets climb after softer US inflation data",
+                source_name="google_news",
+            ),
+            ["fed rate cuts", "inflation data"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Premier League title race tightens after late winner",
+                source_name="google_news",
+            ),
+            ["premier league title race"],
+        )
+
     def test_extract_candidate_topics_collapses_polymarket_threshold_markets_to_assets(self) -> None:
         self.assertEqual(
             extract_candidate_topics(
