@@ -90,6 +90,16 @@ export function getRefreshErrorStatus(error: unknown): number {
   return 500;
 }
 
+export function buildLocalRefreshEnv(baseEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  if (!baseEnv.SIGNAL_EYE_DATABASE_URL) {
+    return baseEnv;
+  }
+  return {
+    ...baseEnv,
+    SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: baseEnv.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME ?? "true",
+  };
+}
+
 async function defaultApiPost<T>(apiPath: string, body: unknown): Promise<T> {
   const { apiPost } = await import("@/lib/api-client");
   const refreshSecret = process.env.SIGNAL_EYE_REFRESH_SECRET;
@@ -104,6 +114,7 @@ async function runIngestion(): Promise<void> {
   const projectRoot = path.resolve(process.cwd(), "..");
   await execFileAsync("python3", ["scripts/run_ingestion.py"], {
     cwd: projectRoot,
+    env: buildLocalRefreshEnv(),
     timeout: 120_000,
   });
 }
@@ -112,6 +123,7 @@ async function runExport(): Promise<void> {
   const projectRoot = path.resolve(process.cwd(), "..");
   await execFileAsync("python3", ["scripts/export_web_data.py"], {
     cwd: projectRoot,
+    env: buildLocalRefreshEnv(),
     timeout: 60_000,
   });
 }
