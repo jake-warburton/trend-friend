@@ -28,6 +28,8 @@ const CHART_GRID_COLOR = "var(--chart-grid)";
 const LEGEND_TEXT_COLOR = "#ffffff";
 const LEGEND_HEIGHT = 52;
 const MOBILE_BREAKPOINT_PX = 640;
+const MAX_HISTORY_POINTS_DESKTOP = 17;
+const MAX_HISTORY_POINTS_MOBILE = 8;
 
 type TrajectoryLegendEntry = {
   value?: string;
@@ -89,7 +91,9 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     }
   }
   const timestamps = [...timestampSet].sort();
-  const sameDayHistory = new Set(timestamps.map((timestamp) => timestamp.slice(0, 10))).size === 1;
+  const maxHistoryPoints = isMobile ? MAX_HISTORY_POINTS_MOBILE : MAX_HISTORY_POINTS_DESKTOP;
+  const visibleTimestamps = timestamps.slice(-maxHistoryPoints);
+  const sameDayHistory = new Set(visibleTimestamps.map((timestamp) => timestamp.slice(0, 10))).size === 1;
 
   // Determine the maximum number of forecast points across all trends
   let maxForecastLen = 0;
@@ -100,7 +104,7 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
   }
 
   // Build chart data: one row per snapshot timestamp, one key per trend
-  const data: Record<string, string | number | undefined>[] = timestamps.map((timestamp) => {
+  const data: Record<string, string | number | undefined>[] = visibleTimestamps.map((timestamp) => {
     const row: Record<string, string | number | undefined> = {
       date: formatSnapshotLabel(timestamp, sameDayHistory),
     };
