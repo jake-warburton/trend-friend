@@ -1483,22 +1483,23 @@ input {
 
 .curated-item span {
   overflow: hidden;
-  color: var(--copy);
-  font-size: 0.78rem;
-  font-weight: 520;
-  letter-spacing: -0.01em;
+  color: color-mix(in srgb, var(--copy) 90%, var(--muted) 10%);
+  font-size: 0.74rem;
+  font-weight: 460;
+  letter-spacing: -0.005em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .curated-item strong {
-  font-size: 0.86rem;
-  font-weight: 540;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .curated-item small {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
+  font-weight: 440;
   white-space: nowrap;
 }
 
