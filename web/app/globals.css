@@ -3091,6 +3091,10 @@ input {
     border-radius: 0;
   }
 
+  .trajectory-strip .analytics-card {
+    padding: 14px 4px 10px;
+  }
+
   .hero-rail {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
