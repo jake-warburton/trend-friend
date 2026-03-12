@@ -1372,6 +1372,10 @@ input {
   margin-bottom: 18px;
 }
 
+.curated-strip .analytics-card > .section-heading {
+  margin-bottom: 18px;
+}
+
 .mini-bar-list {
   display: grid;
   gap: 8px;
