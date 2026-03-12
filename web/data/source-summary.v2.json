@@ -3,91 +3,311 @@
     {
       "source": "github",
       "status": "healthy",
-      "latestFetchAt": "2026-03-11T21:01:26.836709Z",
-      "latestSuccessAt": "2026-03-11T21:01:26.836709Z",
+      "latestFetchAt": "2026-03-11T23:59:28.706466Z",
+      "latestSuccessAt": "2026-03-11T23:59:28.706466Z",
       "rawItemCount": 30,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 100.0,
-      "durationMs": 135,
+      "durationMs": 733,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 29,
-      "trendCount": 29,
+      "signalCount": 27,
+      "trendCount": 27,
       "runHistory": [
         {
           "success": true,
-          "fetchedAt": "2026-03-11T21:01:26.836709Z",
+          "fetchedAt": "2026-03-11T23:59:28.706466Z",
           "rawItemCount": 30,
           "itemCount": 30,
           "keptItemCount": 30,
           "yieldRatePercent": 100.0,
-          "durationMs": 135,
+          "durationMs": 733,
           "usedFallback": false,
           "errorMessage": null
-        }
-      ],
-      "topTrends": []
-    },
-    {
-      "source": "google_trends",
-      "status": "healthy",
-      "latestFetchAt": "2026-03-11T21:01:27.087045Z",
-      "latestSuccessAt": "2026-03-11T21:01:27.087045Z",
-      "rawItemCount": 0,
-      "latestItemCount": 28,
-      "keptItemCount": 0,
-      "yieldRatePercent": 0.0,
-      "durationMs": 2021,
-      "usedFallback": false,
-      "errorMessage": null,
-      "signalCount": 30,
-      "trendCount": 28,
-      "runHistory": [
+        },
         {
           "success": true,
-          "fetchedAt": "2026-03-11T21:01:27.087045Z",
-          "rawItemCount": 0,
-          "itemCount": 28,
-          "keptItemCount": 0,
-          "yieldRatePercent": 0.0,
-          "durationMs": 2021,
+          "fetchedAt": "2026-03-11T23:36:47.565112Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 705,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:59:20.372245Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 671,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:30:55.704681Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 755,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:49:32.841209Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 745,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:42:16.041918Z",
+          "rawItemCount": 30,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 100.0,
+          "durationMs": 668,
           "usedFallback": false,
           "errorMessage": null
         }
       ],
       "topTrends": [
         {
-          "id": "league-schedule",
-          "name": "League Schedule",
-          "rank": 3,
-          "scoreTotal": 36.9
+          "id": "zulip",
+          "name": "Zulip",
+          "rank": 19,
+          "scoreTotal": 18.8
+        },
+        {
+          "id": "gradle",
+          "name": "Gradle",
+          "rank": 21,
+          "scoreTotal": 18.4
+        },
+        {
+          "id": "translated-content",
+          "name": "Translated Content",
+          "rank": 25,
+          "scoreTotal": 17.5
+        },
+        {
+          "id": "prysm",
+          "name": "Prysm",
+          "rank": 28,
+          "scoreTotal": 16.8
+        },
+        {
+          "id": "iree",
+          "name": "Iree",
+          "rank": 29,
+          "scoreTotal": 16.6
+        }
+      ]
+    },
+    {
+      "source": "google_trends",
+      "status": "healthy",
+      "latestFetchAt": "2026-03-11T23:59:29.531217Z",
+      "latestSuccessAt": "2026-03-11T23:59:29.531217Z",
+      "rawItemCount": 0,
+      "latestItemCount": 28,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 1701,
+      "usedFallback": false,
+      "errorMessage": null,
+      "signalCount": 31,
+      "trendCount": 31,
+      "runHistory": [
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T23:59:29.531217Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 1701,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T23:36:48.324853Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 1093,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:59:21.133630Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 1723,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:30:56.606041Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 2187,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:49:33.720159Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 2075,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:42:16.909028Z",
+          "rawItemCount": 0,
+          "itemCount": 28,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 1974,
+          "usedFallback": false,
+          "errorMessage": null
+        }
+      ],
+      "topTrends": [
+        {
+          "id": "macbook-neo",
+          "name": "Macbook NEO",
+          "rank": 4,
+          "scoreTotal": 36.2
+        },
+        {
+          "id": "attack-stryker",
+          "name": "Attack Stryker",
+          "rank": 8,
+          "scoreTotal": 23.5
+        },
+        {
+          "id": "hand-collection",
+          "name": "Hand Collection",
+          "rank": 23,
+          "scoreTotal": 17.9
+        },
+        {
+          "id": "mineiro-internacional",
+          "name": "Mineiro Internacional",
+          "rank": 33,
+          "scoreTotal": 16.4
+        },
+        {
+          "id": "tornado-warning",
+          "name": "Tornado Warning",
+          "rank": 35,
+          "scoreTotal": 16.1
         }
       ]
     },
     {
       "source": "hacker_news",
       "status": "healthy",
-      "latestFetchAt": "2026-03-11T21:01:14.295428Z",
-      "latestSuccessAt": "2026-03-11T21:01:14.295428Z",
+      "latestFetchAt": "2026-03-11T23:59:25.525490Z",
+      "latestSuccessAt": "2026-03-11T23:59:25.525490Z",
       "rawItemCount": 90,
       "latestItemCount": 30,
       "keptItemCount": 30,
       "yieldRatePercent": 33.3,
-      "durationMs": 12541,
+      "durationMs": 3180,
       "usedFallback": false,
       "errorMessage": null,
-      "signalCount": 55,
-      "trendCount": 54,
+      "signalCount": 56,
+      "trendCount": 55,
       "runHistory": [
         {
           "success": true,
-          "fetchedAt": "2026-03-11T21:01:14.295428Z",
+          "fetchedAt": "2026-03-11T23:59:25.525490Z",
           "rawItemCount": 90,
           "itemCount": 30,
           "keptItemCount": 30,
           "yieldRatePercent": 33.3,
-          "durationMs": 12541,
+          "durationMs": 3180,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T23:36:44.448572Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 3116,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:59:17.231081Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 3141,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:30:52.589364Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 3115,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:49:30.094469Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 2746,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:42:13.910742Z",
+          "rawItemCount": 90,
+          "itemCount": 30,
+          "keptItemCount": 30,
+          "yieldRatePercent": 33.3,
+          "durationMs": 2131,
           "usedFallback": false,
           "errorMessage": null
         }
@@ -97,46 +317,113 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 108.8
+          "scoreTotal": 92.5
         },
         {
-          "id": "year-journey",
-          "name": "Year Journey",
+          "id": "macbook-neo",
+          "name": "Macbook NEO",
+          "rank": 4,
+          "scoreTotal": 36.2
+        },
+        {
+          "id": "decryption-failure",
+          "name": "Decryption Failure",
           "rank": 6,
-          "scoreTotal": 30.7
+          "scoreTotal": 25.3
         },
         {
-          "id": "time-javascript",
-          "name": "Time Javascript",
-          "rank": 8,
-          "scoreTotal": 29.2
+          "id": "enabling-scientific",
+          "name": "Enabling Scientific",
+          "rank": 7,
+          "scoreTotal": 25.1
+        },
+        {
+          "id": "ai-bot",
+          "name": "AI BOT",
+          "rank": 9,
+          "scoreTotal": 23.1
         }
       ]
     },
     {
       "source": "reddit",
-      "status": "healthy",
-      "latestFetchAt": "2026-03-11T21:01:10.991734Z",
-      "latestSuccessAt": "2026-03-11T21:01:10.991734Z",
-      "rawItemCount": 100,
-      "latestItemCount": 30,
-      "keptItemCount": 30,
-      "yieldRatePercent": 30.0,
-      "durationMs": 3303,
-      "usedFallback": false,
+      "status": "degraded",
+      "latestFetchAt": "2026-03-11T23:59:25.391237Z",
+      "latestSuccessAt": "2026-03-11T23:59:25.391237Z",
+      "rawItemCount": 0,
+      "latestItemCount": 2,
+      "keptItemCount": 0,
+      "yieldRatePercent": 0.0,
+      "durationMs": 133,
+      "usedFallback": true,
       "errorMessage": null,
-      "signalCount": 59,
-      "trendCount": 58,
+      "signalCount": 2,
+      "trendCount": 2,
       "runHistory": [
         {
           "success": true,
-          "fetchedAt": "2026-03-11T21:01:10.991734Z",
-          "rawItemCount": 100,
-          "itemCount": 30,
-          "keptItemCount": 30,
-          "yieldRatePercent": 30.0,
-          "durationMs": 3303,
-          "usedFallback": false,
+          "fetchedAt": "2026-03-11T23:59:25.391237Z",
+          "rawItemCount": 0,
+          "itemCount": 2,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 133,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T23:36:44.313799Z",
+          "rawItemCount": 0,
+          "itemCount": 2,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 134,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:59:17.058359Z",
+          "rawItemCount": 0,
+          "itemCount": 2,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 172,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:30:52.435632Z",
+          "rawItemCount": 0,
+          "itemCount": 2,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 153,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:49:29.981952Z",
+          "rawItemCount": 0,
+          "itemCount": 2,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 112,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:42:13.794373Z",
+          "rawItemCount": 0,
+          "itemCount": 2,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 116,
+          "usedFallback": true,
           "errorMessage": null
         }
       ],
@@ -145,39 +432,21 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 108.8
+          "scoreTotal": 92.5
         },
         {
-          "id": "without-permission",
-          "name": "Without Permission",
-          "rank": 4,
-          "scoreTotal": 32.9
-        },
-        {
-          "id": "video-like",
-          "name": "Video Like",
-          "rank": 5,
-          "scoreTotal": 32.5
-        },
-        {
-          "id": "year-journey",
-          "name": "Year Journey",
-          "rank": 6,
-          "scoreTotal": 30.7
-        },
-        {
-          "id": "shootings-bombings",
-          "name": "Shootings Bombings",
-          "rank": 7,
-          "scoreTotal": 29.3
+          "id": "robotics",
+          "name": "Robotics",
+          "rank": 2,
+          "scoreTotal": 48.0
         }
       ]
     },
     {
       "source": "twitter",
       "status": "degraded",
-      "latestFetchAt": "2026-03-11T21:01:29.108630Z",
-      "latestSuccessAt": "2026-03-11T21:01:29.108630Z",
+      "latestFetchAt": "2026-03-11T23:59:31.232869Z",
+      "latestSuccessAt": "2026-03-11T23:59:31.232869Z",
       "rawItemCount": 0,
       "latestItemCount": 3,
       "keptItemCount": 0,
@@ -190,7 +459,62 @@
       "runHistory": [
         {
           "success": true,
-          "fetchedAt": "2026-03-11T21:01:29.108630Z",
+          "fetchedAt": "2026-03-11T23:59:31.232869Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T23:36:49.418637Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:59:22.857616Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:30:58.793898Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:49:35.795528Z",
+          "rawItemCount": 0,
+          "itemCount": 3,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 0,
+          "usedFallback": true,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:42:18.883751Z",
           "rawItemCount": 0,
           "itemCount": 3,
           "keptItemCount": 0,
@@ -205,32 +529,44 @@
           "id": "ai-agents",
           "name": "AI Agents",
           "rank": 1,
-          "scoreTotal": 108.8
+          "scoreTotal": 92.5
         },
         {
           "id": "robotics",
           "name": "Robotics",
-          "rank": 9,
-          "scoreTotal": 27.9
+          "rank": 2,
+          "scoreTotal": 48.0
         },
         {
           "id": "reduces-training",
           "name": "Reduces Training",
-          "rank": 10,
+          "rank": 5,
           "scoreTotal": 27.4
+        },
+        {
+          "id": "enterprise-automation",
+          "name": "Enterprise Automation",
+          "rank": 26,
+          "scoreTotal": 17.5
+        },
+        {
+          "id": "framework-reaches",
+          "name": "Framework Reaches",
+          "rank": 27,
+          "scoreTotal": 16.8
         }
       ]
     },
     {
       "source": "wikipedia",
       "status": "healthy",
-      "latestFetchAt": "2026-03-11T21:01:26.972668Z",
-      "latestSuccessAt": "2026-03-11T21:01:26.972668Z",
+      "latestFetchAt": "2026-03-11T23:59:29.439723Z",
+      "latestSuccessAt": "2026-03-11T23:59:29.439723Z",
       "rawItemCount": 0,
       "latestItemCount": 24,
       "keptItemCount": 0,
       "yieldRatePercent": 0.0,
-      "durationMs": 114,
+      "durationMs": 91,
       "usedFallback": false,
       "errorMessage": null,
       "signalCount": 30,
@@ -238,12 +574,67 @@
       "runHistory": [
         {
           "success": true,
-          "fetchedAt": "2026-03-11T21:01:26.972668Z",
+          "fetchedAt": "2026-03-11T23:59:29.439723Z",
           "rawItemCount": 0,
           "itemCount": 24,
           "keptItemCount": 0,
           "yieldRatePercent": 0.0,
-          "durationMs": 114,
+          "durationMs": 91,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T23:36:48.271050Z",
+          "rawItemCount": 0,
+          "itemCount": 24,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 53,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:59:21.043544Z",
+          "rawItemCount": 0,
+          "itemCount": 24,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 89,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T22:30:56.460357Z",
+          "rawItemCount": 0,
+          "itemCount": 24,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 145,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:49:33.587312Z",
+          "rawItemCount": 0,
+          "itemCount": 24,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 132,
+          "usedFallback": false,
+          "errorMessage": null
+        },
+        {
+          "success": true,
+          "fetchedAt": "2026-03-11T21:42:16.710671Z",
+          "rawItemCount": 0,
+          "itemCount": 24,
+          "keptItemCount": 0,
+          "yieldRatePercent": 0.0,
+          "durationMs": 198,
           "usedFallback": false,
           "errorMessage": null
         }
@@ -252,11 +643,35 @@
         {
           "id": "baseball-classic",
           "name": "Baseball Classic",
-          "rank": 2,
+          "rank": 3,
           "scoreTotal": 37.7
+        },
+        {
+          "id": "kinsk-footballer",
+          "name": "Kinsk Footballer",
+          "rank": 15,
+          "scoreTotal": 19.2
+        },
+        {
+          "id": "bessette-kennedy",
+          "name": "Bessette Kennedy",
+          "rank": 16,
+          "scoreTotal": 19.2
+        },
+        {
+          "id": "itamar-ben",
+          "name": "Itamar BEN",
+          "rank": 17,
+          "scoreTotal": 19.2
+        },
+        {
+          "id": "oren-alexander",
+          "name": "Oren Alexander",
+          "rank": 18,
+          "scoreTotal": 19.0
         }
       ]
     }
   ],
-  "generatedAt": "2026-03-11T21:01:29.155088Z"
+  "generatedAt": "2026-03-11T23:59:31.251699Z"
 }
