@@ -176,7 +176,7 @@ def assign_geo_flags(item: RawSourceItem) -> GeoAssignment:
 
 
 def _geo_from_metadata(metadata: dict[str, str]) -> GeoAssignment | None:
-    for key in ("region", "country", "geo", "location", "locale", "lang", "language"):
+    for key in ("region", "country", "geo", "location", "locale"):
         value = metadata.get(key, "").strip()
         if not value:
             continue
@@ -325,12 +325,7 @@ def _assignment_from_value(
             confidence=confidence,
         )
 
-    return _build_assignment(
-        country_code=None,
-        region=normalized,
-        detection_mode=detection_mode,
-        confidence=confidence,
-    )
+    return None
 
 
 def _build_assignment(
