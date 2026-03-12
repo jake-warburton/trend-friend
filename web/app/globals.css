@@ -3102,10 +3102,44 @@ input {
 
   .hero-summary-card-status {
     grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px 12px;
     padding: 0 0 10px;
     border-right: 0;
     border-top: 0;
     border-bottom: 1px solid var(--inset-divider);
+  }
+
+  .hero-summary-card-status > span,
+  .hero-summary-card-status > strong,
+  .hero-summary-card-status > small {
+    width: 100%;
+  }
+
+  .hero-summary-card-status .refresh-button-wide {
+    justify-content: center;
+    align-self: flex-start;
+    margin-left: auto;
+    width: 76px;
+    min-height: 52px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 0.62rem;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .hero-summary-card-status .refresh-button-wide .refresh-icon {
+    flex-shrink: 0;
+  }
+
+  .hero-summary-card-status .refresh-button-wide span {
+    display: block;
+    max-width: 100%;
   }
 
   .filters-panel-wide {
