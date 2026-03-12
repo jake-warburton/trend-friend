@@ -2206,17 +2206,19 @@ input {
 }
 
 .explorer-expand-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
   width: 32px;
   height: 32px;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
   color: var(--muted);
   font-size: 1rem;
   font-weight: 700;
+  line-height: 1;
+  text-align: center;
   cursor: pointer;
   transition: background 120ms, color 120ms;
   flex-shrink: 0;
