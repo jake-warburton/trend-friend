@@ -269,6 +269,24 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertEqual(signals[0].source, "polymarket")
         self.assertEqual(signals[0].signal_type, "search")
 
+    def test_build_signals_from_items_maps_google_news_to_knowledge_signals(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="google_news",
+                external_id="gn-1",
+                title="Ceasefire talks intensify as shipping risks rise in the Red Sea",
+                url="https://news.google.com/articles/example-1",
+                timestamp=timestamp,
+                engagement_score=9.0,
+                metadata={"section": "world", "publisher": "Reuters"},
+            )
+        ]
+        signals = build_signals_from_items(items)
+        self.assertTrue(signals)
+        self.assertEqual(signals[0].source, "google_news")
+        self.assertEqual(signals[0].signal_type, "knowledge")
+
     def test_polymarket_signal_value_rewards_deeper_markets_and_downweights_thin_ones(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         deep_market = RawSourceItem(

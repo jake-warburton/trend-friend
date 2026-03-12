@@ -7,6 +7,7 @@ from dataclasses import replace
 
 from app.config import load_settings
 from app.sources.github import GitHubSourceAdapter
+from app.sources.google_news import GoogleNewsSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
 from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
@@ -61,6 +62,39 @@ class SourceNormalizationTests(unittest.TestCase):
         items = adapter.normalize_items(payload)
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "example/project")
+
+    def test_google_news_adapter_normalizes_sample_payload(self) -> None:
+        adapter = GoogleNewsSourceAdapter(self.settings)
+        items = adapter._normalize_items(adapter.sample_payload())
+        self.assertEqual(len(items), 3)
+        self.assertEqual(items[0].source, "google_news")
+        self.assertEqual(items[0].metadata["section"], "world")
+        self.assertEqual(items[1].metadata["publisher"], "Bloomberg")
+
+    def test_google_news_adapter_parses_rss_and_strips_publisher_suffix(self) -> None:
+        adapter = GoogleNewsSourceAdapter(self.settings)
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0">
+          <channel>
+            <item>
+              <title>Ceasefire talks intensify in Gaza - Reuters</title>
+              <link>https://news.google.com/articles/world-1</link>
+              <pubDate>Thu, 12 Mar 2026 12:00:00 GMT</pubDate>
+              <source url="https://www.reuters.com">Reuters</source>
+            </item>
+            <item>
+              <title>Premier League title race tightens - ESPN</title>
+              <link>https://news.google.com/articles/sports-1</link>
+              <pubDate>Thu, 12 Mar 2026 13:00:00 GMT</pubDate>
+              <source url="https://www.espn.com">ESPN</source>
+            </item>
+          </channel>
+        </rss>"""
+        items = adapter._parse_rss(rss_xml, section="world", limit=5)
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0].title, "Ceasefire talks intensify in Gaza")
+        self.assertEqual(items[0].metadata["publisher"], "Reuters")
+        self.assertEqual(items[0].metadata["section"], "world")
 
     def test_wikipedia_adapter_skips_non_article_pages_and_uses_payload_date(self) -> None:
         adapter = WikipediaSourceAdapter(self.settings)

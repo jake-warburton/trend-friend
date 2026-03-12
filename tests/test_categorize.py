@@ -15,6 +15,14 @@ class CategorizationTests(unittest.TestCase):
         self.assertEqual(categorize_topic("llm fine-tuning"), "ai-machine-learning")
         self.assertEqual(categorize_topic("openai gpt release"), "ai-machine-learning")
 
+    def test_geopolitics_topics_categorized(self) -> None:
+        self.assertEqual(categorize_topic("red sea shipping risks"), "geopolitics-world")
+        self.assertEqual(categorize_topic("ukraine ceasefire talks"), "geopolitics-world")
+
+    def test_business_and_sports_topics_categorized(self) -> None:
+        self.assertEqual(categorize_topic("fed interest rate cuts"), "business-economy")
+        self.assertEqual(categorize_topic("premier league title race"), "sports")
+
     def test_developer_tools_categorized(self) -> None:
         self.assertEqual(categorize_topic("typescript compiler"), "developer-tools")
         self.assertEqual(categorize_topic("new python framework"), "developer-tools")
@@ -41,6 +49,7 @@ class CategorizationTests(unittest.TestCase):
     def test_unknown_falls_back_to_source_heuristic(self) -> None:
         result = categorize_topic("obscure topic xyz", {"github": 3})
         self.assertEqual(result, "developer-tools")
+        self.assertEqual(categorize_topic("obscure topic xyz", {"google_news": 2}), "general-news")
 
     def test_unknown_without_sources_returns_default(self) -> None:
         result = categorize_topic("obscure topic xyz")
