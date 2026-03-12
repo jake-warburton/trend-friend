@@ -58,19 +58,19 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
 
             <div className="detail-meta-grid">
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Total score</span>
                 <strong>{recentTrend.record.score.total.toFixed(1)}</strong>
               </div>
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Last rank</span>
                 <strong>#{recentTrend.rank}</strong>
               </div>
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Sources</span>
                 <strong>{recentTrend.record.sources.length}</strong>
               </div>
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Last signal</span>
                 <strong>{formatDateOnly(recentTrend.record.latestSignalAt)}</strong>
               </div>
@@ -191,19 +191,19 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         </div>
 
         <div className="detail-meta-grid">
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>Total score</span>
             <strong>{trend.score.total.toFixed(1)}</strong>
           </div>
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>Movement</span>
             <strong>{formatRankChange(trend.rankChange)}</strong>
           </div>
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>Momentum</span>
             <strong>{formatMomentum(trend.momentum.percentDelta)}</strong>
           </div>
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>First seen</span>
             <strong>{trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}</strong>
           </div>
