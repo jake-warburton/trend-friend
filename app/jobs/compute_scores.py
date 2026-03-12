@@ -16,7 +16,7 @@ from app.data.repositories import (
     TrendScoreRepository,
     WatchlistRepository,
 )
-from app.models import PipelineRun, TrendScoreResult
+from app.models import PipelineRun, SourceIngestionRun, TrendScoreResult
 from app.notifications.deliver import deliver_post_run_notifications
 from app.notifications.digest import build_run_digest
 from app.scoring.calculator import calculate_trend_scores
