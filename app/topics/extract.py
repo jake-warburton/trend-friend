@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from math import log10
 
 from app.models import NormalizedSignal, RawSourceItem
 from app.topics.audience import assign_audience_flags
@@ -359,7 +360,7 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
                     topic=topic,
                     source=item.source,
                     signal_type=signal_type_for_source(item.source),
-                    value=item.engagement_score,
+                    value=signal_value_for_item(item),
                     timestamp=item.timestamp,
                     evidence=item.title,
                     evidence_url=item.url,
@@ -376,6 +377,32 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
     return signals
 
 
+def signal_value_for_item(item: RawSourceItem) -> float:
+    """Return a source-aware signal value without changing signal type semantics."""
+
+    if item.source != "polymarket":
+        return item.engagement_score
+    return polymarket_signal_value(item)
+
+
+def polymarket_signal_value(item: RawSourceItem) -> float:
+    """Compress market size into a distinct, conviction-aware Polymarket signal."""
+
+    volume_24hr = _metadata_float(item.metadata, "volume24hr", item.engagement_score)
+    liquidity = _metadata_float(item.metadata, "liquidity", 0.0)
+    open_interest = _metadata_float(item.metadata, "open_interest", 0.0)
+    market_activity = max(volume_24hr + (liquidity * 0.15), 0.0)
+    market_depth = max(open_interest, 0.0)
+    normalized_value = (log10(market_activity + 1.0) * 9.0) + (log10(market_depth + 1.0) * 4.0)
+
+    if volume_24hr >= 100_000 or open_interest >= 250_000:
+        normalized_value *= 1.2
+    elif volume_24hr < 5_000 and open_interest < 25_000:
+        normalized_value *= 0.45
+
+    return round(normalized_value, 2)
+
+
 def signal_type_for_source(source_name: str) -> str:
     """Map a source name to a stable signal type."""
 
@@ -389,3 +416,12 @@ def signal_type_for_source(source_name: str) -> str:
         "twitter": "social",
         "wikipedia": "knowledge",
     }.get(source_name, "social")
+
+
+def _metadata_float(metadata: dict[str, str], key: str, default: float = 0.0) -> float:
+    """Read a numeric metadata value safely."""
+
+    try:
+        return float(metadata.get(key, default))
+    except (TypeError, ValueError):
+        return default

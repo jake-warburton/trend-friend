@@ -114,6 +114,7 @@ class PolymarketSourceAdapter(SourceAdapter):
                 url = self._build_market_url(event_slug, str(market.get("slug", "")).strip())
                 volume_24hr = _to_float(market.get("volume24hr"))
                 liquidity = _to_float(market.get("liquidity"))
+                open_interest = _to_float(market.get("openInterest"))
                 title = question if question.endswith("?") else f"{question}?"
                 if event_title and event_title.lower() not in title.lower():
                     title = f"{title} {event_title}"
@@ -128,6 +129,9 @@ class PolymarketSourceAdapter(SourceAdapter):
                         "event_title": event_title,
                         "category": str(event.get("category", "")).strip(),
                         "market_slug": str(market.get("slug", "")).strip(),
+                        "volume24hr": str(volume_24hr),
+                        "liquidity": str(liquidity),
+                        "open_interest": str(open_interest),
                     },
                 )
                 if best_item is None or candidate.engagement_score > best_item.engagement_score:

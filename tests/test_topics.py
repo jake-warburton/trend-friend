@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from app.models import NormalizedSignal, RawSourceItem
 from app.topics.cluster import aggregate_topic_signals, merge_similar_topics
-from app.topics.extract import build_signals_from_items, extract_candidate_topics
+from app.topics.extract import build_signals_from_items, extract_candidate_topics, polymarket_signal_value
 from app.topics.geo import (
     GEO_CONFIDENCE_EXPLICIT,
     GEO_CONFIDENCE_INFERRED_BROAD,
@@ -264,6 +264,34 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertTrue(signals)
         self.assertEqual(signals[0].source, "polymarket")
         self.assertEqual(signals[0].signal_type, "search")
+
+    def test_polymarket_signal_value_rewards_deeper_markets_and_downweights_thin_ones(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        deep_market = RawSourceItem(
+            source="polymarket",
+            external_id="pm-deep",
+            title="Will OpenAI release GPT-5 by June 2026?",
+            url="https://polymarket.com/event/gpt-5-june-2026",
+            timestamp=timestamp,
+            engagement_score=150_000.0,
+            metadata={"volume24hr": "150000", "liquidity": "50000", "open_interest": "400000"},
+        )
+        thin_market = RawSourceItem(
+            source="polymarket",
+            external_id="pm-thin",
+            title="Will some niche API launch by Friday?",
+            url="https://polymarket.com/event/niche-api-launch",
+            timestamp=timestamp,
+            engagement_score=1_500.0,
+            metadata={"volume24hr": "1500", "liquidity": "200", "open_interest": "5000"},
+        )
+
+        deep_value = polymarket_signal_value(deep_market)
+        thin_value = polymarket_signal_value(thin_market)
+
+        self.assertGreater(deep_value, thin_value)
+        self.assertLess(deep_value, deep_market.engagement_score)
+        self.assertLess(thin_value, 20.0)
 
     def test_build_signals_from_items_carries_explicit_geo_flags(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

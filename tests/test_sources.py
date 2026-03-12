@@ -118,6 +118,8 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(items[0].title, "Will OpenAI release GPT-5 by June 2026? AI event wrapper")
         self.assertEqual(items[0].engagement_score, 1050.0)
         self.assertEqual(items[0].metadata["category"], "technology")
+        self.assertEqual(items[0].metadata["volume24hr"], "1000.0")
+        self.assertEqual(items[0].metadata["liquidity"], "500.0")
 
     def test_polymarket_adapter_filters_politics_and_sports_markets(self) -> None:
         adapter = PolymarketSourceAdapter(self.settings)
