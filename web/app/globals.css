@@ -1041,9 +1041,8 @@ input {
   background: var(--neutral-badge-bg);
   color: var(--neutral-text-strong);
   font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 560;
+  letter-spacing: 0.015em;
 }
 
 .trend-status-pill-breakout {
@@ -1443,9 +1442,8 @@ input {
   color: var(--muted);
   cursor: pointer;
   font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 560;
+  letter-spacing: 0.015em;
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
@@ -1871,9 +1869,8 @@ input {
   background: var(--explorer-kicker-bg);
   color: var(--explorer-kicker-text);
   font-size: 0.58rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .trend-title-row {
@@ -1905,11 +1902,10 @@ input {
   background: var(--surface-panel-strong);
   color: var(--muted);
   font-size: 0.54rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 560;
+  letter-spacing: 0.015em;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -1932,9 +1928,8 @@ input {
   padding: 1px 5px;
   border-radius: var(--radius-pill);
   font-size: 0.5rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 560;
+  letter-spacing: 0.015em;
 }
 
 .forecast-badge-high {
@@ -1961,9 +1956,8 @@ input {
   padding: 1px 5px;
   border-radius: var(--radius-pill);
   font-size: 0.5rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 560;
+  letter-spacing: 0.015em;
 }
 
 .seasonality-badge-recurring {
@@ -2310,7 +2304,7 @@ input {
   border-radius: var(--radius-pill);
   background: var(--neutral-badge-bg);
   color: var(--neutral-text-strong);
-  font-weight: 700;
+  font-weight: 560;
   font-size: 0.62rem;
 }
 
@@ -2356,10 +2350,9 @@ input {
   min-width: var(--explorer-evidence-label-width);
   color: var(--accent-strong);
   font-size: 0.5rem;
-  font-weight: 800;
+  font-weight: 620;
   line-height: 1.1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.025em;
   white-space: nowrap;
 }
 
