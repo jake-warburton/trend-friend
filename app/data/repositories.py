@@ -130,6 +130,30 @@ class SignalRepository:
         ]
 
 
+class PublishedPayloadRepository:
+    """Persist prebuilt web payloads for frontend reads."""
+
+    def __init__(self, connection: DatabaseConnection) -> None:
+        self.connection = connection
+
+    def replace_payloads(self, payloads: list[tuple[str, str, str]]) -> None:
+        """Upsert one JSON payload row per payload key."""
+
+        self.connection.executemany(
+            """
+            INSERT INTO published_payloads (payload_key, generated_at, payload_json)
+            VALUES (?, ?, ?)
+            ON CONFLICT(payload_key)
+            DO UPDATE SET
+                generated_at = excluded.generated_at,
+                payload_json = excluded.payload_json,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            payloads,
+        )
+        self.connection.commit()
+
+
 class SourceIngestionRunRepository:
     """Persist and retrieve source ingestion outcomes."""
 
