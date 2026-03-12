@@ -221,6 +221,15 @@ function TrajectoryLegend({ payload }: { payload?: TrajectoryLegendEntry[] }) {
     return null;
   }
 
+  const visibleEntries = payload.filter((entry) => {
+    const label = entry.value;
+    return typeof label === "string" && !label.endsWith(" forecast");
+  });
+
+  if (visibleEntries.length === 0) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -230,7 +239,7 @@ function TrajectoryLegend({ payload }: { payload?: TrajectoryLegendEntry[] }) {
         paddingTop: "8px",
       }}
     >
-      {payload.map((entry) => {
+      {visibleEntries.map((entry) => {
         const label = entry.value;
         if (!label) {
           return null;
