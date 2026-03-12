@@ -937,24 +937,22 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   return (
     <main className="dashboard-page">
       <section className="hero-panel">
-        <div className="hero-header">
-          <div className="hero-header-copy">
-            <p className="eyebrow">Signal Eye</p>
-          </div>
-          <div className="hero-command">
-            <span className="hero-command-label">Terminal status</span>
+        <div className="hero-rail">
+          <article className="hero-summary-card hero-summary-card-status">
+            <span>Terminal status</span>
             <strong>{overviewMeta.lastRunAt ? formatCompactTimestamp(overviewMeta.lastRunAt) : "Awaiting run"}</strong>
-            <span className="hero-command-copy">
+            <small>
               {latestPipelineRun
                 ? `${latestPipelineRun.successfulSourceCount}/${latestPipelineRun.sourceCount} sources healthy`
                 : "No recent pipeline run"}
-            </span>
+            </small>
             {isDataStale(overviewMeta.lastRunAt) ? (
               <span className="stale-warning">Data may be stale</span>
-            ) : null}
-            {liveUpdateState === "checking" ? <span className="live-update-note">Checking for updates…</span> : null}
-            {liveUpdateState === "updating" ? <span className="live-update-note pulse-text">Applying live update…</span> : null}
-            {liveUpdateState === "updated" ? (
+            ) : liveUpdateState === "checking" ? (
+              <span className="live-update-note">Checking for updates…</span>
+            ) : liveUpdateState === "updating" ? (
+              <span className="live-update-note pulse-text">Applying live update…</span>
+            ) : liveUpdateState === "updated" ? (
               <span className="live-update-note live-update-note-success">
                 {changedTrendIds.length > 0 ? `${changedTrendIds.length} trends updated` : "Updated just now"}
               </span>
@@ -985,9 +983,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 <span>{isPending ? "Refreshing" : "Refresh data"}</span>
               </Button>
             ) : null}
-          </div>
-        </div>
-        <div className="hero-rail">
+          </article>
           <article className="hero-summary-card">
             <span>Top</span>
             <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>

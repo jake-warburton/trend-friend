@@ -1236,7 +1236,7 @@ input {
 }
 
 .trajectory-strip .analytics-card {
-  padding: 16px 10px 12px;
+  padding: 20px 10px 12px;
 }
 
 .curated-strip {
@@ -1254,7 +1254,7 @@ input {
 }
 
 .analytics-card {
-  padding: 16px 18px;
+  padding: 20px 18px 16px;
   border: 0;
   border-left: 1px solid var(--inset-divider);
   border-radius: 0;
