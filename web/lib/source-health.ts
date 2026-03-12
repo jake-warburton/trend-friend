@@ -253,6 +253,7 @@ export function formatSourceLabel(source: string): string {
     github: "GitHub",
     wikipedia: "Wikipedia",
     google_trends: "Google Trends",
+    polymarket: "Polymarket",
     twitter: "Twitter/X",
   };
   return labels[source] ?? source

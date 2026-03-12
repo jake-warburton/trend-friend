@@ -66,6 +66,7 @@ const SOURCE_FILTER_OPTIONS = [
   { label: "GitHub", value: "github" },
   { label: "Wikipedia", value: "wikipedia" },
   { label: "Google Trends", value: "google_trends" },
+  { label: "Polymarket", value: "polymarket" },
   { label: "Twitter/X", value: "twitter" },
 ] as const;
 
