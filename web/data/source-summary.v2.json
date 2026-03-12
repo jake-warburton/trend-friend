@@ -82,38 +82,7 @@
           "errorMessage": null
         }
       ],
-      "topTrends": [
-        {
-          "id": "zulip",
-          "name": "Zulip",
-          "rank": 19,
-          "scoreTotal": 18.8
-        },
-        {
-          "id": "gradle",
-          "name": "Gradle",
-          "rank": 21,
-          "scoreTotal": 18.4
-        },
-        {
-          "id": "translated-content",
-          "name": "Translated Content",
-          "rank": 25,
-          "scoreTotal": 17.5
-        },
-        {
-          "id": "prysm",
-          "name": "Prysm",
-          "rank": 28,
-          "scoreTotal": 16.8
-        },
-        {
-          "id": "iree",
-          "name": "Iree",
-          "rank": 29,
-          "scoreTotal": 16.6
-        }
-      ]
+      "topTrends": []
     },
     {
       "source": "google_trends",
@@ -209,24 +178,6 @@
           "name": "Attack Stryker",
           "rank": 8,
           "scoreTotal": 23.5
-        },
-        {
-          "id": "hand-collection",
-          "name": "Hand Collection",
-          "rank": 23,
-          "scoreTotal": 17.9
-        },
-        {
-          "id": "mineiro-internacional",
-          "name": "Mineiro Internacional",
-          "rank": 33,
-          "scoreTotal": 16.4
-        },
-        {
-          "id": "tornado-warning",
-          "name": "Tornado Warning",
-          "rank": 35,
-          "scoreTotal": 16.1
         }
       ]
     },
@@ -542,18 +493,6 @@
           "name": "Reduces Training",
           "rank": 5,
           "scoreTotal": 27.4
-        },
-        {
-          "id": "enterprise-automation",
-          "name": "Enterprise Automation",
-          "rank": 26,
-          "scoreTotal": 17.5
-        },
-        {
-          "id": "framework-reaches",
-          "name": "Framework Reaches",
-          "rank": 27,
-          "scoreTotal": 16.8
         }
       ]
     },
@@ -645,30 +584,6 @@
           "name": "Baseball Classic",
           "rank": 3,
           "scoreTotal": 37.7
-        },
-        {
-          "id": "kinsk-footballer",
-          "name": "Kinsk Footballer",
-          "rank": 15,
-          "scoreTotal": 19.2
-        },
-        {
-          "id": "bessette-kennedy",
-          "name": "Bessette Kennedy",
-          "rank": 16,
-          "scoreTotal": 19.2
-        },
-        {
-          "id": "itamar-ben",
-          "name": "Itamar BEN",
-          "rank": 17,
-          "scoreTotal": 19.2
-        },
-        {
-          "id": "oren-alexander",
-          "name": "Oren Alexander",
-          "rank": 18,
-          "scoreTotal": 19.0
         }
       ]
     }

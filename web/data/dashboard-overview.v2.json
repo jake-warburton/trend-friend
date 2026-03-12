@@ -1,17 +1,17 @@
 {
   "summary": {
-    "trackedTrends": 100,
+    "trackedTrends": 10,
     "totalSignals": 154,
     "sourceCount": 6,
-    "averageScore": 17.1
+    "averageScore": 36.2
   },
   "highlights": {
     "topTrendId": "ai-agents",
     "topTrendName": "AI Agents",
     "biggestMoverId": "macbook-neo",
     "biggestMoverName": "Macbook NEO",
-    "newestTrendId": "zulip",
-    "newestTrendName": "Zulip"
+    "newestTrendId": "attack-stryker",
+    "newestTrendName": "Attack Stryker"
   },
   "charts": {
     "topTrendScores": [
@@ -76,24 +76,20 @@
     ],
     "statusBreakdown": [
       {
-        "label": "NEW",
-        "value": 37.0
-      },
-      {
         "label": "Cooling",
-        "value": 27.0
-      },
-      {
-        "label": "Breakout",
-        "value": 17.0
+        "value": 5.0
       },
       {
         "label": "Rising",
-        "value": 13.0
+        "value": 2.0
       },
       {
         "label": "Steady",
-        "value": 6.0
+        "value": 2.0
+      },
+      {
+        "label": "Breakout",
+        "value": 1.0
       }
     ]
   },
@@ -148,38 +144,6 @@
         "status": "breakout",
         "rank": 4,
         "scoreTotal": 36.2
-      },
-      {
-        "id": "kinsk-footballer",
-        "name": "Kinsk Footballer",
-        "category": "science-research",
-        "status": "breakout",
-        "rank": 15,
-        "scoreTotal": 19.2
-      },
-      {
-        "id": "bessette-kennedy",
-        "name": "Bessette Kennedy",
-        "category": "science-research",
-        "status": "breakout",
-        "rank": 16,
-        "scoreTotal": 19.2
-      },
-      {
-        "id": "itamar-ben",
-        "name": "Itamar BEN",
-        "category": "science-research",
-        "status": "breakout",
-        "rank": 17,
-        "scoreTotal": 19.2
-      },
-      {
-        "id": "oren-alexander",
-        "name": "Oren Alexander",
-        "category": "science-research",
-        "status": "breakout",
-        "rank": 18,
-        "scoreTotal": 19.0
       }
     ],
     "risingTrends": [
@@ -198,33 +162,16 @@
         "status": "rising",
         "rank": 9,
         "scoreTotal": 23.1
-      },
-      {
-        "id": "exposes-changes",
-        "name": "Exposes Changes",
-        "category": "general-tech",
-        "status": "rising",
-        "rank": 11,
-        "scoreTotal": 22.8
-      },
-      {
-        "id": "bench-passing",
-        "name": "Bench Passing",
-        "category": "general-tech",
-        "status": "rising",
-        "rank": 13,
-        "scoreTotal": 21.4
-      },
-      {
-        "id": "computer-perplexity",
-        "name": "Computer Perplexity",
-        "category": "infrastructure-cloud",
-        "status": "rising",
-        "rank": 14,
-        "scoreTotal": 21.1
       }
     ],
     "metaTrends": [
+      {
+        "category": "ai-machine-learning",
+        "trendCount": 2,
+        "averageScore": 57.8,
+        "topTrendId": "ai-agents",
+        "topTrendName": "AI Agents"
+      },
       {
         "category": "hardware-robotics",
         "trendCount": 1,
@@ -233,39 +180,18 @@
         "topTrendName": "Robotics"
       },
       {
-        "category": "ai-machine-learning",
-        "trendCount": 11,
-        "averageScore": 22.9,
-        "topTrendId": "ai-agents",
-        "topTrendName": "AI Agents"
-      },
-      {
-        "category": "infrastructure-cloud",
-        "trendCount": 1,
-        "averageScore": 21.1,
-        "topTrendId": "computer-perplexity",
-        "topTrendName": "Computer Perplexity"
-      },
-      {
         "category": "science-research",
-        "trendCount": 8,
-        "averageScore": 18.6,
+        "trendCount": 1,
+        "averageScore": 37.7,
         "topTrendId": "baseball-classic",
         "topTrendName": "Baseball Classic"
       },
       {
-        "category": "consumer-tech",
-        "trendCount": 1,
-        "averageScore": 17.5,
-        "topTrendId": "translated-content",
-        "topTrendName": "Translated Content"
-      },
-      {
-        "category": "enterprise-saas",
-        "trendCount": 1,
-        "averageScore": 17.5,
-        "topTrendId": "enterprise-automation",
-        "topTrendName": "Enterprise Automation"
+        "category": "general-tech",
+        "trendCount": 6,
+        "averageScore": 26.8,
+        "topTrendId": "macbook-neo",
+        "topTrendName": "Macbook NEO"
       }
     ]
   },
