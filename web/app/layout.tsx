@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className="theme-soft-charcoal" lang="en">
+    <html className="theme-atlassian-light" lang="en">
       <body>
         <NavBar />
         {children}

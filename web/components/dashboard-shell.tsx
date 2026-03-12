@@ -43,6 +43,7 @@ import type {
   PublicWatchlistSummary,
   PublicWatchlistsResponse,
   TrendDetailRecord,
+  TrendExplorerRecord,
   Watchlist,
   WatchlistResponse,
 } from "@/lib/types";
@@ -1432,7 +1433,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
                 const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
                 const evidenceMeta = [
-                  primaryEvidenceLink ? `Source: ${formatSourceLabel(primaryEvidenceLink.source)}` : null,
+                  primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
                   audienceSummary,
                 ]
                   .filter((item): item is string => Boolean(item))
@@ -1474,30 +1475,28 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 
                     <div className="explorer-metrics-row">
                       <div className="explorer-metrics-panel">
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
-                          <span>Momentum</span>
-                          <div className="movement-inline">
-                            <strong className={movementClassName(trend.rankChange)}>
-                              {formatRankChange(trend.rankChange)}
-                            </strong>
-                            <small>{formatMomentum(trend.momentum.percentDelta)}</small>
-                          </div>
+                        <div className="explorer-metric-card">
+                          <span className="explorer-metric-label">Trend strength</span>
+                          <strong className="explorer-metric-value">{trend.score.total.toFixed(1)}</strong>
+                          <small className="explorer-metric-copy">{formatScoreMix(trend.score)}</small>
                         </div>
 
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-score">
-                          <span>Total score</span>
-                          <div className="score-inline">
-                            <strong>{trend.score.total.toFixed(1)}</strong>
-                            <small>
-                              S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
-                              {trend.score.knowledge.toFixed(1)}
-                            </small>
-                          </div>
+                        <div className="explorer-metric-card">
+                          <span className="explorer-metric-label">Change vs last run</span>
+                          <strong className={movementClassName(trend.rankChange)}>
+                            {formatMomentumHeadline(trend)}
+                          </strong>
+                          <small className="explorer-metric-copy">{formatMomentumDetail(trend)}</small>
                         </div>
 
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
-                          <span>Signals</span>
-                          <strong>{trend.coverage.signalCount}</strong>
+                        <div className="explorer-metric-card">
+                          <span className="explorer-metric-label">Evidence base</span>
+                          <strong className="explorer-metric-value">
+                            {trend.coverage.signalCount} signal{trend.coverage.signalCount === 1 ? "" : "s"}
+                          </strong>
+                          <small className="explorer-metric-copy">
+                            Backed by {trend.coverage.sourceCount} source{trend.coverage.sourceCount === 1 ? "" : "s"}
+                          </small>
                         </div>
                       </div>
 
@@ -1520,7 +1519,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
                       <div className="evidence-main-row">
-                        <span className="explorer-evidence-label">Signal brief</span>
+                        <span className="explorer-evidence-label">Latest signal</span>
                         {primaryEvidenceLink?.evidenceUrl ? (
                           <a
                             className="trend-link"
@@ -1544,7 +1543,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                               rel="noreferrer"
                               target="_blank"
                             >
-                              Wikipedia: {wikipediaLink.title}
+                              Background: {wikipediaLink.title}
                             </a>
                           ) : null}
                         </div>
@@ -2053,6 +2052,50 @@ function formatMomentum(value: number | null | undefined) {
     return "No prior run";
   }
   return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function formatMomentumHeadline(trend: TrendExplorerRecord) {
+  if (trend.rankChange == null) {
+    return "New signal";
+  }
+  const percentDelta = trend.momentum.percentDelta;
+  if (percentDelta == null) {
+    if (trend.rankChange === 0) {
+      return "Flat";
+    }
+    return `${trend.rankChange > 0 ? "Up" : "Down"} ${Math.abs(trend.rankChange)}`;
+  }
+  return `${percentDelta > 0 ? "+" : ""}${percentDelta.toFixed(1)}%`;
+}
+
+function formatMomentumDetail(trend: TrendExplorerRecord) {
+  if (trend.rankChange == null) {
+    return "First appearance in the current ranking";
+  }
+  if (trend.rankChange === 0) {
+    return "Holding the same rank as the previous run";
+  }
+  const direction = trend.rankChange > 0 ? "up" : "down";
+  const magnitude = Math.abs(trend.rankChange);
+  return `Rank ${direction} ${magnitude} place${magnitude === 1 ? "" : "s"} vs previous run`;
+}
+
+function formatScoreMix(score: TrendExplorerRecord["score"]) {
+  const mix = ([
+    ["Social", score.social],
+    ["Developer", score.developer],
+    ["Knowledge", score.knowledge],
+    ["Search", score.search],
+  ] as Array<[string, number]>)
+    .filter(([, value]) => value > 0)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2)
+    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
+
+  if (mix.length === 0) {
+    return `Driven by cross-source diversity ${score.diversity.toFixed(1)}`;
+  }
+  return `Led by ${mix.join(" · ")}`;
 }
 
 function movementClassName(rankChange: number | null | undefined) {
