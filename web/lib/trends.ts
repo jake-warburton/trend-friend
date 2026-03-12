@@ -18,12 +18,18 @@ const DATA_DIRECTORIES = [
   path.join(process.cwd(), "data"),
   path.join(process.cwd(), "web", "data"),
 ];
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ACCESS_KEY =
+  process.env.SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 /**
  * Whether to fetch from the Python REST API (true) or fall back to JSON files.
  * Set SIGNAL_EYE_API_URL to enable API mode. Falls back to files on error.
  */
 const API_ENABLED = !!process.env.SIGNAL_EYE_API_URL;
+const SUPABASE_PAYLOADS_ENABLED = !!SUPABASE_URL && !!SUPABASE_ACCESS_KEY;
 
 export async function loadDashboardData(): Promise<DashboardData> {
   const [latest, history, overview, explorer, details, sourceSummary] = await Promise.all([
@@ -43,6 +49,11 @@ async function readLatestTrends(): Promise<LatestTrendsResponse> {
       return await apiGet<LatestTrendsResponse>("/trends/latest");
     } catch { /* fall through to file */ }
   }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      return await readSupabasePayload<LatestTrendsResponse>("latest-trends.json");
+    } catch { /* fall through to file */ }
+  }
   return readJsonFile<LatestTrendsResponse>("latest-trends.json", {
     generatedAt: new Date(0).toISOString(),
     trends: [],
@@ -53,6 +64,11 @@ async function readTrendHistory(): Promise<TrendHistoryResponse> {
   if (API_ENABLED) {
     try {
       return await apiGet<TrendHistoryResponse>("/trends/history");
+    } catch { /* fall through to file */ }
+  }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      return await readSupabasePayload<TrendHistoryResponse>("trend-history.json");
     } catch { /* fall through to file */ }
   }
   return readJsonFile<TrendHistoryResponse>("trend-history.json", {
@@ -66,6 +82,12 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
   if (API_ENABLED) {
     try {
       payload = await apiGet<DashboardOverviewResponse>("/dashboard/overview");
+      return normalizeDashboardOverview(payload);
+    } catch { /* fall through to file */ }
+  }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      payload = await readSupabasePayload<DashboardOverviewResponse>("dashboard-overview.v2.json");
       return normalizeDashboardOverview(payload);
     } catch { /* fall through to file */ }
   }
@@ -229,6 +251,12 @@ async function readTrendExplorer(): Promise<TrendExplorerResponse> {
       return normalizeTrendExplorer(payload);
     } catch { /* fall through to file */ }
   }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      payload = await readSupabasePayload<TrendExplorerResponse>("trend-explorer.v2.json");
+      return normalizeTrendExplorer(payload);
+    } catch { /* fall through to file */ }
+  }
   payload = await readJsonFile<TrendExplorerResponse>("trend-explorer.v2.json", {
     generatedAt: new Date(0).toISOString(),
     trends: [],
@@ -343,6 +371,12 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
       // Fall through to file for bulk loading
     } catch { /* fall through */ }
   }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      payload = await readSupabasePayload<TrendDetailIndexResponse>("trend-detail-index.v2.json");
+      return normalizeTrendDetailIndex(payload);
+    } catch { /* fall through to file */ }
+  }
   payload = await readJsonFile<TrendDetailIndexResponse>("trend-detail-index.v2.json", {
     generatedAt: new Date(0).toISOString(),
     trends: [],
@@ -439,6 +473,12 @@ async function readSourceSummary(): Promise<SourceSummaryResponse> {
       return normalizeSourceSummary(payload);
     } catch { /* fall through to file */ }
   }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      payload = await readSupabasePayload<SourceSummaryResponse>("source-summary.v2.json");
+      return normalizeSourceSummary(payload);
+    } catch { /* fall through to file */ }
+  }
   payload = await readJsonFile<SourceSummaryResponse>("source-summary.v2.json", {
     generatedAt: new Date(0).toISOString(),
     sources: [],
@@ -494,4 +534,33 @@ async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {
     }
   }
   return fallback;
+}
+
+async function readSupabasePayload<T>(payloadKey: string): Promise<T> {
+  const response = await fetch(buildSupabasePayloadUrl(payloadKey), {
+    method: "GET",
+    headers: {
+      apikey: SUPABASE_ACCESS_KEY!,
+      Authorization: `Bearer ${SUPABASE_ACCESS_KEY!}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load Supabase payload ${payloadKey}: ${response.status}`);
+  }
+  const rows = (await response.json()) as Array<{ payload_json: T | string }>;
+  if (rows.length === 0) {
+    throw new Error(`Missing Supabase payload ${payloadKey}`);
+  }
+  const payload = rows[0]?.payload_json;
+  return typeof payload === "string" ? (JSON.parse(payload) as T) : (payload as T);
+}
+
+function buildSupabasePayloadUrl(payloadKey: string): string {
+  const url = new URL("/rest/v1/published_payloads", SUPABASE_URL);
+  url.searchParams.set("select", "payload_json");
+  url.searchParams.set("payload_key", `eq.${payloadKey}`);
+  url.searchParams.set("limit", "1");
+  return url.toString();
 }
