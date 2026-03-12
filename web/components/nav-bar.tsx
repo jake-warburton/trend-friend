@@ -9,23 +9,25 @@ const NAV_LINKS = [
 
 export function NavBar() {
   const pathname = usePathname();
-  const navClassName = pathname === "/" ? "nav-bar nav-bar-static" : "nav-bar";
-  const activeLabel =
-    pathname.startsWith("/trends") ? "Trend detail" : pathname.startsWith("/sources") ? "Source monitor" : "Explorer";
+  const navClassName = pathname === "/" ? "nav-bar nav-bar-static nav-bar-blend" : "nav-bar";
 
   return (
     <nav className={navClassName}>
       <Link className="nav-bar-brand" href="/">
         <span className="nav-bar-brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="presentation">
-            <path
-              d="M2.5 12C4.9 7.8 8.2 5.7 12 5.7S19.1 7.8 21.5 12c-2.4 4.2-5.7 6.3-9.5 6.3S4.9 16.2 2.5 12Z"
-              fill="#f5f5f5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <circle cx="12" cy="12" r="3.2" fill="#0b0b0b" />
-            <circle cx="13.2" cy="10.8" r="0.95" fill="#f5f5f5" />
+          <svg viewBox="0 0 256 256" role="presentation" fill="none">
+            <g
+              stroke="#22c55e"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M40 96C90 56 166 56 216 96" />
+              <path d="M68 128C106 98 150 98 188 128" />
+              <path d="M96 160C116 144 140 144 160 160" />
+              <circle cx="128" cy="186" r="18" />
+              <line x1="141" y1="199" x2="167" y2="225" />
+            </g>
           </svg>
         </span>
         <span className="nav-bar-brand-copy">
@@ -33,10 +35,6 @@ export function NavBar() {
           <span className="nav-bar-brand-tag">Market intelligence terminal</span>
         </span>
       </Link>
-      <div className="nav-bar-meta">
-        <span className="nav-bar-status-pill">Live</span>
-        <span className="nav-bar-active-label">{activeLabel}</span>
-      </div>
       <div className="nav-bar-links">
         {NAV_LINKS.map((link) => {
           const active =

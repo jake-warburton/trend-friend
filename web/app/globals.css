@@ -384,7 +384,7 @@ input {
   width: 100%;
   margin: 0;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 18px;
   min-height: 62px;
@@ -455,38 +455,6 @@ input {
   font-size: 0.62rem;
   font-weight: 450;
   letter-spacing: 0.04em;
-}
-
-.nav-bar-meta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.nav-bar-status-pill,
-.nav-bar-active-label {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 0 11px;
-  border-radius: var(--radius-pill);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-.nav-bar-status-pill {
-  border: 1px solid var(--status-ok-border);
-  background: var(--status-ok-bg);
-  color: var(--status-ok-text);
-}
-
-.nav-bar-active-label {
-  border: 1px solid var(--border);
-  background: var(--surface-subtle);
-  color: var(--muted);
 }
 
 .nav-bar-links {
@@ -2962,10 +2930,6 @@ input {
   .nav-bar-blend {
     width: min(100% - 24px, 1440px);
     padding: 8px 0 10px;
-  }
-
-  .nav-bar-meta {
-    justify-content: flex-start;
   }
 
   .hero-panel,
