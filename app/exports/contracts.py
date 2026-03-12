@@ -437,6 +437,12 @@ class DashboardOverviewRunPayload:
     top_trend_id: str | None
     top_trend_name: str | None
     top_score: float | None
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
+    multi_source_trend_count: int
+    low_evidence_trend_count: int
 
 
 @dataclass(frozen=True)
@@ -507,6 +513,12 @@ class DashboardOverviewPayload:
             run["topTrendId"] = run.pop("top_trend_id")
             run["topTrendName"] = run.pop("top_trend_name")
             run["topScore"] = run.pop("top_score")
+            run["rawTopicCount"] = run.pop("raw_topic_count")
+            run["mergedTopicCount"] = run.pop("merged_topic_count")
+            run["duplicateTopicCount"] = run.pop("duplicate_topic_count")
+            run["duplicateTopicRate"] = run.pop("duplicate_topic_rate")
+            run["multiSourceTrendCount"] = run.pop("multi_source_trend_count")
+            run["lowEvidenceTrendCount"] = run.pop("low_evidence_trend_count")
         for source in payload["sources"]:
             source["signalCount"] = source.pop("signal_count")
             source["trendCount"] = source.pop("trend_count")

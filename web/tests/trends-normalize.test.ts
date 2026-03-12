@@ -88,6 +88,50 @@ test("normalizeDashboardOverview preserves provided values", () => {
   assert.equal(result.operations.successRate, 1.0);
 });
 
+test("normalizeDashboardOverview defaults missing run quality fields", () => {
+  const input: DashboardOverviewResponse = {
+    generatedAt: "2026-03-10T00:00:00Z",
+    summary: { trackedTrends: 50, totalSignals: 200, sourceCount: 6, averageScore: 32.5 },
+    highlights: {
+      topTrendId: "ai-agents",
+      topTrendName: "AI Agents",
+      biggestMoverId: null,
+      biggestMoverName: null,
+      newestTrendId: null,
+      newestTrendName: null,
+    },
+    charts: { topTrendScores: [{ label: "AI", value: 50 }], sourceShare: [], statusBreakdown: [] },
+    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], metaTrends: [] },
+    operations: {
+      lastRunAt: "2026-03-10T00:00:00Z",
+      successRate: 1.0,
+      averageDurationMs: 5000,
+      recentRuns: [
+        {
+          capturedAt: "2026-03-10T00:00:00Z",
+          durationMs: 5000,
+          sourceCount: 6,
+          successfulSourceCount: 6,
+          failedSourceCount: 0,
+          signalCount: 200,
+          rankedTrendCount: 100,
+          status: "healthy",
+          topTrendId: "ai-agents",
+          topTrendName: "AI Agents",
+          topScore: 42.4,
+        } as any,
+      ],
+    },
+    sources: [],
+  };
+
+  const result = normalizeDashboardOverview(input);
+
+  assert.equal(result.operations.recentRuns[0].rawTopicCount, 0);
+  assert.equal(result.operations.recentRuns[0].duplicateTopicRate, 0);
+  assert.equal(result.operations.recentRuns[0].lowEvidenceTrendCount, 0);
+});
+
 // ── normalizeTrendExplorer ──────────────────────────────────────────────
 
 test("normalizeTrendExplorer defaults missing trend fields", () => {

@@ -209,6 +209,12 @@ export function normalizeDashboardOverview(payload: DashboardOverviewResponse): 
         topTrendId: run.topTrendId ?? null,
         topTrendName: run.topTrendName ?? null,
         topScore: run.topScore ?? null,
+        rawTopicCount: run.rawTopicCount ?? 0,
+        mergedTopicCount: run.mergedTopicCount ?? 0,
+        duplicateTopicCount: run.duplicateTopicCount ?? 0,
+        duplicateTopicRate: run.duplicateTopicRate ?? 0,
+        multiSourceTrendCount: run.multiSourceTrendCount ?? 0,
+        lowEvidenceTrendCount: run.lowEvidenceTrendCount ?? 0,
       })),
     },
     sourceWatch: (payload.sourceWatch ?? []).map((item) => ({

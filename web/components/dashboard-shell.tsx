@@ -167,6 +167,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         : buildSourceWatchlist(initialData.overview.sources),
     [initialData.overview.sourceWatch, initialData.overview.sources],
   );
+  const latestPipelineRun = initialData.overview.operations.recentRuns[0] ?? null;
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -964,6 +965,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           <div className="stat-card">
             <span>Health</span>
             <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
+          </div>
+          <div className="stat-card">
+            <span>Pipeline quality</span>
+            <strong>{latestPipelineRun ? `${latestPipelineRun.duplicateTopicRate.toFixed(1)}% dupes` : "No data"}</strong>
+            {latestPipelineRun ? (
+              <small>
+                {latestPipelineRun.multiSourceTrendCount} corroborated · {latestPipelineRun.lowEvidenceTrendCount} thin
+              </small>
+            ) : null}
           </div>
           <div className="stat-card">
             <span>Avg score</span>
@@ -1810,7 +1820,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     {run.sourceCount} healthy
                   </p>
                   <p className="source-summary-copy">
-                    {formatDuration(run.durationMs)} ·{" "}
+                    {run.rawTopicCount} raw → {run.mergedTopicCount} merged · {run.duplicateTopicRate.toFixed(1)}% dupes
+                  </p>
+                  <p className="source-summary-copy">
+                    {run.multiSourceTrendCount} corroborated · {run.lowEvidenceTrendCount} thin · {formatDuration(run.durationMs)} ·{" "}
                     {run.topTrendId && run.topTrendName ? (
                       <>
                         <Link className="trend-link" href={`/trends/${run.topTrendId}`}>

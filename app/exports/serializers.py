@@ -777,6 +777,12 @@ def build_dashboard_operations_payload(
                 top_trend_id=slugify(run.top_topic) if run.top_topic else None,
                 top_trend_name=fallback_display_name(run.top_topic) if run.top_topic else None,
                 top_score=round(run.top_score, 1) if run.top_score is not None else None,
+                raw_topic_count=run.raw_topic_count,
+                merged_topic_count=run.merged_topic_count,
+                duplicate_topic_count=run.duplicate_topic_count,
+                duplicate_topic_rate=run.duplicate_topic_rate,
+                multi_source_trend_count=run.multi_source_trend_count,
+                low_evidence_trend_count=run.low_evidence_trend_count,
             )
             for run in pipeline_runs
         ],

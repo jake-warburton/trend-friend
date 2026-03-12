@@ -127,6 +127,12 @@ export type DashboardOverviewRun = {
   topTrendId: string | null;
   topTrendName: string | null;
   topScore: number | null;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
+  multiSourceTrendCount: number;
+  lowEvidenceTrendCount: number;
 };
 
 export type DashboardOverviewOperations = {
