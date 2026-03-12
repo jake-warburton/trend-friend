@@ -3117,8 +3117,9 @@ input {
   }
 
   .explorer-card {
-    padding: 10px;
-    border-radius: var(--radius-md);
+    --explorer-left-inset: 4px;
+    padding: 9px 0 9px 10px;
+    border-radius: 0;
   }
 
   .explorer-card-head,
@@ -3144,7 +3145,64 @@ input {
   }
 
   .explorer-card::before {
-    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    inset: 9px auto 9px 0;
+    border-radius: 999px;
+  }
+
+  .explorer-card-kicker,
+  .trend-title-row,
+  .explorer-badge-row {
+    gap: 4px;
+  }
+
+  .trend-title-row strong {
+    font-size: 0.8rem;
+    line-height: 1.04;
+  }
+
+  .trend-summary-chip,
+  .trend-date-chip,
+  .explorer-rank-chip {
+    font-size: 0.5rem;
+  }
+
+  .explorer-metrics-row {
+    grid-template-columns: minmax(0, 1fr) 28px;
+    gap: 8px;
+    align-items: start;
+  }
+
+  .explorer-metrics-panel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .explorer-metric-card {
+    gap: 2px;
+    padding: 5px 6px;
+  }
+
+  .explorer-metrics-panel > .explorer-metric-card:first-child {
+    padding-left: 0;
+  }
+
+  .explorer-metric-label {
+    font-size: 0.48rem;
+    letter-spacing: 0.02em;
+  }
+
+  .explorer-metric-value,
+  .explorer-metric-card .movement-pill {
+    font-size: 0.72rem;
+  }
+
+  .explorer-metric-copy {
+    font-size: 0.56rem;
+    line-height: 1.15;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .score-grid {
