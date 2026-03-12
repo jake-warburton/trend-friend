@@ -16,7 +16,7 @@ import { formatCategoryLabel } from "@/lib/category-labels";
 import type { OverviewRefreshMeta } from "@/lib/auto-refresh";
 import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
-import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { getPrimaryEvidenceLink, summarizeEvidencePreview } from "@/lib/evidence-links";
 import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
@@ -949,6 +949,16 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 ? `${latestPipelineRun.successfulSourceCount}/${latestPipelineRun.sourceCount} sources healthy`
                 : "No recent pipeline run"}
             </span>
+            {isDataStale(overviewMeta.lastRunAt) ? (
+              <span className="stale-warning">Data may be stale</span>
+            ) : null}
+            {liveUpdateState === "checking" ? <span className="live-update-note">Checking for updates…</span> : null}
+            {liveUpdateState === "updating" ? <span className="live-update-note pulse-text">Applying live update…</span> : null}
+            {liveUpdateState === "updated" ? (
+              <span className="live-update-note live-update-note-success">
+                {changedTrendIds.length > 0 ? `${changedTrendIds.length} trends updated` : "Updated just now"}
+              </span>
+            ) : null}
             {canManualRefresh ? (
               <Button
                 className="refresh-button refresh-button-wide"
@@ -987,48 +997,23 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
           </article>
           <article className="hero-summary-card">
-            <span>Last run</span>
-            <strong>
-              {overviewMeta.lastRunAt
-                ? formatCompactTimestamp(overviewMeta.lastRunAt)
-                : "No data"}
-            </strong>
-            {isDataStale(overviewMeta.lastRunAt) && (
-              <span className="stale-warning">Data may be stale</span>
-            )}
-            {liveUpdateState === "checking" ? <span className="live-update-note">Checking for updates…</span> : null}
-            {liveUpdateState === "updating" ? <span className="live-update-note pulse-text">Applying live update…</span> : null}
-            {liveUpdateState === "updated" ? (
-              <span className="live-update-note live-update-note-success">
-                {changedTrendIds.length > 0 ? `${changedTrendIds.length} trends updated` : "Updated just now"}
-              </span>
-            ) : null}
+            <span>Coverage</span>
+            <strong>{initialData.overview.summary.trackedTrends} tracked</strong>
+            <small>
+              {initialData.overview.summary.totalSignals} signals · avg {initialData.overview.summary.averageScore.toFixed(1)}
+            </small>
           </article>
-          <div className="stat-card">
-            <span>Tracked</span>
-            <strong>{initialData.overview.summary.trackedTrends}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Signals</span>
-            <strong>{initialData.overview.summary.totalSignals}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Health</span>
-            <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
-          </div>
-          <div className="stat-card">
-            <span>Pipeline quality</span>
-            <strong>{latestPipelineRun ? `${latestPipelineRun.duplicateTopicRate.toFixed(1)}% dupes` : "No data"}</strong>
+          <article className="hero-summary-card">
+            <span>Quality</span>
+            <strong>
+              {latestPipelineRun ? `${latestPipelineRun.duplicateTopicRate.toFixed(1)}% dupes` : "No data"}
+            </strong>
             {latestPipelineRun ? (
               <small>
-                {latestPipelineRun.multiSourceTrendCount} corroborated · {latestPipelineRun.lowEvidenceTrendCount} thin
+                {initialData.overview.operations.successRate.toFixed(1)}% health · {latestPipelineRun.multiSourceTrendCount} corroborated
               </small>
             ) : null}
-          </div>
-          <div className="stat-card">
-            <span>Avg score</span>
-            <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
-          </div>
+          </article>
         </div>
       </section>
 
@@ -1432,6 +1417,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 const wikipediaLink = getWikipediaLinkFromDetail(detail);
                 const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
                 const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
+                const evidencePreviewText = primaryEvidenceLink
+                  ? summarizeEvidencePreview(primaryEvidenceLink.evidence, primaryEvidenceLink.source)
+                  : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
                 const evidenceMeta = [
                   primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
                   audienceSummary,
@@ -1527,10 +1515,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                             rel="noreferrer"
                             target="_blank"
                           >
-                            {primaryEvidenceLink.evidence}
+                            {evidencePreviewText}
                           </a>
                         ) : (
-                          <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                          <span>{evidencePreviewText}</span>
                         )}
                       </div>
                       {(evidenceMeta || wikipediaLink) ? (
