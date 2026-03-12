@@ -38,6 +38,101 @@ class TrendScoringTests(unittest.TestCase):
         ranked = rank_topics_by_score([zeta, lower, alpha], limit=3)
         self.assertEqual([score.topic for score in ranked], ["alpha", "zeta", "battery"])
 
+    def test_rank_topics_by_score_demotes_low_evidence_topics_in_tail(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        protected_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        low_evidence_tail = TrendScoreResult(
+            topic="thin-tail-topic",
+            total_score=18.0,
+            search_score=0.0,
+            social_score=18.0,
+            developer_score=0.0,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["Thin evidence"],
+            source_counts={"reddit": 1},
+            latest_timestamp=timestamp,
+        )
+        corroborated_tail = TrendScoreResult(
+            topic="corroborated-tail-topic",
+            total_score=16.5,
+            search_score=0.0,
+            social_score=10.0,
+            developer_score=4.0,
+            knowledge_score=0.0,
+            diversity_score=6.0,
+            evidence=["Evidence one", "Evidence two"],
+            source_counts={"reddit": 1, "github": 1},
+            latest_timestamp=timestamp,
+        )
+
+        ranked = rank_topics_by_score(protected_scores + [low_evidence_tail, corroborated_tail], limit=27)
+
+        self.assertEqual(ranked[25].topic, "corroborated-tail-topic")
+        self.assertEqual(ranked[26].topic, "thin-tail-topic")
+
+    def test_rank_topics_by_score_gates_low_scoring_low_evidence_tail_when_alternatives_exist(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        protected_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        low_evidence_tail = TrendScoreResult(
+            topic="thin-tail-topic",
+            total_score=10.0,
+            search_score=0.0,
+            social_score=10.0,
+            developer_score=0.0,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["Thin evidence"],
+            source_counts={"reddit": 1},
+            latest_timestamp=timestamp,
+        )
+        alternate_tail = TrendScoreResult(
+            topic="alternate-tail-topic",
+            total_score=9.0,
+            search_score=0.0,
+            social_score=5.0,
+            developer_score=2.0,
+            knowledge_score=0.0,
+            diversity_score=6.0,
+            evidence=["Evidence one", "Evidence two"],
+            source_counts={"reddit": 1, "github": 1},
+            latest_timestamp=timestamp,
+        )
+
+        ranked = rank_topics_by_score(protected_scores + [low_evidence_tail, alternate_tail], limit=26)
+
+        self.assertEqual(len(ranked), 26)
+        self.assertEqual(ranked[-1].topic, "alternate-tail-topic")
+        self.assertNotIn("thin-tail-topic", [score.topic for score in ranked])
+
     def test_calculate_trend_scores_prefers_specific_exact_phrases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         specific = TopicAggregate(
