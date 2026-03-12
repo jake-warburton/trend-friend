@@ -521,8 +521,8 @@ input {
 
 .hero-panel {
   display: grid;
-  gap: 22px;
-  padding: 22px 22px 18px;
+  gap: 14px;
+  padding: 16px 18px 14px;
   border-radius: 28px;
   background:
     radial-gradient(circle at top left, rgba(79, 195, 247, 0.08), transparent 24%),
@@ -533,35 +533,21 @@ input {
 .hero-header {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.72fr);
-  gap: 22px;
+  gap: 16px;
   align-items: stretch;
 }
 
 .hero-header-copy {
   min-width: 0;
-}
-
-.hero-header h1 {
-  margin: 0;
-  max-width: 16ch;
-  font-size: clamp(2.2rem, 5vw, 3.8rem);
-  line-height: 0.95;
-  letter-spacing: -0.05em;
-}
-
-.hero-header-description {
-  margin: 14px 0 0;
-  max-width: 60ch;
-  color: var(--muted);
-  font-size: 0.98rem;
-  line-height: 1.65;
+  display: flex;
+  align-items: center;
 }
 
 .hero-command {
   display: grid;
   align-content: start;
-  gap: 10px;
-  padding: 18px 18px 16px;
+  gap: 8px;
+  padding: 14px 15px 13px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(21, 24, 30, 0.96), rgba(16, 18, 22, 0.98));
@@ -577,18 +563,18 @@ input {
 
 .hero-command strong {
   display: block;
-  font-size: 1.35rem;
+  font-size: 1.08rem;
   line-height: 1;
 }
 
 .hero-command-copy {
   color: var(--muted);
-  font-size: 0.84rem;
-  line-height: 1.5;
+  font-size: 0.76rem;
+  line-height: 1.4;
 }
 
 .eyebrow {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   color: var(--accent-strong);
   font-size: 0.64rem;
   font-weight: 800;
@@ -606,12 +592,12 @@ input {
 .hero-rail {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   align-items: stretch;
 }
 
 .hero-summary-card {
-  padding: 14px 15px;
+  padding: 12px 13px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(29, 33, 40, 0.96), rgba(20, 23, 28, 0.98));
@@ -628,15 +614,15 @@ input {
 
 .hero-summary-card strong {
   display: block;
-  margin-top: 8px;
-  font-size: 1rem;
+  margin-top: 6px;
+  font-size: 0.9rem;
   line-height: 1.2;
 }
 
 .live-update-note {
   display: inline-flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--muted);
   font-size: 0.68rem;
   font-weight: 700;
@@ -656,7 +642,7 @@ input {
 }
 
 .stat-card {
-  padding: 14px 15px;
+  padding: 12px 13px;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(28, 31, 38, 0.96), rgba(18, 21, 26, 0.98));
 }
@@ -675,16 +661,16 @@ input {
 
 .stat-card strong {
   display: block;
-  margin-top: 8px;
-  font-size: 1rem;
+  margin-top: 6px;
+  font-size: 0.9rem;
   line-height: 1;
 }
 
 .stat-card small {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   line-height: 1.4;
 }
 
@@ -745,8 +731,8 @@ input {
   gap: 10px;
   width: auto;
   height: auto;
-  padding: 10px 14px;
-  font-size: 0.72rem;
+  padding: 9px 12px;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -2804,13 +2790,8 @@ input {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .hero-header h1 {
-    max-width: none;
-    font-size: 2rem;
-  }
-
   .hero-command {
-    padding: 16px;
+    padding: 14px;
   }
 
   .community-controls,

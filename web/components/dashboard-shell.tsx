@@ -938,12 +938,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       <section className="hero-panel">
         <div className="hero-header">
           <div className="hero-header-copy">
-            <p className="eyebrow">Live market intelligence</p>
-            <h1>Track emerging narratives with institutional-grade clarity.</h1>
-            <p className="hero-header-description">
-              Signal Eye ranks live signals across social, developer, knowledge, search, and market sources so the
-              highest-conviction trends stand out fast.
-            </p>
+            <p className="eyebrow">Signal Eye</p>
           </div>
           <div className="hero-command">
             <span className="hero-command-label">Terminal status</span>
