@@ -23,6 +23,12 @@ const PALETTE = ["#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#9b8cff"];
 const HISTORY_BUCKET_MINUTES = 5;
 const CHART_AXIS_COLOR = "var(--chart-axis)";
 const CHART_GRID_COLOR = "var(--chart-grid)";
+const LEGEND_TEXT_COLOR = "#ffffff";
+
+type TrajectoryLegendEntry = {
+  value?: string;
+  color?: string;
+};
 
 type ChartTrend = TrendDetailRecord & {
   chartHistory: Array<{ capturedAt: string; scoreTotal: number }>;
@@ -172,8 +178,7 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
             labelFormatter={(label) => String(label)}
           />
           <Legend
-            wrapperStyle={{ fontSize: 11, color: CHART_AXIS_COLOR }}
-            iconType="plainline"
+            content={<TrajectoryLegend />}
           />
           {topTrends.map((trend, i) => (
             <Line
@@ -207,6 +212,49 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
           })}
         </LineChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+function TrajectoryLegend({ payload }: { payload?: TrajectoryLegendEntry[] }) {
+  if (!payload || payload.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "6px",
+        paddingTop: "8px",
+      }}
+    >
+      {payload.map((entry) => {
+        const label = entry.value;
+        if (!label) {
+          return null;
+        }
+
+        return (
+          <span
+            key={String(label)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "4px 8px",
+              borderRadius: "999px",
+              background: typeof entry.color === "string" ? entry.color : "var(--accent)",
+              color: LEGEND_TEXT_COLOR,
+              fontSize: "11px",
+              fontWeight: 600,
+              lineHeight: 1,
+            }}
+          >
+            {label}
+          </span>
+        );
+      })}
     </div>
   );
 }
