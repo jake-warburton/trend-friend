@@ -24,6 +24,7 @@ const HISTORY_BUCKET_MINUTES = 5;
 const CHART_AXIS_COLOR = "var(--chart-axis)";
 const CHART_GRID_COLOR = "var(--chart-grid)";
 const LEGEND_TEXT_COLOR = "#ffffff";
+const LEGEND_HEIGHT = 52;
 
 type TrajectoryLegendEntry = {
   value?: string;
@@ -145,7 +146,7 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={280}>
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 12, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis
             dataKey="date"
@@ -178,6 +179,8 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
             labelFormatter={(label) => String(label)}
           />
           <Legend
+            verticalAlign="bottom"
+            height={LEGEND_HEIGHT}
             content={<TrajectoryLegend />}
           />
           {topTrends.map((trend, i) => (
