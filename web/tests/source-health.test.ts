@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildSourceWatchlist } from "@/lib/source-health";
+import {
+  buildSourceContributionInsights,
+  buildSourceWatchlist,
+  getSourceFreshnessBadge,
+  summarizeTopSourceDrivers,
+} from "@/lib/source-health";
 
 test("buildSourceWatchlist prioritizes failed and fallback sources", () => {
   const items = buildSourceWatchlist([
@@ -37,6 +42,106 @@ test("buildSourceWatchlist prioritizes failed and fallback sources", () => {
       ["hacker_news", "critical", "Latest run failed"],
       ["github", "warning", "Latest run used fallback data"],
     ],
+  );
+});
+
+test("buildSourceContributionInsights merges source health with contribution detail", () => {
+  const items = buildSourceContributionInsights(
+    [
+      {
+        source: "github",
+        signalCount: 8,
+        latestSignalAt: "2026-03-11T21:00:00Z",
+        estimatedScore: 9.2,
+        scoreSharePercent: 46.2,
+        score: { total: 9.2, social: 0, developer: 7.8, knowledge: 0, search: 1.4, diversity: 0 },
+      },
+      {
+        source: "reddit",
+        signalCount: 5,
+        latestSignalAt: "2026-03-11T20:55:00Z",
+        estimatedScore: 4.7,
+        scoreSharePercent: 23.5,
+        score: { total: 4.7, social: 4.2, developer: 0, knowledge: 0.5, search: 0, diversity: 0 },
+      },
+    ],
+    [
+      {
+        source: "github",
+        status: "healthy",
+        latestFetchAt: "2026-03-11T21:01:00Z",
+        latestSuccessAt: "2026-03-11T21:01:00Z",
+        latestItemCount: 30,
+        keptItemCount: 18,
+        durationMs: 120,
+        usedFallback: false,
+        errorMessage: null,
+        yieldRatePercent: 60,
+        rawItemCount: 30,
+      },
+      {
+        source: "reddit",
+        status: "degraded",
+        latestFetchAt: "2026-03-11T21:01:00Z",
+        latestSuccessAt: "2026-03-11T21:01:00Z",
+        latestItemCount: 30,
+        keptItemCount: 2,
+        durationMs: 120,
+        usedFallback: true,
+        errorMessage: null,
+        yieldRatePercent: 6,
+        rawItemCount: 30,
+      },
+    ],
+  );
+
+  assert.deepEqual(
+    items.map((item) => [item.source, item.statusLabel, item.fetchSummary, item.warning]),
+    [
+      ["github", "Healthy", "Latest healthy fetch kept 18 of 30 items", null],
+      ["reddit", "Degraded", "Latest successful fetch used fallback data", "Latest successful fetch used fallback sample data."],
+    ],
+  );
+  assert.equal(items[0]?.mixSummary, "Developer 7.8 · Search 1.4");
+});
+
+test("summarizeTopSourceDrivers explains score concentration", () => {
+  const summary = summarizeTopSourceDrivers([
+    {
+      source: "github",
+      signalCount: 8,
+      latestSignalAt: "2026-03-11T21:00:00Z",
+      estimatedScore: 9.2,
+      scoreSharePercent: 46.2,
+      score: { total: 9.2, social: 0, developer: 7.8, knowledge: 0, search: 1.4, diversity: 0 },
+    },
+    {
+      source: "reddit",
+      signalCount: 5,
+      latestSignalAt: "2026-03-11T20:55:00Z",
+      estimatedScore: 4.7,
+      scoreSharePercent: 23.5,
+      score: { total: 4.7, social: 4.2, developer: 0, knowledge: 0.5, search: 0, diversity: 0 },
+    },
+  ]);
+
+  assert.equal(summary, "GitHub and Reddit account for 69.7% of this score.");
+});
+
+test("getSourceFreshnessBadge classifies recent and stale source fetches", () => {
+  const now = new Date("2026-03-12T00:00:00Z");
+
+  assert.deepEqual(
+    getSourceFreshnessBadge("2026-03-11T23:40:00Z", now),
+    { tone: "fresh", label: "Fresh" },
+  );
+  assert.deepEqual(
+    getSourceFreshnessBadge("2026-03-11T22:20:00Z", now),
+    { tone: "aging", label: "100m old" },
+  );
+  assert.deepEqual(
+    getSourceFreshnessBadge("2026-03-11T19:00:00Z", now),
+    { tone: "stale", label: "5h old" },
   );
 });
 

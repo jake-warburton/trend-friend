@@ -3,9 +3,15 @@ import { notFound } from "next/navigation";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
-import { loadTrendDetail, loadTrendHistory } from "@/lib/trends";
+import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
+import {
+  buildSourceContributionInsights,
+  formatSourceLabel,
+  getSourceFreshnessBadge,
+  summarizeTopSourceDrivers,
+} from "@/lib/source-health";
 import { getWikipediaLinkFromDetail, loadWikipediaSummary } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
@@ -21,7 +27,11 @@ export const dynamic = "force-dynamic";
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
-  const [trend, history] = await Promise.all([loadTrendDetail(slug), loadTrendHistory()]);
+  const [trend, history, sourceSummary] = await Promise.all([
+    loadTrendDetail(slug),
+    loadTrendHistory(),
+    loadSourceSummaries(),
+  ]);
 
   if (trend === null) {
     const recentTrend = findRecentTrendSnapshot(history, slug);
@@ -137,6 +147,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const primaryEvidenceLink = getPrimaryEvidenceLink(trend);
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
   const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
+  const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
 
   return (
     <main className="detail-page">
@@ -307,18 +318,33 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
           </div>
 
+          <p className="source-summary-copy detail-source-summary">
+            {summarizeTopSourceDrivers(trend.sourceContributions)}
+          </p>
           <div className="detail-list">
-            {trend.sourceContributions.map((source) => (
-              <article className="detail-list-item" key={source.source}>
+            {sourceInsights.map((source) => (
+              <article className="detail-list-item detail-list-item-source" key={source.source}>
                 <div>
-                  <strong>{formatSourceLabel(source.source)}</strong>
+                  <strong>{source.title}</strong>
                   <span>
                     {source.signalCount} signals · {source.scoreSharePercent.toFixed(1)}% est. score share
                   </span>
-                  <span>{formatContributionMix(source)}</span>
+                  <span>{source.mixSummary}</span>
+                  <span>{source.fetchSummary}</span>
+                  {source.warning ? <span className="source-warning-copy">{source.warning}</span> : null}
                 </div>
                 <small>
-                  {source.estimatedScore.toFixed(1)} pts · {formatTimestamp(source.latestSignalAt)}
+                  <span className={contributionHealthClassName(source.status)}>{source.statusLabel}</span>
+                  {(() => {
+                    const freshness = getSourceFreshnessBadge(source.fetchedAt);
+                    return freshness ? (
+                      <span className={`source-freshness-badge source-freshness-badge-${freshness.tone}`}>
+                        {freshness.label}
+                      </span>
+                    ) : null;
+                  })()}
+                  {source.fetchedAt ? ` · ${formatTimestamp(source.fetchedAt)}` : ""}
+                  {` · ${source.estimatedScore.toFixed(1)} pts · ${formatTimestamp(source.latestSignalAt)}`}
                 </small>
               </article>
             ))}
@@ -529,13 +555,6 @@ function formatDateOnly(value: string) {
   }).format(new Date(value));
 }
 
-function formatSourceLabel(source: string) {
-  return source
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 function formatCategory(category: string) {
   return category
     .split("-")
@@ -553,27 +572,6 @@ function formatOpportunityScore(value: number) {
 
 function formatPredictionDirection(direction: string) {
   return direction.charAt(0).toUpperCase() + direction.slice(1);
-}
-
-function formatContributionMix(source: TrendDetailRecord["sourceContributions"][number]) {
-  const componentScores: Array<[string, number]> = [
-    ["Social", source.score.social],
-    ["Developer", source.score.developer],
-    ["Knowledge", source.score.knowledge],
-    ["Search", source.score.search],
-    ["Diversity", source.score.diversity],
-  ];
-
-  const components = componentScores
-    .filter(([, value]) => value > 0)
-    .sort((left, right) => right[1] - left[1])
-    .slice(0, 2)
-    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
-
-  if (components.length === 0) {
-    return "No attributed score contribution";
-  }
-  return components.join(" · ");
 }
 
 function formatGeoLabel(item: {
@@ -701,4 +699,17 @@ function volatilityClassName(volatility: string) {
     return "volatility-pill volatility-pill-emerging";
   }
   return "volatility-pill";
+}
+
+function contributionHealthClassName(status: string | null) {
+  if (status === "healthy") {
+    return "source-health-pill source-health-pill-healthy";
+  }
+  if (status === "degraded") {
+    return "source-health-pill source-health-pill-degraded";
+  }
+  if (status === "stale") {
+    return "source-health-pill source-health-pill-stale";
+  }
+  return "source-health-pill";
 }

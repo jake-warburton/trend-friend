@@ -2,29 +2,48 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { classifySourceYield, describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
+import { filterAndSortSourceRuns, normalizeSourceRunFilter, normalizeSourceRunSort } from "@/lib/source-runs";
 import { loadSourceSummary } from "@/lib/trends";
 
 type SourcePageProps = {
   params: Promise<{
     source: string;
   }>;
+  searchParams?: Promise<{
+    filter?: string;
+    sort?: string;
+  }>;
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function SourcePage({ params }: SourcePageProps) {
+export default async function SourcePage({ params, searchParams }: SourcePageProps) {
   const { source } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const summary = await loadSourceSummary(source);
 
   if (summary === null) {
     notFound();
   }
 
-  const maxItemCount = Math.max(...summary.runHistory.map((run) => run.itemCount), 1);
-  const maxDurationMs = Math.max(...summary.runHistory.map((run) => run.durationMs), 1);
-  const successfulRuns = summary.runHistory.filter((run) => run.success).length;
-  const runMix = buildRunMix(summary.runHistory);
+  const selectedFilter = normalizeSourceRunFilter(resolvedSearchParams?.filter);
+  const selectedSort = normalizeSourceRunSort(resolvedSearchParams?.sort);
+  const visibleRuns = filterAndSortSourceRuns(summary.runHistory, selectedFilter, selectedSort);
+  const maxItemCount = Math.max(...visibleRuns.map((run) => run.itemCount), 1);
+  const maxDurationMs = Math.max(...visibleRuns.map((run) => run.durationMs), 1);
+  const successfulRuns = visibleRuns.filter((run) => run.success).length;
+  const runMix = buildRunMix(visibleRuns);
   const topTrendScore = Math.max(...summary.topTrends.map((trend) => trend.scoreTotal), 1);
+  const filterHref = (filter: string, sort: string = selectedSort) =>
+    buildSourcePageHref(source, {
+      filter: filter === "all" ? null : filter,
+      sort: sort === "newest" ? null : sort,
+    });
+  const sortHref = (sort: string) =>
+    buildSourcePageHref(source, {
+      filter: selectedFilter === "all" ? null : selectedFilter,
+      sort: sort === "newest" ? null : sort,
+    });
 
   return (
     <main className="detail-page">
@@ -78,9 +97,9 @@ export default async function SourcePage({ params }: SourcePageProps) {
             <article className="source-metric-card">
               <span>Success rate</span>
               <strong>
-                {summary.runHistory.length === 0
+                {visibleRuns.length === 0
                   ? "No runs"
-                  : `${Math.round((successfulRuns / summary.runHistory.length) * 100)}%`}
+                  : `${Math.round((successfulRuns / visibleRuns.length) * 100)}%`}
               </strong>
             </article>
             <article className="source-metric-card">
@@ -98,6 +117,43 @@ export default async function SourcePage({ params }: SourcePageProps) {
           </div>
 
           <p className="source-summary-copy">{describeSourceYield(summary)}</p>
+          <div className="source-run-controls">
+            <div className="source-run-control-group">
+              {[
+                ["all", "All runs"],
+                ["healthy", "Healthy"],
+                ["fallback", "Fallback"],
+                ["failed", "Failed"],
+              ].map(([value, label]) => (
+                <Link
+                  className={selectedFilter === value ? "source-run-filter source-run-filter-active" : "source-run-filter"}
+                  href={filterHref(value)}
+                  key={value}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+            <div className="source-run-control-group">
+              {[
+                ["newest", "Newest"],
+                ["oldest", "Oldest"],
+                ["slowest", "Slowest"],
+                ["lowest_yield", "Lowest yield"],
+              ].map(([value, label]) => (
+                <Link
+                  className={selectedSort === value ? "source-run-filter source-run-filter-active" : "source-run-filter"}
+                  href={sortHref(value)}
+                  key={value}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <p className="source-summary-copy">
+            Showing {visibleRuns.length} of {summary.runHistory.length} runs.
+          </p>
 
           <div className="source-run-chart">
             <div className="source-run-chart-header">
@@ -105,7 +161,7 @@ export default async function SourcePage({ params }: SourcePageProps) {
               <span>After dedupe and caps</span>
             </div>
             <div className="source-run-bars">
-              {summary.runHistory.map((run, index) => (
+              {visibleRuns.map((run, index) => (
                 <article className="source-run-bar-card" key={`items-${run.fetchedAt}-${index}`}>
                   <div
                     className={runBarClassName(run)}
@@ -124,7 +180,7 @@ export default async function SourcePage({ params }: SourcePageProps) {
               <span>Kept versus raw fetched</span>
             </div>
             <div className="source-run-bars">
-              {summary.runHistory.map((run, index) => (
+              {visibleRuns.map((run, index) => (
                 <article className="source-run-bar-card" key={`yield-${run.fetchedAt}-${index}`}>
                   <div
                     className={runBarClassName(run)}
@@ -143,7 +199,7 @@ export default async function SourcePage({ params }: SourcePageProps) {
               <span>Recent runs</span>
             </div>
             <div className="source-run-bars">
-              {summary.runHistory.map((run, index) => (
+              {visibleRuns.map((run, index) => (
                 <article className="source-run-bar-card" key={`duration-${run.fetchedAt}-${index}`}>
                   <div
                     className={runBarClassName(run)}
@@ -157,7 +213,7 @@ export default async function SourcePage({ params }: SourcePageProps) {
           </div>
 
           <div className="detail-list">
-            {summary.runHistory.map((run, index) => (
+            {visibleRuns.map((run, index) => (
               <article className="detail-list-item" key={`${run.fetchedAt}-${index}`}>
                 <div>
                   <strong>{formatTimestamp(run.fetchedAt)}</strong>
@@ -283,6 +339,21 @@ function formatSourceStatus(status: string) {
     return "Degraded";
   }
   return "Stale";
+}
+
+function buildSourcePageHref(
+  source: string,
+  options: { filter: string | null; sort: string | null },
+) {
+  const params = new URLSearchParams();
+  if (options.filter) {
+    params.set("filter", options.filter);
+  }
+  if (options.sort) {
+    params.set("sort", options.sort);
+  }
+  const query = params.toString();
+  return query.length > 0 ? `/sources/${encodeURIComponent(source)}?${query}` : `/sources/${encodeURIComponent(source)}`;
 }
 
 function formatPercent(value: number) {

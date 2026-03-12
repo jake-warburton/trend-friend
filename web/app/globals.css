@@ -1868,6 +1868,49 @@ input {
   -webkit-box-orient: vertical;
 }
 
+.source-contribution-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.source-contribution-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+
+.source-contribution-warning {
+  margin: 0;
+}
+
+.source-freshness-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.source-freshness-badge-fresh {
+  background: rgba(92, 196, 144, 0.12);
+  color: #8fe0b0;
+}
+
+.source-freshness-badge-aging {
+  background: rgba(240, 199, 111, 0.14);
+  color: #f1cf7f;
+}
+
+.source-freshness-badge-stale {
+  background: rgba(255, 149, 149, 0.14);
+  color: #ffb0b0;
+}
+
 .explorer-expand-geo {
   width: min(420px, 100%);
   padding: 2px 0 0;
@@ -2063,6 +2106,17 @@ input {
   border-radius: var(--radius-lg);
 }
 
+.detail-source-summary {
+  margin: 0 0 12px;
+}
+
+.detail-list-item-source small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+}
+
 .detail-panel-wide {
   grid-column: 1 / -1;
 }
@@ -2121,6 +2175,39 @@ input {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--card-history-gradient);
+}
+
+.source-run-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin: 14px 0 10px;
+}
+
+.source-run-control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.source-run-filter {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.source-run-filter-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: rgba(124, 199, 255, 0.35);
 }
 
 .source-run-chart-header {

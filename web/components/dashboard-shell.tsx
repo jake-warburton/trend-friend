@@ -16,7 +16,13 @@ import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
-import { buildSourceWatchlist } from "@/lib/source-health";
+import {
+  buildSourceContributionInsights,
+  buildSourceWatchlist,
+  formatSourceLabel,
+  getSourceFreshnessBadge,
+  summarizeTopSourceDrivers,
+} from "@/lib/source-health";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
@@ -1391,7 +1397,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                           detail.score.diversity,
                           1,
                         );
-                        const topContribs = detail.sourceContributions.slice(0, 5);
+                        const topContribs = buildSourceContributionInsights(
+                          detail.sourceContributions,
+                          initialData.overview.sources,
+                        ).slice(0, 5);
                         const maxContrib = Math.max(...topContribs.map((c) => c.scoreSharePercent), 1);
                         const firstRelated = detail.relatedTrends[0] ?? null;
                         return (
@@ -1424,7 +1433,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                               </div>
 
                               <div className="explorer-expand-section">
-                                <strong>Sources</strong>
+                                <strong>Why this ranks here</strong>
+                                <p className="explorer-expand-reason">
+                                  {summarizeTopSourceDrivers(detail.sourceContributions)}
+                                </p>
                                 <div className="source-row explorer-expand-source-row">
                                   {trend.sources.map((source) => (
                                     <span className="source-badge" key={source}>
@@ -1434,15 +1446,39 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 </div>
                                 <div className="mini-bar-list">
                                   {topContribs.map((contrib) => (
-                                    <div className="mini-bar-row" key={contrib.source}>
-                                      <span>{formatSourceLabel(contrib.source)}</span>
-                                      <div className="mini-bar-track">
-                                        <div
-                                          className="mini-bar-fill mini-bar-fill-muted"
-                                          style={{ width: `${(contrib.scoreSharePercent / maxContrib) * 100}%` }}
-                                        />
+                                    <div className="source-contribution-item" key={contrib.source}>
+                                      <div className="mini-bar-row">
+                                        <span>{contrib.title}</span>
+                                        <div className="mini-bar-track">
+                                          <div
+                                            className="mini-bar-fill mini-bar-fill-muted"
+                                            style={{ width: `${(contrib.scoreSharePercent / maxContrib) * 100}%` }}
+                                          />
+                                        </div>
+                                        <strong>{contrib.scoreSharePercent.toFixed(1)}%</strong>
                                       </div>
-                                      <strong>{contrib.scoreSharePercent.toFixed(1)}%</strong>
+                                      <div className="source-contribution-meta">
+                                        <span>{contrib.signalCount} signals</span>
+                                        <span>{contrib.mixSummary}</span>
+                                      </div>
+                                      <div className="source-contribution-meta">
+                                        <span className={contributionHealthClassName(contrib.status)}>
+                                          {contrib.statusLabel}
+                                        </span>
+                                        {(() => {
+                                          const freshness = getSourceFreshnessBadge(contrib.fetchedAt);
+                                          return freshness ? (
+                                            <span className={`source-freshness-badge source-freshness-badge-${freshness.tone}`}>
+                                              {freshness.label}
+                                            </span>
+                                          ) : null;
+                                        })()}
+                                        <span>{contrib.fetchSummary}</span>
+                                        {contrib.fetchedAt ? <span>{formatCompactTimestamp(contrib.fetchedAt)}</span> : null}
+                                      </div>
+                                      {contrib.warning ? (
+                                        <p className="source-warning-copy source-contribution-warning">{contrib.warning}</p>
+                                      ) : null}
                                     </div>
                                   ))}
                                 </div>
@@ -1793,21 +1829,6 @@ function buildShareActivityMap(watchlist: Watchlist | null) {
   return shareActivityById;
 }
 
-function formatSourceLabel(source: string) {
-  const labels: Record<string, string> = {
-    reddit: "Reddit",
-    hacker_news: "Hacker News",
-    github: "GitHub",
-    wikipedia: "Wikipedia",
-    google_trends: "Google Trends",
-    twitter: "Twitter/X",
-  };
-  return labels[source] ?? source
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 function formatRankChange(value: number | null | undefined) {
   if (value == null) {
     return "New";
@@ -1879,6 +1900,19 @@ function sourceHealthClassName(status: string) {
     return "source-health-pill source-health-pill-degraded";
   }
   return "source-health-pill source-health-pill-stale";
+}
+
+function contributionHealthClassName(status: string | null) {
+  if (status === "healthy") {
+    return "source-health-pill source-health-pill-healthy";
+  }
+  if (status === "degraded") {
+    return "source-health-pill source-health-pill-degraded";
+  }
+  if (status === "stale") {
+    return "source-health-pill source-health-pill-stale";
+  }
+  return "source-health-pill";
 }
 
 function formatWatchSeverity(severity: "critical" | "warning" | "info") {
