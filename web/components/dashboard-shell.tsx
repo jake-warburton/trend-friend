@@ -37,6 +37,7 @@ import type {
 
 type DashboardShellProps = {
   initialData: DashboardData;
+  canManualRefresh: boolean;
 };
 
 const SOURCE_FILTER_OPTIONS = [
@@ -68,7 +69,7 @@ type ExplorerActiveFilter = {
   value: string;
 };
 
-export function DashboardShell({ initialData }: DashboardShellProps) {
+export function DashboardShell({ initialData, canManualRefresh }: DashboardShellProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [keyword, setKeyword] = useState("");
@@ -827,11 +828,13 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
             <span>Avg score</span>
             <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
           </div>
-          <Button className="refresh-button" disabled={isPending} onClick={handleRefresh} aria-label={isPending ? "Refreshing" : "Refresh data"}>
-            <svg className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-            </svg>
-          </Button>
+          {canManualRefresh ? (
+            <Button className="refresh-button" disabled={isPending} onClick={handleRefresh} aria-label={isPending ? "Refreshing" : "Refresh data"}>
+              <svg className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+              </svg>
+            </Button>
+          ) : null}
         </div>
       </section>
 

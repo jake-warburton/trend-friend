@@ -24,8 +24,19 @@ export class RefreshConflictError extends Error {
   }
 }
 
+export class RefreshUnavailableError extends Error {
+  constructor(message = "Manual refresh requires a configured backend API in hosted environments") {
+    super(message);
+    this.name = "RefreshUnavailableError";
+  }
+}
+
 export function hasRefreshApi(): boolean {
   return !!process.env.SIGNAL_EYE_API_URL;
+}
+
+export function canRunLocalRefreshScripts(): boolean {
+  return !process.env.VERCEL;
 }
 
 export function acquireLocalRefreshLock(): boolean {
@@ -44,6 +55,10 @@ export async function refreshData(dependencies: RefreshDependencies = {}): Promi
   if (dependencies.apiEnabled ?? hasRefreshApi()) {
     const apiPost = dependencies.apiPost ?? defaultApiPost;
     return apiPost<Record<string, unknown>>("/refresh", {});
+  }
+
+  if (!(dependencies.runIngestion && dependencies.runExport) && !canRunLocalRefreshScripts()) {
+    throw new RefreshUnavailableError();
   }
 
   const acquireLock = dependencies.acquireLock ?? acquireLocalRefreshLock;
@@ -65,6 +80,9 @@ export async function refreshData(dependencies: RefreshDependencies = {}): Promi
 export function getRefreshErrorStatus(error: unknown): number {
   if (error instanceof RefreshConflictError) {
     return 409;
+  }
+  if (error instanceof RefreshUnavailableError) {
+    return 501;
   }
   if (error instanceof ApiError) {
     return error.status;
