@@ -1251,13 +1251,13 @@ input {
 
 .mini-bar-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .mini-bar-row {
   display: grid;
   grid-template-columns: minmax(0, 118px) minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
@@ -1265,16 +1265,17 @@ input {
 .pie-legend-row span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mini-bar-row strong,
 .pie-legend-row strong {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
+  font-weight: 600;
 }
 
 .mini-bar-track {
@@ -1310,7 +1311,7 @@ input {
 
 .pie-chart-legend {
   display: grid;
-  gap: 5px;
+  gap: 4px;
 }
 
 .pie-legend-row {
@@ -1661,15 +1662,15 @@ input {
 }
 
 .section-heading-spaced {
-  margin-top: 8px;
+  margin-top: 6px;
   padding-left: 12px;
   padding-right: 12px;
 }
 
 .section-heading h2 {
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.015em;
 }
 
 .section-heading-actions {
@@ -1688,10 +1689,9 @@ input {
 
 .section-heading-meta {
   color: var(--muted);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
 }
 
 .trend-list,
@@ -3020,8 +3020,8 @@ input {
 
 .sidebar-section {
   border-top: 1px solid var(--border);
-  padding-top: 14px;
-  margin-top: 14px;
+  padding-top: 12px;
+  margin-top: 12px;
 }
 
 .sidebar-section summary {
@@ -3041,8 +3041,8 @@ input {
 .sidebar-section summary .section-heading::after {
   content: "+";
   color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 600;
 }
 
 .sidebar-section[open] summary .section-heading::after {
