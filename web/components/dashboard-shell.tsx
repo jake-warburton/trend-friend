@@ -18,6 +18,7 @@ import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
 import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
+import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
   buildSourceContributionInsights,
   buildSourceWatchlist,
@@ -207,6 +208,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     }
     return map;
   }, [initialData.details.trends]);
+  const sourceImpactRows = useMemo(
+    () => buildSourceImpactRows(initialData.overview.sources, initialData.explorer.trends, detailsByTrendId),
+    [detailsByTrendId, initialData.explorer.trends, initialData.overview.sources],
+  );
 
   const activeExplorerFilters = useMemo(
     () =>
@@ -1863,6 +1868,33 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </summary>
 
             <div className="snapshot-list">
+              {sourceImpactRows.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source impact</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Published ranking</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceImpactRows.slice(0, 6).map((source) => (
+                      <article className="detail-list-item" key={source.source}>
+                        <div>
+                          <strong>{formatSourceLabel(source.source)}</strong>
+                          <span>
+                            {source.materialTrendCount} material · {source.totalTrendCount} total ·{" "}
+                            {source.materialTrendCount > 0
+                              ? `${source.averageMaterialSharePercent.toFixed(1)}% avg share`
+                              : "No material share yet"}
+                          </span>
+                          {source.exampleTrendNames.length > 0 ? (
+                            <span>{source.exampleTrendNames.join(" · ")}</span>
+                          ) : null}
+                        </div>
+                        <small>{source.materialTrendCount}</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
               {sourceWatchlist.length > 0 ? (
                 <section className="snapshot-card">
                   <header>
