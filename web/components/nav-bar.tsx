@@ -10,6 +10,8 @@ const NAV_LINKS = [
 export function NavBar() {
   const pathname = usePathname();
   const navClassName = pathname === "/" ? "nav-bar nav-bar-static" : "nav-bar";
+  const activeLabel =
+    pathname.startsWith("/trends") ? "Trend detail" : pathname.startsWith("/sources") ? "Source monitor" : "Explorer";
 
   return (
     <nav className={navClassName}>
@@ -26,8 +28,15 @@ export function NavBar() {
             <circle cx="13.2" cy="10.8" r="0.95" fill="#f5f5f5" />
           </svg>
         </span>
-        <span>Signal Eye</span>
+        <span className="nav-bar-brand-copy">
+          <span className="nav-bar-brand-name">Signal Eye</span>
+          <span className="nav-bar-brand-tag">Market intelligence terminal</span>
+        </span>
       </Link>
+      <div className="nav-bar-meta">
+        <span className="nav-bar-status-pill">Live</span>
+        <span className="nav-bar-active-label">{activeLabel}</span>
+      </div>
       <div className="nav-bar-links">
         {NAV_LINKS.map((link) => {
           const active =

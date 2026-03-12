@@ -936,6 +936,51 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   return (
     <main className="dashboard-page">
       <section className="hero-panel">
+        <div className="hero-header">
+          <div className="hero-header-copy">
+            <p className="eyebrow">Live market intelligence</p>
+            <h1>Track emerging narratives with institutional-grade clarity.</h1>
+            <p className="hero-header-description">
+              Signal Eye ranks live signals across social, developer, knowledge, search, and market sources so the
+              highest-conviction trends stand out fast.
+            </p>
+          </div>
+          <div className="hero-command">
+            <span className="hero-command-label">Terminal status</span>
+            <strong>{overviewMeta.lastRunAt ? formatCompactTimestamp(overviewMeta.lastRunAt) : "Awaiting run"}</strong>
+            <span className="hero-command-copy">
+              {latestPipelineRun
+                ? `${latestPipelineRun.successfulSourceCount}/${latestPipelineRun.sourceCount} sources healthy`
+                : "No recent pipeline run"}
+            </span>
+            {canManualRefresh ? (
+              <Button
+                className="refresh-button refresh-button-wide"
+                disabled={isPending}
+                onClick={handleRefresh}
+                aria-label={isPending ? "Refreshing" : "Refresh data"}
+              >
+                <svg
+                  className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"}
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 2v6h-6" />
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                  <path d="M3 22v-6h6" />
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                </svg>
+                <span>{isPending ? "Refreshing" : "Refresh data"}</span>
+              </Button>
+            ) : null}
+          </div>
+        </div>
         <div className="hero-rail">
           <article className="hero-summary-card">
             <span>Top</span>
@@ -988,13 +1033,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             <span>Avg score</span>
             <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
           </div>
-          {canManualRefresh ? (
-            <Button className="refresh-button" disabled={isPending} onClick={handleRefresh} aria-label={isPending ? "Refreshing" : "Refresh data"}>
-              <svg className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-              </svg>
-            </Button>
-          ) : null}
         </div>
       </section>
 
