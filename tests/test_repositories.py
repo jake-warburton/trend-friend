@@ -140,6 +140,12 @@ class RepositoryTests(unittest.TestCase):
                 ranked_trend_count=10,
                 top_topic="ai agents",
                 top_score=41.2,
+                raw_topic_count=36,
+                merged_topic_count=30,
+                duplicate_topic_count=6,
+                duplicate_topic_rate=16.7,
+                multi_source_trend_count=7,
+                low_evidence_trend_count=2,
             )
         )
         repository.append_run(
@@ -153,6 +159,12 @@ class RepositoryTests(unittest.TestCase):
                 ranked_trend_count=9,
                 top_topic="battery recycling",
                 top_score=28.4,
+                raw_topic_count=25,
+                merged_topic_count=22,
+                duplicate_topic_count=3,
+                duplicate_topic_rate=12.0,
+                multi_source_trend_count=5,
+                low_evidence_trend_count=1,
             )
         )
 
@@ -161,6 +173,11 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(len(runs), 2)
         self.assertEqual(runs[0].captured_at, datetime(2026, 3, 9, tzinfo=timezone.utc))
         self.assertEqual(runs[0].failed_source_count, 1)
+        self.assertEqual(runs[0].raw_topic_count, 25)
+        self.assertEqual(runs[0].duplicate_topic_count, 3)
+        self.assertEqual(runs[0].duplicate_topic_rate, 12.0)
+        self.assertEqual(runs[0].multi_source_trend_count, 5)
+        self.assertEqual(runs[0].low_evidence_trend_count, 1)
         self.assertEqual(runs[1].top_topic, "ai agents")
 
     def test_trend_score_repository_stores_history_snapshots(self) -> None:

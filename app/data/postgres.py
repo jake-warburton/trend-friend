@@ -11,6 +11,7 @@ from app.data.sql_dialect import POSTGRES_DIALECT, SqlDialect
 POSTGRES_MIGRATIONS = [
     Migration("0001_initial_schema", load_sql_migration("postgres_migrations/0001_initial_schema.sql")),
     Migration("0003_score_display_names", load_sql_migration("postgres_migrations/0003_score_display_names.sql")),
+    Migration("0004_pipeline_quality_metrics", load_sql_migration("postgres_migrations/0004_pipeline_quality_metrics.sql")),
 ]
 
 

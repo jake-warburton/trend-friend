@@ -352,6 +352,12 @@ class PipelineRun:
     ranked_trend_count: int
     top_topic: str | None
     top_score: float | None
+    raw_topic_count: int = 0
+    merged_topic_count: int = 0
+    duplicate_topic_count: int = 0
+    duplicate_topic_rate: float = 0.0
+    multi_source_trend_count: int = 0
+    low_evidence_trend_count: int = 0
 
 
 @dataclass(frozen=True)

@@ -273,9 +273,15 @@ class PipelineRunRepository:
                 signal_count,
                 ranked_trend_count,
                 top_topic,
-                top_score
+                top_score,
+                raw_topic_count,
+                merged_topic_count,
+                duplicate_topic_count,
+                duplicate_topic_rate,
+                multi_source_trend_count,
+                low_evidence_trend_count
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run.captured_at.isoformat(),
@@ -287,6 +293,12 @@ class PipelineRunRepository:
                 run.ranked_trend_count,
                 run.top_topic,
                 run.top_score,
+                run.raw_topic_count,
+                run.merged_topic_count,
+                run.duplicate_topic_count,
+                run.duplicate_topic_rate,
+                run.multi_source_trend_count,
+                run.low_evidence_trend_count,
             ),
         )
         self.connection.commit()
@@ -297,7 +309,9 @@ class PipelineRunRepository:
         rows = self.connection.execute(
             """
             SELECT captured_at, duration_ms, source_count, successful_source_count,
-                   failed_source_count, signal_count, ranked_trend_count, top_topic, top_score
+                   failed_source_count, signal_count, ranked_trend_count, top_topic, top_score,
+                   raw_topic_count, merged_topic_count, duplicate_topic_count, duplicate_topic_rate,
+                   multi_source_trend_count, low_evidence_trend_count
             FROM pipeline_runs
             ORDER BY captured_at DESC, id DESC
             LIMIT ?
@@ -315,6 +329,12 @@ class PipelineRunRepository:
                 ranked_trend_count=row["ranked_trend_count"],
                 top_topic=row["top_topic"],
                 top_score=row["top_score"],
+                raw_topic_count=row["raw_topic_count"],
+                merged_topic_count=row["merged_topic_count"],
+                duplicate_topic_count=row["duplicate_topic_count"],
+                duplicate_topic_rate=row["duplicate_topic_rate"],
+                multi_source_trend_count=row["multi_source_trend_count"],
+                low_evidence_trend_count=row["low_evidence_trend_count"],
             )
             for row in rows
         ]
@@ -2037,6 +2057,10 @@ class TrendScoreRepository:
         """Build a score model from one database row."""
 
         evidence = json.loads(row["evidence_json"])
+        display_name = build_display_name(
+            row["topic"],
+            ([row["display_name"]] if row["display_name"] else []) + evidence,
+        )
         return TrendScoreResult(
             topic=row["topic"],
             total_score=row["total_score"],
@@ -2048,7 +2072,7 @@ class TrendScoreRepository:
             source_counts=json.loads(row["source_counts_json"]),
             evidence=evidence,
             latest_timestamp=datetime.fromisoformat(row["latest_timestamp"]),
-            display_name=row["display_name"] or build_display_name(row["topic"], evidence),
+            display_name=display_name,
         )
 
     @staticmethod

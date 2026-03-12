@@ -20,6 +20,7 @@ from app.models import PipelineRun, TrendScoreResult
 from app.notifications.deliver import deliver_post_run_notifications
 from app.notifications.digest import build_run_digest
 from app.scoring.calculator import calculate_trend_scores
+from app.scoring.quality import calculate_pipeline_quality_metrics
 from app.scoring.ranking import rank_topics_by_score
 from app.topics.cluster import aggregate_topic_signals
 from app.topics.extract import build_signals_from_items
@@ -38,6 +39,11 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     aggregates = aggregate_topic_signals(normalized_signals)
     scores = calculate_trend_scores(aggregates)
     ranked_scores = rank_topics_by_score(scores, limit=settings.ranking_limit)
+    quality_metrics = calculate_pipeline_quality_metrics(
+        normalized_signals,
+        aggregates,
+        ranked_scores,
+    )
     captured_at = datetime.now(tz=timezone.utc)
     successful_source_count = sum(1 for run in source_runs if run.success)
 
@@ -62,6 +68,12 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
             ranked_trend_count=len(ranked_scores),
             top_topic=ranked_scores[0].topic if ranked_scores else None,
             top_score=ranked_scores[0].total_score if ranked_scores else None,
+            raw_topic_count=quality_metrics.raw_topic_count,
+            merged_topic_count=quality_metrics.merged_topic_count,
+            duplicate_topic_count=quality_metrics.duplicate_topic_count,
+            duplicate_topic_rate=quality_metrics.duplicate_topic_rate,
+            multi_source_trend_count=quality_metrics.multi_source_trend_count,
+            low_evidence_trend_count=quality_metrics.low_evidence_trend_count,
         )
     )
 
