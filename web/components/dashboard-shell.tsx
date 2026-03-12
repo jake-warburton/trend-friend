@@ -1399,9 +1399,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     <div className="trend-cell explorer-card-head">
                       <div className="explorer-card-kicker">
                         <span className="explorer-rank-chip">#{trend.rank}</span>
-                        <span className={movementClassName(trend.rankChange)}>
-                          {formatRankChange(trend.rankChange)} rank
-                        </span>
                         <span className="trend-date-chip">
                           {trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}
                         </span>
