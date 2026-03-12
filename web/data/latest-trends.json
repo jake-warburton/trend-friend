@@ -1,27 +1,30 @@
 {
-  "generatedAt": "2026-03-12T10:46:10.052957Z",
+  "generatedAt": "2026-03-12T13:54:44.966545Z",
   "trends": [
     {
       "id": "ai-agents",
-      "name": "AI agents",
+      "name": "AI Agents",
       "rank": 1,
       "score": {
-        "total": 50.0,
-        "social": 35.7,
-        "developer": 0.0,
+        "total": 89.2,
+        "social": 51.4,
+        "developer": 10.7,
         "knowledge": 0.0,
         "search": 0.0,
-        "diversity": 12.0
+        "diversity": 24.0
       },
       "sources": [
+        "github",
+        "hacker_news",
         "reddit",
         "twitter"
       ],
       "evidence": [
         "AI agents are replacing repetitive office workflows",
-        "AI agents are transforming enterprise automation workflows at scale"
+        "Show HN: We analyzed 1,573 Claude Code sessions to see how AI agents work",
+        "langchain-ai/deepagents Deep Agents is an agent harness built on langchain and langgraph. Deep Agents are equipped with a planning tool, a filesystem backend, and the ability to spawn subagents - making them well-equipped to handle complex agentic tasks."
       ],
-      "latestSignalAt": "2026-03-09T12:00:00Z"
+      "latestSignalAt": "2026-03-12T13:54:31Z"
     },
     {
       "id": "robotics",
@@ -46,53 +49,31 @@
       "latestSignalAt": "2026-03-09T14:30:00Z"
     },
     {
-      "id": "iran-war",
-      "name": "Iran war",
+      "id": "tweets-march",
+      "name": "Tweets March",
       "rank": 3,
       "score": {
-        "total": 44.5,
+        "total": 46.8,
         "social": 0.0,
         "developer": 0.0,
-        "knowledge": 8.2,
-        "search": 22.0,
-        "diversity": 12.0
-      },
-      "sources": [
-        "google_trends",
-        "wikipedia"
-      ],
-      "evidence": [
-        "2026 Iran war",
-        "dubai iran war news"
-      ],
-      "latestSignalAt": "2026-03-12T10:20:00Z"
-    },
-    {
-      "id": "macbook-neo",
-      "name": "MacBook Neo",
-      "rank": 4,
-      "score": {
-        "total": 39.0,
-        "social": 10.6,
-        "developer": 0.0,
         "knowledge": 0.0,
-        "search": 14.1,
-        "diversity": 12.0
+        "search": 37.8,
+        "diversity": 6.0
       },
       "sources": [
-        "google_trends",
-        "hacker_news"
+        "polymarket"
       ],
       "evidence": [
-        "The MacBook Neo",
-        "apple macbook neo review"
+        "Will Elon Musk post 280-299 tweets from March 6 to March 13, 2026? Elon Musk # tweets March 6 - March 13, 2026?",
+        "Will Elon Musk post 0-19 tweets from March 13 to March 20, 2026? Elon Musk # tweets March 13 - March 20, 2026?",
+        "Will Elon Musk post 80-99 tweets from March 10 to March 17, 2026? Elon Musk # tweets March 10 - March 17, 2026?"
       ],
-      "latestSignalAt": "2026-03-12T08:30:00Z"
+      "latestSignalAt": "2026-03-20T16:00:00Z"
     },
     {
       "id": "baseball-classic",
       "name": "Baseball Classic",
-      "rank": 5,
+      "rank": 4,
       "score": {
         "total": 38.0,
         "social": 0.0,
@@ -111,12 +92,353 @@
       "latestSignalAt": "2026-03-11T00:00:00Z"
     },
     {
-      "id": "reduces-training",
-      "name": "Reduces Training",
+      "id": "march-bitcoin",
+      "name": "March Bitcoin",
+      "rank": 5,
+      "score": {
+        "total": 31.5,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 24.8,
+        "diversity": 6.0
+      },
+      "sources": [
+        "polymarket"
+      ],
+      "evidence": [
+        "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+        "Will the price of Bitcoin be less than $62,000 on March 12? Bitcoin price on March 12?"
+      ],
+      "latestSignalAt": "2026-03-12T16:00:00Z"
+    },
+    {
+      "id": "fed-decision",
+      "name": "Fed Decision",
       "rank": 6,
       "score": {
-        "total": 27.4,
-        "social": 19.9,
+        "total": 21.5,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 14.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "polymarket"
+      ],
+      "evidence": [
+        "Will the Fed increase interest rates by 25+ bps after the March 2026 meeting? Fed decision in March?"
+      ],
+      "latestSignalAt": "2026-03-18T00:00:00Z"
+    },
+    {
+      "id": "openclaw",
+      "name": "Openclaw",
+      "rank": 7,
+      "score": {
+        "total": 21.4,
+        "social": 0.0,
+        "developer": 13.9,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "openclaw/openclaw Your own personal AI assistant. Any OS. Any Platform. The lobster way. \ud83e\udd9e"
+      ],
+      "latestSignalAt": "2026-03-12T13:54:07Z"
+    },
+    {
+      "id": "scoring-leaders",
+      "name": "Scoring Leaders",
+      "rank": 8,
+      "score": {
+        "total": 20.6,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 17.1,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "evidence": [
+        "List of NBA single-game scoring leaders"
+      ],
+      "latestSignalAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "id": "vite",
+      "name": "Vite",
+      "rank": 9,
+      "score": {
+        "total": 19.9,
+        "social": 0.0,
+        "developer": 12.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "vitejs/vite Next generation frontend tooling. It's fast!"
+      ],
+      "latestSignalAt": "2026-03-12T13:53:58Z"
+    },
+    {
+      "id": "kinsk-footballer",
+      "name": "Kinsk Footballer",
+      "rank": 10,
+      "score": {
+        "total": 19.6,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 16.1,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "evidence": [
+        "Anton\u00edn Kinsk\u00fd (footballer, born 2003)"
+      ],
+      "latestSignalAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "id": "bitcoin-hit",
+      "name": "Bitcoin Hit",
+      "rank": 11,
+      "score": {
+        "total": 19.3,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 11.8,
+        "diversity": 6.0
+      },
+      "sources": [
+        "polymarket"
+      ],
+      "evidence": [
+        "Will Bitcoin reach $150,000 in March? What price will Bitcoin hit in March?"
+      ],
+      "latestSignalAt": "2026-04-01T04:00:00Z"
+    },
+    {
+      "id": "bessette-kennedy",
+      "name": "Bessette Kennedy",
+      "rank": 12,
+      "score": {
+        "total": 19.2,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 15.7,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "wikipedia"
+      ],
+      "evidence": [
+        "Carolyn Bessette Kennedy"
+      ],
+      "latestSignalAt": "2026-03-11T00:00:00Z"
+    },
+    {
+      "id": "kitty",
+      "name": "Kitty",
+      "rank": 13,
+      "score": {
+        "total": 18.8,
+        "social": 0.0,
+        "developer": 11.3,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "kovidgoyal/kitty If you live in the terminal, kitty is made for you! Cross-platform, fast, feature-rich, GPU based."
+      ],
+      "latestSignalAt": "2026-03-12T13:54:04Z"
+    },
+    {
+      "id": "ai-edited",
+      "name": "AI Edited",
+      "rank": 14,
+      "score": {
+        "total": 18.7,
+        "social": 11.2,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "hacker_news"
+      ],
+      "evidence": [
+        "Don't post generated/AI-edited comments. HN is for conversation between humans"
+      ],
+      "latestSignalAt": "2026-03-11T19:29:29Z"
+    },
+    {
+      "id": "intellij-community",
+      "name": "Intellij Community",
+      "rank": 15,
+      "score": {
+        "total": 18.5,
+        "social": 0.0,
+        "developer": 11.0,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "JetBrains/intellij-community IntelliJ IDEA & IntelliJ Platform"
+      ],
+      "latestSignalAt": "2026-03-12T13:54:06Z"
+    },
+    {
+      "id": "flow",
+      "name": "Flow",
+      "rank": 16,
+      "score": {
+        "total": 18.4,
+        "social": 0.0,
+        "developer": 10.9,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "nikivdev/flow Everything you need to move your project faster"
+      ],
+      "latestSignalAt": "2026-03-12T13:53:54Z"
+    },
+    {
+      "id": "screenpipe",
+      "name": "Screenpipe",
+      "rank": 17,
+      "score": {
+        "total": 18.2,
+        "social": 0.0,
+        "developer": 10.7,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "screenpipe/screenpipe screenpipe turns your computer into a personal AI that knows everything you've done. record. search. automate. all local, all private, all yours."
+      ],
+      "latestSignalAt": "2026-03-12T13:54:02Z"
+    },
+    {
+      "id": "navi",
+      "name": "Navi",
+      "rank": 18,
+      "score": {
+        "total": 18.1,
+        "social": 0.0,
+        "developer": 10.6,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "denisidoro/navi An interactive cheatsheet tool for the command-line"
+      ],
+      "latestSignalAt": "2026-03-12T13:54:04Z"
+    },
+    {
+      "id": "collin-morikawa",
+      "name": "Collin Morikawa",
+      "rank": 19,
+      "score": {
+        "total": 17.9,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 10.4,
+        "diversity": 6.0
+      },
+      "sources": [
+        "google_trends"
+      ],
+      "evidence": [
+        "collin morikawa"
+      ],
+      "latestSignalAt": "2026-03-12T13:40:00Z"
+    },
+    {
+      "id": "deepagents",
+      "name": "Deepagents",
+      "rank": 20,
+      "score": {
+        "total": 17.7,
+        "social": 0.0,
+        "developer": 10.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "langchain-ai/deepagents Deep Agents is an agent harness built on langchain and langgraph. Deep Agents are equipped with a planning tool, a filesystem backend, and the ability to spawn subagents - making them well-equipped to handle complex agentic tasks."
+      ],
+      "latestSignalAt": "2026-03-12T13:54:31Z"
+    },
+    {
+      "id": "webkit",
+      "name": "WebKit",
+      "rank": 21,
+      "score": {
+        "total": 17.7,
+        "social": 0.0,
+        "developer": 10.2,
+        "knowledge": 0.0,
+        "search": 0.0,
+        "diversity": 6.0
+      },
+      "sources": [
+        "github"
+      ],
+      "evidence": [
+        "WebKit/WebKit Home of the WebKit project, the browser engine used by Safari, Mail, App Store and many other applications on macOS, iOS and Linux."
+      ],
+      "latestSignalAt": "2026-03-12T13:53:53Z"
+    },
+    {
+      "id": "enterprise-automation",
+      "name": "Enterprise Automation",
+      "rank": 22,
+      "score": {
+        "total": 17.5,
+        "social": 10.0,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -126,17 +448,37 @@
         "twitter"
       ],
       "evidence": [
-        "New machine learning technique reduces training costs by 60%"
+        "AI agents are transforming enterprise automation workflows at scale"
       ],
-      "latestSignalAt": "2026-03-09T16:00:00Z"
+      "latestSignalAt": "2026-03-09T12:00:00Z"
     },
     {
-      "id": "ai-bot",
-      "name": "AI bot",
-      "rank": 7,
+      "id": "end-march",
+      "name": "END March",
+      "rank": 23,
       "score": {
-        "total": 26.0,
-        "social": 18.5,
+        "total": 17.4,
+        "social": 0.0,
+        "developer": 0.0,
+        "knowledge": 0.0,
+        "search": 11.4,
+        "diversity": 6.0
+      },
+      "sources": [
+        "polymarket"
+      ],
+      "evidence": [
+        "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?"
+      ],
+      "latestSignalAt": "2026-03-31T00:00:00Z"
+    },
+    {
+      "id": "macbook-neo",
+      "name": "MacBook Neo",
+      "rank": 24,
+      "score": {
+        "total": 17.1,
+        "social": 9.6,
         "developer": 0.0,
         "knowledge": 0.0,
         "search": 0.0,
@@ -146,69 +488,29 @@
         "hacker_news"
       ],
       "evidence": [
-        "I was interviewed by an AI bot for a job"
+        "The MacBook Neo"
       ],
-      "latestSignalAt": "2026-03-11T18:17:30Z"
+      "latestSignalAt": "2026-03-11T11:37:24Z"
     },
     {
-      "id": "inference-framework",
-      "name": "Inference framework",
-      "rank": 8,
+      "id": "tempo",
+      "name": "Tempo",
+      "rank": 25,
       "score": {
-        "total": 25.5,
-        "social": 18.0,
-        "developer": 0.0,
+        "total": 16.9,
+        "social": 0.0,
+        "developer": 9.4,
         "knowledge": 0.0,
         "search": 0.0,
         "diversity": 6.0
       },
       "sources": [
-        "hacker_news"
+        "github"
       ],
       "evidence": [
-        "BitNet: Inference framework for 1-bit LLMs"
+        "grafana/tempo Grafana Tempo is a high volume, minimal dependency distributed tracing backend."
       ],
-      "latestSignalAt": "2026-03-11T12:27:15Z"
-    },
-    {
-      "id": "enabling-scientific",
-      "name": "Enabling Scientific",
-      "rank": 9,
-      "score": {
-        "total": 25.5,
-        "social": 18.0,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "sources": [
-        "hacker_news"
-      ],
-      "evidence": [
-        "Entities enabling scientific fraud at scale (2025)"
-      ],
-      "latestSignalAt": "2026-03-11T13:32:12Z"
-    },
-    {
-      "id": "bench-passing",
-      "name": "bench Passing",
-      "rank": 10,
-      "score": {
-        "total": 24.6,
-        "social": 17.1,
-        "developer": 0.0,
-        "knowledge": 0.0,
-        "search": 0.0,
-        "diversity": 6.0
-      },
-      "sources": [
-        "hacker_news"
-      ],
-      "evidence": [
-        "Many SWE-bench-Passing PRs would not be merged"
-      ],
-      "latestSignalAt": "2026-03-11T20:56:52Z"
+      "latestSignalAt": "2026-03-12T13:54:11Z"
     }
   ]
 }

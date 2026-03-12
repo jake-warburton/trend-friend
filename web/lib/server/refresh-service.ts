@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 
@@ -91,13 +92,38 @@ export function getRefreshErrorStatus(error: unknown): number {
 }
 
 export function buildLocalRefreshEnv(baseEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-  if (!baseEnv.SIGNAL_EYE_DATABASE_URL) {
-    return baseEnv;
-  }
+  const projectEnv = readProjectEnv();
   return {
     ...baseEnv,
+    ...projectEnv,
     SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: baseEnv.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME ?? "true",
   };
+}
+
+function readProjectEnv(projectRoot = path.resolve(process.cwd(), "..")): NodeJS.ProcessEnv {
+  const envPath = path.join(projectRoot, ".env");
+  if (!fs.existsSync(envPath)) {
+    return {} as NodeJS.ProcessEnv;
+  }
+
+  const parsed = {} as NodeJS.ProcessEnv;
+  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex < 0) {
+      continue;
+    }
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const value = trimmed.slice(separatorIndex + 1).trim();
+    if (!key) {
+      continue;
+    }
+    parsed[key] = value;
+  }
+  return parsed;
 }
 
 async function defaultApiPost<T>(apiPath: string, body: unknown): Promise<T> {

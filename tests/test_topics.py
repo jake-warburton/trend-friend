@@ -142,6 +142,29 @@ class TopicNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(topics, ["retrieval augmented generation", "enterprise search"])
 
+    def test_extract_candidate_topics_collapses_polymarket_threshold_markets_to_assets(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics(
+                "Will the price of Bitcoin be above $62,000 on March 12? Bitcoin above ___ on March 12?",
+                source_name="polymarket",
+            ),
+            ["bitcoin"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Will the price of Ethereum be above $2,300 on March 12? Ethereum above ___ on March 12?",
+                source_name="polymarket",
+            ),
+            ["ethereum"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Will Crude Oil (CL) hit (HIGH) $200 by end of March? Will Crude Oil (CL) hit__ by end of March?",
+                source_name="polymarket",
+            ),
+            ["crude oil"],
+        )
+
     def test_extract_candidate_topics_skips_unigram_fallback_for_noisy_headline_sources(self) -> None:
         self.assertEqual(
             extract_candidate_topics("Watching people build", source_name="hacker_news"),

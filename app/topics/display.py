@@ -17,7 +17,7 @@ def build_display_name(topic: str, evidence_items: list[str]) -> str:
         return fallback_display_name(topic)
     if display_name == display_name.lower():
         return fallback_display_name(topic)
-    return display_name
+    return normalize_display_name_phrase(display_name)
 
 
 def derive_display_name(topic: str, evidence_items: list[str]) -> str | None:
@@ -57,3 +57,22 @@ def fallback_display_name(topic: str) -> str:
             continue
         formatted_parts.append(part.capitalize())
     return " ".join(formatted_parts)
+
+
+def normalize_display_name_phrase(phrase: str) -> str:
+    """Normalize a preserved phrase into display-case without losing signal casing."""
+
+    normalized_parts: list[str] = []
+    for part in phrase.split():
+        if not part:
+            continue
+        if part.isupper() or any(character.isupper() for character in part[1:]) or any(
+            character.isdigit() for character in part
+        ):
+            normalized_parts.append(part)
+            continue
+        if part.islower():
+            normalized_parts.append(part.capitalize())
+            continue
+        normalized_parts.append(part)
+    return " ".join(normalized_parts)

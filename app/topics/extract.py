@@ -182,6 +182,7 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     if not tokens:
         return []
     candidates: list[str] = []
+    candidates.extend(infer_source_specific_topics(tokens, source_name))
     canonical_topics = infer_canonical_topics(tokens)
     repository_topic = infer_repository_topic(title)
     if repository_topic:
@@ -209,6 +210,14 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
             if len(ordered_candidates) >= max_topics:
                 break
     return ordered_candidates
+
+
+def infer_source_specific_topics(tokens: list[str], source_name: str | None) -> list[str]:
+    """Return source-specific canonical topics before general extraction heuristics."""
+
+    if source_name == "polymarket":
+        return infer_polymarket_topics(tokens)
+    return []
 
 
 def infer_repository_topic(title: str) -> str | None:
@@ -315,6 +324,25 @@ def infer_canonical_topics(tokens: list[str]) -> list[str]:
     if {"large", "language", "models"} <= token_set:
         inferred_topics.append("large language models")
     return inferred_topics
+
+
+def infer_polymarket_topics(tokens: list[str]) -> list[str]:
+    """Collapse threshold-style Polymarket titles into stable asset/company topics."""
+
+    token_set = set(tokens)
+    if "bitcoin" in token_set or "btc" in token_set:
+        return ["bitcoin"]
+    if "ethereum" in token_set or "eth" in token_set:
+        return ["ethereum"]
+    if {"crude", "oil"} <= token_set or "oil" in token_set:
+        return ["crude oil"]
+    if "fed" in token_set:
+        return ["federal reserve"]
+    if "openai" in token_set or "gpt" in token_set:
+        return ["openai"]
+    if "solana" in token_set or "sol" in token_set:
+        return ["solana"]
+    return []
 
 
 def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSignal]:

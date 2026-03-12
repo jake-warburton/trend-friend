@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import {
   buildLocalRefreshEnv,
@@ -56,4 +59,32 @@ test("buildLocalRefreshEnv preserves an explicit Postgres runtime flag", () => {
   });
 
   assert.equal(env.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME, "false");
+});
+
+test("buildLocalRefreshEnv prefers repo root env values over stale web env values", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "signal-eye-refresh-"));
+  fs.writeFileSync(
+    path.join(tempRoot, ".env"),
+    "SIGNAL_EYE_RANKING_LIMIT=100\nSIGNAL_EYE_DATABASE_URL=postgresql://repo-root\n",
+    "utf8",
+  );
+
+  const originalCwd = process.cwd();
+  const webDir = path.join(tempRoot, "web");
+  fs.mkdirSync(webDir);
+  process.chdir(webDir);
+
+  try {
+    const env = buildLocalRefreshEnv({
+      SIGNAL_EYE_RANKING_LIMIT: "10",
+      SIGNAL_EYE_DATABASE_URL: "postgresql://stale-web",
+    });
+
+    assert.equal(env.SIGNAL_EYE_RANKING_LIMIT, "100");
+    assert.equal(env.SIGNAL_EYE_DATABASE_URL, "postgresql://repo-root");
+    assert.equal(env.SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME, "true");
+  } finally {
+    process.chdir(originalCwd);
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
