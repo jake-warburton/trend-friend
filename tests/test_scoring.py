@@ -163,13 +163,51 @@ class TrendScoringTests(unittest.TestCase):
                 source_counts={"reddit": 1},
                 latest_timestamp=timestamp,
             )
-            for index in range(5)
+            for index in range(20)
         ]
 
         ranked = rank_topics_by_score(protected_scores + weak_tail_scores, limit=30)
 
-        self.assertEqual(len(ranked), 25)
-        self.assertTrue(all(score.topic.startswith("topic-") for score in ranked))
+        self.assertEqual(len(ranked), 30)
+        self.assertEqual(ranked[-1].topic, "thin-tail-4")
+
+    def test_rank_topics_by_score_backfills_up_to_minimum_published_floor(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        protected_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        weak_tail_scores = [
+            TrendScoreResult(
+                topic=f"thin-tail-{index}",
+                total_score=11.0 - (index * 0.1),
+                search_score=0.0,
+                social_score=11.0 - (index * 0.1),
+                developer_score=0.0,
+                knowledge_score=0.0,
+                diversity_score=0.0,
+                evidence=["Thin evidence"],
+                source_counts={"reddit": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(20)
+        ]
+
+        ranked = rank_topics_by_score(protected_scores + weak_tail_scores, limit=100)
+
+        self.assertEqual(len(ranked), 40)
+        self.assertEqual(ranked[-1].topic, "thin-tail-14")
 
     def test_rank_experimental_topics_surfaces_viable_overflow_candidates(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

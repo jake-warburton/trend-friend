@@ -8,6 +8,7 @@ from app.topics.categorize import categorize_topic
 from app.topics.normalize import clean_text, tokenize_text
 
 PROTECTED_TOP_RANK_COUNT = 25
+MIN_PUBLISHED_TREND_COUNT = 40
 LOW_EVIDENCE_TAIL_PENALTY = 6.0
 MIN_LOW_EVIDENCE_TAIL_SCORE = 18.0
 MIN_EXPERIMENTAL_SCORE = 12.0
@@ -45,7 +46,18 @@ def rank_topics_by_score(
     selected_tail, gated_tail = _partition_tail_scores(tail_scores)
 
     remaining_slots = max(0, limit - len(protected_scores))
-    return protected_scores + selected_tail[:remaining_slots]
+    published_scores = protected_scores + selected_tail[:remaining_slots]
+    minimum_target = min(limit, MIN_PUBLISHED_TREND_COUNT)
+    if len(published_scores) >= minimum_target:
+        return published_scores
+
+    recovery_slots = min(
+        remaining_slots - len(selected_tail[:remaining_slots]),
+        minimum_target - len(published_scores),
+    )
+    if recovery_slots <= 0:
+        return published_scores
+    return published_scores + gated_tail[:recovery_slots]
 
 
 def rank_experimental_topics(
