@@ -26,7 +26,7 @@ const HISTORY_BUCKET_MINUTES = 5;
 const CHART_AXIS_COLOR = "var(--chart-axis)";
 const CHART_GRID_COLOR = "var(--chart-grid)";
 const LEGEND_TEXT_COLOR = "#ffffff";
-const LEGEND_HEIGHT = 52;
+const LEGEND_HEIGHT = 34;
 const MOBILE_BREAKPOINT_PX = 640;
 const MAX_HISTORY_POINTS_DESKTOP = 17;
 const MAX_HISTORY_POINTS_MOBILE = 8;
@@ -260,7 +260,7 @@ function TrajectoryLegend({ payload }: { payload?: TrajectoryLegendEntry[] }) {
         flexWrap: "wrap",
         justifyContent: "center",
         gap: "6px",
-        paddingTop: "8px",
+        paddingTop: "2px",
       }}
     >
       {visibleEntries.map((entry) => {
