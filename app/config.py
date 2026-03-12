@@ -23,6 +23,7 @@ class Settings:
     hacker_news_page_limit: int
     github_page_limit: int
     ranking_limit: int
+    experimental_ranking_limit: int
     history_run_limit: int
     github_token: Optional[str]
     twitter_bearer_token: Optional[str]
@@ -48,6 +49,7 @@ def load_settings() -> Settings:
         hacker_news_page_limit=int(os.getenv("SIGNAL_EYE_HACKER_NEWS_PAGE_LIMIT", "3")),
         github_page_limit=int(os.getenv("SIGNAL_EYE_GITHUB_PAGE_LIMIT", "2")),
         ranking_limit=int(os.getenv("SIGNAL_EYE_RANKING_LIMIT", "100")),
+        experimental_ranking_limit=int(os.getenv("SIGNAL_EYE_EXPERIMENTAL_RANKING_LIMIT", "12")),
         history_run_limit=int(os.getenv("SIGNAL_EYE_HISTORY_RUN_LIMIT", "72")),
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),

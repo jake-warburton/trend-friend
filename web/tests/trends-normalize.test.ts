@@ -43,6 +43,7 @@ test("normalizeDashboardOverview defaults empty charts and sections", () => {
   assert.deepEqual(result.charts.sourceShare, []);
   assert.deepEqual(result.sections.topTrends, []);
   assert.deepEqual(result.sections.breakoutTrends, []);
+  assert.deepEqual(result.sections.experimentalTrends, []);
   assert.deepEqual(result.sections.metaTrends, []);
 });
 
@@ -76,7 +77,7 @@ test("normalizeDashboardOverview defaults missing source quality fields", () => 
       newestTrendName: null,
     },
     charts: { topTrendScores: [], sourceShare: [], statusBreakdown: [] },
-    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], metaTrends: [] },
+    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], experimentalTrends: [], metaTrends: [] },
     operations: { lastRunAt: null, successRate: 0, averageDurationMs: 0, recentRuns: [] },
     sources: [
       {
@@ -115,7 +116,7 @@ test("normalizeDashboardOverview preserves provided values", () => {
       newestTrendName: null,
     },
     charts: { topTrendScores: [{ label: "AI", value: 50 }], sourceShare: [], statusBreakdown: [] },
-    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], metaTrends: [] },
+    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], experimentalTrends: [], metaTrends: [] },
     operations: { lastRunAt: "2026-03-10T00:00:00Z", successRate: 1.0, averageDurationMs: 5000, recentRuns: [] },
     sources: [],
   };
@@ -125,6 +126,7 @@ test("normalizeDashboardOverview preserves provided values", () => {
   assert.equal(result.highlights.topTrendId, "ai-agents");
   assert.equal(result.charts.topTrendScores.length, 1);
   assert.equal(result.operations.successRate, 1.0);
+  assert.deepEqual(result.sections.experimentalTrends, []);
 });
 
 test("normalizeDashboardOverview defaults missing run quality fields", () => {
@@ -140,7 +142,7 @@ test("normalizeDashboardOverview defaults missing run quality fields", () => {
       newestTrendName: null,
     },
     charts: { topTrendScores: [{ label: "AI", value: 50 }], sourceShare: [], statusBreakdown: [] },
-    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], metaTrends: [] },
+    sections: { topTrends: [], breakoutTrends: [], risingTrends: [], experimentalTrends: [], metaTrends: [] },
     operations: {
       lastRunAt: "2026-03-10T00:00:00Z",
       successRate: 1.0,

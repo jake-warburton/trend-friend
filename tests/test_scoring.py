@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from app.models import TopicAggregate, TrendScoreResult
 from app.scoring.calculator import calculate_trend_scores
-from app.scoring.ranking import rank_topics_by_score
+from app.scoring.ranking import rank_experimental_topics, rank_topics_by_score
 
 
 class TrendScoringTests(unittest.TestCase):
@@ -170,6 +170,56 @@ class TrendScoringTests(unittest.TestCase):
 
         self.assertEqual(len(ranked), 25)
         self.assertTrue(all(score.topic.startswith("topic-") for score in ranked))
+
+    def test_rank_experimental_topics_surfaces_viable_overflow_candidates(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        published_scores = [
+            TrendScoreResult(
+                topic=f"topic-{index:02d}",
+                total_score=100.0 - index,
+                search_score=0.0,
+                social_score=20.0,
+                developer_score=10.0,
+                knowledge_score=5.0,
+                diversity_score=6.0,
+                evidence=[f"Evidence {index}", f"Evidence {index} corroborated"],
+                source_counts={"reddit": 1, "github": 1},
+                latest_timestamp=timestamp,
+            )
+            for index in range(25)
+        ]
+        viable_experimental = TrendScoreResult(
+            topic="experimental-topic",
+            total_score=16.0,
+            search_score=0.0,
+            social_score=16.0,
+            developer_score=0.0,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["Weak but interesting evidence"],
+            source_counts={"reddit": 1},
+            latest_timestamp=timestamp,
+        )
+        filtered_out = TrendScoreResult(
+            topic="too-weak-topic",
+            total_score=8.0,
+            search_score=0.0,
+            social_score=8.0,
+            developer_score=0.0,
+            knowledge_score=0.0,
+            diversity_score=0.0,
+            evidence=["Very thin evidence"],
+            source_counts={"reddit": 1},
+            latest_timestamp=timestamp,
+        )
+
+        experimental = rank_experimental_topics(
+            published_scores + [viable_experimental, filtered_out],
+            published_scores=published_scores,
+            limit=5,
+        )
+
+        self.assertEqual([score.topic for score in experimental], ["experimental-topic"])
 
     def test_calculate_trend_scores_prefers_specific_exact_phrases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

@@ -116,6 +116,7 @@ async function readDashboardOverview(): Promise<DashboardOverviewResponse> {
       topTrends: [],
       breakoutTrends: [],
       risingTrends: [],
+      experimentalTrends: [],
       metaTrends: [],
     },
     operations: {
@@ -182,6 +183,14 @@ export function normalizeDashboardOverview(payload: DashboardOverviewResponse): 
         name: trend.name,
         category: trend.category ?? "general-tech",
         status: trend.status ?? "rising",
+        rank: trend.rank ?? 0,
+        scoreTotal: trend.scoreTotal ?? 0,
+      })),
+      experimentalTrends: (payload.sections?.experimentalTrends ?? []).map((trend) => ({
+        id: trend.id,
+        name: trend.name,
+        category: trend.category ?? "general-tech",
+        status: trend.status ?? "experimental",
         rank: trend.rank ?? 0,
         scoreTotal: trend.scoreTotal ?? 0,
       })),

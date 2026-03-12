@@ -390,6 +390,7 @@ class DashboardOverviewSectionsPayload:
     top_trends: list[DashboardOverviewTrendItemPayload]
     breakout_trends: list[DashboardOverviewTrendItemPayload]
     rising_trends: list[DashboardOverviewTrendItemPayload]
+    experimental_trends: list[DashboardOverviewTrendItemPayload]
     meta_trends: list[DashboardOverviewMetaTrendPayload]
 
 
@@ -493,8 +494,9 @@ class DashboardOverviewPayload:
         payload["sections"]["topTrends"] = payload["sections"].pop("top_trends")
         payload["sections"]["breakoutTrends"] = payload["sections"].pop("breakout_trends")
         payload["sections"]["risingTrends"] = payload["sections"].pop("rising_trends")
+        payload["sections"]["experimentalTrends"] = payload["sections"].pop("experimental_trends")
         payload["sections"]["metaTrends"] = payload["sections"].pop("meta_trends")
-        for section_name in ("topTrends", "breakoutTrends", "risingTrends"):
+        for section_name in ("topTrends", "breakoutTrends", "risingTrends", "experimentalTrends"):
             for trend in payload["sections"][section_name]:
                 trend["scoreTotal"] = trend.pop("score_total")
         for trend in payload["sections"]["metaTrends"]:

@@ -1110,6 +1110,20 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           </div>
         </article>
 
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Experimental</h2>
+          </div>
+          <div className="curated-list">
+            {initialData.overview.sections.experimentalTrends.slice(0, 4).map((trend) => (
+              <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                <span>{trend.name}</span>
+                <strong>{trend.scoreTotal.toFixed(1)}</strong>
+              </Link>
+            ))}
+          </div>
+        </article>
+
       </section>
 
       {explorerGeoMapData.length > 0 ? (

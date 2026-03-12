@@ -8,6 +8,7 @@ from app.scoring.quality import is_low_evidence_trend
 PROTECTED_TOP_RANK_COUNT = 25
 LOW_EVIDENCE_TAIL_PENALTY = 6.0
 MIN_LOW_EVIDENCE_TAIL_SCORE = 18.0
+MIN_EXPERIMENTAL_SCORE = 12.0
 
 
 def rank_topics_by_score(
@@ -32,6 +33,27 @@ def rank_topics_by_score(
 
     remaining_slots = max(0, limit - len(protected_scores))
     return protected_scores + selected_tail[:remaining_slots]
+
+
+def rank_experimental_topics(
+    scores: list[TrendScoreResult],
+    published_scores: list[TrendScoreResult],
+    limit: int = 12,
+) -> list[TrendScoreResult]:
+    """Return weaker but still viable candidates outside the strict published ranking."""
+
+    if limit <= 0:
+        return []
+
+    published_topics = {score.topic for score in published_scores}
+    candidates = _sort_tail_scores(
+        [score for score in sorted(scores, key=lambda item: (-item.total_score, item.topic, item.latest_timestamp.isoformat())) if score.topic not in published_topics]
+    )
+    return [
+        score
+        for score in candidates
+        if _is_experimental_candidate(score)
+    ][:limit]
 
 
 def _sort_tail_scores(scores: list[TrendScoreResult]) -> list[TrendScoreResult]:
@@ -68,3 +90,13 @@ def _partition_tail_scores(
             continue
         selected.append(score)
     return selected, gated
+
+
+def _is_experimental_candidate(score: TrendScoreResult) -> bool:
+    """Return whether a non-published score is still worth surfacing experimentally."""
+
+    if score.total_score < MIN_EXPERIMENTAL_SCORE:
+        return False
+    if not score.evidence:
+        return False
+    return True

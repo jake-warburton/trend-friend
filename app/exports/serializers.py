@@ -58,6 +58,7 @@ from app.models import (
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.topics.categorize import categorize_topic
 from app.topics.display import build_display_name, fallback_display_name
 
 
@@ -118,6 +119,7 @@ def build_trend_detail_index_payload(
 def build_dashboard_overview_payload(
     generated_at: datetime,
     trends: list[TrendDetailRecord],
+    experimental_trends: list[TrendScoreResult],
     signals: list[NormalizedSignal],
     source_runs: list[SourceIngestionRun],
     pipeline_runs: list[PipelineRun],
@@ -158,7 +160,7 @@ def build_dashboard_overview_payload(
             newest_trend_name=newest_trend.name if newest_trend is not None else None,
         ),
         charts=build_dashboard_charts_payload(ordered_trends, source_summaries),
-        sections=build_dashboard_sections_payload(ordered_trends),
+        sections=build_dashboard_sections_payload(ordered_trends, experimental_trends),
         operations=build_dashboard_operations_payload(pipeline_runs),
         sources=source_summaries,
         source_watch=[
@@ -701,6 +703,7 @@ def build_dashboard_charts_payload(
 
 def build_dashboard_sections_payload(
     trends: list[TrendDetailRecord],
+    experimental_trends: list[TrendScoreResult],
 ) -> DashboardOverviewSectionsPayload:
     """Return curated overview sections similar to dedicated trend products."""
 
@@ -716,6 +719,10 @@ def build_dashboard_sections_payload(
             for trend in trends
             if trend.status == "rising"
         ][:5],
+        experimental_trends=[
+            serialize_overview_experimental_item(score, rank_offset)
+            for rank_offset, score in enumerate(experimental_trends, start=len(trends) + 1)
+        ][:6],
         meta_trends=build_meta_trend_payloads(trends),
     )
 
@@ -730,6 +737,22 @@ def serialize_overview_trend_item(trend: TrendDetailRecord) -> DashboardOverview
         status=trend.status,
         rank=trend.rank,
         score_total=round(trend.score.total_score, 1),
+    )
+
+
+def serialize_overview_experimental_item(
+    score: TrendScoreResult,
+    rank: int,
+) -> DashboardOverviewTrendItemPayload:
+    """Convert an experimental score candidate into a compact overview item."""
+
+    return DashboardOverviewTrendItemPayload(
+        id=slugify(score.topic),
+        name=score.display_name or build_display_name(score.topic, score.evidence),
+        category=categorize_topic(score.topic, score.source_counts),
+        status="experimental",
+        rank=rank,
+        score_total=round(score.total_score, 1),
     )
 
 

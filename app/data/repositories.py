@@ -1482,17 +1482,24 @@ class TrendScoreRepository:
     def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
-    def replace_scores(self, scores: list[TrendScoreResult]) -> None:
+    def replace_scores(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        published_topics: set[str] | None = None,
+    ) -> None:
         """Replace stored scores with the latest ranking run."""
 
         self.connection.execute("DELETE FROM trend_scores")
+        published_topics = published_topics or {score.topic for score in scores}
         self.connection.executemany(
             """
             INSERT INTO trend_scores (
                 topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
+                is_published
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -1507,13 +1514,20 @@ class TrendScoreRepository:
                     json.dumps(score.evidence),
                     score.latest_timestamp.isoformat(),
                     score.display_name,
+                    int(score.topic in published_topics),
                 )
                 for score in scores
             ],
         )
         self.connection.commit()
 
-    def append_snapshot(self, scores: list[TrendScoreResult], captured_at: datetime) -> int:
+    def append_snapshot(
+        self,
+        scores: list[TrendScoreResult],
+        captured_at: datetime,
+        *,
+        published_topics: set[str] | None = None,
+    ) -> int:
         """Persist a timestamped ranked snapshot for historical views."""
 
         run_id = execute_insert_and_return_id(
@@ -1521,13 +1535,15 @@ class TrendScoreRepository:
             "INSERT INTO trend_runs (captured_at) VALUES (?)",
             (captured_at.isoformat(),),
         )
+        published_topics = published_topics or {score.topic for score in scores}
         self.connection.executemany(
             """
             INSERT INTO trend_score_snapshots (
                 run_id, rank_position, topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
+                is_published
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -1544,6 +1560,7 @@ class TrendScoreRepository:
                     json.dumps(score.evidence),
                     score.latest_timestamp.isoformat(),
                     score.display_name,
+                    int(score.topic in published_topics),
                 )
                 for rank_position, score in enumerate(scores, start=1)
             ],
@@ -1559,6 +1576,7 @@ class TrendScoreRepository:
             SELECT topic, total_score, search_score, social_score, developer_score,
                    knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_scores
+            WHERE is_published = 1
             ORDER BY total_score DESC, topic ASC, latest_timestamp ASC
             LIMIT ?
             """,
@@ -1581,7 +1599,28 @@ class TrendScoreRepository:
             SELECT topic, total_score, search_score, social_score, developer_score,
                    knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_score_snapshots
-            WHERE run_id = ?
+            WHERE run_id = ? AND is_published = 1
+            ORDER BY rank_position ASC
+            LIMIT ?
+            """,
+            (run_row["id"], limit),
+        ).fetchall()
+        return datetime.fromisoformat(run_row["captured_at"]), [self._score_from_row(row) for row in rows]
+
+    def list_latest_experimental_snapshot(self, limit: int) -> tuple[datetime | None, list[TrendScoreResult]]:
+        """Return the latest stored experimental candidates from the newest snapshot."""
+
+        run_row = self.connection.execute(
+            "SELECT id, captured_at FROM trend_runs ORDER BY captured_at DESC, id DESC LIMIT 1"
+        ).fetchone()
+        if run_row is None:
+            return None, []
+        rows = self.connection.execute(
+            """
+            SELECT topic, total_score, search_score, social_score, developer_score,
+                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+            FROM trend_score_snapshots
+            WHERE run_id = ? AND is_published = 0
             ORDER BY rank_position ASC
             LIMIT ?
             """,
@@ -1607,7 +1646,7 @@ class TrendScoreRepository:
                 SELECT topic, total_score, search_score, social_score, developer_score,
                        knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
                 FROM trend_score_snapshots
-                WHERE run_id = ?
+                WHERE run_id = ? AND is_published = 1
                 ORDER BY rank_position ASC
                 LIMIT ?
                 """,
@@ -1629,7 +1668,7 @@ class TrendScoreRepository:
             SELECT trend_runs.captured_at, trend_score_snapshots.rank_position, trend_score_snapshots.total_score
             FROM trend_score_snapshots
             INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ?
+            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
             ORDER BY trend_runs.captured_at DESC, trend_runs.id DESC
             LIMIT ?
             """,
@@ -1652,7 +1691,7 @@ class TrendScoreRepository:
             SELECT trend_runs.captured_at
             FROM trend_score_snapshots
             INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ?
+            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
             ORDER BY trend_runs.captured_at ASC, trend_runs.id ASC
             LIMIT 1
             """,
@@ -1670,7 +1709,7 @@ class TrendScoreRepository:
             SELECT trend_runs.id AS run_id
             FROM trend_score_snapshots
             INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ?
+            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
             ORDER BY trend_runs.id ASC
             """,
             (topic,),
@@ -1686,7 +1725,7 @@ class TrendScoreRepository:
         from app.scoring.seasonality import classify_seasonality
 
         appearance_count = self.connection.execute(
-            "SELECT COUNT(*) AS count FROM trend_score_snapshots WHERE topic = ?",
+            "SELECT COUNT(*) AS count FROM trend_score_snapshots WHERE topic = ? AND is_published = 1",
             (topic,),
         ).fetchone()["count"]
         total_runs = self.connection.execute(

@@ -89,6 +89,7 @@ export type DashboardOverviewSections = {
   topTrends: DashboardOverviewTrendItem[];
   breakoutTrends: DashboardOverviewTrendItem[];
   risingTrends: DashboardOverviewTrendItem[];
+  experimentalTrends: DashboardOverviewTrendItem[];
   metaTrends: DashboardOverviewMetaTrend[];
 };
 

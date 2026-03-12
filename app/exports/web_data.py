@@ -52,6 +52,7 @@ def export_web_data_payloads(settings: Settings) -> None:
     source_runs = source_run_repository.list_latest_runs()
     source_run_history = source_run_repository.list_recent_runs(limit_per_source=SOURCE_RUN_HISTORY_LIMIT)
     latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
+    _, experimental_scores = repository.list_latest_experimental_snapshot(limit=settings.experimental_ranking_limit)
     history = repository.list_score_history(
         limit_runs=settings.history_run_limit,
         per_run_limit=settings.ranking_limit,
@@ -75,6 +76,7 @@ def export_web_data_payloads(settings: Settings) -> None:
     overview_payload = build_dashboard_overview_payload(
         generated_at=latest_captured_at or generated_at,
         trends=detail_records,
+        experimental_trends=experimental_scores,
         signals=signals,
         source_runs=source_runs,
         pipeline_runs=pipeline_runs,

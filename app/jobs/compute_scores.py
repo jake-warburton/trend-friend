@@ -21,7 +21,7 @@ from app.notifications.deliver import deliver_post_run_notifications
 from app.notifications.digest import build_run_digest
 from app.scoring.calculator import calculate_trend_scores
 from app.scoring.quality import calculate_pipeline_quality_metrics, calculate_source_quality_metrics
-from app.scoring.ranking import rank_topics_by_score
+from app.scoring.ranking import rank_experimental_topics, rank_topics_by_score
 from app.topics.cluster import aggregate_topic_signals
 from app.topics.extract import build_signals_from_items
 
@@ -39,6 +39,13 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     aggregates = aggregate_topic_signals(normalized_signals)
     scores = calculate_trend_scores(aggregates)
     ranked_scores = rank_topics_by_score(scores, limit=settings.ranking_limit)
+    experimental_scores = rank_experimental_topics(
+        scores,
+        published_scores=ranked_scores,
+        limit=settings.experimental_ranking_limit,
+    )
+    stored_scores = ranked_scores + experimental_scores
+    published_topics = {score.topic for score in ranked_scores}
     quality_metrics = calculate_pipeline_quality_metrics(
         normalized_signals,
         aggregates,
@@ -74,8 +81,8 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     # Capture previous snapshot state before overwriting
     previous_snapshot = _build_previous_state(repository, settings.ranking_limit)
 
-    repository.replace_scores(ranked_scores)
-    repository.append_snapshot(ranked_scores, captured_at=captured_at)
+    repository.replace_scores(stored_scores, published_topics=published_topics)
+    repository.append_snapshot(stored_scores, captured_at=captured_at, published_topics=published_topics)
     PipelineRunRepository(connection).append_run(
         PipelineRun(
             captured_at=captured_at,

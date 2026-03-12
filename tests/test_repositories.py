@@ -143,6 +143,21 @@ class RepositoryTests(unittest.TestCase):
         stored_scores = repository.list_scores(limit=5)
         self.assertEqual(stored_scores, [score])
 
+    def test_trend_score_repository_keeps_experimental_scores_out_of_published_views(self) -> None:
+        published_score = build_score(topic="ai agents", total_score=20.0)
+        experimental_score = build_score(topic="experimental ai", total_score=14.0)
+
+        repository = TrendScoreRepository(self.connection)
+        repository.replace_scores(
+            [published_score, experimental_score],
+            published_topics={published_score.topic},
+        )
+
+        stored_scores = repository.list_scores(limit=5)
+        self.assertEqual(len(stored_scores), 1)
+        self.assertEqual(stored_scores[0].topic, published_score.topic)
+        self.assertEqual(stored_scores[0].display_name, "AI Agents")
+
     def test_pipeline_run_repository_returns_recent_runs(self) -> None:
         repository = PipelineRunRepository(self.connection)
         repository.append_run(
@@ -218,6 +233,28 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(latest_captured_at, captured_at)
         self.assertEqual(latest_scores, [score])
         self.assertEqual(history, [(captured_at, [score])])
+
+    def test_trend_score_repository_returns_latest_experimental_snapshot(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+        published_score = build_score(topic="ai agents", total_score=20.0)
+        experimental_score = build_score(topic="experimental ai", total_score=14.0)
+
+        repository.append_snapshot(
+            [published_score, experimental_score],
+            captured_at=captured_at,
+            published_topics={published_score.topic},
+        )
+
+        latest_captured_at, latest_scores = repository.list_latest_snapshot(limit=5)
+        latest_experimental_at, latest_experimental = repository.list_latest_experimental_snapshot(limit=5)
+
+        self.assertEqual(latest_captured_at, captured_at)
+        self.assertEqual(len(latest_scores), 1)
+        self.assertEqual(latest_scores[0].topic, published_score.topic)
+        self.assertEqual(latest_experimental_at, captured_at)
+        self.assertEqual(len(latest_experimental), 1)
+        self.assertEqual(latest_experimental[0].topic, experimental_score.topic)
 
     def test_trend_score_repository_builds_explorer_records_with_movement(self) -> None:
         repository = TrendScoreRepository(self.connection)
