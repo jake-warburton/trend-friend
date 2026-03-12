@@ -173,20 +173,24 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
-          {wikipediaLink ? (
-            <a className="detail-back-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
-              Open Wikipedia page for {wikipediaLink.title}
-            </a>
-          ) : null}
-          {primaryEvidenceLink?.evidenceUrl ? (
-            <a className="detail-back-link" href={primaryEvidenceLink.evidenceUrl} rel="noreferrer" target="_blank">
-              Open source item from {formatSourceLabel(primaryEvidenceLink.source)}
-            </a>
-          ) : null}
-          {trend.relatedTrends[0] ? (
-            <Link className="detail-back-link" href={`/compare?ids=${trend.id},${trend.relatedTrends[0].id}`}>
-              Compare with {trend.relatedTrends[0].name}
-            </Link>
+          {wikipediaLink || primaryEvidenceLink?.evidenceUrl || trend.relatedTrends[0] ? (
+            <div className="detail-action-links">
+              {wikipediaLink ? (
+                <a className="detail-back-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
+                  Open Wikipedia page for {wikipediaLink.title}
+                </a>
+              ) : null}
+              {primaryEvidenceLink?.evidenceUrl ? (
+                <a className="detail-back-link" href={primaryEvidenceLink.evidenceUrl} rel="noreferrer" target="_blank">
+                  Open source item from {formatSourceLabel(primaryEvidenceLink.source)}
+                </a>
+              ) : null}
+              {trend.relatedTrends[0] ? (
+                <Link className="detail-back-link" href={`/compare?ids=${trend.id},${trend.relatedTrends[0].id}`}>
+                  Compare with {trend.relatedTrends[0].name}
+                </Link>
+              ) : null}
+            </div>
           ) : null}
         </div>
 

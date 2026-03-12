@@ -2526,6 +2526,13 @@ input {
   content: "\2190\00a0";
 }
 
+.detail-action-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  margin-top: 8px;
+}
+
 .detail-copy {
   max-width: 56ch;
   color: var(--muted);
@@ -2578,6 +2585,10 @@ input {
 
 .detail-stat-item:last-child {
   padding-right: 0;
+  border-right: 0;
+}
+
+.detail-stat-item:nth-child(2) {
   border-right: 0;
 }
 
