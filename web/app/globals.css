@@ -1856,6 +1856,7 @@ input {
   display: grid;
   grid-template-columns: minmax(0, 1.16fr) minmax(300px, 0.94fr);
   gap: 6px;
+  margin-top: 12px;
   padding: 0 4px 0 10px;
   color: var(--muted);
   font-size: 0.52rem;
