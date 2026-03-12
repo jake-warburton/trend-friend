@@ -1440,9 +1440,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     <div className="trend-cell explorer-card-head">
                       <div className="explorer-card-kicker">
                         <span className="explorer-rank-chip">#{trend.rank}</span>
-                        <span className="trend-date-chip">
-                          {trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}
-                        </span>
                       </div>
                       <div className="trend-title-row">
                         <strong>
@@ -1450,10 +1447,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                             {trend.name}
                           </Link>
                         </strong>
-                        <span className="trend-date-chip">Sources: {trend.sources.length}</span>
                       </div>
-                      <div className="explorer-badge-row">
-                        <span className="trend-summary-chip">{compactSummaryParts.join(" / ")}</span>
+                      <div className="explorer-card-meta">
+                        <span>{trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}</span>
+                        <span>Sources: {trend.sources.length}</span>
+                      </div>
+                      <div className="explorer-card-summary">
+                        <span>{compactSummaryParts.join(" / ")}</span>
                       </div>
                     </div>
 

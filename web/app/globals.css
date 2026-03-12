@@ -1965,10 +1965,24 @@ input {
   line-height: 1.08;
 }
 
-.explorer-badge-row {
+.explorer-card-meta,
+.explorer-card-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px 10px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.6rem;
+  line-height: 1.3;
+}
+
+.explorer-card-meta span,
+.explorer-card-summary span {
+  min-width: 0;
+}
+
+.explorer-card-summary {
+  color: var(--copy-soft);
 }
 
 .trend-summary-chip {
@@ -3209,23 +3223,17 @@ input {
   .explorer-card-head,
   .explorer-card-kicker,
   .trend-title-row,
-  .explorer-badge-row {
+  .explorer-card-meta,
+  .explorer-card-summary {
     min-width: 0;
   }
 
   .trend-title-row strong,
   .trend-link,
-  .trend-date-chip,
-  .trend-summary-chip {
+  .explorer-card-meta span,
+  .explorer-card-summary span {
     min-width: 0;
     max-width: 100%;
-  }
-
-  .trend-summary-chip {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    text-overflow: clip;
-    line-height: 1.2;
   }
 
   .explorer-card::before {
@@ -3244,7 +3252,8 @@ input {
 
   .explorer-card-kicker,
   .trend-title-row,
-  .explorer-badge-row {
+  .explorer-card-meta,
+  .explorer-card-summary {
     gap: 4px;
   }
 
@@ -3253,10 +3262,15 @@ input {
     line-height: 1.04;
   }
 
-  .trend-summary-chip,
-  .trend-date-chip,
+  .explorer-card-meta,
+  .explorer-card-summary,
   .explorer-rank-chip {
     font-size: 0.5rem;
+  }
+
+  .explorer-card-summary span {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .explorer-metrics-row {
