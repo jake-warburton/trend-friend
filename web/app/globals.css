@@ -257,17 +257,17 @@
   --filter-chip-border: rgba(12, 102, 228, 0.1);
   --filter-chip-bg: rgba(56, 139, 255, 0.08);
   --hero-background:
-    radial-gradient(circle at top left, rgba(56, 139, 255, 0.14), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
+    radial-gradient(circle at top left, rgba(56, 139, 255, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(244, 245, 247, 0.34));
   --hero-border: rgba(9, 30, 66, 0.05);
   --panel-raised-border: rgba(9, 30, 66, 0.05);
-  --command-background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
-  --summary-background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
-  --stat-background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
-  --filters-background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
-  --analytics-background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
-  --curated-background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 245, 247, 0.98));
-  --curated-background-hover: linear-gradient(180deg, rgba(244, 245, 247, 1), rgba(235, 236, 240, 0.98));
+  --command-background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(244, 245, 247, 0.3));
+  --summary-background: linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(244, 245, 247, 0.26));
+  --stat-background: linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(244, 245, 247, 0.26));
+  --filters-background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(244, 245, 247, 0.24));
+  --analytics-background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(244, 245, 247, 0.2));
+  --curated-background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(244, 245, 247, 0.12));
+  --curated-background-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(241, 242, 244, 0.18));
   --refresh-button-background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(241, 242, 244, 1));
   --refresh-button-background-hover: linear-gradient(180deg, rgba(244, 245, 247, 1), rgba(235, 236, 240, 1));
   --refresh-button-border: rgba(12, 102, 228, 0.1);
@@ -1301,7 +1301,7 @@ input {
   border-width: 1px 0;
   border-color: rgba(9, 30, 66, 0.05);
   border-radius: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 248, 249, 0.74));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(247, 248, 249, 0.22));
   box-shadow: none;
 }
 
@@ -1330,7 +1330,7 @@ input {
   border: 0;
   border-left: 1px solid rgba(9, 30, 66, 0.05);
   border-radius: 0;
-  background: transparent;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(244, 245, 247, 0.03));
   backdrop-filter: none;
   box-shadow: none;
 }
@@ -1381,7 +1381,7 @@ input {
 
 .theme-atlassian-light .ranking-panel,
 .theme-atlassian-light .history-panel {
-  background: linear-gradient(180deg, rgba(248, 249, 251, 0.78), rgba(241, 242, 244, 0.68));
+  background: linear-gradient(180deg, rgba(248, 249, 251, 0.34), rgba(241, 242, 244, 0.2));
   border-left: 0;
   border-right: 0;
   box-shadow: none;
