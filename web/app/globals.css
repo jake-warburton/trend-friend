@@ -298,12 +298,12 @@
   --snapshot-background: linear-gradient(180deg, rgba(41, 47, 56, 0.98), rgba(31, 36, 43, 0.98));
   --inset-divider: rgba(255, 255, 255, 0.05);
   --page-background:
-    radial-gradient(circle at 18% 0%, rgba(79, 195, 247, 0.06), transparent 22%),
-    radial-gradient(circle at 86% 8%, rgba(255, 255, 255, 0.025), transparent 18%),
-    linear-gradient(180deg, #303741 0%, #282d35 42%, #20252d 100%);
+    radial-gradient(circle at 18% 0%, rgba(79, 195, 247, 0.05), transparent 22%),
+    radial-gradient(circle at 86% 8%, rgba(255, 255, 255, 0.02), transparent 18%),
+    linear-gradient(180deg, #2c333c 0%, #242a32 42%, #1d222a 100%);
   --body-background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.008), transparent 12%, transparent 88%, rgba(79, 195, 247, 0.015)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.008), transparent 24%);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.006), transparent 12%, transparent 88%, rgba(79, 195, 247, 0.012)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.006), transparent 24%);
 }
 
 .theme-tech-light {
