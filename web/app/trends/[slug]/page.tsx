@@ -264,6 +264,25 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
+              <p className="eyebrow">Canonicalization</p>
+              <h2>Tracked aliases</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {(trend.aliases.length > 0 ? trend.aliases : [trend.name]).map((alias) => (
+              <article className="detail-list-item" key={`${trend.id}-alias-${alias}`}>
+                <div>
+                  <strong>{alias}</strong>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
               <p className="eyebrow">Opportunity</p>
               <h2>What you can do with it</h2>
             </div>
@@ -454,7 +473,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                       {item.name}
                     </Link>
                   </strong>
-                  <span>{formatTrendStatus(item.status)}</span>
+                  <span>{formatTrendStatus(item.status)} · {Math.round(item.relationshipStrength * 100)}% related</span>
                 </div>
                 <small>
                   <Link className="trend-link" href={`/compare?ids=${trend.id},${item.id}`}>

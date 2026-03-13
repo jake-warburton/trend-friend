@@ -278,6 +278,7 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.equal(result.confidence, 0);
   assert.equal(result.summary, "");
   assert.deepEqual(result.whyNow, []);
+  assert.deepEqual(result.aliases, []);
   assert.equal(result.forecast, null);
   assert.deepEqual(result.opportunity, {
     composite: 0,
@@ -303,6 +304,7 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     confidence: 0.88,
     summary: "AI Agents is a breakout AI trend.",
     whyNow: ["Social signals are leading."],
+    aliases: ["AI Agents", "ai agents"],
     latestSignalAt: "2026-03-10T00:00:00Z",
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
     forecast: { predictedScores: [45, 48], confidence: "high", mape: 8.5, method: "holt" },
@@ -323,6 +325,7 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.confidence, 0.88);
   assert.equal(result.summary, "AI Agents is a breakout AI trend.");
   assert.deepEqual(result.whyNow, ["Social signals are leading."]);
+  assert.deepEqual(result.aliases, ["AI Agents", "ai agents"]);
   assert.equal(result.breakoutPrediction.confidence, 0.85);
   assert.equal(result.opportunity.composite, 7.5);
   assert.equal(result.opportunity.reasoning[0], "Strong momentum");

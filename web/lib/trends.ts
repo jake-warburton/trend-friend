@@ -467,6 +467,7 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
       signalCount: trend.coverage?.signalCount ?? 0,
     },
     sources: trend.sources ?? [],
+    aliases: trend.aliases ?? [],
     history: trend.history ?? [],
     sourceBreakdown: trend.sourceBreakdown ?? [],
     sourceContributions: trend.sourceContributions ?? [],
@@ -485,7 +486,10 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
           evidenceUrl: trend.primaryEvidence.evidenceUrl ?? null,
         }
       : null,
-    relatedTrends: trend.relatedTrends ?? [],
+    relatedTrends: (trend.relatedTrends ?? []).map((item) => ({
+      ...item,
+      relationshipStrength: item.relationshipStrength ?? 0,
+    })),
     seasonality: trend.seasonality
       ? {
           tag: trend.seasonality.tag ?? null,

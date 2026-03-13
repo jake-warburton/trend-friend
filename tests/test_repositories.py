@@ -342,6 +342,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertGreater(records[0].confidence, 0.35)
         self.assertIn("AI Agents is a nascent", records[0].summary)
         self.assertGreaterEqual(len(records[0].why_now), 2)
+        self.assertIn("ai agents", [alias.lower() for alias in records[0].aliases])
         self.assertEqual(records[0].volatility, "spiking")
         self.assertEqual(records[0].geo_summary[0].country_code, "GB")
         self.assertEqual(records[0].geo_summary[0].signal_count, 1)
@@ -425,7 +426,27 @@ class RepositoryTests(unittest.TestCase):
         self.assertGreater(entity.confidence, 0.0)
         self.assertIn("AI Agents is a nascent", entity.summary)
         self.assertGreaterEqual(len(entity.why_now), 1)
+        self.assertIn("ai agents", [alias.lower() for alias in entity.aliases])
         self.assertEqual(entity.last_seen_at, datetime(2026, 3, 8, tzinfo=timezone.utc))
+
+    def test_trend_score_repository_persists_related_relationship_strength(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="agent workflows", total_score=24.0),
+            ],
+            captured_at=captured_at,
+        )
+
+        records = repository.list_trend_detail_records(limit=5)
+        ai_agents = next(record for record in records if record.id == "ai-agents")
+
+        self.assertTrue(ai_agents.related_trends)
+        self.assertEqual(ai_agents.related_trends[0].id, "agent-workflows")
+        self.assertGreater(ai_agents.related_trends[0].relationship_strength, 0.0)
 
     def test_watchlist_repository_round_trip(self) -> None:
         repository = WatchlistRepository(self.connection)

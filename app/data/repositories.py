@@ -1611,7 +1611,34 @@ class TrendScoreRepository:
         ).fetchone()
         if row is None:
             return None
-        return self._trend_entity_from_row(row)
+        entity = self._trend_entity_from_row(row)
+        return TrendEntity(
+            topic_key=entity.topic_key,
+            canonical_name=entity.canonical_name,
+            category=entity.category,
+            meta_trend=entity.meta_trend,
+            stage=entity.stage,
+            confidence=entity.confidence,
+            summary=entity.summary,
+            why_now=entity.why_now,
+            aliases=self.list_trend_aliases(self._slugify_topic(topic)),
+            first_seen_at=entity.first_seen_at,
+            last_seen_at=entity.last_seen_at,
+        )
+
+    def list_trend_aliases(self, trend_id: str) -> list[str]:
+        """Return persisted aliases for one trend id."""
+
+        rows = self.connection.execute(
+            """
+            SELECT alias
+            FROM trend_aliases
+            WHERE topic_key = ?
+            ORDER BY alias ASC
+            """,
+            (trend_id,),
+        ).fetchall()
+        return [row["alias"] for row in rows]
 
     def list_latest_snapshot(self, limit: int) -> tuple[datetime | None, list[TrendScoreResult]]:
         """Return the most recent stored snapshot and its capture time."""
@@ -1912,6 +1939,7 @@ class TrendScoreRepository:
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
                     sources=sorted(score.source_counts),
+                    aliases=entity.aliases,
                     history=history,
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
                     source_contributions=self.get_topic_source_contributions(score.topic, score),
@@ -2184,6 +2212,7 @@ class TrendScoreRepository:
             """,
             rows,
         )
+        self._replace_trend_aliases(scores, published_topics=published_topics)
 
     def _get_or_create_trend_entity(
         self,
@@ -2222,6 +2251,37 @@ class TrendScoreRepository:
         self.connection.commit()
         return self.get_trend_entity(score.topic) or self._trend_entity_from_tuple(row)
 
+    def _replace_trend_aliases(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        published_topics: set[str],
+    ) -> None:
+        """Replace persisted aliases for the current published trend set."""
+
+        published_scores = [score for score in scores if score.topic in published_topics]
+        if not published_scores:
+            return
+
+        self.connection.executemany(
+            "DELETE FROM trend_aliases WHERE topic_key = ?",
+            [(self._slugify_topic(score.topic),) for score in published_scores],
+        )
+        alias_rows = [
+            (self._slugify_topic(score.topic), alias)
+            for score in published_scores
+            for alias in self._build_trend_aliases(score)
+        ]
+        if alias_rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_aliases (topic_key, alias)
+                VALUES (?, ?)
+                ON CONFLICT(topic_key, alias) DO NOTHING
+                """,
+                alias_rows,
+            )
+
     def _build_trend_entity_row(
         self,
         score: TrendScoreResult,
@@ -2259,6 +2319,7 @@ class TrendScoreRepository:
             confidence=round(float(row["confidence"] or 0.0), 3),
             summary=row["summary"] or "",
             why_now=list(json.loads(row["why_now_json"] or "[]")),
+            aliases=[],
             first_seen_at=datetime.fromisoformat(row["first_seen_at"]) if row["first_seen_at"] else None,
             last_seen_at=datetime.fromisoformat(row["last_seen_at"]),
         )
@@ -2277,6 +2338,7 @@ class TrendScoreRepository:
             confidence=round(float(row[5]), 3),
             summary=str(row[6]),
             why_now=list(json.loads(str(row[7]))),
+            aliases=[],
             first_seen_at=datetime.fromisoformat(str(first_seen_at)) if first_seen_at else None,
             last_seen_at=datetime.fromisoformat(str(row[9])),
         )
@@ -2464,6 +2526,23 @@ class TrendScoreRepository:
         return reasons[:3] or ["The trend is active, but the current run has limited explanatory evidence."]
 
     @staticmethod
+    def _build_trend_aliases(score: TrendScoreResult) -> list[str]:
+        """Return simple persisted aliases for a trend."""
+
+        canonical_name = score.display_name or build_display_name(score.topic, score.evidence)
+        candidates = {
+            canonical_name,
+            score.topic,
+            canonical_name.lower(),
+            score.topic.replace("-", " "),
+        }
+        for token in canonical_name.split():
+            if len(token) >= 2 and token.upper() == token:
+                candidates.add(token)
+        normalized = sorted({candidate.strip() for candidate in candidates if candidate and candidate.strip()})
+        return normalized[:6]
+
+    @staticmethod
     def _slugify_topic(topic: str) -> str:
         """Convert a topic to a stable slug identifier."""
 
@@ -2482,41 +2561,90 @@ class TrendScoreRepository:
             len(item.evidence),
         )
 
+    def _replace_trend_relationships(
+        self,
+        records: list[TrendDetailRecord],
+        relationship_rows: list[tuple[str, str, float]],
+    ) -> None:
+        """Replace persisted related-trend relationships for the current record set."""
+
+        self.connection.executemany(
+            "DELETE FROM trend_relationships WHERE topic_key = ?",
+            [(record.id,) for record in records],
+        )
+        if relationship_rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_relationships (topic_key, related_topic_key, strength)
+                VALUES (?, ?, ?)
+                ON CONFLICT(topic_key, related_topic_key)
+                DO UPDATE SET strength = excluded.strength
+                """,
+                relationship_rows,
+            )
+
+    def _load_persisted_related_trends(self, records: list[TrendDetailRecord]) -> dict[str, list[RelatedTrend]]:
+        """Load related trends from persisted relationship rows for the current record set."""
+
+        by_id = {record.id: record for record in records}
+        related_map: dict[str, list[RelatedTrend]] = {record.id: [] for record in records}
+        for record in records:
+            rows = self.connection.execute(
+                """
+                SELECT related_topic_key, strength
+                FROM trend_relationships
+                WHERE topic_key = ?
+                ORDER BY strength DESC, related_topic_key ASC
+                LIMIT 4
+                """,
+                (record.id,),
+            ).fetchall()
+            related_map[record.id] = [
+                RelatedTrend(
+                    id=by_id[row["related_topic_key"]].id,
+                    name=by_id[row["related_topic_key"]].name,
+                    status=by_id[row["related_topic_key"]].status,
+                    rank=by_id[row["related_topic_key"]].rank,
+                    score_total=by_id[row["related_topic_key"]].score.total_score,
+                    relationship_strength=row["strength"],
+                )
+                for row in rows
+                if row["related_topic_key"] in by_id
+            ]
+        return related_map
+
     def _attach_related_trends(self, records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
         """Attach compact related-trend recommendations to each detail record."""
 
         if not records:
             return []
 
-        related_map: dict[str, list[RelatedTrend]] = {}
+        relationship_rows: list[tuple[str, str, float]] = []
         for current in records:
-            candidates: list[tuple[int, TrendDetailRecord]] = []
+            candidates: list[tuple[float, TrendDetailRecord]] = []
             current_tokens = self._topic_tokens(current.name)
             current_sources = set(current.sources)
             for candidate in records:
                 if candidate.id == current.id:
                     continue
-                score = 0
+                score = 0.0
                 if current_sources.intersection(candidate.sources):
-                    score += 2
+                    score += 0.4
                 if current.status == candidate.status:
-                    score += 1
+                    score += 0.2
                 if current_tokens.intersection(self._topic_tokens(candidate.name)):
-                    score += 2
+                    score += 0.4
                 if score > 0:
                     candidates.append((score, candidate))
 
             candidates.sort(key=lambda item: (-item[0], item[1].rank, -item[1].score.total_score, item[1].name))
-            related_map[current.id] = [
-                RelatedTrend(
-                    id=item.id,
-                    name=item.name,
-                    status=item.status,
-                    rank=item.rank,
-                    score_total=item.score.total_score,
-                )
-                for _, item in candidates[:4]
-            ]
+            relationship_rows.extend(
+                (current.id, item.id, round(strength, 2))
+                for strength, item in candidates[:4]
+            )
+
+        self._replace_trend_relationships(records, relationship_rows)
+        related_map = self._load_persisted_related_trends(records)
 
         return [
             TrendDetailRecord(
@@ -2543,6 +2671,7 @@ class TrendScoreRepository:
                 source_count=record.source_count,
                 signal_count=record.signal_count,
                 sources=record.sources,
+                aliases=record.aliases,
                 history=record.history,
                 source_breakdown=record.source_breakdown,
                 source_contributions=record.source_contributions,

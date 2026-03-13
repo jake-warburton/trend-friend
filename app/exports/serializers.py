@@ -396,6 +396,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             signal_count=trend.signal_count,
         ),
         sources=trend.sources,
+        aliases=trend.aliases,
         history=[
             TrendHistoryPointPayload(
                 captured_at=to_timestamp(point.captured_at),
@@ -507,6 +508,7 @@ def serialize_related_trend(trend: RelatedTrend) -> RelatedTrendPayload:
         status=trend.status,
         rank=trend.rank,
         score_total=round(trend.score_total, 1),
+        relationship_strength=round(trend.relationship_strength, 2),
     )
 
 

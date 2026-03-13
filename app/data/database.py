@@ -206,6 +206,7 @@ SQLITE_MIGRATIONS = [
     Migration("0006_experimental_trend_tiers", load_sql_migration("sqlite_migrations/0006_experimental_trend_tiers.sql")),
     Migration("0007_trend_entities", load_sql_migration("sqlite_migrations/0007_trend_entities.sql")),
     Migration("0008_trend_entity_enrichment", load_sql_migration("sqlite_migrations/0008_trend_entity_enrichment.sql")),
+    Migration("0009_trend_relationships", load_sql_migration("sqlite_migrations/0009_trend_relationships.sql")),
 ]
 
 

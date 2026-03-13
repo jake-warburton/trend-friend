@@ -166,6 +166,7 @@ class TrendEntity:
     confidence: float
     summary: str
     why_now: list[str]
+    aliases: list[str]
     first_seen_at: datetime | None
     last_seen_at: datetime
 
@@ -287,6 +288,7 @@ class RelatedTrend:
     status: str
     rank: int
     score_total: float
+    relationship_strength: float
 
 
 @dataclass(frozen=True)
@@ -316,6 +318,7 @@ class TrendDetailRecord:
     source_count: int
     signal_count: int
     sources: list[str]
+    aliases: list[str]
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
     source_contributions: list[TrendSourceContribution]

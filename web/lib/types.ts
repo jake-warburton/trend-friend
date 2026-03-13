@@ -290,6 +290,7 @@ export type RelatedTrend = {
   status: string;
   rank: number;
   scoreTotal: number;
+  relationshipStrength: number;
 };
 
 export type TrendDetailRecord = {
@@ -315,6 +316,7 @@ export type TrendDetailRecord = {
   opportunity: OpportunitySummary;
   coverage: TrendCoverage;
   sources: string[];
+  aliases: string[];
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
   sourceContributions: TrendSourceContribution[];

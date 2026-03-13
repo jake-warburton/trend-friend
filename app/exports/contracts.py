@@ -275,6 +275,7 @@ class RelatedTrendPayload:
     status: str
     rank: int
     score_total: float
+    relationship_strength: float
 
 
 @dataclass(frozen=True)
@@ -303,6 +304,7 @@ class TrendDetailRecordPayload:
     opportunity: OpportunityPayload
     coverage: TrendCoveragePayload
     sources: list[str]
+    aliases: list[str]
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
     source_contributions: list[TrendSourceContributionPayload]
@@ -765,4 +767,5 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         payload["primaryEvidence"]["evidenceUrl"] = payload["primaryEvidence"].pop("evidence_url")
     for item in payload["relatedTrends"]:
         item["scoreTotal"] = item.pop("score_total")
+        item["relationshipStrength"] = item.pop("relationship_strength")
     return payload

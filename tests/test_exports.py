@@ -204,6 +204,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["score"]["social"], 18.2)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
+        self.assertEqual(payload["trends"][0]["relatedTrends"][0]["relationshipStrength"], 0.8)
+        self.assertIn("ai agents", payload["trends"][0]["aliases"])
 
     def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -425,6 +427,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         source_count=2,
         signal_count=2,
         sources=["github", "reddit"],
+        aliases=["AI Agents", "ai agents", "AI"],
         history=[
             TrendHistoryPoint(
                 captured_at=datetime(2026, 3, 7, tzinfo=timezone.utc),
@@ -514,6 +517,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 status="rising",
                 rank=6,
                 score_total=28.1,
+                relationship_strength=0.8,
             )
         ],
         seasonality=SeasonalityResult(
