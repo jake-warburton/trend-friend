@@ -187,6 +187,23 @@ type ExplorerActiveFilter = {
   value: string;
 };
 
+type ThesisPresetFilterState = {
+  keyword: string;
+  selectedSource: string;
+  selectedCategory: string;
+  selectedStage: string;
+  selectedConfidence: string;
+  selectedLens: string;
+  selectedMetaTrend: string;
+  selectedAudience: string;
+  selectedMarket: string;
+  selectedLanguage: string;
+  selectedGeoCountry: string;
+  minimumScore: number | null;
+  sortBy: string;
+  hideRecurring: boolean;
+};
+
 export function DashboardShell({ initialData, canManualRefresh }: DashboardShellProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -375,6 +392,43 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
   const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
   const hasAdvancedFiltersApplied = activeExplorerFilters.some((filter) => filter.key !== "seasonality") || hideRecurring;
+  const activeThesisPresetKey = useMemo(
+    () =>
+      THESIS_PRESETS.find((preset) =>
+        isThesisPresetApplied(preset, {
+          keyword,
+          selectedSource,
+          selectedCategory,
+          selectedStage,
+          selectedConfidence,
+          selectedLens,
+          selectedMetaTrend,
+          selectedAudience,
+          selectedMarket,
+          selectedLanguage,
+          selectedGeoCountry,
+          minimumScore,
+          sortBy,
+          hideRecurring,
+        }),
+      )?.key ?? null,
+    [
+      hideRecurring,
+      keyword,
+      minimumScore,
+      selectedAudience,
+      selectedCategory,
+      selectedConfidence,
+      selectedGeoCountry,
+      selectedLanguage,
+      selectedLens,
+      selectedMarket,
+      selectedMetaTrend,
+      selectedSource,
+      selectedStage,
+      sortBy,
+    ],
+  );
 
   const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
@@ -1496,7 +1550,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 <div className="thesis-presets-grid">
                   {THESIS_PRESETS.map((preset) => (
                     <button
-                      className="thesis-preset-card"
+                      aria-pressed={activeThesisPresetKey === preset.key}
+                      className={activeThesisPresetKey === preset.key ? "thesis-preset-card thesis-preset-card-active" : "thesis-preset-card"}
                       key={preset.key}
                       onClick={() => applyThesisPreset(preset)}
                       type="button"
@@ -3014,6 +3069,25 @@ export function listActiveExplorerFilters(filters: {
     result.push({ key: "seasonality", label: "Seasonality", value: "Hide recurring" });
   }
   return result;
+}
+
+export function isThesisPresetApplied(preset: ThesisPreset, state: ThesisPresetFilterState) {
+  return (
+    state.keyword.trim().length === 0 &&
+    state.selectedSource === (preset.source ?? "all") &&
+    state.selectedCategory === "all" &&
+    state.selectedStage === (preset.stage ?? "all") &&
+    state.selectedConfidence === "all" &&
+    state.selectedLens === preset.lens &&
+    state.selectedMetaTrend === "all" &&
+    state.selectedAudience === (preset.audience ?? "all") &&
+    state.selectedMarket === "all" &&
+    state.selectedLanguage === "all" &&
+    state.selectedGeoCountry === "all" &&
+    (state.minimumScore ?? 0) === (preset.minimumScore ?? 0) &&
+    state.sortBy === "rank" &&
+    state.hideRecurring === (preset.hideRecurring ?? false)
+  );
 }
 
 function buildSegmentFilterOptions(

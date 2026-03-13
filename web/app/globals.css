@@ -1584,6 +1584,23 @@ input {
   transform: translateY(-1px);
 }
 
+.thesis-preset-card[aria-pressed="true"],
+.thesis-preset-card-active {
+  border-color: color-mix(in srgb, var(--accent) 78%, #2f6bff 22%);
+  background: color-mix(in srgb, var(--accent-soft) 32%, var(--surface-panel-strong) 68%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, #2f6bff 60%);
+}
+
+.thesis-preset-card[aria-pressed="true"] strong,
+.thesis-preset-card-active strong {
+  color: color-mix(in srgb, var(--accent) 68%, #2f6bff 32%);
+}
+
+.thesis-preset-card[aria-pressed="true"] small,
+.thesis-preset-card-active small {
+  color: color-mix(in srgb, var(--text) 78%, #2f6bff 22%);
+}
+
 .thesis-preset-card strong {
   font-size: 0.8rem;
   font-weight: 700;
