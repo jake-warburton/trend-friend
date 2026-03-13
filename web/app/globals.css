@@ -1102,6 +1102,7 @@ input {
 }
 
 .thesis-filters-panel {
+  grid-template-columns: 1fr;
   margin-bottom: 10px;
 }
 
@@ -1567,6 +1568,7 @@ input {
 
 .thesis-filter-block {
   align-content: start;
+  width: 100%;
 }
 
 .thesis-presets-grid {
