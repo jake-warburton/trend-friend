@@ -44,6 +44,12 @@
   --surface-chart: #37556f;
   --surface-tooltip: #41617f;
   --surface-input: rgba(58, 87, 117, 0.78);
+  --chart-grid: rgba(195, 213, 232, 0.14);
+  --chart-axis: #d4e2ef;
+  --map-background: rgba(255, 255, 255, 0.03);
+  --map-stroke: rgba(195, 213, 232, 0.24);
+  --map-fill-empty: rgba(132, 160, 189, 0.28);
+  --map-fill-active-rgb: 106, 163, 217;
   --border-strong: rgba(195, 213, 232, 0.16);
   --card-hero-gradient: linear-gradient(180deg, rgba(58, 87, 117, 0.98), rgba(29, 44, 64, 0.96));
   --card-history-gradient: linear-gradient(180deg, rgba(58, 87, 117, 0.96), rgba(37, 57, 82, 0.94));
@@ -51,9 +57,10 @@
   --card-bg: var(--surface-panel);
   --card-border: var(--border);
   --text: var(--copy);
-  --nav-background: linear-gradient(180deg, rgba(28, 31, 37, 0.9), rgba(16, 18, 23, 0.94));
+  --copy-soft: #dbe7f2;
+  --nav-background: linear-gradient(180deg, rgba(44, 68, 95, 0.94), rgba(32, 52, 74, 0.96));
   --nav-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
-  --brand-mark: #111111;
+  --brand-mark: #d8f3ff;
   --status-ok-border: rgba(122, 203, 156, 0.18);
   --status-ok-bg: rgba(122, 203, 156, 0.12);
   --status-ok-text: #9ae4b6;
@@ -70,18 +77,18 @@
   --filter-chip-bg: rgba(13, 30, 56, 0.72);
   --hero-background:
     radial-gradient(circle at top left, rgba(79, 195, 247, 0.08), transparent 24%),
-    linear-gradient(180deg, rgba(25, 28, 34, 0.98), rgba(16, 18, 23, 0.98));
+    linear-gradient(180deg, rgba(54, 82, 113, 0.96), rgba(29, 44, 64, 0.98));
   --hero-border: rgba(255, 255, 255, 0.09);
   --panel-raised-border: rgba(255, 255, 255, 0.05);
-  --command-background: linear-gradient(180deg, rgba(21, 24, 30, 0.96), rgba(16, 18, 22, 0.98));
-  --summary-background: linear-gradient(180deg, rgba(29, 33, 40, 0.96), rgba(20, 23, 28, 0.98));
-  --stat-background: linear-gradient(180deg, rgba(28, 31, 38, 0.96), rgba(18, 21, 26, 0.98));
-  --filters-background: linear-gradient(180deg, rgba(22, 25, 31, 0.98), rgba(16, 18, 23, 0.98));
-  --analytics-background: linear-gradient(180deg, rgba(23, 26, 32, 0.98), rgba(17, 19, 24, 0.98));
-  --curated-background: linear-gradient(180deg, rgba(27, 31, 38, 0.88), rgba(19, 22, 27, 0.94));
-  --curated-background-hover: linear-gradient(180deg, rgba(31, 35, 42, 0.92), rgba(21, 24, 30, 0.98));
-  --refresh-button-background: linear-gradient(180deg, rgba(28, 31, 38, 1), rgba(19, 22, 27, 1));
-  --refresh-button-background-hover: linear-gradient(180deg, rgba(40, 45, 55, 1), rgba(22, 26, 32, 1));
+  --command-background: linear-gradient(180deg, rgba(52, 79, 110, 0.96), rgba(36, 57, 81, 0.98));
+  --summary-background: linear-gradient(180deg, rgba(58, 87, 117, 0.96), rgba(42, 65, 91, 0.98));
+  --stat-background: linear-gradient(180deg, rgba(56, 85, 116, 0.96), rgba(39, 61, 86, 0.98));
+  --filters-background: linear-gradient(180deg, rgba(53, 81, 112, 0.98), rgba(35, 56, 79, 0.98));
+  --analytics-background: linear-gradient(180deg, rgba(50, 77, 106, 0.98), rgba(34, 54, 77, 0.98));
+  --curated-background: linear-gradient(180deg, rgba(57, 86, 116, 0.88), rgba(39, 61, 86, 0.94));
+  --curated-background-hover: linear-gradient(180deg, rgba(65, 96, 129, 0.92), rgba(43, 66, 92, 0.98));
+  --refresh-button-background: linear-gradient(180deg, rgba(58, 87, 117, 1), rgba(41, 64, 89, 1));
+  --refresh-button-background-hover: linear-gradient(180deg, rgba(69, 102, 137, 1), rgba(46, 70, 98, 1));
   --refresh-button-border: rgba(79, 195, 247, 0.14);
   --refresh-button-border-hover: rgba(79, 195, 247, 0.24);
   --warning-text: #ffca6e;
@@ -143,7 +150,7 @@
   --alert-badge-bg: #ff5e5e;
   --alert-badge-text: #ffffff;
   --alert-outline: #ffca6e;
-  --snapshot-background: linear-gradient(180deg, rgba(26, 30, 36, 0.96), rgba(18, 21, 26, 0.98));
+  --snapshot-background: linear-gradient(180deg, rgba(55, 84, 115, 0.96), rgba(38, 60, 85, 0.98));
   --inset-divider: rgba(140, 160, 190, 0.05);
   --page-background:
     radial-gradient(circle at 15% 0%, rgba(146, 187, 221, 0.28), transparent 28%),
