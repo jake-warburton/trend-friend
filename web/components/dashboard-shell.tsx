@@ -1488,13 +1488,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </div>
           </div>
 
-          {filteredTrends.length === 0 ? (
-            <div className="empty-state">
-              <h3>No trends match these filters.</h3>
-              <p>Lower the minimum score or broaden the keyword and source filters.</p>
-            </div>
-          ) : (
-            <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
+          <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
               <section className="filters-panel filters-panel-wide">
                 <label className="filter-field">
                   <span>Keyword</span>
@@ -1831,39 +1825,45 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 <span>Trend</span>
                 <span>Metrics</span>
               </div>
-              {filteredTrends.map((trend) => {
-                const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
-                const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
-                const detail = detailsByTrendId.get(trend.id);
-                const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
-                const wikipediaLink = getWikipediaLinkFromDetail(detail);
-                const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
-                const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
-                const evidencePreviewText = primaryEvidenceLink
-                  ? summarizeEvidencePreview(primaryEvidenceLink.evidence, primaryEvidenceLink.source)
-                  : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
-                const evidenceMeta = [
-                  primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
-                  audienceSummary,
-                ]
-                  .filter((item): item is string => Boolean(item))
-                  .join(" · ");
-                const compactSummaryParts = [
-                  formatStageLabel(trend.stage),
-                  formatConfidenceLabel(trend.confidence),
-                  formatTrendStatus(trend.status),
-                  formatVolatility(trend.volatility),
-                  forecastBadge?.label ?? null,
-                  seasonalityBadge?.label ?? null,
-                  audienceBadge ?? null,
-                  trend.metaTrend,
-                ].filter((item): item is string => Boolean(item));
-                const collapsedSourceInsights = detail
-                  ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
-                  : [];
-                const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
-                const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
-                return (
+              {filteredTrends.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No trends match these filters.</h3>
+                  <p>Lower the minimum score or broaden the keyword and source filters.</p>
+                </div>
+              ) : (
+                filteredTrends.map((trend) => {
+                  const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
+                  const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
+                  const detail = detailsByTrendId.get(trend.id);
+                  const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
+                  const wikipediaLink = getWikipediaLinkFromDetail(detail);
+                  const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
+                  const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
+                  const evidencePreviewText = primaryEvidenceLink
+                    ? summarizeEvidencePreview(primaryEvidenceLink.evidence, primaryEvidenceLink.source)
+                    : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
+                  const evidenceMeta = [
+                    primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
+                    audienceSummary,
+                  ]
+                    .filter((item): item is string => Boolean(item))
+                    .join(" · ");
+                  const compactSummaryParts = [
+                    formatStageLabel(trend.stage),
+                    formatConfidenceLabel(trend.confidence),
+                    formatTrendStatus(trend.status),
+                    formatVolatility(trend.volatility),
+                    forecastBadge?.label ?? null,
+                    seasonalityBadge?.label ?? null,
+                    audienceBadge ?? null,
+                    trend.metaTrend,
+                  ].filter((item): item is string => Boolean(item));
+                  const collapsedSourceInsights = detail
+                    ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
+                    : [];
+                  const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
+                  const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
+                  return (
                 <article
                   className={changedTrendIds.includes(trend.id) ? "explorer-card explorer-card-updated" : "explorer-card"}
                   data-status={trend.status}
@@ -2183,10 +2183,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     </div>
                   </div>
                 </article>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
-          )}
         </div>
 
         <aside className="history-panel">
