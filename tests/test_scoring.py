@@ -30,6 +30,55 @@ class TrendScoringTests(unittest.TestCase):
         self.assertGreater(score.knowledge_score, 0)
         self.assertEqual(score.diversity_score, 18.0)
 
+    def test_calculate_trend_scores_rewards_cross_family_corroboration(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        corroborated = TopicAggregate(
+            topic="model context protocol",
+            source_counts={"github": 1, "devto": 1, "google_trends": 1},
+            signal_counts={"developer": 1, "social": 1, "search": 1},
+            total_signal_value=300.0,
+            average_signal_value=100.0,
+            latest_timestamp=timestamp,
+            evidence=["Model Context Protocol", "MCP servers", "MCP search demand"],
+        )
+        single_family = TopicAggregate(
+            topic="model context protocol",
+            source_counts={"github": 2, "npm": 1},
+            signal_counts={"developer": 3},
+            total_signal_value=300.0,
+            average_signal_value=100.0,
+            latest_timestamp=timestamp,
+            evidence=["Model Context Protocol", "MCP SDK", "MCP client"],
+        )
+
+        corroborated_score, single_family_score = calculate_trend_scores([corroborated, single_family])
+
+        self.assertGreater(corroborated_score.total_score, single_family_score.total_score)
+
+    def test_calculate_trend_scores_prefers_fresher_topics(self) -> None:
+        fresh = TopicAggregate(
+            topic="ai agents",
+            source_counts={"reddit": 1, "github": 1},
+            signal_counts={"social": 1, "developer": 1},
+            total_signal_value=120.0,
+            average_signal_value=60.0,
+            latest_timestamp=datetime(2026, 3, 8, 12, tzinfo=timezone.utc),
+            evidence=["AI agents", "AI agents framework"],
+        )
+        stale = TopicAggregate(
+            topic="battery recycling",
+            source_counts={"reddit": 1, "github": 1},
+            signal_counts={"social": 1, "developer": 1},
+            total_signal_value=120.0,
+            average_signal_value=60.0,
+            latest_timestamp=datetime(2026, 3, 5, 12, tzinfo=timezone.utc),
+            evidence=["Battery recycling", "Battery recycling tooling"],
+        )
+
+        fresh_score, stale_score = calculate_trend_scores([fresh, stale])
+
+        self.assertGreater(fresh_score.total_score, stale_score.total_score)
+
     def test_rank_topics_by_score_is_deterministic(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         lower = TrendScoreResult("battery", 10.0, 0.0, 5.0, 2.0, 1.0, 2.0, [], {}, timestamp)

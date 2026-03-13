@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class RawSourceItem:
     url: str
     timestamp: datetime
     engagement_score: float
-    metadata: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None

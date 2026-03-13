@@ -18,10 +18,14 @@ class Settings:
     enable_postgres_runtime: bool
     web_data_path: Path
     request_timeout_seconds: int
+    request_retry_count: int
+    source_cache_ttl_seconds: int
     max_items_per_source: int
     reddit_page_limit: int
     hacker_news_page_limit: int
     github_page_limit: int
+    enable_experimental_sources: bool
+    enable_twitter_source: bool
     ranking_limit: int
     experimental_ranking_limit: int
     history_run_limit: int
@@ -51,10 +55,14 @@ def load_settings() -> Settings:
         enable_postgres_runtime=os.getenv("SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME", "false").lower() == "true",
         web_data_path=Path(os.getenv("SIGNAL_EYE_WEB_DATA_PATH", "web/data")),
         request_timeout_seconds=int(os.getenv("SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS", "10")),
+        request_retry_count=int(os.getenv("SIGNAL_EYE_REQUEST_RETRY_COUNT", "2")),
+        source_cache_ttl_seconds=int(os.getenv("SIGNAL_EYE_SOURCE_CACHE_TTL_SECONDS", "600")),
         max_items_per_source=int(os.getenv("SIGNAL_EYE_MAX_ITEMS_PER_SOURCE", "45")),
         reddit_page_limit=int(os.getenv("SIGNAL_EYE_REDDIT_PAGE_LIMIT", "4")),
         hacker_news_page_limit=int(os.getenv("SIGNAL_EYE_HACKER_NEWS_PAGE_LIMIT", "3")),
         github_page_limit=int(os.getenv("SIGNAL_EYE_GITHUB_PAGE_LIMIT", "3")),
+        enable_experimental_sources=os.getenv("SIGNAL_EYE_ENABLE_EXPERIMENTAL_SOURCES", "true").lower() == "true",
+        enable_twitter_source=os.getenv("SIGNAL_EYE_ENABLE_TWITTER_SOURCE", "false").lower() == "true",
         ranking_limit=int(os.getenv("SIGNAL_EYE_RANKING_LIMIT", "100")),
         experimental_ranking_limit=int(os.getenv("SIGNAL_EYE_EXPERIMENTAL_RANKING_LIMIT", "12")),
         history_run_limit=int(os.getenv("SIGNAL_EYE_HISTORY_RUN_LIMIT", "72")),

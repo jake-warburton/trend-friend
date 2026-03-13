@@ -12,12 +12,22 @@ The implementation is intentionally simple:
 
 ## What It Does
 
-The MVP ingests signals from these free sources:
+The MVP ingests signals from these free or very low-cost sources:
 
-- Reddit hot posts
+- Reddit community feeds
 - Hacker News top stories
 - GitHub repository search
-- Wikipedia top pageviews
+- Google Trends
+- Google News
+- Product Hunt
+- Stack Overflow
+- arXiv
+- Wikipedia pageviews
+- DEV Community
+- Hugging Face
+- npm registry search
+- Lobsters
+- optional experimental sources such as Twitter/X and Polymarket
 
 It then:
 
@@ -80,9 +90,13 @@ Supported environment variables:
 - `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME`: Opt-in flag for running the current backend against `SIGNAL_EYE_DATABASE_URL`. Default: `false`
 - `SIGNAL_EYE_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
 - `SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
+- `SIGNAL_EYE_REQUEST_RETRY_COUNT`: Lightweight retry count for external fetches. Default: `2`
+- `SIGNAL_EYE_SOURCE_CACHE_TTL_SECONDS`: Shared in-process response cache TTL for source requests. Default: `600`
 - `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `45`
 - `SIGNAL_EYE_REDDIT_PAGE_LIMIT`: Max curated Reddit feed modes to fetch per subreddit batch. Default: `4`
 - `SIGNAL_EYE_GITHUB_PAGE_LIMIT`: Max GitHub result pages to fetch per query family. Default: `3`
+- `SIGNAL_EYE_ENABLE_EXPERIMENTAL_SOURCES`: Enable optional experimental sources like Polymarket. Default: `true`
+- `SIGNAL_EYE_ENABLE_TWITTER_SOURCE`: Enable the experimental Twitter/X adapter. Default: `false`
 - `SIGNAL_EYE_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
 - `SIGNAL_EYE_MARKET_ENRICHMENT_ENABLED`: Enable external market-footprint enrichment. Default: `true`
 - `SIGNAL_EYE_MARKET_ENRICHMENT_LIMIT`: Max ranked trends to enrich per run. Default: `25`
@@ -130,6 +144,14 @@ python3 scripts/run_scheduler.py
 ```
 
 The scheduler runs ingestion every 30 minutes until stopped.
+
+## Source Expansion Notes
+
+- Source adapters remain isolated in [app/sources](/Users/jakewarburton/Documents/repos/trend-friend/app/sources) and normalize into a shared `RawSourceItem`.
+- Topic extraction and clustering remain in [app/topics](/Users/jakewarburton/Documents/repos/trend-friend/app/topics).
+- Scoring remains transparent in [app/scoring](/Users/jakewarburton/Documents/repos/trend-friend/app/scoring).
+- A lightweight shared source catalog in [catalog.py](/Users/jakewarburton/Documents/repos/trend-friend/app/sources/catalog.py) now carries source family, reliability, signal type, and experimental status so new sources can plug in without hardcoded logic spread across the codebase.
+- Additional developer notes for this expansion live in [SOURCE_EXPANSION_NOTES.md](/Users/jakewarburton/Documents/repos/trend-friend/docs/SOURCE_EXPANSION_NOTES.md).
 
 ## Running The REST API
 

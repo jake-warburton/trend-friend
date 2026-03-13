@@ -25,6 +25,8 @@ class TopicNormalizationTests(unittest.TestCase):
     def test_normalize_topic_name_merges_ai_aliases(self) -> None:
         self.assertEqual(normalize_topic_name("AI"), "ai agents")
         self.assertEqual(normalize_topic_name("artificial intelligence"), "ai agents")
+        self.assertEqual(normalize_topic_name("LLMs"), "large language models")
+        self.assertEqual(normalize_topic_name("MCP"), "model context protocol")
 
     def test_extract_candidate_topics_filters_noise(self) -> None:
         topics = extract_candidate_topics("AI agents are replacing repetitive office workflows")
@@ -197,6 +199,36 @@ class TopicNormalizationTests(unittest.TestCase):
             extract_candidate_topics("Watching people build", source_name="hacker_news"),
             [],
         )
+
+    def test_build_signals_from_items_uses_metadata_topic_hints_conservatively(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="devto",
+                external_id="devto-1",
+                title="Why this observability stack matters for teams",
+                url="https://dev.to/example",
+                timestamp=timestamp,
+                engagement_score=20.0,
+                metadata={"tags": ["ai agents", "observability", "developer-tools"]},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("ai agents", [signal.topic for signal in signals])
+        self.assertIn("observability", [signal.topic for signal in signals])
+
+    def test_merge_similar_topics_groups_subset_variants(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = [
+            NormalizedSignal("model context protocol", "devto", "social", 8.0, timestamp, "Model Context Protocol"),
+            NormalizedSignal("context protocol", "lobsters", "social", 7.0, timestamp, "Context Protocol"),
+        ]
+
+        clusters = merge_similar_topics(signals)
+
+        self.assertEqual(list(clusters), ["model context protocol"])
 
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

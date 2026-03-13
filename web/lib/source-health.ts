@@ -249,7 +249,11 @@ function formatSourceStatus(status: string | null): string {
 export function formatSourceLabel(source: string): string {
   const labels: Record<string, string> = {
     arxiv: "arXiv",
+    devto: "DEV Community",
     producthunt: "Product Hunt",
+    huggingface: "Hugging Face",
+    lobsters: "Lobsters",
+    npm: "npm",
     stackoverflow: "Stack Overflow",
     reddit: "Reddit",
     hacker_news: "Hacker News",

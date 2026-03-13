@@ -6,9 +6,13 @@ import unittest
 from dataclasses import replace
 
 from app.config import load_settings
+from app.sources.devto import DevToSourceAdapter
 from app.sources.github import GitHubSourceAdapter
 from app.sources.google_news import GoogleNewsSourceAdapter, _TOPICS as GOOGLE_NEWS_TOPICS
 from app.sources.hacker_news import HackerNewsSourceAdapter
+from app.sources.huggingface import HuggingFaceSourceAdapter
+from app.sources.lobsters import LobstersSourceAdapter
+from app.sources.npm import NpmSourceAdapter
 from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.twitter import TwitterSourceAdapter
@@ -426,6 +430,31 @@ class SourceNormalizationTests(unittest.TestCase):
             [section for _topic, section in GOOGLE_NEWS_TOPICS],
             ["world", "business", "technology", "science", "health"],
         )
+
+    def test_devto_adapter_fallback_items_include_tags(self) -> None:
+        adapter = DevToSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "devto")
+        self.assertIn("ai", items[0].metadata["tags"])
+
+    def test_huggingface_adapter_fallback_items_include_kind_and_tags(self) -> None:
+        adapter = HuggingFaceSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "huggingface")
+        self.assertEqual(items[0].metadata["kind"], "models")
+        self.assertIn("llm", items[0].metadata["tags"])
+
+    def test_npm_adapter_fallback_items_include_keywords(self) -> None:
+        adapter = NpmSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "npm")
+        self.assertIn("workflow", items[0].metadata["keywords"])
+
+    def test_lobsters_adapter_fallback_items_include_tags(self) -> None:
+        adapter = LobstersSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "lobsters")
+        self.assertIn("mcp", items[0].metadata["tags"])
 
 
 if __name__ == "__main__":
