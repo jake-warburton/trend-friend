@@ -161,11 +161,11 @@
 }
 
 .theme-soft-charcoal {
-  --bg: #2a2f36;
-  --bg-accent: #232830;
-  --surface: rgba(37, 42, 50, 0.92);
-  --surface-strong: #303640;
-  --surface-soft: rgba(46, 53, 62, 0.96);
+  --bg: #262b32;
+  --bg-accent: #20252d;
+  --surface: rgba(34, 39, 47, 0.92);
+  --surface-strong: #2c323b;
+  --surface-soft: rgba(43, 49, 58, 0.96);
   --border: rgba(255, 255, 255, 0.04);
   --copy: #d9dde3;
   --muted: #98a1ae;
@@ -179,16 +179,16 @@
   --warning-soft: rgba(232, 186, 108, 0.16);
   --danger-soft: rgba(216, 122, 122, 0.16);
   --shadow: 0 20px 70px rgba(0, 0, 0, 0.22);
-  --surface-overlay: rgba(33, 38, 45, 0.82);
-  --surface-panel: rgba(38, 43, 51, 0.86);
-  --surface-panel-strong: rgba(34, 39, 47, 0.95);
-  --surface-panel-soft: rgba(45, 51, 60, 0.74);
-  --surface-inset: rgba(29, 33, 40, 0.96);
-  --surface-menu: #2d333c;
-  --surface-button: #353c46;
-  --surface-chart: #343b44;
-  --surface-tooltip: #2d333c;
-  --surface-input: rgba(38, 43, 51, 0.94);
+  --surface-overlay: rgba(30, 35, 42, 0.82);
+  --surface-panel: rgba(35, 40, 48, 0.86);
+  --surface-panel-strong: rgba(31, 36, 43, 0.95);
+  --surface-panel-soft: rgba(42, 48, 57, 0.74);
+  --surface-inset: rgba(26, 30, 36, 0.96);
+  --surface-menu: #292f37;
+  --surface-button: #313842;
+  --surface-chart: #303741;
+  --surface-tooltip: #292f37;
+  --surface-input: rgba(35, 40, 48, 0.94);
   --chart-grid: rgba(122, 132, 148, 0.14);
   --chart-axis: #606a79;
   --map-background: rgba(255, 255, 255, 0.02);
@@ -196,15 +196,15 @@
   --map-fill-empty: rgba(73, 80, 92, 0.22);
   --map-fill-active-rgb: 79, 195, 247;
   --border-strong: rgba(255, 255, 255, 0.065);
-  --card-hero-gradient: linear-gradient(180deg, rgba(42, 48, 57, 0.98), rgba(33, 38, 46, 0.98));
-  --card-history-gradient: linear-gradient(180deg, rgba(40, 45, 54, 0.98), rgba(32, 37, 44, 0.98));
-  --card-gradient: linear-gradient(180deg, rgba(41, 47, 56, 0.98), rgba(34, 39, 47, 0.98));
+  --card-hero-gradient: linear-gradient(180deg, rgba(38, 44, 52, 0.98), rgba(31, 36, 43, 0.98));
+  --card-history-gradient: linear-gradient(180deg, rgba(37, 42, 50, 0.98), rgba(30, 35, 42, 0.98));
+  --card-gradient: linear-gradient(180deg, rgba(38, 44, 52, 0.98), rgba(31, 36, 43, 0.98));
   --card-bg: var(--surface-panel);
   --card-border: var(--border);
   --page-background:
     radial-gradient(circle at 18% 0%, rgba(79, 195, 247, 0.06), transparent 22%),
     radial-gradient(circle at 86% 8%, rgba(255, 255, 255, 0.025), transparent 18%),
-    linear-gradient(180deg, #353c46 0%, #2b3038 42%, #232830 100%);
+    linear-gradient(180deg, #303741 0%, #282d35 42%, #20252d 100%);
   --body-background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.008), transparent 12%, transparent 88%, rgba(79, 195, 247, 0.015)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.008), transparent 24%);
