@@ -2380,6 +2380,18 @@ input {
   color: #ffffff;
 }
 
+.detail-pill-row .trend-status-pill-breakout,
+.detail-pill-row .trend-status-pill-rising,
+.detail-pill-row .trend-status-pill-cooling,
+.detail-pill-row .trend-status-pill-new,
+.detail-pill-row .volatility-pill-spiking,
+.detail-pill-row .volatility-pill-volatile,
+.detail-pill-row .volatility-pill-emerging,
+.detail-pill-row .seasonality-badge-recurring,
+.detail-pill-row .seasonality-badge-evergreen {
+  color: #ffffff !important;
+}
+
 .trend-cell span,
 .score-cell span {
   color: var(--muted);
