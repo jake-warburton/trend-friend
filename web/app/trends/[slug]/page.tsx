@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { slugifyBrowseValue } from "@/lib/trend-browse";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
@@ -194,6 +195,12 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                   Compare with {trend.relatedTrends[0].name}
                 </Link>
               ) : null}
+              <Link className="detail-back-link" href={`/meta-trends/${slugifyBrowseValue(trend.metaTrend)}`}>
+                Browse {trend.metaTrend}
+              </Link>
+              <Link className="detail-back-link" href={`/categories/${trend.category}`}>
+                Browse {formatCategory(trend.category)}
+              </Link>
             </div>
           ) : null}
         </div>

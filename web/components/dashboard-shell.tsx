@@ -1207,20 +1207,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       <section className="curated-strip">
         <article className="analytics-card">
           <div className="section-heading">
-            <h2>Meta trends</h2>
+            <h2>Categories</h2>
           </div>
           <div className="curated-list">
             {initialData.overview.sections.metaTrends.slice(0, 6).map((trend) => (
-              <button
-                className="curated-item curated-item-button"
-                key={trend.category}
-                onClick={() => setSelectedCategory(trend.category)}
-                type="button"
-              >
+              <Link className="curated-item" href={`/categories/${trend.category}`} key={trend.category}>
                 <span>{formatCategory(trend.category)}</span>
                 <small>{trend.trendCount} trends · avg {trend.averageScore.toFixed(1)}</small>
-              </button>
+              </Link>
             ))}
+            <Link className="curated-item" href="/meta-trends">
+              <span>Browse meta trends</span>
+              <small>Open the cross-category trend directory</small>
+            </Link>
           </div>
         </article>
 
