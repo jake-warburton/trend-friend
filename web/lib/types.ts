@@ -293,6 +293,13 @@ export type RelatedTrend = {
   relationshipStrength: number;
 };
 
+export type TrendDuplicateCandidate = {
+  id: string;
+  name: string;
+  similarity: number;
+  reason: string;
+};
+
 export type TrendDetailRecord = {
   id: string;
   name: string;
@@ -324,6 +331,7 @@ export type TrendDetailRecord = {
   audienceSummary: TrendAudienceSegment[];
   evidenceItems: TrendEvidenceItem[];
   primaryEvidence?: TrendEvidenceItem | null;
+  duplicateCandidates: TrendDuplicateCandidate[];
   relatedTrends: RelatedTrend[];
   seasonality?: SeasonalitySummary | null;
 };

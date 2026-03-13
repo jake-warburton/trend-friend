@@ -486,6 +486,11 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
           evidenceUrl: trend.primaryEvidence.evidenceUrl ?? null,
         }
       : null,
+    duplicateCandidates: (trend.duplicateCandidates ?? []).map((item) => ({
+      ...item,
+      similarity: item.similarity ?? 0,
+      reason: item.reason ?? "",
+    })),
     relatedTrends: (trend.relatedTrends ?? []).map((item) => ({
       ...item,
       relationshipStrength: item.relationshipStrength ?? 0,

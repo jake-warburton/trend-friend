@@ -448,6 +448,62 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.related_trends[0].id, "agent-workflows")
         self.assertGreater(ai_agents.related_trends[0].relationship_strength, 0.0)
 
+    def test_trend_score_repository_penalizes_and_persists_duplicate_candidates(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="ai agent", total_score=24.0),
+                build_score(topic="battery recycling", total_score=18.0),
+            ],
+            captured_at=captured_at,
+        )
+
+        detail_records = repository.list_trend_detail_records(limit=5)
+        ai_agents = next(record for record in detail_records if record.id == "ai-agents")
+        ai_agent = next(record for record in detail_records if record.id == "ai-agent")
+
+        self.assertTrue(ai_agent.duplicate_candidates)
+        self.assertEqual(ai_agent.duplicate_candidates[0].id, "ai-agents")
+        self.assertGreater(ai_agent.duplicate_candidates[0].similarity, 0.55)
+        self.assertLess(ai_agent.confidence, ai_agents.confidence)
+
+    def test_trend_score_repository_applies_curation_override_preferences_and_suppression(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.upsert_trend_curation_override(
+            "ai-agents",
+            preferred_name="AI Agent Platforms",
+            preferred_meta_trend="Agent tooling",
+            preferred_stage="validated",
+            preferred_summary="Curated summary for manual review.",
+        )
+        repository.upsert_trend_curation_override(
+            "ai-agent",
+            suppress=True,
+            canonical_topic_key="ai-agents",
+        )
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="ai agent", total_score=24.0),
+            ],
+            captured_at=captured_at,
+        )
+
+        entity = repository.get_trend_entity("ai agents")
+        explorer_records = repository.list_trend_explorer_records(limit=5)
+
+        assert entity is not None
+        self.assertEqual(entity.canonical_name, "AI Agent Platforms")
+        self.assertEqual(entity.meta_trend, "Agent tooling")
+        self.assertEqual(entity.stage, "validated")
+        self.assertEqual(entity.summary, "Curated summary for manual review.")
+        self.assertEqual([record.id for record in explorer_records], ["ai-agents"])
+
     def test_watchlist_repository_round_trip(self) -> None:
         repository = WatchlistRepository(self.connection)
 

@@ -292,6 +292,29 @@ class RelatedTrend:
 
 
 @dataclass(frozen=True)
+class TrendDuplicateCandidate:
+    """Potential duplicate trend surfaced for review or curation."""
+
+    id: str
+    name: str
+    similarity: float
+    reason: str
+
+
+@dataclass(frozen=True)
+class TrendCurationOverride:
+    """Manual correction metadata applied on top of inferred trend entities."""
+
+    topic_key: str
+    suppress: bool
+    canonical_topic_key: str | None
+    preferred_name: str | None
+    preferred_meta_trend: str | None
+    preferred_stage: str | None
+    preferred_summary: str | None
+
+
+@dataclass(frozen=True)
 class TrendDetailRecord:
     """Detailed read model for a single trend page."""
 
@@ -326,6 +349,7 @@ class TrendDetailRecord:
     audience_summary: list[TrendAudienceSegment]
     evidence_items: list[TrendEvidenceItem]
     primary_evidence: TrendPrimaryEvidence | None
+    duplicate_candidates: list[TrendDuplicateCandidate]
     related_trends: list[RelatedTrend]
     seasonality: SeasonalityResult | None = None
 

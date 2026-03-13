@@ -279,6 +279,16 @@ class RelatedTrendPayload:
 
 
 @dataclass(frozen=True)
+class TrendDuplicateCandidatePayload:
+    """Potential duplicate trend entry for detail pages."""
+
+    id: str
+    name: str
+    similarity: float
+    reason: str
+
+
+@dataclass(frozen=True)
 class TrendDetailRecordPayload:
     """Detailed trend record consumed by trend detail pages."""
 
@@ -312,6 +322,7 @@ class TrendDetailRecordPayload:
     audience_summary: list[TrendAudienceSegmentPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     primary_evidence: TrendPrimaryEvidencePayload | None
+    duplicate_candidates: list[TrendDuplicateCandidatePayload]
     related_trends: list[RelatedTrendPayload]
     seasonality: SeasonalityPayload | None = None
 
@@ -729,6 +740,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["audienceSummary"] = payload.pop("audience_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["primaryEvidence"] = payload.pop("primary_evidence")
+    payload["duplicateCandidates"] = payload.pop("duplicate_candidates")
     payload["relatedTrends"] = payload.pop("related_trends")
     payload["whyNow"] = payload.pop("why_now")
     for point in payload["history"]:

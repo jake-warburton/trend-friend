@@ -33,6 +33,7 @@ from app.models import (
     OpportunitySummary,
     PipelineRun,
     RelatedTrend,
+    TrendDuplicateCandidate,
     SourceIngestionRun,
     SourceSummaryRecord,
     SourceSummaryTrend,
@@ -205,6 +206,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["score"]["social"], 18.2)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["relationshipStrength"], 0.8)
+        self.assertEqual(payload["trends"][0]["duplicateCandidates"][0]["id"], "ai-agent")
+        self.assertGreater(payload["trends"][0]["duplicateCandidates"][0]["similarity"], 0.6)
         self.assertIn("ai agents", payload["trends"][0]["aliases"])
 
     def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
@@ -510,6 +513,14 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
             evidence="AI agents evidence",
             evidence_url="https://example.com/ai-agents",
         ),
+        duplicate_candidates=[
+            TrendDuplicateCandidate(
+                id="ai-agent",
+                name="AI Agent",
+                similarity=0.82,
+                reason="Tracked aliases strongly overlap.",
+            )
+        ],
         related_trends=[
             RelatedTrend(
                 id="agentic-workflows",

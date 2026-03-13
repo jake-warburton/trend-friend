@@ -25,7 +25,9 @@ from app.models import (
     RunDigest,
     SeasonalityResult,
     SourceIngestionRun,
+    TrendCurationOverride,
     TrendDetailRecord,
+    TrendDuplicateCandidate,
     TrendEntity,
     DigestMover,
     TrendEvidenceItem,
@@ -1612,7 +1614,7 @@ class TrendScoreRepository:
         if row is None:
             return None
         entity = self._trend_entity_from_row(row)
-        return TrendEntity(
+        hydrated = TrendEntity(
             topic_key=entity.topic_key,
             canonical_name=entity.canonical_name,
             category=entity.category,
@@ -1625,6 +1627,8 @@ class TrendScoreRepository:
             first_seen_at=entity.first_seen_at,
             last_seen_at=entity.last_seen_at,
         )
+        override = self.get_trend_curation_override(self._slugify_topic(topic))
+        return self._apply_curation_override(hydrated, override)
 
     def list_trend_aliases(self, trend_id: str) -> list[str]:
         """Return persisted aliases for one trend id."""
@@ -1639,6 +1643,64 @@ class TrendScoreRepository:
             (trend_id,),
         ).fetchall()
         return [row["alias"] for row in rows]
+
+    def get_trend_curation_override(self, topic_key: str) -> TrendCurationOverride | None:
+        """Return one persisted manual curation override when present."""
+
+        row = self.connection.execute(
+            """
+            SELECT topic_key, suppress, canonical_topic_key, preferred_name, preferred_meta_trend,
+                   preferred_stage, preferred_summary
+            FROM trend_curation_overrides
+            WHERE topic_key = ?
+            """,
+            (topic_key,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._curation_override_from_row(row)
+
+    def upsert_trend_curation_override(
+        self,
+        topic_key: str,
+        *,
+        suppress: bool = False,
+        canonical_topic_key: str | None = None,
+        preferred_name: str | None = None,
+        preferred_meta_trend: str | None = None,
+        preferred_stage: str | None = None,
+        preferred_summary: str | None = None,
+    ) -> None:
+        """Persist a manual curation override for one trend."""
+
+        self.connection.execute(
+            """
+            INSERT INTO trend_curation_overrides (
+                topic_key, suppress, canonical_topic_key, preferred_name, preferred_meta_trend,
+                preferred_stage, preferred_summary
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key)
+            DO UPDATE SET
+                suppress = excluded.suppress,
+                canonical_topic_key = excluded.canonical_topic_key,
+                preferred_name = excluded.preferred_name,
+                preferred_meta_trend = excluded.preferred_meta_trend,
+                preferred_stage = excluded.preferred_stage,
+                preferred_summary = excluded.preferred_summary,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (
+                topic_key,
+                int(suppress),
+                canonical_topic_key,
+                preferred_name,
+                preferred_meta_trend,
+                preferred_stage,
+                preferred_summary,
+            ),
+        )
+        self.connection.commit()
 
     def list_latest_snapshot(self, limit: int) -> tuple[datetime | None, list[TrendScoreResult]]:
         """Return the most recent stored snapshot and its capture time."""
@@ -1797,6 +1859,7 @@ class TrendScoreRepository:
         latest_captured_at, latest_scores = self.list_latest_snapshot(limit=limit)
         if latest_captured_at is None:
             return []
+        latest_scores = self._filter_suppressed_scores(latest_scores)
 
         from app.scoring.forecast import describe_forecast_direction, forecast_trend
 
@@ -1848,6 +1911,7 @@ class TrendScoreRepository:
         latest_captured_at, latest_scores = self.list_latest_snapshot(limit=limit)
         if latest_captured_at is None:
             return []
+        latest_scores = self._filter_suppressed_scores(latest_scores)
 
         from app.scoring.forecast import forecast_trend
         from app.scoring.opportunity import score_opportunities
@@ -1947,6 +2011,7 @@ class TrendScoreRepository:
                     audience_summary=self.get_topic_audience_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
                     primary_evidence=self.get_primary_evidence(score.topic),
+                    duplicate_candidates=[],
                     related_trends=[],
                     seasonality=seasonality_by_topic[score.topic],
                 )
@@ -2182,8 +2247,16 @@ class TrendScoreRepository:
     ) -> None:
         """Persist canonical metadata for currently published trends."""
 
+        published_scores = [score for score in scores if score.topic in published_topics]
+        overrides = self._list_trend_curation_overrides()
+        duplicate_rows, duplicate_penalties = self._build_duplicate_candidates(published_scores, overrides)
         rows = [
-            self._build_trend_entity_row(score, self.get_topic_history(score.topic, limit_runs=6))
+            self._build_trend_entity_row(
+                score,
+                self.get_topic_history(score.topic, limit_runs=6),
+                duplicate_penalty=duplicate_penalties.get(self._slugify_topic(score.topic), 0.0),
+                override=overrides.get(self._slugify_topic(score.topic)),
+            )
             for score in scores
             if score.topic in published_topics
         ]
@@ -2213,6 +2286,7 @@ class TrendScoreRepository:
             rows,
         )
         self._replace_trend_aliases(scores, published_topics=published_topics)
+        self._replace_duplicate_candidates(published_scores, duplicate_rows)
 
     def _get_or_create_trend_entity(
         self,
@@ -2225,7 +2299,11 @@ class TrendScoreRepository:
         if entity is not None:
             return entity
 
-        row = self._build_trend_entity_row(score, history)
+        row = self._build_trend_entity_row(
+            score,
+            history,
+            override=self.get_trend_curation_override(self._slugify_topic(score.topic)),
+        )
         self.connection.execute(
             """
             INSERT INTO trend_entities (
@@ -2286,6 +2364,9 @@ class TrendScoreRepository:
         self,
         score: TrendScoreResult,
         history: list[TrendHistoryPoint],
+        *,
+        duplicate_penalty: float = 0.0,
+        override: TrendCurationOverride | None = None,
     ) -> tuple[object, ...]:
         """Build one persisted trend-entity row from the current trend state."""
 
@@ -2293,14 +2374,29 @@ class TrendScoreRepository:
         momentum = self._build_momentum(score.total_score, ordered_history)
         category = self._build_category(score.topic, score.source_counts)
         first_seen_at = self.get_first_seen_at(score.topic)
+        canonical_name = override.preferred_name if override and override.preferred_name else (
+            score.display_name or build_display_name(score.topic, score.evidence)
+        )
+        meta_trend = override.preferred_meta_trend if override and override.preferred_meta_trend else self._build_meta_trend(category)
+        stage = override.preferred_stage if override and override.preferred_stage else self._build_trend_stage(
+            momentum,
+            len(ordered_history),
+            score.total_score,
+        )
+        summary = override.preferred_summary if override and override.preferred_summary else self._build_trend_summary(
+            score,
+            category,
+            momentum,
+            len(ordered_history),
+        )
         return (
             score.topic,
-            score.display_name or build_display_name(score.topic, score.evidence),
+            canonical_name,
             category,
-            self._build_meta_trend(category),
-            self._build_trend_stage(momentum, len(ordered_history), score.total_score),
-            self._build_trend_confidence(score, ordered_history),
-            self._build_trend_summary(score, category, momentum, len(ordered_history)),
+            meta_trend,
+            stage,
+            self._build_trend_confidence(score, ordered_history, duplicate_penalty=duplicate_penalty),
+            summary,
             json.dumps(self._build_why_now(score, momentum, len(ordered_history))),
             first_seen_at.isoformat() if first_seen_at is not None else None,
             score.latest_timestamp.isoformat(),
@@ -2341,6 +2437,58 @@ class TrendScoreRepository:
             aliases=[],
             first_seen_at=datetime.fromisoformat(str(first_seen_at)) if first_seen_at else None,
             last_seen_at=datetime.fromisoformat(str(row[9])),
+        )
+
+    @staticmethod
+    def _curation_override_from_row(row: RowMapping) -> TrendCurationOverride:
+        """Build a curation override model from one database row."""
+
+        return TrendCurationOverride(
+            topic_key=row["topic_key"],
+            suppress=bool(row["suppress"]),
+            canonical_topic_key=row["canonical_topic_key"],
+            preferred_name=row["preferred_name"],
+            preferred_meta_trend=row["preferred_meta_trend"],
+            preferred_stage=row["preferred_stage"],
+            preferred_summary=row["preferred_summary"],
+        )
+
+    def _list_trend_curation_overrides(self) -> dict[str, TrendCurationOverride]:
+        """Return all persisted curation overrides keyed by topic id."""
+
+        rows = self.connection.execute(
+            """
+            SELECT topic_key, suppress, canonical_topic_key, preferred_name, preferred_meta_trend,
+                   preferred_stage, preferred_summary
+            FROM trend_curation_overrides
+            """
+        ).fetchall()
+        return {
+            row["topic_key"]: self._curation_override_from_row(row)
+            for row in rows
+        }
+
+    @staticmethod
+    def _apply_curation_override(
+        entity: TrendEntity,
+        override: TrendCurationOverride | None,
+    ) -> TrendEntity:
+        """Apply manual curation fields on top of a persisted entity."""
+
+        if override is None:
+            return entity
+        return TrendEntity(
+            topic_key=entity.topic_key,
+            canonical_name=override.preferred_name or entity.canonical_name,
+            category=entity.category,
+            meta_trend=override.preferred_meta_trend or entity.meta_trend,
+            stage=override.preferred_stage or entity.stage,
+            confidence=entity.confidence,
+            summary=override.preferred_summary or entity.summary,
+            why_now=entity.why_now,
+            aliases=entity.aliases,
+            first_seen_at=entity.first_seen_at,
+            last_seen_at=entity.last_seen_at,
         )
 
     @staticmethod
@@ -2460,7 +2608,12 @@ class TrendScoreRepository:
         return "steady"
 
     @staticmethod
-    def _build_trend_confidence(score: TrendScoreResult, history: list[TrendHistoryPoint]) -> float:
+    def _build_trend_confidence(
+        score: TrendScoreResult,
+        history: list[TrendHistoryPoint],
+        *,
+        duplicate_penalty: float = 0.0,
+    ) -> float:
         """Estimate how trustworthy a trend is from breadth and continuity."""
 
         source_factor = min(len(score.source_counts) / 4.0, 1.0)
@@ -2473,7 +2626,7 @@ class TrendScoreRepository:
             + history_factor * 0.3
             + evidence_factor * 0.15
         )
-        return round(min(1.0, confidence), 3)
+        return round(max(0.0, min(1.0, confidence - duplicate_penalty)), 3)
 
     @staticmethod
     def _build_trend_summary(
@@ -2561,6 +2714,226 @@ class TrendScoreRepository:
             len(item.evidence),
         )
 
+    def _filter_suppressed_scores(self, scores: list[TrendScoreResult]) -> list[TrendScoreResult]:
+        """Drop trends that have been manually suppressed from ranked read paths."""
+
+        overrides = self._list_trend_curation_overrides()
+        filtered: list[TrendScoreResult] = []
+        for score in scores:
+            override = overrides.get(self._slugify_topic(score.topic))
+            if override is not None and override.suppress:
+                continue
+            filtered.append(score)
+        return filtered
+
+    def _replace_duplicate_candidates(
+        self,
+        scores: list[TrendScoreResult],
+        duplicate_rows: list[tuple[str, str, float, str]],
+    ) -> None:
+        """Replace persisted duplicate candidates for the current published trend set."""
+
+        if not scores:
+            return
+        self.connection.executemany(
+            "DELETE FROM trend_duplicate_candidates WHERE topic_key = ?",
+            [(self._slugify_topic(score.topic),) for score in scores],
+        )
+        if duplicate_rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_duplicate_candidates (topic_key, duplicate_topic_key, similarity, reason)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(topic_key, duplicate_topic_key)
+                DO UPDATE SET similarity = excluded.similarity, reason = excluded.reason
+                """,
+                duplicate_rows,
+            )
+
+    def _load_persisted_duplicate_candidates(
+        self,
+        records: list[TrendDetailRecord],
+    ) -> dict[str, list[TrendDuplicateCandidate]]:
+        """Load duplicate candidate rows for the current detail record set."""
+
+        by_id = {record.id: record for record in records}
+        duplicate_map: dict[str, list[TrendDuplicateCandidate]] = {record.id: [] for record in records}
+        for record in records:
+            rows = self.connection.execute(
+                """
+                SELECT duplicate_topic_key, similarity, reason
+                FROM trend_duplicate_candidates
+                WHERE topic_key = ?
+                ORDER BY similarity DESC, duplicate_topic_key ASC
+                LIMIT 3
+                """,
+                (record.id,),
+            ).fetchall()
+            duplicate_map[record.id] = [
+                TrendDuplicateCandidate(
+                    id=by_id[row["duplicate_topic_key"]].id,
+                    name=by_id[row["duplicate_topic_key"]].name,
+                    similarity=round(float(row["similarity"] or 0.0), 2),
+                    reason=row["reason"] or "",
+                )
+                for row in rows
+                if row["duplicate_topic_key"] in by_id
+            ]
+        return duplicate_map
+
+    def _build_duplicate_candidates(
+        self,
+        scores: list[TrendScoreResult],
+        overrides: dict[str, TrendCurationOverride],
+    ) -> tuple[list[tuple[str, str, float, str]], dict[str, float]]:
+        """Infer near-duplicate trends and compute confidence penalties."""
+
+        rows: list[tuple[str, str, float, str]] = []
+        penalties: dict[str, float] = {}
+        for index, current in enumerate(scores):
+            current_id = self._slugify_topic(current.topic)
+            current_override = overrides.get(current_id)
+            if current_override is not None and current_override.suppress:
+                continue
+            for candidate in scores[index + 1 :]:
+                candidate_id = self._slugify_topic(candidate.topic)
+                candidate_override = overrides.get(candidate_id)
+                if candidate_override is not None and candidate_override.suppress:
+                    continue
+                similarity, reason = self._measure_duplicate_similarity(
+                    current,
+                    candidate,
+                    current_override=current_override,
+                    candidate_override=candidate_override,
+                )
+                if similarity < 0.55:
+                    continue
+                rounded_similarity = round(similarity, 2)
+                rows.append((current_id, candidate_id, rounded_similarity, reason))
+                rows.append((candidate_id, current_id, rounded_similarity, reason))
+                duplicate_id = self._choose_duplicate_penalty_target(
+                    current,
+                    candidate,
+                    current_override=current_override,
+                    candidate_override=candidate_override,
+                )
+                penalties[duplicate_id] = max(
+                    penalties.get(duplicate_id, 0.0),
+                    round(min(0.3, rounded_similarity * 0.25), 3),
+                )
+        return rows, penalties
+
+    def _measure_duplicate_similarity(
+        self,
+        current: TrendScoreResult,
+        candidate: TrendScoreResult,
+        *,
+        current_override: TrendCurationOverride | None,
+        candidate_override: TrendCurationOverride | None,
+    ) -> tuple[float, str]:
+        """Return a duplicate similarity score and the dominant explanation."""
+
+        current_id = self._slugify_topic(current.topic)
+        candidate_id = self._slugify_topic(candidate.topic)
+        if current_override is not None and current_override.canonical_topic_key == candidate_id:
+            return 1.0, "Curated into the same canonical trend group."
+        if candidate_override is not None and candidate_override.canonical_topic_key == current_id:
+            return 1.0, "Curated into the same canonical trend group."
+
+        current_tokens = self._comparison_tokens(current.topic, current.evidence, current.display_name)
+        candidate_tokens = self._comparison_tokens(candidate.topic, candidate.evidence, candidate.display_name)
+        current_aliases = self._comparison_aliases(current)
+        candidate_aliases = self._comparison_aliases(candidate)
+        current_sources = set(current.source_counts)
+        candidate_sources = set(candidate.source_counts)
+
+        token_overlap = self._jaccard_similarity(current_tokens, candidate_tokens)
+        alias_overlap = self._jaccard_similarity(current_aliases, candidate_aliases)
+        source_overlap = self._jaccard_similarity(current_sources, candidate_sources)
+        similarity = token_overlap * 0.65 + alias_overlap * 0.25 + source_overlap * 0.10
+
+        if alias_overlap >= token_overlap and alias_overlap >= 0.5:
+            reason = "Tracked aliases strongly overlap."
+        elif token_overlap >= 0.5:
+            reason = "Core topic naming overlaps across the same concept."
+        else:
+            reason = "Signals and source mix suggest the same underlying topic."
+        return similarity, reason
+
+    def _choose_duplicate_penalty_target(
+        self,
+        current: TrendScoreResult,
+        candidate: TrendScoreResult,
+        *,
+        current_override: TrendCurationOverride | None,
+        candidate_override: TrendCurationOverride | None,
+    ) -> str:
+        """Choose which topic should absorb the duplicate confidence penalty."""
+
+        current_id = self._slugify_topic(current.topic)
+        candidate_id = self._slugify_topic(candidate.topic)
+        if current_override is not None and current_override.canonical_topic_key == candidate_id:
+            return current_id
+        if candidate_override is not None and candidate_override.canonical_topic_key == current_id:
+            return candidate_id
+        if current.total_score == candidate.total_score:
+            return max(current_id, candidate_id)
+        return current_id if current.total_score < candidate.total_score else candidate_id
+
+    def _comparison_tokens(
+        self,
+        topic: str,
+        evidence: list[str],
+        display_name: str | None,
+    ) -> set[str]:
+        """Build normalized comparison tokens that tolerate small plural variants."""
+
+        values = [topic]
+        if display_name:
+            values.append(display_name)
+        values.extend(evidence[:2])
+        tokens: set[str] = set()
+        for value in values:
+            for token in self._topic_tokens(value):
+                tokens.add(self._normalize_comparison_token(token))
+        return tokens
+
+    def _comparison_aliases(self, score: TrendScoreResult) -> set[str]:
+        """Build a normalized alias set for duplicate matching."""
+
+        return {
+            self._normalize_alias(alias)
+            for alias in self._build_trend_aliases(score)
+            if self._normalize_alias(alias)
+        }
+
+    @staticmethod
+    def _normalize_alias(value: str) -> str:
+        """Normalize alias casing and punctuation for duplicate matching."""
+
+        return " ".join(
+            "".join(character.lower() if character.isalnum() else " " for character in value).split()
+        )
+
+    @staticmethod
+    def _normalize_comparison_token(token: str) -> str:
+        """Reduce trivial singular/plural variations during duplicate matching."""
+
+        if len(token) > 4 and token.endswith("s"):
+            return token[:-1]
+        return token
+
+    @staticmethod
+    def _jaccard_similarity(left: set[str], right: set[str]) -> float:
+        """Return the Jaccard similarity between two token sets."""
+
+        if not left or not right:
+            return 0.0
+        union = left.union(right)
+        if not union:
+            return 0.0
+        return len(left.intersection(right)) / len(union)
+
     def _replace_trend_relationships(
         self,
         records: list[TrendDetailRecord],
@@ -2644,6 +3017,7 @@ class TrendScoreRepository:
             )
 
         self._replace_trend_relationships(records, relationship_rows)
+        duplicate_map = self._load_persisted_duplicate_candidates(records)
         related_map = self._load_persisted_related_trends(records)
 
         return [
@@ -2679,6 +3053,7 @@ class TrendScoreRepository:
                 audience_summary=record.audience_summary,
                 evidence_items=record.evidence_items,
                 primary_evidence=record.primary_evidence,
+                duplicate_candidates=duplicate_map.get(record.id, []),
                 related_trends=related_map.get(record.id, []),
                 seasonality=record.seasonality,
             )

@@ -283,6 +283,35 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
+              <p className="eyebrow">Quality</p>
+              <h2>Potential duplicates</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {(trend.duplicateCandidates.length > 0 ? trend.duplicateCandidates : []).map((candidate) => (
+              <article className="detail-list-item" key={`${trend.id}-duplicate-${candidate.id}`}>
+                <div>
+                  <strong>{candidate.name}</strong>
+                  <span>{candidate.reason}</span>
+                </div>
+                <small>{Math.round(candidate.similarity * 100)}% overlap</small>
+              </article>
+            ))}
+            {trend.duplicateCandidates.length === 0 ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>No close duplicates flagged</strong>
+                  <span>This trend currently looks distinct from the rest of the published set.</span>
+                </div>
+              </article>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
               <p className="eyebrow">Opportunity</p>
               <h2>What you can do with it</h2>
             </div>

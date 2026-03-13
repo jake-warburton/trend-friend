@@ -291,6 +291,7 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.deepEqual(result.sourceBreakdown, []);
   assert.deepEqual(result.sourceContributions, []);
   assert.deepEqual(result.geoSummary, []);
+  assert.deepEqual(result.duplicateCandidates, []);
   assert.deepEqual(result.relatedTrends, []);
 });
 
@@ -305,6 +306,7 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     summary: "AI Agents is a breakout AI trend.",
     whyNow: ["Social signals are leading."],
     aliases: ["AI Agents", "ai agents"],
+    duplicateCandidates: [{ id: "ai-agent", name: "AI Agent", similarity: 0.8, reason: "Tracked aliases overlap." }],
     latestSignalAt: "2026-03-10T00:00:00Z",
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
     forecast: { predictedScores: [45, 48], confidence: "high", mape: 8.5, method: "holt" },
@@ -326,6 +328,8 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.summary, "AI Agents is a breakout AI trend.");
   assert.deepEqual(result.whyNow, ["Social signals are leading."]);
   assert.deepEqual(result.aliases, ["AI Agents", "ai agents"]);
+  assert.equal(result.duplicateCandidates[0].id, "ai-agent");
+  assert.equal(result.duplicateCandidates[0].similarity, 0.8);
   assert.equal(result.breakoutPrediction.confidence, 0.85);
   assert.equal(result.opportunity.composite, 7.5);
   assert.equal(result.opportunity.reasoning[0], "Strong momentum");
