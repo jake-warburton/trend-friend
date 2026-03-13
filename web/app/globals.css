@@ -1,6 +1,12 @@
 :root {
   --font-sans: "Helvetica Neue", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
   --font-serif: "Helvetica Neue", "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --type-size-sm: 0.68rem;
+  --type-size-md: 0.84rem;
+  --type-size-lg: 1rem;
+  --type-weight-regular: 400;
+  --type-weight-medium: 500;
+  --type-weight-strong: 700;
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -357,7 +363,8 @@ body {
   min-height: 100vh;
   color: var(--copy);
   font-family: var(--font-sans);
-  font-weight: 380;
+  font-size: var(--type-size-md);
+  font-weight: var(--type-weight-regular);
   background: var(--body-background);
 }
 
@@ -3113,6 +3120,120 @@ input {
 .empty-state {
   padding: 20px;
   text-align: center;
+}
+
+/* Typography pass: keep UI chrome on a constrained small / medium / large scale. */
+
+:where(
+  .nav-bar-brand-tag,
+  .nav-bar-link,
+  .hero-summary-card span,
+  .hero-summary-card small,
+  .live-update-note,
+  .section-heading-meta,
+  .source-summary-copy,
+  .filter-field > span,
+  .advanced-filters-panel summary span,
+  .advanced-filters-panel summary small,
+  .thesis-preset-card small,
+  .explorer-card-kicker,
+  .explorer-metric-label,
+  .explorer-metric-copy,
+  .mini-bar-row span,
+  .pie-legend-row span,
+  .explorer-expand-outlook small,
+  .explorer-expand-reason,
+  .source-contribution-meta,
+  .source-warning-copy,
+  .movement-meta,
+  .shared-empty-state p
+) {
+  font-size: var(--type-size-sm);
+}
+
+:where(
+  .nav-bar-brand-copy,
+  .text-input,
+  .select-trigger,
+  .number-group,
+  .mini-action-button,
+  .toggle-chip,
+  .source-badge,
+  .movement-pill,
+  .status-pill,
+  .thesis-preset-card,
+  .explorer-card-meta,
+  .explorer-card-summary,
+  .explorer-card-driver-line,
+  .explorer-card-support-line,
+  .mini-bar-row strong,
+  .pie-legend-row strong,
+  .watch-toggle
+) {
+  font-size: var(--type-size-md);
+}
+
+:where(
+  .nav-bar-brand-name,
+  .section-heading h2,
+  .empty-state h3,
+  .hero-summary-card strong,
+  .explorer-metric-value,
+  .explorer-expand-outlook strong,
+  .thesis-preset-card strong,
+  .compare-empty-state h2,
+  .shared-empty-state h2
+) {
+  font-size: var(--type-size-lg);
+}
+
+:where(
+  .hero-summary-card small,
+  .source-summary-copy,
+  .thesis-preset-card small,
+  .explorer-metric-copy,
+  .explorer-expand-reason,
+  .source-contribution-meta,
+  .source-warning-copy,
+  .movement-meta,
+  .shared-empty-state p
+) {
+  font-weight: var(--type-weight-regular);
+}
+
+:where(
+  .nav-bar-brand-name,
+  .hero-summary-card strong,
+  .section-heading h2,
+  .empty-state h3,
+  .mini-bar-row strong,
+  .pie-legend-row strong,
+  .explorer-metric-value,
+  .explorer-expand-outlook strong,
+  .thesis-preset-card strong,
+  .compare-empty-state h2,
+  .shared-empty-state h2
+) {
+  font-weight: var(--type-weight-medium);
+}
+
+:where(
+  .nav-bar-brand-tag,
+  .nav-bar-link,
+  .hero-summary-card span,
+  .live-update-note,
+  .filter-field > span,
+  .advanced-filters-panel summary span,
+  .explorer-card-kicker,
+  .explorer-metric-label,
+  .movement-pill,
+  .status-pill,
+  .toggle-chip,
+  .mini-action-button,
+  .source-badge,
+  .watch-toggle
+) {
+  font-weight: var(--type-weight-strong);
 }
 
 @media (max-width: 1040px) and (min-width: 768px) {
