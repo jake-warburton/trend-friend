@@ -18,18 +18,21 @@ from app.topics.normalize import (
 MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
 SOURCE_TOPIC_LIMITS = {
+    "google_news": 2,
     "google_trends": 2,
     "hacker_news": 2,
     "polymarket": 2,
     "twitter": 2,
 }
 SOURCE_BIGRAM_LIMITS = {
+    "google_news": 1,
     "google_trends": 1,
     "hacker_news": 1,
     "polymarket": 1,
     "twitter": 1,
 }
 SOURCE_LOW_SIGNAL_TOKENS = {
+    "google_news": {"live", "updates", "update", "latest", "watch", "watching", "says"},
     "hacker_news": {"watching", "people", "report", "reports", "footage"},
     "twitter": {"watching", "people", "report", "reports", "footage"},
 }
@@ -187,7 +190,7 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     if not tokens:
         return []
     candidates: list[str] = []
-    source_specific_topics = infer_source_specific_topics(tokens, source_name)
+    source_specific_topics = infer_source_specific_topics(title, tokens, source_name)
     candidates.extend(source_specific_topics)
     canonical_topics = infer_canonical_topics(tokens)
     repository_topic = infer_repository_topic(title)
@@ -196,17 +199,18 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     candidates.extend(canonical_topics)
     if not repository_topic and not source_specific_topics:
         candidates.extend(infer_meaningful_bigrams(tokens))
-    if not candidates and source_name not in {"google_trends", "hacker_news", "polymarket", "twitter"}:
+    if not candidates and source_name not in {"google_news", "google_trends", "hacker_news", "polymarket", "twitter"}:
         candidates.extend(infer_meaningful_unigrams(tokens))
     seen: set[str] = set()
     ordered_candidates: list[str] = []
     added_bigrams = 0
     max_topics = SOURCE_TOPIC_LIMITS.get(source_name or "", MAX_TOPICS_PER_ITEM)
     max_bigrams = SOURCE_BIGRAM_LIMITS.get(source_name or "", MAX_BIGRAMS_PER_ITEM)
+    protected_multiword_topics = {normalize_topic_name(topic) for topic in source_specific_topics + canonical_topics}
     for candidate in candidates:
         normalized = normalize_topic_name(candidate)
         if normalized and is_meaningful_topic(normalized) and normalized not in seen:
-            is_non_canonical_bigram = " " in normalized and normalized not in canonical_topics
+            is_non_canonical_bigram = " " in normalized and normalized not in protected_multiword_topics
             if is_non_canonical_bigram and added_bigrams >= max_bigrams:
                 continue
             seen.add(normalized)
@@ -218,12 +222,89 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     return ordered_candidates
 
 
-def infer_source_specific_topics(tokens: list[str], source_name: str | None) -> list[str]:
+def infer_source_specific_topics(title: str, tokens: list[str], source_name: str | None) -> list[str]:
     """Return source-specific canonical topics before general extraction heuristics."""
 
+    if source_name == "google_news":
+        return infer_google_news_topics(title, tokens)
     if source_name == "polymarket":
         return infer_polymarket_topics(tokens)
     return []
+
+
+def infer_google_news_topics(title: str, tokens: list[str]) -> list[str]:
+    """Extract clearer entity-like phrases from broad news headlines."""
+
+    token_set = set(tokens)
+    normalized_title = normalize_topic_name(title)
+    inferred_topics: list[str] = []
+
+    phrase_patterns: tuple[tuple[str, str], ...] = (
+        ("red sea shipping", "red sea shipping"),
+        ("ceasefire talks", "ceasefire talks"),
+        ("fed rate cuts", "fed rate cuts"),
+        ("fed rate cut", "fed rate cuts"),
+        ("inflation data", "inflation data"),
+        ("oil prices", "oil prices"),
+        ("premier league title race", "premier league title race"),
+        ("champions league", "champions league"),
+        ("transfer window", "transfer window"),
+        ("court ruling", "court ruling"),
+        ("storm warning", "storm warning"),
+        ("wildfire risk", "wildfire risk"),
+        ("trade war", "trade war"),
+        ("shipping risks", "shipping risks"),
+    )
+    for trigger, topic in phrase_patterns:
+        if trigger in normalized_title:
+            inferred_topics.append(topic)
+
+    entity_patterns: tuple[tuple[set[str], str], ...] = (
+        ({"red", "sea", "shipping"}, "red sea shipping"),
+        ({"red", "sea", "shipping", "risks"}, "red sea shipping"),
+        ({"ceasefire", "talks"}, "ceasefire talks"),
+        ({"fed", "rate", "cuts"}, "fed rate cuts"),
+        ({"fed", "rate", "cut"}, "fed rate cuts"),
+        ({"inflation", "data"}, "inflation data"),
+        ({"oil", "prices"}, "oil prices"),
+        ({"premier", "league", "title", "race"}, "premier league title race"),
+        ({"champions", "league"}, "champions league"),
+        ({"transfer", "window"}, "transfer window"),
+        ({"court", "ruling"}, "court ruling"),
+        ({"storm", "warning"}, "storm warning"),
+        ({"wildfire", "risk"}, "wildfire risk"),
+        ({"trade", "war"}, "trade war"),
+    )
+    for required_tokens, topic in entity_patterns:
+        if required_tokens <= token_set and topic not in inferred_topics:
+            inferred_topics.append(topic)
+
+    if {"red", "sea"} <= token_set and ("shipping" in token_set or "risks" in token_set):
+        inferred_topics.insert(0, "red sea shipping")
+    if {"fed", "rate"} <= token_set and ("cut" in token_set or "cuts" in token_set):
+        inferred_topics.insert(0, "fed rate cuts")
+
+    country_or_region_pairs: tuple[tuple[str, str, str], ...] = (
+        ("ukraine", "ceasefire", "ukraine ceasefire"),
+        ("gaza", "ceasefire", "gaza ceasefire"),
+        ("china", "tariffs", "china tariffs"),
+        ("taiwan", "defense", "taiwan defense"),
+        ("europe", "inflation", "europe inflation"),
+        ("us", "inflation", "us inflation"),
+        ("us", "jobs", "us jobs"),
+    )
+    for left, right, topic in country_or_region_pairs:
+        if left in token_set and right in token_set:
+            inferred_topics.append(topic)
+
+    seen: set[str] = set()
+    ordered_topics: list[str] = []
+    for topic in inferred_topics:
+        normalized = normalize_topic_name(topic)
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            ordered_topics.append(normalized)
+    return ordered_topics
 
 
 def infer_repository_topic(title: str) -> str | None:
@@ -413,6 +494,7 @@ def signal_type_for_source(source_name: str) -> str:
     return {
         "arxiv": "knowledge",
         "github": "developer",
+        "google_news": "knowledge",
         "google_trends": "search",
         "producthunt": "social",
         "stackoverflow": "developer",

@@ -159,18 +159,33 @@ def _run_alert_evaluation(
     """Evaluate alert rules against the just-computed scores and persist events."""
 
     from app.alerts.evaluate import evaluate_alerts
+    from app.theses.matching import match_trends_to_theses
 
     watchlist_repo = WatchlistRepository(connection)
     rules = watchlist_repo.list_all_alert_rules()
-    if not rules:
-        return []
-
     watchlist_trend_ids = watchlist_repo.get_watchlist_trend_ids()
     current_ranks = {score.topic: rank for rank, score in enumerate(ranked_scores, start=1)}
 
     # Build statuses from explorer records
     explorer_records = repository.list_trend_explorer_records(limit=ranking_limit)
     statuses = {record.score.topic: record.status for record in explorer_records}
+    theses = watchlist_repo.list_trend_theses_for_watchlists(list(watchlist_trend_ids))
+    flattened_theses = [thesis for thesis_list in theses.values() for thesis in thesis_list]
+    new_thesis_match_ids: dict[int, set[str]] = {}
+    if flattened_theses:
+        detail_records = repository.list_trend_detail_records(limit=ranking_limit)
+        matched_candidates = match_trends_to_theses(flattened_theses, detail_records)
+        new_matches = watchlist_repo.replace_trend_thesis_matches(
+            flattened_theses,
+            matched_candidates,
+            matched_at=datetime.now(tz=timezone.utc),
+        )
+        new_thesis_match_ids = {
+            thesis_id: {match.trend_id for match in matches}
+            for thesis_id, matches in new_matches.items()
+        }
+    if not rules:
+        return []
 
     events = evaluate_alerts(
         rules=rules,
@@ -181,6 +196,7 @@ def _run_alert_evaluation(
         previous_ranks=previous_state["ranks"],
         statuses=statuses,
         previous_trend_ids=previous_state["trend_ids"],
+        new_thesis_match_ids=new_thesis_match_ids,
     )
 
     if events:

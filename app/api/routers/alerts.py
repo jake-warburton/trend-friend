@@ -81,6 +81,7 @@ def list_alert_rules(user: User = Depends(require_auth), db: DatabaseConnection 
             {
                 "id": rule.id,
                 "watchlistId": rule.watchlist_id,
+                "thesisId": rule.thesis_id,
                 "name": rule.name,
                 "ruleType": rule.rule_type,
                 "threshold": rule.threshold,
@@ -124,6 +125,7 @@ def create_alert_rule(
     return {
         "id": rule.id,
         "watchlistId": rule.watchlist_id,
+        "thesisId": rule.thesis_id,
         "name": rule.name,
         "ruleType": rule.rule_type,
         "threshold": rule.threshold,

@@ -10,6 +10,7 @@ from app.config import Settings
 from app.models import RawSourceItem, SourceIngestionRun
 from app.sources.arxiv import ArxivSourceAdapter
 from app.sources.github import GitHubSourceAdapter
+from app.sources.google_news import GoogleNewsSourceAdapter
 from app.sources.producthunt import ProductHuntSourceAdapter
 from app.sources.stackoverflow import StackOverflowSourceAdapter
 from app.sources.google_trends import GoogleTrendsSourceAdapter
@@ -32,6 +33,7 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         PolymarketSourceAdapter(settings),
         WikipediaSourceAdapter(settings),
         GoogleTrendsSourceAdapter(settings),
+        GoogleNewsSourceAdapter(settings),
         TwitterSourceAdapter(settings),
         ArxivSourceAdapter(settings),
         StackOverflowSourceAdapter(settings),

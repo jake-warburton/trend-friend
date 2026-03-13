@@ -105,7 +105,7 @@ function buildDetailRecord(
     momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
     breakoutPrediction: { confidence: 0.8, predictedDirection: "up", signals: [] },
     forecast: null,
-    opportunity: { composite: 5, content: 5, product: 5, investment: 5, reasoning: [] },
+    opportunity: { composite: 5, discovery: 5, seo: 5, content: 5, product: 5, investment: 5, reasoning: [] },
     coverage: { sourceCount: 2, signalCount: 4 },
     sources: ["github"],
     history: [],

@@ -44,6 +44,8 @@ import type {
   PublicWatchlistsResponse,
   TrendDetailRecord,
   TrendExplorerRecord,
+  TrendThesis,
+  TrendThesisMatch,
   Watchlist,
   WatchlistResponse,
 } from "@/lib/types";
@@ -79,6 +81,35 @@ const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as con
 const DEFAULT_AUDIENCE_OPTION = { label: "All audiences", value: "all" } as const;
 const DEFAULT_MARKET_OPTION = { label: "All markets", value: "all" } as const;
 const DEFAULT_LANGUAGE_OPTION = { label: "All languages", value: "all" } as const;
+const DEFAULT_STAGE_OPTION = { label: "All stages", value: "all" } as const;
+const DEFAULT_CONFIDENCE_OPTION = { label: "All confidence", value: "all" } as const;
+const DEFAULT_META_TREND_OPTION = { label: "All meta trends", value: "all" } as const;
+
+const STAGE_OPTIONS = [
+  DEFAULT_STAGE_OPTION,
+  { label: "Nascent", value: "nascent" },
+  { label: "Rising", value: "rising" },
+  { label: "Breakout", value: "breakout" },
+  { label: "Validated", value: "validated" },
+  { label: "Cooling", value: "cooling" },
+  { label: "Steady", value: "steady" },
+] as const;
+
+const CONFIDENCE_OPTIONS = [
+  DEFAULT_CONFIDENCE_OPTION,
+  { label: "High confidence", value: "high" },
+  { label: "Medium confidence", value: "medium" },
+  { label: "Low confidence", value: "low" },
+] as const;
+
+const LENS_OPTIONS = [
+  { label: "All lenses", value: "all" },
+  { label: "Discovery", value: "discovery" },
+  { label: "SEO", value: "seo" },
+  { label: "Content", value: "content" },
+  { label: "Product", value: "product" },
+  { label: "Investment", value: "investment" },
+] as const;
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
@@ -88,8 +119,58 @@ const SORT_OPTIONS = [
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
+const THESIS_PRESETS = [
+  {
+    key: "discover",
+    label: "Early discovery",
+    description: "Bias toward early, fast-moving topics before they validate everywhere.",
+    lens: "discovery",
+    stage: "nascent",
+    hideRecurring: true,
+    minimumScore: 12,
+  },
+  {
+    key: "seo",
+    label: "SEO opportunities",
+    description: "Surface search-backed demand with enough evidence breadth to publish into.",
+    lens: "seo",
+    hideRecurring: true,
+    minimumScore: 18,
+  },
+  {
+    key: "content",
+    label: "Social content",
+    description: "Prioritize trends with public conversation and clear creator angles.",
+    lens: "content",
+    source: "reddit",
+    minimumScore: 16,
+  },
+  {
+    key: "product",
+    label: "Build ideas",
+    description: "Tilt toward builder demand, product fit, and non-recurring opportunity.",
+    lens: "product",
+    audience: "developer",
+    hideRecurring: true,
+    minimumScore: 16,
+  },
+] as const;
+
 type ExplorerActiveFilter = {
-  key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "geo" | "sort" | "seasonality";
+  key:
+    | "keyword"
+    | "source"
+    | "category"
+    | "stage"
+    | "confidence"
+    | "lens"
+    | "metaTrend"
+    | "audience"
+    | "market"
+    | "language"
+    | "geo"
+    | "sort"
+    | "seasonality";
   label: string;
   value: string;
 };
@@ -100,6 +181,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [keyword, setKeyword] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStage, setSelectedStage] = useState<string>("all");
+  const [selectedConfidence, setSelectedConfidence] = useState<string>("all");
+  const [selectedLens, setSelectedLens] = useState<string>("all");
+  const [selectedMetaTrend, setSelectedMetaTrend] = useState<string>("all");
   const [selectedAudience, setSelectedAudience] = useState<string>("all");
   const [selectedMarket, setSelectedMarket] = useState<string>("all");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
@@ -120,6 +205,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [authPending, setAuthPending] = useState(false);
   const [shareExpiryPreset, setShareExpiryPreset] = useState<string>("none");
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
+  const [thesisName, setThesisName] = useState("");
+  const [notifyOnMatch, setNotifyOnMatch] = useState(true);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
@@ -154,6 +241,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const runsDetailsRef = useRef<HTMLDetailsElement>(null);
   const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
+  const savedTheses = watchlistData?.theses ?? [];
+  const savedThesisMatches = watchlistData?.thesisMatches ?? [];
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
   const deferredKeyword = useDeferredValue(keyword);
@@ -174,6 +263,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     [initialData.overview.sourceWatch, initialData.overview.sources],
   );
   const latestPipelineRun = initialData.overview.operations.recentRuns[0] ?? null;
+  const thesisMatchesById = useMemo(() => {
+    const map = new Map<number, TrendThesisMatch[]>();
+    for (const match of savedThesisMatches) {
+      const matches = map.get(match.thesisId) ?? [];
+      matches.push(match);
+      map.set(match.thesisId, matches);
+    }
+    return map;
+  }, [savedThesisMatches]);
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -193,6 +291,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     () => buildAudienceFilterOptions(initialData.details.trends),
     [initialData.details.trends],
   );
+  const metaTrendOptions = useMemo(() => {
+    const metaTrends = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.metaTrend))).sort();
+    return [
+      DEFAULT_META_TREND_OPTION,
+      ...metaTrends.map((metaTrend) => ({ label: metaTrend, value: metaTrend })),
+    ];
+  }, [initialData.explorer.trends]);
   const marketOptions = useMemo(
     () => buildMarketFilterOptions(initialData.details.trends),
     [initialData.details.trends],
@@ -220,6 +325,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         keyword,
         selectedSource,
         selectedCategory,
+        selectedStage,
+        selectedConfidence,
+        selectedLens,
+        selectedMetaTrend,
         selectedAudience,
         selectedMarket,
         selectedLanguage,
@@ -227,10 +336,28 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         sortBy,
         hideRecurring,
       }),
-    [hideRecurring, keyword, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy],
+    [
+      hideRecurring,
+      keyword,
+      selectedAudience,
+      selectedCategory,
+      selectedConfidence,
+      selectedGeoCountry,
+      selectedLens,
+      selectedLanguage,
+      selectedMarket,
+      selectedMetaTrend,
+      selectedSource,
+      selectedStage,
+      sortBy,
+    ],
   );
   const selectedSourceLabel = getOptionLabel(SOURCE_FILTER_OPTIONS, selectedSource, "All sources");
   const selectedCategoryLabel = getOptionLabel(categoryOptions, selectedCategory, "All categories");
+  const selectedStageLabel = getOptionLabel(STAGE_OPTIONS, selectedStage, "All stages");
+  const selectedConfidenceLabel = getOptionLabel(CONFIDENCE_OPTIONS, selectedConfidence, "All confidence");
+  const selectedLensLabel = getOptionLabel(LENS_OPTIONS, selectedLens, "All lenses");
+  const selectedMetaTrendLabel = getOptionLabel(metaTrendOptions, selectedMetaTrend, "All meta trends");
   const selectedAudienceLabel = getOptionLabel(audienceOptions, selectedAudience, "All audiences");
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
@@ -245,6 +372,12 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         selectedSource === "all" || trend.sources.includes(selectedSource);
       const matchesCategory =
         selectedCategory === "all" || trend.category === selectedCategory;
+      const matchesStage =
+        selectedStage === "all" || trend.stage === selectedStage;
+      const matchesConfidence =
+        selectedConfidence === "all" || confidenceBucketForTrend(trend.confidence) === selectedConfidence;
+      const matchesMetaTrend =
+        selectedMetaTrend === "all" || trend.metaTrend === selectedMetaTrend;
       const matchesAudience = trendMatchesAudience(detail, selectedAudience);
       const matchesMarket = trendMatchesMarket(detail, selectedMarket);
       const matchesLanguage = trendMatchesLanguage(detail, selectedLanguage);
@@ -258,6 +391,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       return (
         matchesSource &&
         matchesCategory &&
+        matchesStage &&
+        matchesConfidence &&
+        matchesMetaTrend &&
         matchesAudience &&
         matchesMarket &&
         matchesLanguage &&
@@ -269,6 +405,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     });
 
     return [...trends].sort((left, right) => {
+      const leftDetail = detailsByTrendId.get(left.id);
+      const rightDetail = detailsByTrendId.get(right.id);
+      if (selectedLens !== "all") {
+        const lensDelta =
+          getOpportunityScoreForLens(rightDetail, selectedLens) - getOpportunityScoreForLens(leftDetail, selectedLens);
+        if (lensDelta !== 0) {
+          return lensDelta;
+        }
+      }
       if (sortBy === "score") {
         return right.score.total - left.score.total || left.rank - right.rank;
       }
@@ -280,7 +425,24 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy]);
+  }, [
+    deferredKeyword,
+    detailsByTrendId,
+    hideRecurring,
+    initialData.explorer.trends,
+    minimumScore,
+    selectedAudience,
+    selectedCategory,
+    selectedConfidence,
+    selectedGeoCountry,
+    selectedLanguage,
+    selectedLens,
+    selectedMarket,
+    selectedMetaTrend,
+    selectedSource,
+    selectedStage,
+    sortBy,
+  ]);
 
   const explorerGeoMapData = useMemo(
     () => buildExplorerGeoMapData(baseFilteredTrends, detailsByTrendId),
@@ -293,6 +455,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     const params = new URLSearchParams();
     if (selectedSource !== "all") params.set("source", selectedSource);
     if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedStage !== "all") params.set("stage", selectedStage);
+    if (selectedConfidence !== "all") params.set("confidence", selectedConfidence);
+    if (selectedLens !== "all") params.set("lens", selectedLens);
+    if (selectedMetaTrend !== "all") params.set("metaTrend", selectedMetaTrend);
     if (selectedAudience !== "all") params.set("audience", selectedAudience);
     if (selectedMarket !== "all") params.set("market", selectedMarket);
     if (selectedLanguage !== "all") params.set("language", selectedLanguage);
@@ -302,7 +468,22 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     if (hideRecurring) params.set("hideRecurring", "1");
     params.set("sort", sortBy);
     return `/api/export?${params.toString()}`;
-  }, [selectedSource, selectedCategory, selectedAudience, selectedMarket, selectedLanguage, selectedGeoCountry, keyword, minimumScore, hideRecurring, sortBy]);
+  }, [
+    selectedSource,
+    selectedCategory,
+    selectedStage,
+    selectedConfidence,
+    selectedLens,
+    selectedMetaTrend,
+    selectedAudience,
+    selectedMarket,
+    selectedLanguage,
+    selectedGeoCountry,
+    keyword,
+    minimumScore,
+    hideRecurring,
+    sortBy,
+  ]);
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -319,6 +500,22 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     }
     if (filterKey === "category") {
       setSelectedCategory("all");
+      return;
+    }
+    if (filterKey === "stage") {
+      setSelectedStage("all");
+      return;
+    }
+    if (filterKey === "confidence") {
+      setSelectedConfidence("all");
+      return;
+    }
+    if (filterKey === "lens") {
+      setSelectedLens("all");
+      return;
+    }
+    if (filterKey === "metaTrend") {
+      setSelectedMetaTrend("all");
       return;
     }
     if (filterKey === "audience") {
@@ -348,6 +545,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setKeyword("");
     setSelectedSource("all");
     setSelectedCategory("all");
+    setSelectedStage("all");
+    setSelectedConfidence("all");
+    setSelectedLens("all");
+    setSelectedMetaTrend("all");
     setSelectedAudience("all");
     setSelectedMarket("all");
     setSelectedLanguage("all");
@@ -355,6 +556,23 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setSortBy("rank");
     setMinimumScore(0);
     setHideRecurring(false);
+  }
+
+  function applyThesisPreset(preset: (typeof THESIS_PRESETS)[number]) {
+    setKeyword("");
+    setSelectedSource(preset.source ?? "all");
+    setSelectedCategory("all");
+    setSelectedStage(preset.stage ?? "all");
+    setSelectedConfidence("all");
+    setSelectedLens(preset.lens);
+    setSelectedMetaTrend("all");
+    setSelectedAudience(preset.audience ?? "all");
+    setSelectedMarket("all");
+    setSelectedLanguage("all");
+    setSelectedGeoCountry("all");
+    setSortBy("rank");
+    setMinimumScore(preset.minimumScore ?? 0);
+    setHideRecurring(preset.hideRecurring ?? false);
   }
 
   function handleRefresh() {
@@ -619,6 +837,68 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         return;
       }
       setWatchlistError("Could not create alert");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleSaveThesis() {
+    if (defaultWatchlist == null || thesisName.trim().length === 0) {
+      return;
+    }
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create-thesis",
+          watchlistId: defaultWatchlist.id,
+          name: thesisName.trim(),
+          lens: selectedLens,
+          keywordQuery: keyword || null,
+          source: selectedSource === "all" ? null : selectedSource,
+          category: selectedCategory === "all" ? null : selectedCategory,
+          stage: selectedStage === "all" ? null : selectedStage,
+          confidence: selectedConfidence === "all" ? null : selectedConfidence,
+          metaTrend: selectedMetaTrend === "all" ? null : selectedMetaTrend,
+          audience: selectedAudience === "all" ? null : selectedAudience,
+          market: selectedMarket === "all" ? null : selectedMarket,
+          language: selectedLanguage === "all" ? null : selectedLanguage,
+          geoCountry: selectedGeoCountry === "all" ? null : selectedGeoCountry,
+          minimumScore: minimumScore ?? 0,
+          hideRecurring,
+          notifyOnMatch,
+        }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not save thesis");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setThesisName("");
+      showActionNotice("Thesis saved");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleDeleteThesis(thesisId: number) {
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete-thesis", thesisId }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not remove thesis");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      showActionNotice("Thesis removed");
     } finally {
       setActionPending(false);
     }
@@ -1089,20 +1369,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       <section className="curated-strip">
         <article className="analytics-card">
           <div className="section-heading">
-            <h2>Meta trends</h2>
+            <h2>Categories</h2>
           </div>
           <div className="curated-list">
             {initialData.overview.sections.metaTrends.slice(0, 6).map((trend) => (
-              <button
-                className="curated-item curated-item-button"
-                key={trend.category}
-                onClick={() => setSelectedCategory(trend.category)}
-                type="button"
-              >
+              <Link className="curated-item" href={`/categories/${trend.category}`} key={trend.category}>
                 <span>{formatCategory(trend.category)}</span>
                 <small>{trend.trendCount} trends · avg {trend.averageScore.toFixed(1)}</small>
-              </button>
+              </Link>
             ))}
+            <Link className="curated-item" href="/meta-trends">
+              <span>Browse meta trends</span>
+              <small>Open the cross-category trend directory</small>
+            </Link>
           </div>
         </article>
 
@@ -1262,6 +1541,98 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+                  <span>Stage</span>
+                  <Select.Root value={selectedStage} onValueChange={(value) => setSelectedStage(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedStageLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {STAGE_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Confidence</span>
+                  <Select.Root value={selectedConfidence} onValueChange={(value) => setSelectedConfidence(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedConfidenceLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {CONFIDENCE_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Lens</span>
+                  <Select.Root value={selectedLens} onValueChange={(value) => setSelectedLens(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedLensLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {LENS_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Meta trend</span>
+                  <Select.Root value={selectedMetaTrend} onValueChange={(value) => setSelectedMetaTrend(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedMetaTrendLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {metaTrendOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
                   <span>Audience</span>
                   <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1353,6 +1724,49 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </Select.Root>
                 </label>
 
+                <div className="filter-field filter-field-wide">
+                  <span>Thesis presets</span>
+                  <div className="curated-list">
+                    {THESIS_PRESETS.map((preset) => (
+                      <button
+                        className="curated-item curated-item-button"
+                        key={preset.key}
+                        onClick={() => applyThesisPreset(preset)}
+                        type="button"
+                      >
+                        <span>{preset.label}</span>
+                        <small>{preset.description}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {!watchlistsRequireAuth && defaultWatchlist != null ? (
+                  <div className="filter-field filter-field-wide">
+                    <span>Save current thesis</span>
+                    <div className="watchlist-form watchlist-form-stack">
+                      <Input
+                        className="text-input"
+                        placeholder="Name this thesis"
+                        value={thesisName}
+                        onChange={(event) => setThesisName(event.target.value)}
+                      />
+                      <div className="watchlist-form">
+                        <button
+                          className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+                          onClick={() => setNotifyOnMatch((current) => !current)}
+                          type="button"
+                        >
+                          {notifyOnMatch ? "Notify on new matches" : "No notifications"}
+                        </button>
+                        <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
+                          Save thesis
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <label className="filter-field">
                   <span>Minimum score</span>
                   <NumberField.Root
@@ -1423,13 +1837,20 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   .filter((item): item is string => Boolean(item))
                   .join(" · ");
                 const compactSummaryParts = [
+                  formatStageLabel(trend.stage),
+                  formatConfidenceLabel(trend.confidence),
                   formatTrendStatus(trend.status),
                   formatVolatility(trend.volatility),
                   forecastBadge?.label ?? null,
                   seasonalityBadge?.label ?? null,
                   audienceBadge ?? null,
-                  formatCategory(trend.category),
+                  trend.metaTrend,
                 ].filter((item): item is string => Boolean(item));
+                const collapsedSourceInsights = detail
+                  ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
+                  : [];
+                const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
+                const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
                 return (
                 <article
                   className={changedTrendIds.includes(trend.id) ? "explorer-card explorer-card-updated" : "explorer-card"}
@@ -1451,10 +1872,22 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                       <div className="explorer-card-meta">
                         <span>{trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}</span>
                         <span>Sources: {trend.sources.length}</span>
+                        <span>{formatCategory(trend.category)}</span>
                       </div>
                       <div className="explorer-card-summary">
                         <span>{compactSummaryParts.join(" / ")}</span>
                       </div>
+                      {trend.summary ? <p className="source-summary-copy">{trend.summary}</p> : null}
+                      {collapsedDriverSummary ? (
+                        <div className="explorer-card-driver-line">
+                          <span>{collapsedDriverSummary}</span>
+                        </div>
+                      ) : null}
+                      {collapsedCorroborationSummary ? (
+                        <div className="explorer-card-support-line">
+                          <span>{collapsedCorroborationSummary}</span>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="explorer-metrics-row">
@@ -1644,13 +2077,18 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 <strong>Outlook</strong>
                                 <div className="explorer-expand-outlook">
                                   <div>
+                                    <small>Stage</small>
+                                    <strong>{formatStageLabel(trend.stage)}</strong>
+                                    <small>{formatConfidenceLabel(trend.confidence)}</small>
+                                  </div>
+                                  <div>
                                     <small>Breakout</small>
                                     <strong>{detail.breakoutPrediction.predictedDirection}</strong>
                                     <small>{(detail.breakoutPrediction.confidence * 100).toFixed(0)}% confidence</small>
                                   </div>
                                   <div>
-                                    <small>Opportunity</small>
-                                    <strong>{detail.opportunity.composite.toFixed(1)}</strong>
+                                    <small>{selectedLens === "all" ? "Opportunity" : `${formatLensLabel(selectedLens)} lens`}</small>
+                                    <strong>{getOpportunityScoreForLens(detail, selectedLens).toFixed(1)}</strong>
                                   </div>
                                   {detail.forecast && detail.forecast.predictedScores.length > 0 && (
                                     <div>
@@ -1668,6 +2106,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 {detail.opportunity.reasoning[0] && (
                                   <p className="explorer-expand-reason">{detail.opportunity.reasoning[0]}</p>
                                 )}
+                                {detail.whyNow[0] ? (
+                                  <p className="explorer-expand-reason">{detail.whyNow[0]}</p>
+                                ) : null}
                                 {wikipediaLink ? (
                                   <p className="explorer-expand-reason">
                                     Wikipedia pageviews are concentrated on{" "}
@@ -1829,6 +2270,52 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                         <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
                       </section>
                     ))
+                  )}
+                </div>
+              </details>
+
+              <details className="sidebar-section" open={savedTheses.length > 0 ? true : undefined}>
+                <summary>
+                  <div className="section-heading section-heading-spaced">
+                    <h2>Saved theses</h2>
+                  </div>
+                </summary>
+
+                <div className="snapshot-list">
+                  {savedTheses.length === 0 ? (
+                    <p className="empty-state-hint">Save a thesis from the current explorer filters to track matching trends over time.</p>
+                  ) : (
+                    savedTheses.map((thesis) => {
+                      const matches = thesisMatchesById.get(thesis.id) ?? [];
+                      return (
+                        <section className="snapshot-card" key={thesis.id}>
+                          <header>
+                            <strong>{thesis.name}</strong>
+                            <span>{thesis.activeMatchCount} matches</span>
+                          </header>
+                          <p className="source-summary-copy">{summarizeThesisFilters(thesis)}</p>
+                          {matches.length > 0 ? (
+                            <div className="community-chip-group">
+                              {matches.slice(0, 3).map((match) => (
+                                <Link className="community-filter-chip" href={`/trends/${match.trendId}`} key={`${thesis.id}-${match.trendId}`}>
+                                  {match.trendName} · {match.lensScore.toFixed(1)}
+                                </Link>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="empty-state-hint">No active matches in the current ranking.</p>
+                          )}
+                          <div className="watchlist-form">
+                            <small className="source-summary-copy">
+                              {thesis.notifyOnMatch ? "Notifications on" : "Notifications off"}
+                            </small>
+                            <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleDeleteThesis(thesis.id)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </section>
+                      );
+                    })
                   )}
                 </div>
               </details>
@@ -2080,6 +2567,35 @@ function formatScoreMix(score: TrendExplorerRecord["score"]) {
     return `Driven by cross-source diversity ${score.diversity.toFixed(1)}`;
   }
   return `Led by ${mix.join(" · ")}`;
+}
+
+function formatCollapsedSourceDriverSummary(
+  insights: Array<{ title: string; scoreSharePercent: number }>,
+) {
+  if (insights.length === 0) {
+    return null;
+  }
+  return `Source drivers: ${insights
+    .map((insight) => `${insight.title} ${insight.scoreSharePercent.toFixed(0)}%`)
+    .join(" · ")}`;
+}
+
+function formatCollapsedCorroborationSummary(
+  detail: TrendDetailRecord | undefined,
+  trend: TrendExplorerRecord,
+) {
+  if (!detail) {
+    return `Corroborated by ${trend.coverage.sourceCount} source${trend.coverage.sourceCount === 1 ? "" : "s"}`;
+  }
+
+  const supportingSources = detail.sourceContributions.filter((contribution) => contribution.scoreSharePercent >= 5).length;
+  if (supportingSources >= 2) {
+    return `Corroborated by ${supportingSources} contributing sources`;
+  }
+  if (detail.sourceContributions.length === 1) {
+    return `Driven mainly by ${formatSourceLabel(detail.sourceContributions[0].source)}`;
+  }
+  return `Backed by ${trend.coverage.signalCount} signal${trend.coverage.signalCount === 1 ? "" : "s"} across ${trend.coverage.sourceCount} sources`;
 }
 
 function movementClassName(rankChange: number | null | undefined) {
@@ -2421,6 +2937,10 @@ export function listActiveExplorerFilters(filters: {
   keyword: string;
   selectedSource: string;
   selectedCategory: string;
+  selectedStage?: string;
+  selectedConfidence?: string;
+  selectedLens?: string;
+  selectedMetaTrend?: string;
   selectedAudience: string;
   selectedMarket: string;
   selectedLanguage: string;
@@ -2437,6 +2957,18 @@ export function listActiveExplorerFilters(filters: {
   }
   if (filters.selectedCategory !== "all") {
     result.push({ key: "category", label: "Category", value: formatCategory(filters.selectedCategory) });
+  }
+  if ((filters.selectedStage ?? "all") !== "all") {
+    result.push({ key: "stage", label: "Stage", value: formatStageLabel(filters.selectedStage) });
+  }
+  if ((filters.selectedConfidence ?? "all") !== "all") {
+    result.push({ key: "confidence", label: "Confidence", value: formatConfidenceBucketLabel(filters.selectedConfidence) });
+  }
+  if ((filters.selectedLens ?? "all") !== "all") {
+    result.push({ key: "lens", label: "Lens", value: formatLensLabel(filters.selectedLens ?? "all") });
+  }
+  if ((filters.selectedMetaTrend ?? "all") !== "all") {
+    result.push({ key: "metaTrend", label: "Meta trend", value: filters.selectedMetaTrend ?? "General" });
   }
   if (filters.selectedAudience !== "all") {
     result.push({ key: "audience", label: "Audience", value: formatAudienceLabel(filters.selectedAudience) });
@@ -2479,6 +3011,37 @@ function buildSegmentFilterOptions(
       .sort()
       .map((label) => ({ label: formatAudienceLabel(label), value: label })),
   ];
+}
+
+export function confidenceBucketForTrend(confidence: number) {
+  if (confidence >= 0.75) {
+    return "high";
+  }
+  if (confidence >= 0.5) {
+    return "medium";
+  }
+  return "low";
+}
+
+function formatConfidenceLabel(confidence: number) {
+  return `${formatConfidenceBucketLabel(confidenceBucketForTrend(confidence))} confidence`;
+}
+
+function formatConfidenceBucketLabel(confidence: string | undefined) {
+  if (confidence === "high") {
+    return "High";
+  }
+  if (confidence === "medium") {
+    return "Medium";
+  }
+  return "Low";
+}
+
+function formatStageLabel(stage: string | undefined) {
+  return (stage ?? "steady")
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(" ");
 }
 
 function trendMatchesSegment(detail: TrendDetailRecord | undefined, selectedValue: string, segmentType: string) {
@@ -2536,6 +3099,58 @@ function formatExplorerSortLabel(sortBy: string) {
     newest: "Newest",
   };
   return labels[sortBy] ?? sortBy;
+}
+
+function getOpportunityScoreForLens(detail: TrendDetailRecord | undefined, lens: string) {
+  if (!detail) {
+    return 0;
+  }
+  if (lens === "discovery") {
+    return detail.opportunity.discovery;
+  }
+  if (lens === "seo") {
+    return detail.opportunity.seo;
+  }
+  if (lens === "content") {
+    return detail.opportunity.content;
+  }
+  if (lens === "product") {
+    return detail.opportunity.product;
+  }
+  if (lens === "investment") {
+    return detail.opportunity.investment;
+  }
+  return detail.opportunity.composite;
+}
+
+function formatLensLabel(lens: string) {
+  const labels: Record<string, string> = {
+    all: "All lenses",
+    discovery: "Discovery",
+    seo: "SEO",
+    content: "Content",
+    product: "Product",
+    investment: "Investment",
+  };
+  return labels[lens] ?? lens;
+}
+
+function summarizeThesisFilters(thesis: TrendThesis) {
+  const filters = [
+    formatLensLabel(thesis.lens),
+    thesis.keywordQuery ? `keyword: ${thesis.keywordQuery}` : null,
+    thesis.source ? formatSourceLabel(thesis.source) : null,
+    thesis.category ? formatCategory(thesis.category) : null,
+    thesis.stage ? formatStageLabel(thesis.stage) : null,
+    thesis.metaTrend,
+    thesis.audience ? formatAudienceLabel(thesis.audience) : null,
+    thesis.market ? formatAudienceLabel(thesis.market) : null,
+    thesis.language ? thesis.language.toUpperCase() : null,
+    thesis.geoCountry ? thesis.geoCountry.toUpperCase() : null,
+    thesis.minimumScore > 0 ? `min ${thesis.minimumScore}` : null,
+    thesis.hideRecurring ? "non-recurring" : null,
+  ].filter(Boolean);
+  return filters.join(" · ");
 }
 
 function getOptionLabel<T extends { label: string; value: string }>(

@@ -289,6 +289,10 @@ export function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExp
     trends: payload.trends.map((trend) => ({
       ...trend,
       category: trend.category ?? "general-tech",
+      metaTrend: trend.metaTrend ?? "General",
+      stage: trend.stage ?? "steady",
+      confidence: trend.confidence ?? 0,
+      summary: trend.summary ?? "",
       status: trend.status ?? "steady",
       volatility: trend.volatility ?? "stable",
       previousRank: trend.previousRank ?? null,
@@ -422,6 +426,11 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
   return {
     ...trend,
     category: trend.category ?? "general-tech",
+    metaTrend: trend.metaTrend ?? "General",
+    stage: trend.stage ?? "steady",
+    confidence: trend.confidence ?? 0,
+    summary: trend.summary ?? "",
+    whyNow: trend.whyNow ?? [],
     status: trend.status ?? "steady",
     volatility: trend.volatility ?? "stable",
     previousRank: trend.previousRank ?? null,
@@ -448,6 +457,8 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
       : null,
     opportunity: {
       composite: trend.opportunity?.composite ?? 0,
+      discovery: trend.opportunity?.discovery ?? 0,
+      seo: trend.opportunity?.seo ?? 0,
       content: trend.opportunity?.content ?? 0,
       product: trend.opportunity?.product ?? 0,
       investment: trend.opportunity?.investment ?? 0,
@@ -458,6 +469,7 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
       signalCount: trend.coverage?.signalCount ?? 0,
     },
     sources: trend.sources ?? [],
+    aliases: trend.aliases ?? [],
     history: trend.history ?? [],
     sourceBreakdown: trend.sourceBreakdown ?? [],
     sourceContributions: trend.sourceContributions ?? [],
@@ -476,7 +488,15 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
           evidenceUrl: trend.primaryEvidence.evidenceUrl ?? null,
         }
       : null,
-    relatedTrends: trend.relatedTrends ?? [],
+    duplicateCandidates: (trend.duplicateCandidates ?? []).map((item) => ({
+      ...item,
+      similarity: item.similarity ?? 0,
+      reason: item.reason ?? "",
+    })),
+    relatedTrends: (trend.relatedTrends ?? []).map((item) => ({
+      ...item,
+      relationshipStrength: item.relationshipStrength ?? 0,
+    })),
     seasonality: trend.seasonality
       ? {
           tag: trend.seasonality.tag ?? null,

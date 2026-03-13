@@ -192,6 +192,10 @@ test("normalizeTrendExplorer defaults missing trend fields", () => {
   const trend = result.trends[0];
 
   assert.equal(trend.category, "general-tech");
+  assert.equal(trend.metaTrend, "General");
+  assert.equal(trend.stage, "steady");
+  assert.equal(trend.confidence, 0);
+  assert.equal(trend.summary, "");
   assert.equal(trend.status, "steady");
   assert.equal(trend.volatility, "stable");
   assert.equal(trend.previousRank, null);
@@ -217,6 +221,10 @@ test("normalizeTrendExplorer preserves provided momentum and coverage", () => {
         id: "ai-agents",
         name: "AI Agents",
         category: "artificial-intelligence",
+        metaTrend: "AI and automation",
+        stage: "breakout",
+        confidence: 0.91,
+        summary: "AI Agents is a breakout AI trend.",
         status: "breakout",
         volatility: "spiking",
         rank: 1,
@@ -237,6 +245,10 @@ test("normalizeTrendExplorer preserves provided momentum and coverage", () => {
   const trend = result.trends[0];
 
   assert.equal(trend.category, "artificial-intelligence");
+  assert.equal(trend.metaTrend, "AI and automation");
+  assert.equal(trend.stage, "breakout");
+  assert.equal(trend.confidence, 0.91);
+  assert.equal(trend.summary, "AI Agents is a breakout AI trend.");
   assert.equal(trend.status, "breakout");
   assert.equal(trend.momentum.percentDelta, 40.2);
   assert.equal(trend.coverage.signalCount, 12);
@@ -261,9 +273,17 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
     predictedDirection: "stable",
     signals: [],
   });
+  assert.equal(result.metaTrend, "General");
+  assert.equal(result.stage, "steady");
+  assert.equal(result.confidence, 0);
+  assert.equal(result.summary, "");
+  assert.deepEqual(result.whyNow, []);
+  assert.deepEqual(result.aliases, []);
   assert.equal(result.forecast, null);
   assert.deepEqual(result.opportunity, {
     composite: 0,
+    discovery: 0,
+    seo: 0,
     content: 0,
     product: 0,
     investment: 0,
@@ -273,6 +293,7 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.deepEqual(result.sourceBreakdown, []);
   assert.deepEqual(result.sourceContributions, []);
   assert.deepEqual(result.geoSummary, []);
+  assert.deepEqual(result.duplicateCandidates, []);
   assert.deepEqual(result.relatedTrends, []);
 });
 
@@ -281,11 +302,18 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     id: "ai-agents",
     name: "AI Agents",
     rank: 1,
+    metaTrend: "AI and automation",
+    stage: "breakout",
+    confidence: 0.88,
+    summary: "AI Agents is a breakout AI trend.",
+    whyNow: ["Social signals are leading."],
+    aliases: ["AI Agents", "ai agents"],
+    duplicateCandidates: [{ id: "ai-agent", name: "AI Agent", similarity: 0.8, reason: "Tracked aliases overlap." }],
     latestSignalAt: "2026-03-10T00:00:00Z",
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
     forecast: { predictedScores: [45, 48], confidence: "high", mape: 8.5, method: "holt" },
     breakoutPrediction: { confidence: 0.85, predictedDirection: "up", signals: ["Rising score"] },
-    opportunity: { composite: 7.5, content: 6, product: 8, investment: 7, reasoning: ["Strong momentum"] },
+    opportunity: { composite: 7.5, discovery: 6.5, seo: 6.8, content: 6, product: 8, investment: 7, reasoning: ["Strong momentum"] },
   } as any as TrendDetailRecord;
 
   const result = normalizeTrendDetailRecord(input);
@@ -296,8 +324,18 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     mape: 8.5,
     method: "holt",
   });
+  assert.equal(result.metaTrend, "AI and automation");
+  assert.equal(result.stage, "breakout");
+  assert.equal(result.confidence, 0.88);
+  assert.equal(result.summary, "AI Agents is a breakout AI trend.");
+  assert.deepEqual(result.whyNow, ["Social signals are leading."]);
+  assert.deepEqual(result.aliases, ["AI Agents", "ai agents"]);
+  assert.equal(result.duplicateCandidates[0].id, "ai-agent");
+  assert.equal(result.duplicateCandidates[0].similarity, 0.8);
   assert.equal(result.breakoutPrediction.confidence, 0.85);
   assert.equal(result.opportunity.composite, 7.5);
+  assert.equal(result.opportunity.discovery, 6.5);
+  assert.equal(result.opportunity.seo, 6.8);
   assert.equal(result.opportunity.reasoning[0], "Strong momentum");
 });
 

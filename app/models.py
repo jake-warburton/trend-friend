@@ -148,10 +148,29 @@ class OpportunitySummary:
     """Actionability scoring for a trend."""
 
     composite: float
+    discovery: float
+    seo: float
     content: float
     product: float
     investment: float
     reasoning: list[str]
+
+
+@dataclass(frozen=True)
+class TrendEntity:
+    """Canonical persisted metadata for one tracked trend."""
+
+    topic_key: str
+    canonical_name: str
+    category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
+    why_now: list[str]
+    aliases: list[str]
+    first_seen_at: datetime | None
+    last_seen_at: datetime
 
 
 @dataclass(frozen=True)
@@ -161,6 +180,10 @@ class TrendExplorerRecord:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
     status: str
     volatility: str
     rank: int
@@ -267,6 +290,30 @@ class RelatedTrend:
     status: str
     rank: int
     score_total: float
+    relationship_strength: float
+
+
+@dataclass(frozen=True)
+class TrendDuplicateCandidate:
+    """Potential duplicate trend surfaced for review or curation."""
+
+    id: str
+    name: str
+    similarity: float
+    reason: str
+
+
+@dataclass(frozen=True)
+class TrendCurationOverride:
+    """Manual correction metadata applied on top of inferred trend entities."""
+
+    topic_key: str
+    suppress: bool
+    canonical_topic_key: str | None
+    preferred_name: str | None
+    preferred_meta_trend: str | None
+    preferred_stage: str | None
+    preferred_summary: str | None
 
 
 @dataclass(frozen=True)
@@ -276,6 +323,11 @@ class TrendDetailRecord:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
+    why_now: list[str]
     status: str
     volatility: str
     rank: int
@@ -291,6 +343,7 @@ class TrendDetailRecord:
     source_count: int
     signal_count: int
     sources: list[str]
+    aliases: list[str]
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
     source_contributions: list[TrendSourceContribution]
@@ -298,6 +351,7 @@ class TrendDetailRecord:
     audience_summary: list[TrendAudienceSegment]
     evidence_items: list[TrendEvidenceItem]
     primary_evidence: TrendPrimaryEvidence | None
+    duplicate_candidates: list[TrendDuplicateCandidate]
     related_trends: list[RelatedTrend]
     seasonality: SeasonalityResult | None = None
 
@@ -433,6 +487,7 @@ class AlertRule:
 
     id: int
     watchlist_id: int
+    thesis_id: int | None
     name: str
     rule_type: str
     threshold: float
@@ -455,6 +510,45 @@ class AlertEventRecord:
     message: str
     triggered_at: datetime
     read: bool
+
+
+@dataclass(frozen=True)
+class TrendThesis:
+    """Saved thesis definition attached to one watchlist."""
+
+    id: int
+    watchlist_id: int
+    name: str
+    lens: str
+    keyword_query: str | None
+    source: str | None
+    category: str | None
+    stage: str | None
+    confidence: str | None
+    meta_trend: str | None
+    audience: str | None
+    market: str | None
+    language: str | None
+    geo_country: str | None
+    minimum_score: float
+    hide_recurring: bool
+    notify_on_match: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class TrendThesisMatch:
+    """Persisted active or historical match for a saved thesis."""
+
+    thesis_id: int
+    trend_id: str
+    trend_name: str
+    active: bool
+    first_matched_at: datetime
+    last_matched_at: datetime
+    lens_score: float
+    total_score: float
 
 
 @dataclass(frozen=True)

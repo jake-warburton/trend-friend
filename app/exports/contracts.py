@@ -122,6 +122,8 @@ class OpportunityPayload:
     """Opportunity scoring exposed on detail pages."""
 
     composite: float
+    discovery: float
+    seo: float
     content: float
     product: float
     investment: float
@@ -155,6 +157,10 @@ class TrendExplorerRecordPayload:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
     status: str
     volatility: str
     rank: int
@@ -271,6 +277,17 @@ class RelatedTrendPayload:
     status: str
     rank: int
     score_total: float
+    relationship_strength: float
+
+
+@dataclass(frozen=True)
+class TrendDuplicateCandidatePayload:
+    """Potential duplicate trend entry for detail pages."""
+
+    id: str
+    name: str
+    similarity: float
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -280,6 +297,11 @@ class TrendDetailRecordPayload:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
+    why_now: list[str]
     status: str
     volatility: str
     rank: int
@@ -294,6 +316,7 @@ class TrendDetailRecordPayload:
     opportunity: OpportunityPayload
     coverage: TrendCoveragePayload
     sources: list[str]
+    aliases: list[str]
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
     source_contributions: list[TrendSourceContributionPayload]
@@ -301,6 +324,7 @@ class TrendDetailRecordPayload:
     audience_summary: list[TrendAudienceSegmentPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     primary_evidence: TrendPrimaryEvidencePayload | None
+    duplicate_candidates: list[TrendDuplicateCandidatePayload]
     related_trends: list[RelatedTrendPayload]
     seasonality: SeasonalityPayload | None = None
 
@@ -659,6 +683,7 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     """Serialize an explorer record using API-style keys."""
 
     payload = asdict(trend)
+    payload["metaTrend"] = payload.pop("meta_trend")
     payload["previousRank"] = payload.pop("previous_rank")
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
@@ -693,6 +718,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     """Serialize a trend detail record using API-style keys."""
 
     payload = asdict(trend)
+    payload["metaTrend"] = payload.pop("meta_trend")
     payload["previousRank"] = payload.pop("previous_rank")
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
@@ -716,7 +742,9 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["audienceSummary"] = payload.pop("audience_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["primaryEvidence"] = payload.pop("primary_evidence")
+    payload["duplicateCandidates"] = payload.pop("duplicate_candidates")
     payload["relatedTrends"] = payload.pop("related_trends")
+    payload["whyNow"] = payload.pop("why_now")
     for point in payload["history"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")
@@ -753,4 +781,5 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         payload["primaryEvidence"]["evidenceUrl"] = payload["primaryEvidence"].pop("evidence_url")
     for item in payload["relatedTrends"]:
         item["scoreTotal"] = item.pop("score_total")
+        item["relationshipStrength"] = item.pop("relationship_strength")
     return payload

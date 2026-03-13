@@ -12,6 +12,7 @@ from app.alerts.evaluate import (
     RULE_TYPE_NEW_TREND,
     RULE_TYPE_RANK_CHANGE,
     RULE_TYPE_SCORE_ABOVE,
+    RULE_TYPE_THESIS_MATCH,
     evaluate_alerts,
 )
 from app.data.database import initialize_database
@@ -29,6 +30,7 @@ def _make_rule(
     return AlertRule(
         id=rule_id,
         watchlist_id=watchlist_id,
+        thesis_id=None,
         name="Test Rule",
         rule_type=rule_type,
         threshold=threshold,
@@ -194,6 +196,33 @@ class AlertEvaluationTests(unittest.TestCase):
             previous_trend_ids=set(),
         )
         self.assertEqual(len(events), 0)
+
+    def test_thesis_match_triggers_for_new_match(self) -> None:
+        rule = AlertRule(
+            id=9,
+            watchlist_id=1,
+            thesis_id=7,
+            name="Early discovery",
+            rule_type=RULE_TYPE_THESIS_MATCH,
+            threshold=0.0,
+            enabled=True,
+            created_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+        )
+        score = _make_score(topic="ai agents", total_score=42.0)
+        events = evaluate_alerts(
+            rules=[rule],
+            watchlist_trend_ids={1: {"battery recycling"}},
+            current_scores=[score],
+            previous_scores=None,
+            current_ranks={"ai agents": 1},
+            previous_ranks={},
+            statuses={},
+            previous_trend_ids={"ai agents"},
+            new_thesis_match_ids={7: {"ai agents"}},
+        )
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].rule_type, RULE_TYPE_THESIS_MATCH)
+        self.assertIn("Early discovery", events[0].message)
 
 
 class AlertRepositoryTests(unittest.TestCase):

@@ -27,6 +27,27 @@ def main() -> None:
     create_watchlist = subparsers.add_parser("create-watchlist")
     create_watchlist.add_argument("--name", required=True)
 
+    create_thesis = subparsers.add_parser("create-thesis")
+    create_thesis.add_argument("--watchlist-id", type=int, required=True)
+    create_thesis.add_argument("--name", required=True)
+    create_thesis.add_argument("--lens", default="all")
+    create_thesis.add_argument("--keyword-query")
+    create_thesis.add_argument("--source")
+    create_thesis.add_argument("--category")
+    create_thesis.add_argument("--stage")
+    create_thesis.add_argument("--confidence")
+    create_thesis.add_argument("--meta-trend")
+    create_thesis.add_argument("--audience")
+    create_thesis.add_argument("--market")
+    create_thesis.add_argument("--language")
+    create_thesis.add_argument("--geo-country")
+    create_thesis.add_argument("--minimum-score", type=float, default=0.0)
+    create_thesis.add_argument("--hide-recurring", action="store_true")
+    create_thesis.add_argument("--notify-on-match", action="store_true")
+
+    delete_thesis = subparsers.add_parser("delete-thesis")
+    delete_thesis.add_argument("--thesis-id", type=int, required=True)
+
     add_item = subparsers.add_parser("add-item")
     add_item.add_argument("--watchlist-id", type=int, required=True)
     add_item.add_argument("--trend-id", required=True)
@@ -114,6 +135,33 @@ def main() -> None:
         payload = build_payload(
             watchlist_repository=watchlist_repository,
             score_repository=score_repository,
+        )
+    elif args.command == "create-thesis":
+        payload = create_thesis_payload(
+            watchlist_repository=watchlist_repository,
+            score_repository=score_repository,
+            watchlist_id=args.watchlist_id,
+            name=args.name,
+            lens=args.lens,
+            keyword_query=args.keyword_query,
+            source=args.source,
+            category=args.category,
+            stage=args.stage,
+            confidence=args.confidence,
+            meta_trend=args.meta_trend,
+            audience=args.audience,
+            market=args.market,
+            language=args.language,
+            geo_country=args.geo_country,
+            minimum_score=args.minimum_score,
+            hide_recurring=args.hide_recurring,
+            notify_on_match=args.notify_on_match,
+        )
+    elif args.command == "delete-thesis":
+        payload = delete_thesis_payload(
+            watchlist_repository=watchlist_repository,
+            score_repository=score_repository,
+            thesis_id=args.thesis_id,
         )
     elif args.command == "add-item":
         watchlist_repository.add_item(args.watchlist_id, args.trend_id, args.trend_name)
@@ -260,6 +308,67 @@ def share_payload(
         use_watchlist_default_expiry=use_default_expiry,
     )
     return _serialize_share_payload(share)
+
+
+def create_thesis_payload(
+    watchlist_repository: WatchlistRepository,
+    score_repository: TrendScoreRepository,
+    *,
+    watchlist_id: int,
+    name: str,
+    lens: str,
+    keyword_query: str | None = None,
+    source: str | None = None,
+    category: str | None = None,
+    stage: str | None = None,
+    confidence: str | None = None,
+    meta_trend: str | None = None,
+    audience: str | None = None,
+    market: str | None = None,
+    language: str | None = None,
+    geo_country: str | None = None,
+    minimum_score: float = 0.0,
+    hide_recurring: bool = False,
+    notify_on_match: bool = False,
+) -> dict[str, object]:
+    """Create a thesis and return the refreshed payload."""
+
+    watchlist = watchlist_repository.get_watchlist(watchlist_id)
+    if watchlist is None:
+        return {"error": "Watchlist not found"}
+    watchlist_repository.create_trend_thesis(
+        watchlist_id=watchlist_id,
+        name=name,
+        lens=lens,
+        keyword_query=keyword_query,
+        source=source,
+        category=category,
+        stage=stage,
+        confidence=confidence,
+        meta_trend=meta_trend,
+        audience=audience,
+        market=market,
+        language=language,
+        geo_country=geo_country,
+        minimum_score=minimum_score,
+        hide_recurring=hide_recurring,
+        notify_on_match=notify_on_match,
+    )
+    return build_payload(watchlist_repository, score_repository)
+
+
+def delete_thesis_payload(
+    watchlist_repository: WatchlistRepository,
+    score_repository: TrendScoreRepository,
+    *,
+    thesis_id: int,
+) -> dict[str, object]:
+    """Delete a thesis and return the refreshed payload."""
+
+    deleted = watchlist_repository.delete_trend_thesis(thesis_id, owner_user_id=None)
+    if not deleted:
+        return {"error": "Thesis not found"}
+    return build_payload(watchlist_repository, score_repository)
 
 
 def update_share_default_expiry_payload(

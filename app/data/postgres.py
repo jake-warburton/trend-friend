@@ -14,6 +14,11 @@ POSTGRES_MIGRATIONS = [
     Migration("0004_pipeline_quality_metrics", load_sql_migration("postgres_migrations/0004_pipeline_quality_metrics.sql")),
     Migration("0005_source_topic_metrics", load_sql_migration("postgres_migrations/0005_source_topic_metrics.sql")),
     Migration("0006_experimental_trend_tiers", load_sql_migration("postgres_migrations/0006_experimental_trend_tiers.sql")),
+    Migration("0007_trend_entities", load_sql_migration("postgres_migrations/0007_trend_entities.sql")),
+    Migration("0008_trend_entity_enrichment", load_sql_migration("postgres_migrations/0008_trend_entity_enrichment.sql")),
+    Migration("0009_trend_relationships", load_sql_migration("postgres_migrations/0009_trend_relationships.sql")),
+    Migration("0010_trend_curation", load_sql_migration("postgres_migrations/0010_trend_curation.sql")),
+    Migration("0011_trend_theses", load_sql_migration("postgres_migrations/0011_trend_theses.sql")),
 ]
 
 

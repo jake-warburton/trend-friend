@@ -10,6 +10,46 @@ _WORD_BOUNDARY_THRESHOLD = 4
 
 CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
+        "geopolitics-world",
+        (
+            "ceasefire", "sanctions", "nato", "tariff", "trade war", "red sea",
+            "gaza", "ukraine", "russia", "china", "taiwan", "middle east",
+            "shipping route", "defense", "foreign policy", "embassy", "diplomatic",
+            "missile", "military", "border", "election",
+        ),
+    ),
+    (
+        "business-economy",
+        (
+            "inflation", "interest rate", "fed", "central bank", "jobs report",
+            "bond yield", "oil price", "earnings", "recession", "gdp", "consumer spending",
+            "housing market", "labor market", "supply chain", "retail sales", "trade deficit",
+        ),
+    ),
+    (
+        "sports",
+        (
+            "premier league", "champions league", "nba", "nfl", "mlb", "nhl",
+            "formula 1", "f1", "world cup", "olympics", "tennis", "golf",
+            "title race", "playoffs", "grand slam", "transfer window", "uefa",
+        ),
+    ),
+    (
+        "culture-entertainment",
+        (
+            "box office", "streaming", "netflix", "hollywood", "celebrity",
+            "album", "film", "movie", "tv series", "music video", "festival",
+            "awards", "grammys", "oscars",
+        ),
+    ),
+    (
+        "general-news",
+        (
+            "breaking news", "top stories", "headline", "court ruling", "wildfire",
+            "storm warning", "earthquake", "plane crash", "school shooting",
+        ),
+    ),
+    (
         "ai-machine-learning",
         (
             "ai", "llm", "gpt", "openai", "anthropic", "claude", "gemini",
@@ -139,6 +179,8 @@ def categorize_topic(topic: str, source_counts: dict[str, int] | None = None) ->
     if source_counts:
         if "github" in source_counts:
             return "developer-tools"
+        if "google_news" in source_counts:
+            return "general-news"
         if "polymarket" in source_counts:
             return "fintech-crypto"
         if "wikipedia" in source_counts:

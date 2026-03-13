@@ -33,6 +33,7 @@ from app.models import (
     OpportunitySummary,
     PipelineRun,
     RelatedTrend,
+    TrendDuplicateCandidate,
     SourceIngestionRun,
     SourceSummaryRecord,
     SourceSummaryTrend,
@@ -144,6 +145,10 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["id"], "ai-agents")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
         self.assertEqual(payload["trends"][0]["category"], "artificial-intelligence")
+        self.assertEqual(payload["trends"][0]["metaTrend"], "AI and automation")
+        self.assertEqual(payload["trends"][0]["stage"], "breakout")
+        self.assertEqual(payload["trends"][0]["confidence"], 0.86)
+        self.assertIn("AI Agents is a breakout", payload["trends"][0]["summary"])
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
@@ -168,6 +173,11 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
         self.assertEqual(payload["trends"][0]["category"], "artificial-intelligence")
+        self.assertEqual(payload["trends"][0]["metaTrend"], "AI and automation")
+        self.assertEqual(payload["trends"][0]["stage"], "breakout")
+        self.assertEqual(payload["trends"][0]["confidence"], 0.86)
+        self.assertIn("AI Agents is a breakout", payload["trends"][0]["summary"])
+        self.assertIn("Cross-source confirmation", payload["trends"][0]["whyNow"][1])
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
@@ -190,11 +200,17 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["seasonality"]["tag"], "recurring")
         self.assertEqual(payload["trends"][0]["seasonality"]["avgGapRuns"], 3.5)
         self.assertGreater(payload["trends"][0]["opportunity"]["composite"], 0.0)
+        self.assertEqual(payload["trends"][0]["opportunity"]["discovery"], 0.67)
+        self.assertEqual(payload["trends"][0]["opportunity"]["seo"], 0.64)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["score"]["social"], 18.2)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
+        self.assertEqual(payload["trends"][0]["relatedTrends"][0]["relationshipStrength"], 0.8)
+        self.assertEqual(payload["trends"][0]["duplicateCandidates"][0]["id"], "ai-agent")
+        self.assertGreater(payload["trends"][0]["duplicateCandidates"][0]["similarity"], 0.6)
+        self.assertIn("ai agents", payload["trends"][0]["aliases"])
 
     def test_build_dashboard_overview_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -310,6 +326,10 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
         id="ai-agents",
         name="AI Agents",
         category="artificial-intelligence",
+        meta_trend="AI and automation",
+        stage="breakout",
+        confidence=0.86,
+        summary="AI Agents is a breakout artificial intelligence trend validated by 2 signals across 2 sources.",
         status="breakout",
         volatility="spiking",
         rank=1,
@@ -368,6 +388,15 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         id="ai-agents",
         name="AI Agents",
         category="artificial-intelligence",
+        meta_trend="AI and automation",
+        stage="breakout",
+        confidence=0.86,
+        summary="AI Agents is a breakout artificial intelligence trend validated by 2 signals across 2 sources.",
+        why_now=[
+            "Social signals are leading the move (18.2 score).",
+            "Cross-source confirmation is present across 2 sources.",
+            "The trend improved by 3 ranking positions since the previous run.",
+        ],
         status="breakout",
         volatility="spiking",
         rank=1,
@@ -395,6 +424,8 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         ),
         opportunity=OpportunitySummary(
             composite=0.72,
+            discovery=0.67,
+            seo=0.64,
             content=0.69,
             product=0.74,
             investment=0.71,
@@ -403,6 +434,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         source_count=2,
         signal_count=2,
         sources=["github", "reddit"],
+        aliases=["AI Agents", "ai agents", "AI"],
         history=[
             TrendHistoryPoint(
                 captured_at=datetime(2026, 3, 7, tzinfo=timezone.utc),
@@ -485,6 +517,14 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
             evidence="AI agents evidence",
             evidence_url="https://example.com/ai-agents",
         ),
+        duplicate_candidates=[
+            TrendDuplicateCandidate(
+                id="ai-agent",
+                name="AI Agent",
+                similarity=0.82,
+                reason="Tracked aliases strongly overlap.",
+            )
+        ],
         related_trends=[
             RelatedTrend(
                 id="agentic-workflows",
@@ -492,6 +532,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 status="rising",
                 rank=6,
                 score_total=28.1,
+                relationship_strength=0.8,
             )
         ],
         seasonality=SeasonalityResult(

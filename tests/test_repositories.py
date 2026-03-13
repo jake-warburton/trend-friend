@@ -15,6 +15,7 @@ from app.data.repositories import (
     WatchlistRepository,
 )
 from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
+from app.theses.matching import ThesisMatchCandidate
 
 
 class RepositoryTests(unittest.TestCase):
@@ -287,6 +288,10 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.momentum.percent_delta, 200.0)
         self.assertEqual(ai_agents.status, "breakout")
         self.assertEqual(ai_agents.category, "ai-machine-learning")
+        self.assertEqual(ai_agents.meta_trend, "AI and automation")
+        self.assertEqual(ai_agents.stage, "nascent")
+        self.assertGreater(ai_agents.confidence, 0.35)
+        self.assertIn("AI Agents is a nascent", ai_agents.summary)
         self.assertEqual(ai_agents.volatility, "spiking")
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
@@ -333,6 +338,12 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].history[0].captured_at, previous_captured_at)
         self.assertEqual(records[0].status, "breakout")
         self.assertEqual(records[0].category, "ai-machine-learning")
+        self.assertEqual(records[0].meta_trend, "AI and automation")
+        self.assertEqual(records[0].stage, "nascent")
+        self.assertGreater(records[0].confidence, 0.35)
+        self.assertIn("AI Agents is a nascent", records[0].summary)
+        self.assertGreaterEqual(len(records[0].why_now), 2)
+        self.assertIn("ai agents", [alias.lower() for alias in records[0].aliases])
         self.assertEqual(records[0].volatility, "spiking")
         self.assertEqual(records[0].geo_summary[0].country_code, "GB")
         self.assertEqual(records[0].geo_summary[0].signal_count, 1)
@@ -396,6 +407,104 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(tax_detail.seasonality.recurrence_count, 2)
         self.assertEqual(tax_explorer.seasonality.tag, "recurring")
 
+    def test_trend_score_repository_persists_trend_entities(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [build_score(topic="ai agents", total_score=30.0)],
+            captured_at=captured_at,
+        )
+
+        entity = repository.get_trend_entity("ai agents")
+
+        self.assertIsNotNone(entity)
+        assert entity is not None
+        self.assertEqual(entity.canonical_name, "AI Agents")
+        self.assertEqual(entity.category, "ai-machine-learning")
+        self.assertEqual(entity.meta_trend, "AI and automation")
+        self.assertEqual(entity.stage, "nascent")
+        self.assertGreater(entity.confidence, 0.0)
+        self.assertIn("AI Agents is a nascent", entity.summary)
+        self.assertGreaterEqual(len(entity.why_now), 1)
+        self.assertIn("ai agents", [alias.lower() for alias in entity.aliases])
+        self.assertEqual(entity.last_seen_at, datetime(2026, 3, 8, tzinfo=timezone.utc))
+
+    def test_trend_score_repository_persists_related_relationship_strength(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="agent workflows", total_score=24.0),
+            ],
+            captured_at=captured_at,
+        )
+
+        records = repository.list_trend_detail_records(limit=5)
+        ai_agents = next(record for record in records if record.id == "ai-agents")
+
+        self.assertTrue(ai_agents.related_trends)
+        self.assertEqual(ai_agents.related_trends[0].id, "agent-workflows")
+        self.assertGreater(ai_agents.related_trends[0].relationship_strength, 0.0)
+
+    def test_trend_score_repository_penalizes_and_persists_duplicate_candidates(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="ai agent", total_score=24.0),
+                build_score(topic="battery recycling", total_score=18.0),
+            ],
+            captured_at=captured_at,
+        )
+
+        detail_records = repository.list_trend_detail_records(limit=5)
+        ai_agents = next(record for record in detail_records if record.id == "ai-agents")
+        ai_agent = next(record for record in detail_records if record.id == "ai-agent")
+
+        self.assertTrue(ai_agent.duplicate_candidates)
+        self.assertEqual(ai_agent.duplicate_candidates[0].id, "ai-agents")
+        self.assertGreater(ai_agent.duplicate_candidates[0].similarity, 0.55)
+        self.assertLess(ai_agent.confidence, ai_agents.confidence)
+
+    def test_trend_score_repository_applies_curation_override_preferences_and_suppression(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.upsert_trend_curation_override(
+            "ai-agents",
+            preferred_name="AI Agent Platforms",
+            preferred_meta_trend="Agent tooling",
+            preferred_stage="validated",
+            preferred_summary="Curated summary for manual review.",
+        )
+        repository.upsert_trend_curation_override(
+            "ai-agent",
+            suppress=True,
+            canonical_topic_key="ai-agents",
+        )
+        repository.append_snapshot(
+            [
+                build_score(topic="ai agents", total_score=30.0),
+                build_score(topic="ai agent", total_score=24.0),
+            ],
+            captured_at=captured_at,
+        )
+
+        entity = repository.get_trend_entity("ai agents")
+        explorer_records = repository.list_trend_explorer_records(limit=5)
+
+        assert entity is not None
+        self.assertEqual(entity.canonical_name, "AI Agent Platforms")
+        self.assertEqual(entity.meta_trend, "Agent tooling")
+        self.assertEqual(entity.stage, "validated")
+        self.assertEqual(entity.summary, "Curated summary for manual review.")
+        self.assertEqual([record.id for record in explorer_records], ["ai-agents"])
+
     def test_watchlist_repository_round_trip(self) -> None:
         repository = WatchlistRepository(self.connection)
 
@@ -411,6 +520,48 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(updated.items[0].trend_id, "ai-agents")
         self.assertEqual(repository.list_watchlists()[0].name, "Core Watchlist")
         self.assertEqual(repository.list_alert_rules()[0].rule_type, "score_above")
+
+    def test_watchlist_repository_persists_theses_and_matches(self) -> None:
+        repository = WatchlistRepository(self.connection)
+        watchlist = repository.create_watchlist("Research")
+
+        thesis = repository.create_trend_thesis(
+            watchlist_id=watchlist.id,
+            name="SEO opportunities",
+            lens="seo",
+            stage="nascent",
+            minimum_score=20.0,
+            notify_on_match=True,
+        )
+
+        self.assertEqual(repository.list_trend_theses()[0].name, "SEO opportunities")
+        thesis_rule = next(rule for rule in repository.list_alert_rules() if rule.thesis_id == thesis.id)
+        self.assertEqual(thesis_rule.rule_type, "thesis_match")
+
+        created_at = datetime(2026, 3, 10, tzinfo=timezone.utc)
+        new_matches = repository.replace_trend_thesis_matches(
+            [thesis],
+            {
+                thesis.id: [
+                    ThesisMatchCandidate(
+                        thesis_id=thesis.id,
+                        trend_id="ai-agents",
+                        trend_name="AI Agents",
+                        lens_score=71.2,
+                        total_score=42.0,
+                    ),
+                ]
+            },
+            matched_at=created_at,
+        )
+
+        self.assertEqual(new_matches[thesis.id][0].trend_id, "ai-agents")
+        stored_matches = repository.list_trend_thesis_matches()
+        self.assertEqual(stored_matches[0].trend_id, "ai-agents")
+        self.assertTrue(stored_matches[0].active)
+
+        repository.replace_trend_thesis_matches([thesis], {thesis.id: []}, matched_at=created_at)
+        self.assertFalse(repository.list_trend_thesis_matches()[0].active)
 
 
 def build_score(topic: str, total_score: float) -> TrendScoreResult:

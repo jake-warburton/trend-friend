@@ -26,6 +26,7 @@ from app.exports.contracts import (
     SourceSummaryTrendPayload,
     OpportunityPayload,
     RelatedTrendPayload,
+    TrendDuplicateCandidatePayload,
     TrendCoveragePayload,
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
@@ -55,6 +56,7 @@ from app.models import (
     SourceWatchRecord,
     SourceSummaryTrend,
     TrendDetailRecord,
+    TrendDuplicateCandidate,
     TrendExplorerRecord,
     TrendScoreResult,
 )
@@ -263,6 +265,10 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
         id=trend.id,
         name=trend.name,
         category=trend.category,
+        meta_trend=trend.meta_trend,
+        stage=trend.stage,
+        confidence=round(trend.confidence, 3),
+        summary=trend.summary,
         status=trend.status,
         volatility=trend.volatility,
         rank=trend.rank,
@@ -339,6 +345,11 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         id=trend.id,
         name=trend.name,
         category=trend.category,
+        meta_trend=trend.meta_trend,
+        stage=trend.stage,
+        confidence=round(trend.confidence, 3),
+        summary=trend.summary,
+        why_now=trend.why_now,
         status=trend.status,
         volatility=trend.volatility,
         rank=trend.rank,
@@ -377,6 +388,8 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         ),
         opportunity=OpportunityPayload(
             composite=trend.opportunity.composite,
+            discovery=trend.opportunity.discovery,
+            seo=trend.opportunity.seo,
             content=trend.opportunity.content,
             product=trend.opportunity.product,
             investment=trend.opportunity.investment,
@@ -387,6 +400,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             signal_count=trend.signal_count,
         ),
         sources=trend.sources,
+        aliases=trend.aliases,
         history=[
             TrendHistoryPointPayload(
                 captured_at=to_timestamp(point.captured_at),
@@ -472,6 +486,10 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             if trend.primary_evidence is not None
             else None
         ),
+        duplicate_candidates=[
+            serialize_duplicate_candidate(item)
+            for item in trend.duplicate_candidates
+        ],
         related_trends=[
             serialize_related_trend(item)
             for item in trend.related_trends
@@ -498,6 +516,18 @@ def serialize_related_trend(trend: RelatedTrend) -> RelatedTrendPayload:
         status=trend.status,
         rank=trend.rank,
         score_total=round(trend.score_total, 1),
+        relationship_strength=round(trend.relationship_strength, 2),
+    )
+
+
+def serialize_duplicate_candidate(trend: TrendDuplicateCandidate) -> TrendDuplicateCandidatePayload:
+    """Convert a duplicate-trend candidate into the public contract."""
+
+    return TrendDuplicateCandidatePayload(
+        id=trend.id,
+        name=trend.name,
+        similarity=round(trend.similarity, 2),
+        reason=trend.reason,
     )
 
 

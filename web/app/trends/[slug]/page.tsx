@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { slugifyBrowseValue } from "@/lib/trend-browse";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
@@ -160,6 +161,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           <p className="eyebrow">Trend detail</p>
           <div className="detail-pill-row">
             <span className="trend-date-chip">{formatCategory(trend.category)}</span>
+            <span className="trend-date-chip">{trend.metaTrend}</span>
+            <span className="trend-date-chip">{formatLabel(trend.stage)}</span>
+            <span className="trend-date-chip">{Math.round(trend.confidence * 100)}% confidence</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
             <span className={volatilityClassName(trend.volatility)}>{formatVolatility(trend.volatility)}</span>
             {seasonalityBadge ? (
@@ -173,6 +177,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
+          {trend.summary ? <p className="detail-copy">{trend.summary}</p> : null}
           {wikipediaLink || primaryEvidenceLink?.evidenceUrl || trend.relatedTrends[0] ? (
             <div className="detail-action-links">
               {wikipediaLink ? (
@@ -190,6 +195,12 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                   Compare with {trend.relatedTrends[0].name}
                 </Link>
               ) : null}
+              <Link className="detail-back-link" href={`/meta-trends/${slugifyBrowseValue(trend.metaTrend)}`}>
+                Browse {trend.metaTrend}
+              </Link>
+              <Link className="detail-back-link" href={`/categories/${trend.category}`}>
+                Browse {formatCategory(trend.category)}
+              </Link>
             </div>
           ) : null}
         </div>
@@ -240,6 +251,74 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
+              <p className="eyebrow">Why now</p>
+              <h2>Current rationale</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {trend.whyNow.map((reason, index) => (
+              <article className="detail-list-item" key={`${trend.id}-why-now-${index}`}>
+                <div>
+                  <strong>Signal {index + 1}</strong>
+                  <span>{reason}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Canonicalization</p>
+              <h2>Tracked aliases</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {(trend.aliases.length > 0 ? trend.aliases : [trend.name]).map((alias) => (
+              <article className="detail-list-item" key={`${trend.id}-alias-${alias}`}>
+                <div>
+                  <strong>{alias}</strong>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Quality</p>
+              <h2>Potential duplicates</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {(trend.duplicateCandidates.length > 0 ? trend.duplicateCandidates : []).map((candidate) => (
+              <article className="detail-list-item" key={`${trend.id}-duplicate-${candidate.id}`}>
+                <div>
+                  <strong>{candidate.name}</strong>
+                  <span>{candidate.reason}</span>
+                </div>
+                <small>{Math.round(candidate.similarity * 100)}% overlap</small>
+              </article>
+            ))}
+            {trend.duplicateCandidates.length === 0 ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>No close duplicates flagged</strong>
+                  <span>This trend currently looks distinct from the rest of the published set.</span>
+                </div>
+              </article>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
               <p className="eyebrow">Opportunity</p>
               <h2>What you can do with it</h2>
             </div>
@@ -250,7 +329,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
               <div>
                 <strong>Composite {formatOpportunityScore(trend.opportunity.composite)}</strong>
                 <span>
-                  Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
+                  Discovery {formatOpportunityScore(trend.opportunity.discovery)} · SEO{" "}
+                  {formatOpportunityScore(trend.opportunity.seo)} · Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
                   {formatOpportunityScore(trend.opportunity.product)} · Investment{" "}
                   {formatOpportunityScore(trend.opportunity.investment)}
                 </span>
@@ -430,7 +510,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                       {item.name}
                     </Link>
                   </strong>
-                  <span>{formatTrendStatus(item.status)}</span>
+                  <span>{formatTrendStatus(item.status)} · {Math.round(item.relationshipStrength * 100)}% related</span>
                 </div>
                 <small>
                   <Link className="trend-link" href={`/compare?ids=${trend.id},${item.id}`}>
@@ -562,6 +642,13 @@ function formatDateOnly(value: string) {
 
 function formatCategory(category: string) {
   return formatCategoryLabel(category);
+}
+
+function formatLabel(value: string) {
+  return value
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(" ");
 }
 
 function formatSignalType(signalType: string) {
