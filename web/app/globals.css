@@ -1588,13 +1588,12 @@ input {
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
 .thesis-preset-card:hover {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--surface-panel-strong) 82%, var(--accent-soft) 18%);
-  transform: translateY(-1px);
 }
 
 .thesis-preset-card[aria-pressed="true"],
