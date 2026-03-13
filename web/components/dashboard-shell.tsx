@@ -119,7 +119,19 @@ const SORT_OPTIONS = [
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
-const THESIS_PRESETS = [
+type ThesisPreset = {
+  key: string;
+  label: string;
+  description: string;
+  lens: string;
+  source?: string;
+  stage?: string;
+  audience?: string;
+  hideRecurring?: boolean;
+  minimumScore?: number;
+};
+
+const THESIS_PRESETS: readonly ThesisPreset[] = [
   {
     key: "discover",
     label: "Early discovery",
@@ -558,7 +570,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setHideRecurring(false);
   }
 
-  function applyThesisPreset(preset: (typeof THESIS_PRESETS)[number]) {
+  function applyThesisPreset(preset: ThesisPreset) {
     setKeyword("");
     setSelectedSource(preset.source ?? "all");
     setSelectedCategory("all");
