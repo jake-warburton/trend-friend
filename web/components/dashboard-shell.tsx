@@ -391,7 +391,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
   const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
-  const hasAdvancedFiltersApplied = activeExplorerFilters.some((filter) => filter.key !== "seasonality") || hideRecurring;
   const activeThesisPresetKey = useMemo(
     () =>
       THESIS_PRESETS.find((preset) =>
@@ -1590,7 +1589,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
               ) : null}
             </section>
 
-            <details className="advanced-filters-panel" open={hasAdvancedFiltersApplied ? true : undefined}>
+            <details className="advanced-filters-panel">
               <summary>
                 <span>Advanced filters</span>
                 <small>
@@ -1598,6 +1597,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     ? `${activeExplorerFilters.length} active`
                     : "Keyword, source, scoring, and audience controls"}
                 </small>
+                <span aria-hidden="true" className="advanced-filters-chevron">
+                  ▾
+                </span>
               </summary>
               <section className="filters-panel filters-panel-wide">
                 <label className="filter-field">
