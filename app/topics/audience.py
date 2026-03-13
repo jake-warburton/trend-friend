@@ -24,6 +24,7 @@ _MARKET_KEYWORDS: dict[str, tuple[str, ...]] = {
 }
 
 _SOURCE_AUDIENCE_FLAGS: dict[str, tuple[str, ...]] = {
+    "curated_feeds": ("founder", "research"),
     "devto": ("developer", "founder"),
     "github": ("developer",),
     "hacker_news": ("developer", "founder"),

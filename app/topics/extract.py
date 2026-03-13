@@ -19,6 +19,7 @@ from app.topics.normalize import (
 MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
 SOURCE_TOPIC_LIMITS = {
+    "curated_feeds": 2,
     "google_news": 2,
     "google_trends": 2,
     "hacker_news": 2,
@@ -27,6 +28,7 @@ SOURCE_TOPIC_LIMITS = {
     "youtube": 2,
 }
 SOURCE_BIGRAM_LIMITS = {
+    "curated_feeds": 0,
     "google_news": 1,
     "google_trends": 1,
     "hacker_news": 1,
@@ -35,6 +37,7 @@ SOURCE_BIGRAM_LIMITS = {
     "youtube": 1,
 }
 SOURCE_LOW_SIGNAL_TOKENS = {
+    "curated_feeds": {"announces", "explains", "introducing", "latest", "new", "says", "using", "why"},
     "google_news": {"live", "updates", "update", "latest", "watch", "watching", "says"},
     "hacker_news": {"watching", "people", "report", "reports", "footage"},
     "twitter": {"watching", "people", "report", "reports", "footage"},

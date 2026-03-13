@@ -257,6 +257,13 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertIn("ai agents", [signal.topic for signal in signals])
         self.assertIn("observability", [signal.topic for signal in signals])
 
+    def test_extract_candidate_topics_uses_tighter_limits_for_curated_feed_headlines(self) -> None:
+        topics = extract_candidate_topics(
+            "OpenAI launches new agent tooling for production builders",
+            source_name="curated_feeds",
+        )
+        self.assertEqual(topics, ["ai agents"])
+
     def test_merge_similar_topics_groups_subset_variants(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [

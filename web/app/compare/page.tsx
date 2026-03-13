@@ -192,6 +192,7 @@ function formatDateOnly(value: string) {
 
 function formatSourceLabel(source: string) {
   const labels: Record<string, string> = {
+    curated_feeds: "Curated Feeds",
     devto: "DEV Community",
     google_trends: "Google Trends",
     hacker_news: "Hacker News",

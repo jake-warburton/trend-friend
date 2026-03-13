@@ -28,6 +28,7 @@ The MVP ingests signals from these free or very low-cost sources:
 - npm registry search
 - PyPI release updates
 - YouTube discovery search
+- curated AI and builder RSS feeds
 - Lobsters
 - optional experimental sources such as Twitter/X and Polymarket
 

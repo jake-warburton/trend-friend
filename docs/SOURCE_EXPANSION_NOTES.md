@@ -10,6 +10,7 @@
 ## What This Expansion Added
 
 - New free-source adapters:
+  - `Curated Feeds`
   - `DEV Community`
   - `Hugging Face`
   - `npm`
@@ -44,6 +45,7 @@
 - The new sources were chosen for stability and free access, not perfect volume coverage.
 - Hugging Face, npm, and PyPI are highly useful for builder trends, but they skew technical by design.
 - YouTube improves social velocity coverage materially, but its live path depends on an API key and quota discipline.
+- Curated feeds improve editorial corroboration and source density, but they are still headline-heavy and therefore intentionally capped in topic fan-out.
 - DEV Community and Lobsters help with early social/builder corroboration, but their volumes are much smaller than Reddit.
 - Twitter/X remains optional because unauthenticated or unstable access should not become a critical dependency.
 

@@ -7,6 +7,7 @@ from dataclasses import replace
 
 from app.config import load_settings
 from app.sources.devto import DevToSourceAdapter
+from app.sources.curated_rss import CuratedRssSourceAdapter, FeedSpec
 from app.sources.github import GitHubSourceAdapter
 from app.sources.google_news import GoogleNewsSourceAdapter, _TOPICS as GOOGLE_NEWS_TOPICS
 from app.sources.hacker_news import HackerNewsSourceAdapter
@@ -107,6 +108,47 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(items[0].title, "Ceasefire talks intensify in Gaza")
         self.assertEqual(items[0].metadata["publisher"], "Reuters")
         self.assertEqual(items[0].metadata["section"], "world")
+
+    def test_curated_rss_adapter_parses_rss_and_atom_feeds(self) -> None:
+        adapter = CuratedRssSourceAdapter(self.settings)
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0">
+          <channel>
+            <item>
+              <title>AI coding assistants accelerate in startup teams - TechCrunch</title>
+              <link>https://techcrunch.com/example-ai-coding</link>
+              <pubDate>Thu, 12 Mar 2026 12:00:00 GMT</pubDate>
+              <description><![CDATA[New developer workflows are emerging around AI coding tools.]]></description>
+            </item>
+          </channel>
+        </rss>"""
+        rss_items = adapter._parse_feed(
+            rss_xml,
+            feed=FeedSpec("TechCrunch AI", "TechCrunch", "https://techcrunch.com/category/artificial-intelligence/feed/"),
+            limit=3,
+        )
+        self.assertEqual(len(rss_items), 1)
+        self.assertEqual(rss_items[0].source, "curated_feeds")
+        self.assertEqual(rss_items[0].metadata["publisher"], "TechCrunch")
+        self.assertIn("developer workflows", rss_items[0].title.lower())
+
+        atom_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <title>OpenAI launches new agent tooling</title>
+            <link rel="alternate" href="https://openai.com/news/example-agent-tooling" />
+            <updated>2026-03-12T13:00:00Z</updated>
+            <summary>Agent workflows are becoming easier to ship.</summary>
+          </entry>
+        </feed>"""
+        atom_items = adapter._parse_feed(
+            atom_xml,
+            feed=FeedSpec("OpenAI News", "OpenAI", "https://openai.com/news/rss.xml", kind="atom"),
+            limit=3,
+        )
+        self.assertEqual(len(atom_items), 1)
+        self.assertEqual(atom_items[0].metadata["feed"], "OpenAI News")
+        self.assertIn("agent workflows", atom_items[0].title.lower())
 
     def test_wikipedia_adapter_skips_non_article_pages_and_uses_payload_date(self) -> None:
         adapter = WikipediaSourceAdapter(self.settings)
