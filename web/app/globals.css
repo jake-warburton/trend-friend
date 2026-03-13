@@ -201,6 +201,102 @@
   --card-gradient: linear-gradient(180deg, rgba(38, 44, 52, 0.98), rgba(31, 36, 43, 0.98));
   --card-bg: var(--surface-panel);
   --card-border: var(--border);
+  --text: var(--copy);
+  --copy-soft: #c4ccd7;
+  --nav-background: linear-gradient(180deg, rgba(41, 47, 56, 0.94), rgba(31, 36, 43, 0.96));
+  --nav-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+  --brand-mark: #8edcff;
+  --status-ok-border: rgba(122, 203, 156, 0.18);
+  --status-ok-bg: rgba(122, 203, 156, 0.12);
+  --status-ok-text: #9cdcb8;
+  --surface-subtle: rgba(255, 255, 255, 0.02);
+  --surface-faint: rgba(255, 255, 255, 0.035);
+  --interactive-hover-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+  --interactive-hover-border: rgba(142, 220, 255, 0.14);
+  --link-active-color: #c7f0ff;
+  --link-active-border: rgba(79, 195, 247, 0.2);
+  --link-active-bg: rgba(79, 195, 247, 0.12);
+  --selection-active-bg: rgba(79, 195, 247, 0.16);
+  --selection-active-border: rgba(79, 195, 247, 0.28);
+  --filter-chip-border: rgba(79, 195, 247, 0.12);
+  --filter-chip-bg: rgba(27, 31, 37, 0.74);
+  --hero-background:
+    radial-gradient(circle at top left, rgba(79, 195, 247, 0.08), transparent 26%),
+    linear-gradient(180deg, rgba(40, 45, 54, 0.96), rgba(31, 36, 43, 0.98));
+  --hero-border: rgba(255, 255, 255, 0.06);
+  --panel-raised-border: rgba(255, 255, 255, 0.045);
+  --command-background: linear-gradient(180deg, rgba(41, 47, 56, 0.98), rgba(31, 36, 43, 0.98));
+  --summary-background: linear-gradient(180deg, rgba(43, 49, 58, 0.98), rgba(33, 38, 46, 0.98));
+  --stat-background: linear-gradient(180deg, rgba(41, 47, 56, 0.98), rgba(31, 36, 43, 0.98));
+  --filters-background: linear-gradient(180deg, rgba(40, 45, 54, 0.98), rgba(30, 35, 42, 0.98));
+  --analytics-background: linear-gradient(180deg, rgba(39, 45, 53, 0.98), rgba(30, 35, 42, 0.98));
+  --curated-background: linear-gradient(180deg, rgba(42, 48, 57, 0.9), rgba(32, 37, 44, 0.96));
+  --curated-background-hover: linear-gradient(180deg, rgba(48, 55, 65, 0.94), rgba(35, 40, 48, 0.98));
+  --refresh-button-background: linear-gradient(180deg, rgba(47, 54, 63, 1), rgba(35, 40, 48, 1));
+  --refresh-button-background-hover: linear-gradient(180deg, rgba(55, 63, 74, 1), rgba(39, 45, 53, 1));
+  --refresh-button-border: rgba(79, 195, 247, 0.12);
+  --refresh-button-border-hover: rgba(79, 195, 247, 0.2);
+  --warning-text: #f0c774;
+  --warning-soft-text: #f3d28f;
+  --danger-text: #f0a2a2;
+  --danger-soft-text: #f5b3b3;
+  --success-text: #89daad;
+  --success-soft-text: #9cdcb8;
+  --success-strong-text: #ade7c8;
+  --info-soft-text: #b6beca;
+  --neutral-soft-text: #9ca6b5;
+  --neutral-text-strong: #b5becc;
+  --highlight-text: #d8e1eb;
+  --alert-banner-bg: rgba(122, 36, 49, 0.86);
+  --alert-banner-text: #ffe7eb;
+  --action-success-bg: rgba(122, 203, 156, 0.1);
+  --warning-bg-soft: rgba(232, 186, 108, 0.12);
+  --negative-bg-soft: rgba(216, 122, 122, 0.14);
+  --warning-bg-strong: rgba(232, 186, 108, 0.16);
+  --neutral-badge-bg: rgba(152, 161, 174, 0.12);
+  --neutral-badge-bg-soft: rgba(152, 161, 174, 0.08);
+  --neutral-panel-bg: rgba(152, 161, 174, 0.08);
+  --positive-badge-bg: rgba(122, 203, 156, 0.12);
+  --positive-badge-border: rgba(122, 203, 156, 0.22);
+  --caution-badge-bg: rgba(232, 186, 108, 0.12);
+  --caution-badge-border: rgba(232, 186, 108, 0.22);
+  --negative-badge-bg: rgba(216, 122, 122, 0.14);
+  --negative-badge-border: rgba(216, 122, 122, 0.22);
+  --accent-badge-bg: rgba(79, 195, 247, 0.14);
+  --accent-badge-border: rgba(79, 195, 247, 0.24);
+  --seasonal-badge-bg: rgba(255, 140, 102, 0.12);
+  --seasonal-badge-border: rgba(255, 140, 102, 0.22);
+  --seasonal-badge-text: #ffc2aa;
+  --evergreen-badge-bg: rgba(122, 203, 156, 0.12);
+  --evergreen-badge-border: rgba(122, 203, 156, 0.22);
+  --evergreen-badge-text: #c0ebd0;
+  --explorer-card-glow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  --explorer-card-updated-border: rgba(79, 195, 247, 0.3);
+  --explorer-card-updated-glow:
+    0 0 0 1px rgba(79, 195, 247, 0.16),
+    0 0 24px rgba(79, 195, 247, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  --explorer-accent-bg: rgba(79, 195, 247, 0.08);
+  --explorer-kicker-bg: rgba(79, 195, 247, 0.12);
+  --explorer-kicker-border: rgba(79, 195, 247, 0.18);
+  --explorer-kicker-text: #d9f2ff;
+  --forecast-high-border: rgba(122, 203, 156, 0.22);
+  --forecast-high-bg: rgba(122, 203, 156, 0.12);
+  --forecast-medium-border: rgba(232, 186, 108, 0.22);
+  --forecast-medium-bg: rgba(232, 186, 108, 0.12);
+  --forecast-low-border: rgba(152, 161, 174, 0.22);
+  --forecast-low-bg: rgba(152, 161, 174, 0.12);
+  --source-run-filter-active-border: rgba(79, 195, 247, 0.28);
+  --fallback-gradient: linear-gradient(180deg, #f0c774 0%, #e39f4f 100%);
+  --failed-gradient: linear-gradient(180deg, #f0a2a2 0%, #dd7272 100%);
+  --alert-badge-bg: #ef6f6f;
+  --alert-badge-text: #ffffff;
+  --alert-outline: #f0c774;
+  --snapshot-background: linear-gradient(180deg, rgba(41, 47, 56, 0.98), rgba(31, 36, 43, 0.98));
+  --inset-divider: rgba(255, 255, 255, 0.05);
   --page-background:
     radial-gradient(circle at 18% 0%, rgba(79, 195, 247, 0.06), transparent 22%),
     radial-gradient(circle at 86% 8%, rgba(255, 255, 255, 0.025), transparent 18%),
@@ -2418,10 +2514,12 @@ input {
 }
 
 .explorer-expand-toggle {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
+  margin-right: 4px;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -2434,6 +2532,7 @@ input {
   cursor: pointer;
   transition: background 120ms, color 120ms;
   flex-shrink: 0;
+  padding-bottom: 1px;
 }
 
 .explorer-expand-toggle:hover {
