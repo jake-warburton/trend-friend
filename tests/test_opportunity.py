@@ -45,6 +45,7 @@ class OpportunityTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertGreater(results[0].content, 0.6)
         self.assertGreater(results[0].content, results[0].product)
+        self.assertGreater(results[0].discovery, 0.0)
 
     def test_high_dev_trend_has_product_opportunity(self) -> None:
         score = _make_score("dev framework", total=45.0, developer=20.0, sources=3)
@@ -74,6 +75,7 @@ class OpportunityTests(unittest.TestCase):
         )
         self.assertEqual(len(results), 1)
         self.assertGreater(results[0].investment, 0.6)
+        self.assertGreater(results[0].discovery, 0.5)
 
     def test_weak_trend_has_low_composite(self) -> None:
         score = _make_score("niche topic", total=8.0, social=2.0, developer=1.0, sources=1, evidence_count=1)
@@ -121,6 +123,8 @@ class OpportunityTests(unittest.TestCase):
         self.assertIsInstance(results[0], OpportunityScore)
         self.assertGreaterEqual(results[0].composite, 0.0)
         self.assertLessEqual(results[0].composite, 1.0)
+        self.assertGreaterEqual(results[0].seo, 0.0)
+        self.assertLessEqual(results[0].seo, 1.0)
 
     def test_reasoning_calls_out_search_validated_content_story(self) -> None:
         score = TrendScoreResult(
@@ -145,6 +149,7 @@ class OpportunityTests(unittest.TestCase):
 
         self.assertTrue(any("content" in reason.lower() for reason in result.reasoning))
         self.assertGreater(result.content, result.product)
+        self.assertGreater(result.seo, 0.6)
 
     def test_reasoning_calls_out_builder_demand_for_product_opportunity(self) -> None:
         score = TrendScoreResult(
@@ -181,3 +186,40 @@ class OpportunityTests(unittest.TestCase):
         )[0]
 
         self.assertLess(result.investment, 0.45)
+
+    def test_search_led_trend_has_strong_seo_opportunity(self) -> None:
+        score = _make_score("ai seo agent", total=42.0, social=10.0, developer=6.0, sources=4, evidence_count=6)
+        score = TrendScoreResult(
+            topic=score.topic,
+            total_score=score.total_score,
+            search_score=18.0,
+            social_score=score.social_score,
+            developer_score=score.developer_score,
+            knowledge_score=7.0,
+            diversity_score=score.diversity_score,
+            evidence=score.evidence,
+            source_counts=score.source_counts,
+            latest_timestamp=score.latest_timestamp,
+        )
+
+        result = score_opportunities(
+            scores=[score],
+            ranks={"ai seo agent": 4},
+            momenta={"ai seo agent": TrendMomentum(previous_rank=8, rank_change=4, absolute_delta=8.0, percent_delta=25.0)},
+            statuses={"ai seo agent": "breakout"},
+        )[0]
+
+        self.assertGreater(result.seo, 0.6)
+        self.assertGreater(result.seo, result.product)
+
+    def test_new_breakout_trend_has_strong_discovery_score(self) -> None:
+        score = _make_score("frontier sdk", total=30.0, social=8.0, developer=8.0, sources=3, evidence_count=4)
+
+        result = score_opportunities(
+            scores=[score],
+            ranks={"frontier sdk": 9},
+            momenta={"frontier sdk": TrendMomentum(previous_rank=15, rank_change=6, absolute_delta=10.0, percent_delta=50.0)},
+            statuses={"frontier sdk": "breakout"},
+        )[0]
+
+        self.assertGreater(result.discovery, 0.6)

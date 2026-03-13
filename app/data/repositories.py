@@ -1995,6 +1995,8 @@ class TrendScoreRepository:
                     forecast=forecast_by_topic[score.topic],
                     opportunity=OpportunitySummary(
                         composite=opportunity.composite if opportunity is not None else 0.0,
+                        discovery=opportunity.discovery if opportunity is not None else 0.0,
+                        seo=opportunity.seo if opportunity is not None else 0.0,
                         content=opportunity.content if opportunity is not None else 0.0,
                         product=opportunity.product if opportunity is not None else 0.0,
                         investment=opportunity.investment if opportunity is not None else 0.0,

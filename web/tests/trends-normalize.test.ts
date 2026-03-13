@@ -282,6 +282,8 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.equal(result.forecast, null);
   assert.deepEqual(result.opportunity, {
     composite: 0,
+    discovery: 0,
+    seo: 0,
     content: 0,
     product: 0,
     investment: 0,
@@ -311,7 +313,7 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
     forecast: { predictedScores: [45, 48], confidence: "high", mape: 8.5, method: "holt" },
     breakoutPrediction: { confidence: 0.85, predictedDirection: "up", signals: ["Rising score"] },
-    opportunity: { composite: 7.5, content: 6, product: 8, investment: 7, reasoning: ["Strong momentum"] },
+    opportunity: { composite: 7.5, discovery: 6.5, seo: 6.8, content: 6, product: 8, investment: 7, reasoning: ["Strong momentum"] },
   } as any as TrendDetailRecord;
 
   const result = normalizeTrendDetailRecord(input);
@@ -332,6 +334,8 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.duplicateCandidates[0].similarity, 0.8);
   assert.equal(result.breakoutPrediction.confidence, 0.85);
   assert.equal(result.opportunity.composite, 7.5);
+  assert.equal(result.opportunity.discovery, 6.5);
+  assert.equal(result.opportunity.seo, 6.8);
   assert.equal(result.opportunity.reasoning[0], "Strong momentum");
 });
 

@@ -388,6 +388,8 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         ),
         opportunity=OpportunityPayload(
             composite=trend.opportunity.composite,
+            discovery=trend.opportunity.discovery,
+            seo=trend.opportunity.seo,
             content=trend.opportunity.content,
             product=trend.opportunity.product,
             investment=trend.opportunity.investment,

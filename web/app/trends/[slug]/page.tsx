@@ -329,7 +329,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
               <div>
                 <strong>Composite {formatOpportunityScore(trend.opportunity.composite)}</strong>
                 <span>
-                  Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
+                  Discovery {formatOpportunityScore(trend.opportunity.discovery)} · SEO{" "}
+                  {formatOpportunityScore(trend.opportunity.seo)} · Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
                   {formatOpportunityScore(trend.opportunity.product)} · Investment{" "}
                   {formatOpportunityScore(trend.opportunity.investment)}
                 </span>

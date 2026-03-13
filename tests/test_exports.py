@@ -200,6 +200,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["seasonality"]["tag"], "recurring")
         self.assertEqual(payload["trends"][0]["seasonality"]["avgGapRuns"], 3.5)
         self.assertGreater(payload["trends"][0]["opportunity"]["composite"], 0.0)
+        self.assertEqual(payload["trends"][0]["opportunity"]["discovery"], 0.67)
+        self.assertEqual(payload["trends"][0]["opportunity"]["seo"], 0.64)
         self.assertEqual(payload["trends"][0]["sourceBreakdown"][0]["signalCount"], 1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
@@ -422,6 +424,8 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         ),
         opportunity=OpportunitySummary(
             composite=0.72,
+            discovery=0.67,
+            seo=0.64,
             content=0.69,
             product=0.74,
             investment=0.71,

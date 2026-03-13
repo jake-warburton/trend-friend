@@ -23,6 +23,8 @@ class OpportunityScore:
     trend_id: str
     trend_name: str
     composite: float  # 0.0 to 1.0
+    discovery: float  # early-detection / monitoring usefulness
+    seo: float  # search-led content opportunity
     content: float  # content creation opportunity
     product: float  # product/startup opportunity
     investment: float  # investment signal strength
@@ -89,6 +91,8 @@ def _score_single(
     total_score_factor = min(score.total_score / 45.0, 1.0)
     rank_factor = max(0.0, 1.0 - (rank - 1) / 20.0)
     momentum_factor = _momentum_factor(momentum)
+    search_authority = min((search_share + knowledge_share) / 0.45, 1.0)
+    early_status_factor = 1.0 if status in {"new", "breakout"} else 0.78 if status == "rising" else 0.4 if status == "steady" else 0.18
 
     content_score = min(
         1.0,
@@ -104,6 +108,21 @@ def _score_single(
     elif content_score >= 0.6:
         reasoning.append(f"Strong content angle: broad public conversation across {evidence_count} evidence items")
 
+    seo_score = min(
+        1.0,
+        search_share * 0.54
+        + knowledge_share * 0.14
+        + evidence_breadth * 0.16
+        + source_breadth * 0.12
+        + total_score_factor * 0.16,
+    )
+    if search_share >= HIGH_SEARCH_SHARE and evidence_count >= HIGH_EVIDENCE_COUNT:
+        reasoning.append(
+            f"SEO opportunity: search demand is corroborated by {evidence_count} evidence items and {source_diversity} sources"
+        )
+    elif seo_score >= 0.6:
+        reasoning.append("SEO opportunity: search-led demand is strong enough to support durable keyword capture")
+
     product_score = min(
         1.0,
         developer_share * 0.6
@@ -118,6 +137,22 @@ def _score_single(
         )
     elif product_score >= 0.6:
         reasoning.append(f"Product opportunity: developer-heavy signal mix with rank #{rank} visibility")
+
+    discovery_score = min(
+        1.0,
+        momentum_factor * 0.34
+        + source_breadth * 0.18
+        + evidence_breadth * 0.14
+        + early_status_factor * 0.20
+        + (1.0 - min(rank_factor, 0.85)) * 0.08
+        + search_authority * 0.06,
+    )
+    if status in {"new", "breakout"} and momentum_factor >= 0.45:
+        reasoning.append(
+            f"Discovery angle: early-stage movement is emerging with enough velocity to merit monitoring now ({status})"
+        )
+    elif discovery_score >= 0.6:
+        reasoning.append("Discovery angle: the trend is still early enough that the window to act may still be open")
 
     status_factor = 1.0 if status == "breakout" else 0.7 if status == "rising" else 0.25 if status == "steady" else 0.1
     investment_score = min(
@@ -135,7 +170,13 @@ def _score_single(
     elif investment_score >= 0.6:
         reasoning.append("Investment signal: durable cross-source attention with enough velocity to matter")
 
-    composite = content_score * 0.34 + product_score * 0.36 + investment_score * 0.30
+    composite = (
+        discovery_score * 0.18
+        + seo_score * 0.18
+        + content_score * 0.22
+        + product_score * 0.24
+        + investment_score * 0.18
+    )
     composite = round(min(1.0, composite), 3)
 
     if not reasoning:
@@ -147,6 +188,8 @@ def _score_single(
         trend_id=_slugify(topic),
         trend_name=trend_name,
         composite=composite,
+        discovery=round(discovery_score, 3),
+        seo=round(seo_score, 3),
         content=round(content_score, 3),
         product=round(product_score, 3),
         investment=round(investment_score, 3),

@@ -100,6 +100,15 @@ const CONFIDENCE_OPTIONS = [
   { label: "Low confidence", value: "low" },
 ] as const;
 
+const LENS_OPTIONS = [
+  { label: "All lenses", value: "all" },
+  { label: "Discovery", value: "discovery" },
+  { label: "SEO", value: "seo" },
+  { label: "Content", value: "content" },
+  { label: "Product", value: "product" },
+  { label: "Investment", value: "investment" },
+] as const;
+
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
   { label: "Score", value: "score" },
@@ -108,6 +117,43 @@ const SORT_OPTIONS = [
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
+const THESIS_PRESETS = [
+  {
+    key: "discover",
+    label: "Early discovery",
+    description: "Bias toward early, fast-moving topics before they validate everywhere.",
+    lens: "discovery",
+    stage: "nascent",
+    hideRecurring: true,
+    minimumScore: 12,
+  },
+  {
+    key: "seo",
+    label: "SEO opportunities",
+    description: "Surface search-backed demand with enough evidence breadth to publish into.",
+    lens: "seo",
+    hideRecurring: true,
+    minimumScore: 18,
+  },
+  {
+    key: "content",
+    label: "Social content",
+    description: "Prioritize trends with public conversation and clear creator angles.",
+    lens: "content",
+    source: "reddit",
+    minimumScore: 16,
+  },
+  {
+    key: "product",
+    label: "Build ideas",
+    description: "Tilt toward builder demand, product fit, and non-recurring opportunity.",
+    lens: "product",
+    audience: "developer",
+    hideRecurring: true,
+    minimumScore: 16,
+  },
+] as const;
+
 type ExplorerActiveFilter = {
   key:
     | "keyword"
@@ -115,6 +161,7 @@ type ExplorerActiveFilter = {
     | "category"
     | "stage"
     | "confidence"
+    | "lens"
     | "metaTrend"
     | "audience"
     | "market"
@@ -134,6 +181,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStage, setSelectedStage] = useState<string>("all");
   const [selectedConfidence, setSelectedConfidence] = useState<string>("all");
+  const [selectedLens, setSelectedLens] = useState<string>("all");
   const [selectedMetaTrend, setSelectedMetaTrend] = useState<string>("all");
   const [selectedAudience, setSelectedAudience] = useState<string>("all");
   const [selectedMarket, setSelectedMarket] = useState<string>("all");
@@ -264,6 +312,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         selectedCategory,
         selectedStage,
         selectedConfidence,
+        selectedLens,
         selectedMetaTrend,
         selectedAudience,
         selectedMarket,
@@ -279,6 +328,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       selectedCategory,
       selectedConfidence,
       selectedGeoCountry,
+      selectedLens,
       selectedLanguage,
       selectedMarket,
       selectedMetaTrend,
@@ -291,6 +341,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const selectedCategoryLabel = getOptionLabel(categoryOptions, selectedCategory, "All categories");
   const selectedStageLabel = getOptionLabel(STAGE_OPTIONS, selectedStage, "All stages");
   const selectedConfidenceLabel = getOptionLabel(CONFIDENCE_OPTIONS, selectedConfidence, "All confidence");
+  const selectedLensLabel = getOptionLabel(LENS_OPTIONS, selectedLens, "All lenses");
   const selectedMetaTrendLabel = getOptionLabel(metaTrendOptions, selectedMetaTrend, "All meta trends");
   const selectedAudienceLabel = getOptionLabel(audienceOptions, selectedAudience, "All audiences");
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
@@ -339,6 +390,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     });
 
     return [...trends].sort((left, right) => {
+      const leftDetail = detailsByTrendId.get(left.id);
+      const rightDetail = detailsByTrendId.get(right.id);
+      if (selectedLens !== "all") {
+        const lensDelta =
+          getOpportunityScoreForLens(rightDetail, selectedLens) - getOpportunityScoreForLens(leftDetail, selectedLens);
+        if (lensDelta !== 0) {
+          return lensDelta;
+        }
+      }
       if (sortBy === "score") {
         return right.score.total - left.score.total || left.rank - right.rank;
       }
@@ -361,6 +421,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     selectedConfidence,
     selectedGeoCountry,
     selectedLanguage,
+    selectedLens,
     selectedMarket,
     selectedMetaTrend,
     selectedSource,
@@ -381,6 +442,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     if (selectedCategory !== "all") params.set("category", selectedCategory);
     if (selectedStage !== "all") params.set("stage", selectedStage);
     if (selectedConfidence !== "all") params.set("confidence", selectedConfidence);
+    if (selectedLens !== "all") params.set("lens", selectedLens);
     if (selectedMetaTrend !== "all") params.set("metaTrend", selectedMetaTrend);
     if (selectedAudience !== "all") params.set("audience", selectedAudience);
     if (selectedMarket !== "all") params.set("market", selectedMarket);
@@ -396,6 +458,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     selectedCategory,
     selectedStage,
     selectedConfidence,
+    selectedLens,
     selectedMetaTrend,
     selectedAudience,
     selectedMarket,
@@ -432,6 +495,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       setSelectedConfidence("all");
       return;
     }
+    if (filterKey === "lens") {
+      setSelectedLens("all");
+      return;
+    }
     if (filterKey === "metaTrend") {
       setSelectedMetaTrend("all");
       return;
@@ -465,6 +532,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setSelectedCategory("all");
     setSelectedStage("all");
     setSelectedConfidence("all");
+    setSelectedLens("all");
     setSelectedMetaTrend("all");
     setSelectedAudience("all");
     setSelectedMarket("all");
@@ -473,6 +541,23 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setSortBy("rank");
     setMinimumScore(0);
     setHideRecurring(false);
+  }
+
+  function applyThesisPreset(preset: (typeof THESIS_PRESETS)[number]) {
+    setKeyword("");
+    setSelectedSource(preset.source ?? "all");
+    setSelectedCategory("all");
+    setSelectedStage(preset.stage ?? "all");
+    setSelectedConfidence("all");
+    setSelectedLens(preset.lens);
+    setSelectedMetaTrend("all");
+    setSelectedAudience(preset.audience ?? "all");
+    setSelectedMarket("all");
+    setSelectedLanguage("all");
+    setSelectedGeoCountry("all");
+    setSortBy("rank");
+    setMinimumScore(preset.minimumScore ?? 0);
+    setHideRecurring(preset.hideRecurring ?? false);
   }
 
   function handleRefresh() {
@@ -1425,6 +1510,29 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+                  <span>Lens</span>
+                  <Select.Root value={selectedLens} onValueChange={(value) => setSelectedLens(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedLensLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {LENS_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
                   <span>Meta trend</span>
                   <Select.Root value={selectedMetaTrend} onValueChange={(value) => setSelectedMetaTrend(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1538,6 +1646,23 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     </Select.Portal>
                   </Select.Root>
                 </label>
+
+                <div className="filter-field filter-field-wide">
+                  <span>Thesis presets</span>
+                  <div className="curated-list">
+                    {THESIS_PRESETS.map((preset) => (
+                      <button
+                        className="curated-item curated-item-button"
+                        key={preset.key}
+                        onClick={() => applyThesisPreset(preset)}
+                        type="button"
+                      >
+                        <span>{preset.label}</span>
+                        <small>{preset.description}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <label className="filter-field">
                   <span>Minimum score</span>
@@ -1859,8 +1984,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                     <small>{(detail.breakoutPrediction.confidence * 100).toFixed(0)}% confidence</small>
                                   </div>
                                   <div>
-                                    <small>Opportunity</small>
-                                    <strong>{detail.opportunity.composite.toFixed(1)}</strong>
+                                    <small>{selectedLens === "all" ? "Opportunity" : `${formatLensLabel(selectedLens)} lens`}</small>
+                                    <strong>{getOpportunityScoreForLens(detail, selectedLens).toFixed(1)}</strong>
                                   </div>
                                   {detail.forecast && detail.forecast.predictedScores.length > 0 && (
                                     <div>
@@ -2665,6 +2790,7 @@ export function listActiveExplorerFilters(filters: {
   selectedCategory: string;
   selectedStage?: string;
   selectedConfidence?: string;
+  selectedLens?: string;
   selectedMetaTrend?: string;
   selectedAudience: string;
   selectedMarket: string;
@@ -2688,6 +2814,9 @@ export function listActiveExplorerFilters(filters: {
   }
   if ((filters.selectedConfidence ?? "all") !== "all") {
     result.push({ key: "confidence", label: "Confidence", value: formatConfidenceBucketLabel(filters.selectedConfidence) });
+  }
+  if ((filters.selectedLens ?? "all") !== "all") {
+    result.push({ key: "lens", label: "Lens", value: formatLensLabel(filters.selectedLens ?? "all") });
   }
   if ((filters.selectedMetaTrend ?? "all") !== "all") {
     result.push({ key: "metaTrend", label: "Meta trend", value: filters.selectedMetaTrend ?? "General" });
@@ -2821,6 +2950,40 @@ function formatExplorerSortLabel(sortBy: string) {
     newest: "Newest",
   };
   return labels[sortBy] ?? sortBy;
+}
+
+function getOpportunityScoreForLens(detail: TrendDetailRecord | undefined, lens: string) {
+  if (!detail) {
+    return 0;
+  }
+  if (lens === "discovery") {
+    return detail.opportunity.discovery;
+  }
+  if (lens === "seo") {
+    return detail.opportunity.seo;
+  }
+  if (lens === "content") {
+    return detail.opportunity.content;
+  }
+  if (lens === "product") {
+    return detail.opportunity.product;
+  }
+  if (lens === "investment") {
+    return detail.opportunity.investment;
+  }
+  return detail.opportunity.composite;
+}
+
+function formatLensLabel(lens: string) {
+  const labels: Record<string, string> = {
+    all: "All lenses",
+    discovery: "Discovery",
+    seo: "SEO",
+    content: "Content",
+    product: "Product",
+    investment: "Investment",
+  };
+  return labels[lens] ?? lens;
 }
 
 function getOptionLabel<T extends { label: string; value: string }>(

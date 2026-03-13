@@ -187,6 +187,8 @@ export type SeasonalitySummary = {
 
 export type OpportunitySummary = {
   composite: number;
+  discovery: number;
+  seo: number;
   content: number;
   product: number;
   investment: number;

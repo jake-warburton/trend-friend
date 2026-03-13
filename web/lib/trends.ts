@@ -457,6 +457,8 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
       : null,
     opportunity: {
       composite: trend.opportunity?.composite ?? 0,
+      discovery: trend.opportunity?.discovery ?? 0,
+      seo: trend.opportunity?.seo ?? 0,
       content: trend.opportunity?.content ?? 0,
       product: trend.opportunity?.product ?? 0,
       investment: trend.opportunity?.investment ?? 0,

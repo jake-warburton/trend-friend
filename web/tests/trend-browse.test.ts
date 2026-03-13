@@ -32,7 +32,7 @@ function buildTrend(overrides: Partial<TrendDetailRecord> & Pick<TrendDetailReco
     momentum: overrides.momentum ?? { previousRank: overrides.rank + 1, rankChange: 1, absoluteDelta: 4, percentDelta: 10 },
     breakoutPrediction: overrides.breakoutPrediction ?? { confidence: 0.7, predictedDirection: "breakout", signals: [] },
     forecast: overrides.forecast ?? null,
-    opportunity: overrides.opportunity ?? { composite: 0.7, content: 0.6, product: 0.8, investment: 0.5, reasoning: [] },
+    opportunity: overrides.opportunity ?? { composite: 0.7, discovery: 0.6, seo: 0.5, content: 0.6, product: 0.8, investment: 0.5, reasoning: [] },
     coverage: overrides.coverage ?? { sourceCount: 3, signalCount: 5 },
     sources: overrides.sources ?? ["reddit", "github"],
     aliases: overrides.aliases ?? [overrides.name],

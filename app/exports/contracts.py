@@ -122,6 +122,8 @@ class OpportunityPayload:
     """Opportunity scoring exposed on detail pages."""
 
     composite: float
+    discovery: float
+    seo: float
     content: float
     product: float
     investment: float

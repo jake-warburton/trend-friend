@@ -148,6 +148,8 @@ class OpportunitySummary:
     """Actionability scoring for a trend."""
 
     composite: float
+    discovery: float
+    seo: float
     content: float
     product: float
     investment: float
