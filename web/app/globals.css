@@ -1469,7 +1469,6 @@ input {
 .theme-tech-light .hero-summary-card {
   padding: 10px 14px;
   border: 0;
-  border-left: 1px solid rgba(9, 30, 66, 0.05);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
