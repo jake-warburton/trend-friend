@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import type { TrendDetailRecord } from "@/lib/types";
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendDetails, loadTrendHistory } from "@/lib/trends";
+import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { buildComparisonSuggestions, slugifyBrowseValue } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
 
@@ -22,7 +23,10 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       : [];
 
   const uniqueIds = Array.from(new Set(ids.filter(Boolean))).slice(0, 3);
-  const details = await loadTrendDetails();
+  const [details, history] = await Promise.all([
+    loadTrendDetails(),
+    loadTrendHistory(),
+  ]);
   const compared = details.trends.filter((trend) => uniqueIds.includes(trend.id));
   const suggestions = buildComparisonSuggestions(uniqueIds, details.trends);
 
@@ -49,6 +53,21 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           ) : null}
         </div>
       </section>
+
+      {compared.length > 0 ? (
+        <section className="compare-chart-section">
+          <article className="detail-panel">
+            <div className="section-heading">
+              <h2>Score trajectories</h2>
+            </div>
+            <TrendTrajectoryChart
+              trends={compared}
+              history={history}
+              limit={3}
+            />
+          </article>
+        </section>
+      ) : null}
 
       <section className="compare-grid">
         {compared.length === 0 ? (
