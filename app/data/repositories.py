@@ -40,12 +40,15 @@ from app.models import (
     TrendSourceContribution,
     TrendSourceBreakdown,
     TrendScoreResult,
+    TrendThesis,
+    TrendThesisMatch,
     Watchlist,
     WatchlistShareAccessPoint,
     WatchlistItem,
     WatchlistShareEvent,
     WatchlistShare,
 )
+from app.theses.matching import ThesisMatchCandidate
 
 RowMapping = Mapping[str, Any]
 
@@ -716,7 +719,7 @@ class WatchlistRepository:
         if owner_user_id is None:
             rows = self.connection.execute(
                 """
-                SELECT ar.id, ar.watchlist_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
+                SELECT ar.id, ar.watchlist_id, ar.thesis_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
                 FROM alert_rules ar
                 INNER JOIN watchlists w ON w.id = ar.watchlist_id
                 WHERE w.owner_user_id IS NULL
@@ -726,7 +729,7 @@ class WatchlistRepository:
         else:
             rows = self.connection.execute(
                 """
-                SELECT ar.id, ar.watchlist_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
+                SELECT ar.id, ar.watchlist_id, ar.thesis_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
                 FROM alert_rules ar
                 INNER JOIN watchlists w ON w.id = ar.watchlist_id
                 WHERE w.owner_user_id = ?
@@ -738,6 +741,7 @@ class WatchlistRepository:
             AlertRule(
                 id=row["id"],
                 watchlist_id=row["watchlist_id"],
+                thesis_id=row["thesis_id"],
                 name=row["name"],
                 rule_type=row["rule_type"],
                 threshold=row["threshold"],
@@ -752,7 +756,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            SELECT id, watchlist_id, thesis_id, name, rule_type, threshold, enabled, created_at
             FROM alert_rules
             ORDER BY created_at DESC, id DESC
             """
@@ -761,6 +765,7 @@ class WatchlistRepository:
             AlertRule(
                 id=row["id"],
                 watchlist_id=row["watchlist_id"],
+                thesis_id=row["thesis_id"],
                 name=row["name"],
                 rule_type=row["rule_type"],
                 threshold=row["threshold"],
@@ -777,21 +782,22 @@ class WatchlistRepository:
         rule_type: str,
         threshold: float,
         enabled: bool = True,
+        thesis_id: int | None = None,
     ) -> AlertRule:
         """Create and return an alert rule."""
 
         alert_rule_id = execute_insert_and_return_id(
             self.connection,
             """
-            INSERT INTO alert_rules (watchlist_id, name, rule_type, threshold, enabled)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO alert_rules (watchlist_id, thesis_id, name, rule_type, threshold, enabled)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (watchlist_id, name, rule_type, threshold, int(enabled)),
+            (watchlist_id, thesis_id, name, rule_type, threshold, int(enabled)),
         )
         self.connection.commit()
         row = self.connection.execute(
             """
-            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            SELECT id, watchlist_id, thesis_id, name, rule_type, threshold, enabled, created_at
             FROM alert_rules
             WHERE id = ?
             """,
@@ -800,6 +806,7 @@ class WatchlistRepository:
         return AlertRule(
             id=row["id"],
             watchlist_id=row["watchlist_id"],
+            thesis_id=row["thesis_id"],
             name=row["name"],
             rule_type=row["rule_type"],
             threshold=row["threshold"],
@@ -921,6 +928,302 @@ class WatchlistRepository:
             )
         self.connection.commit()
         return cursor.rowcount
+
+    def list_trend_theses(self, owner_user_id: int | None = None) -> list[TrendThesis]:
+        """Return saved theses for the given owner."""
+
+        if owner_user_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT tt.id, tt.watchlist_id, tt.name, tt.lens, tt.keyword_query, tt.source, tt.category,
+                       tt.stage, tt.confidence, tt.meta_trend, tt.audience, tt.market, tt.language,
+                       tt.geo_country, tt.minimum_score, tt.hide_recurring, tt.notify_on_match,
+                       tt.created_at, tt.updated_at
+                FROM trend_theses tt
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id IS NULL
+                ORDER BY tt.updated_at DESC, tt.id DESC
+                """
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT tt.id, tt.watchlist_id, tt.name, tt.lens, tt.keyword_query, tt.source, tt.category,
+                       tt.stage, tt.confidence, tt.meta_trend, tt.audience, tt.market, tt.language,
+                       tt.geo_country, tt.minimum_score, tt.hide_recurring, tt.notify_on_match,
+                       tt.created_at, tt.updated_at
+                FROM trend_theses tt
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id = ?
+                ORDER BY tt.updated_at DESC, tt.id DESC
+                """,
+                (owner_user_id,),
+            ).fetchall()
+        return [self._trend_thesis_from_row(row) for row in rows]
+
+    def list_trend_theses_for_watchlists(self, watchlist_ids: list[int]) -> dict[int, list[TrendThesis]]:
+        """Return theses grouped by watchlist id."""
+
+        if not watchlist_ids:
+            return {}
+        placeholders = sql_placeholders(self.connection, len(watchlist_ids))
+        rows = self.connection.execute(
+            f"""
+            SELECT id, watchlist_id, name, lens, keyword_query, source, category, stage, confidence,
+                   meta_trend, audience, market, language, geo_country, minimum_score, hide_recurring,
+                   notify_on_match, created_at, updated_at
+            FROM trend_theses
+            WHERE watchlist_id IN ({placeholders})
+            ORDER BY updated_at DESC, id DESC
+            """,
+            tuple(watchlist_ids),
+        ).fetchall()
+        grouped: dict[int, list[TrendThesis]] = {}
+        for row in rows:
+            thesis = self._trend_thesis_from_row(row)
+            grouped.setdefault(thesis.watchlist_id, []).append(thesis)
+        return grouped
+
+    def create_trend_thesis(
+        self,
+        *,
+        watchlist_id: int,
+        name: str,
+        lens: str,
+        keyword_query: str | None = None,
+        source: str | None = None,
+        category: str | None = None,
+        stage: str | None = None,
+        confidence: str | None = None,
+        meta_trend: str | None = None,
+        audience: str | None = None,
+        market: str | None = None,
+        language: str | None = None,
+        geo_country: str | None = None,
+        minimum_score: float = 0.0,
+        hide_recurring: bool = False,
+        notify_on_match: bool = False,
+    ) -> TrendThesis:
+        """Create one saved thesis and optionally attach a thesis-match alert."""
+
+        thesis_id = execute_insert_and_return_id(
+            self.connection,
+            """
+            INSERT INTO trend_theses (
+                watchlist_id, name, lens, keyword_query, source, category, stage, confidence, meta_trend,
+                audience, market, language, geo_country, minimum_score, hide_recurring, notify_on_match
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                watchlist_id,
+                name,
+                lens,
+                keyword_query,
+                source,
+                category,
+                stage,
+                confidence,
+                meta_trend,
+                audience,
+                market,
+                language,
+                geo_country,
+                minimum_score,
+                int(hide_recurring),
+                int(notify_on_match),
+            ),
+        )
+        if notify_on_match:
+            self.create_alert_rule(
+                watchlist_id=watchlist_id,
+                name=name,
+                rule_type="thesis_match",
+                threshold=0.0,
+                thesis_id=thesis_id,
+            )
+        self.connection.commit()
+        row = self.connection.execute(
+            """
+            SELECT id, watchlist_id, name, lens, keyword_query, source, category, stage, confidence,
+                   meta_trend, audience, market, language, geo_country, minimum_score, hide_recurring,
+                   notify_on_match, created_at, updated_at
+            FROM trend_theses
+            WHERE id = ?
+            """,
+            (thesis_id,),
+        ).fetchone()
+        return self._trend_thesis_from_row(row)
+
+    def delete_trend_thesis(self, thesis_id: int, owner_user_id: int | None = None) -> bool:
+        """Delete one thesis owned by the given user."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                DELETE FROM trend_theses
+                WHERE id IN (
+                    SELECT tt.id
+                    FROM trend_theses tt
+                    INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                    WHERE tt.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (thesis_id,),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                DELETE FROM trend_theses
+                WHERE id IN (
+                    SELECT tt.id
+                    FROM trend_theses tt
+                    INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                    WHERE tt.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (thesis_id, owner_user_id),
+            )
+        self.connection.commit()
+        return cursor.rowcount > 0
+
+    def list_trend_thesis_matches(self, owner_user_id: int | None = None) -> list[TrendThesisMatch]:
+        """Return persisted thesis matches scoped to one owner."""
+
+        if owner_user_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT tm.thesis_id, tm.trend_id, tm.trend_name, tm.active, tm.first_matched_at, tm.last_matched_at,
+                       tm.lens_score, tm.total_score
+                FROM trend_thesis_matches tm
+                INNER JOIN trend_theses tt ON tt.id = tm.thesis_id
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id IS NULL
+                ORDER BY tm.active DESC, tm.last_matched_at DESC, tm.lens_score DESC, tm.trend_name ASC
+                """
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT tm.thesis_id, tm.trend_id, tm.trend_name, tm.active, tm.first_matched_at, tm.last_matched_at,
+                       tm.lens_score, tm.total_score
+                FROM trend_thesis_matches tm
+                INNER JOIN trend_theses tt ON tt.id = tm.thesis_id
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id = ?
+                ORDER BY tm.active DESC, tm.last_matched_at DESC, tm.lens_score DESC, tm.trend_name ASC
+                """,
+                (owner_user_id,),
+            ).fetchall()
+        return [self._trend_thesis_match_from_row(row) for row in rows]
+
+    def replace_trend_thesis_matches(
+        self,
+        theses: list[TrendThesis],
+        matches_by_thesis_id: dict[int, list[ThesisMatchCandidate]],
+        *,
+        matched_at: datetime,
+    ) -> dict[int, list[TrendThesisMatch]]:
+        """Upsert current thesis matches, deactivate stale ones, and return newly activated matches."""
+
+        new_matches: dict[int, list[TrendThesisMatch]] = {}
+        for thesis in theses:
+            current_match_ids = {match.trend_id for match in matches_by_thesis_id.get(thesis.id, [])}
+            existing_rows = self.connection.execute(
+                """
+                SELECT thesis_id, trend_id, trend_name, active, first_matched_at, last_matched_at, lens_score, total_score
+                FROM trend_thesis_matches
+                WHERE thesis_id = ?
+                """,
+                (thesis.id,),
+            ).fetchall()
+            existing_by_trend_id = {str(row["trend_id"]): row for row in existing_rows}
+
+            for match in matches_by_thesis_id.get(thesis.id, []):
+                existing_row = existing_by_trend_id.get(match.trend_id)
+                if existing_row is None:
+                    self.connection.execute(
+                        """
+                        INSERT INTO trend_thesis_matches (
+                            thesis_id, trend_id, trend_name, active, first_matched_at, last_matched_at,
+                            lens_score, total_score
+                        )
+                        VALUES (?, ?, ?, 1, ?, ?, ?, ?)
+                        """,
+                        (
+                            thesis.id,
+                            match.trend_id,
+                            match.trend_name,
+                            matched_at.isoformat(),
+                            matched_at.isoformat(),
+                            match.lens_score,
+                            match.total_score,
+                        ),
+                    )
+                    new_matches.setdefault(thesis.id, []).append(
+                        TrendThesisMatch(
+                            thesis_id=thesis.id,
+                            trend_id=match.trend_id,
+                            trend_name=match.trend_name,
+                            active=True,
+                            first_matched_at=matched_at,
+                            last_matched_at=matched_at,
+                            lens_score=match.lens_score,
+                            total_score=match.total_score,
+                        )
+                    )
+                    continue
+
+                self.connection.execute(
+                    """
+                    UPDATE trend_thesis_matches
+                    SET trend_name = ?, active = 1, last_matched_at = ?, lens_score = ?, total_score = ?
+                    WHERE thesis_id = ? AND trend_id = ?
+                    """,
+                    (
+                        match.trend_name,
+                        matched_at.isoformat(),
+                        match.lens_score,
+                        match.total_score,
+                        thesis.id,
+                        match.trend_id,
+                    ),
+                )
+                if not bool(existing_row["active"]):
+                    new_matches.setdefault(thesis.id, []).append(
+                        TrendThesisMatch(
+                            thesis_id=thesis.id,
+                            trend_id=match.trend_id,
+                            trend_name=match.trend_name,
+                            active=True,
+                            first_matched_at=datetime.fromisoformat(existing_row["first_matched_at"]),
+                            last_matched_at=matched_at,
+                            lens_score=match.lens_score,
+                            total_score=match.total_score,
+                        )
+                    )
+
+            if current_match_ids:
+                placeholders = sql_placeholders(self.connection, len(current_match_ids))
+                self.connection.execute(
+                    f"""
+                    UPDATE trend_thesis_matches
+                    SET active = 0
+                    WHERE thesis_id = ? AND trend_id NOT IN ({placeholders})
+                    """,
+                    [thesis.id, *current_match_ids],
+                )
+            else:
+                self.connection.execute(
+                    """
+                    UPDATE trend_thesis_matches
+                    SET active = 0
+                    WHERE thesis_id = ?
+                    """,
+                    (thesis.id,),
+                )
+        self.connection.commit()
+        return new_matches
 
     def create_share(
         self,
@@ -1417,6 +1720,43 @@ class WatchlistRepository:
             tuple(watchlist_ids),
         ).fetchall()
         return {row["id"]: row["owner_user_id"] for row in rows}
+
+    @staticmethod
+    def _trend_thesis_from_row(row: RowMapping) -> TrendThesis:
+        return TrendThesis(
+            id=row["id"],
+            watchlist_id=row["watchlist_id"],
+            name=row["name"],
+            lens=row["lens"],
+            keyword_query=row["keyword_query"],
+            source=row["source"],
+            category=row["category"],
+            stage=row["stage"],
+            confidence=row["confidence"],
+            meta_trend=row["meta_trend"],
+            audience=row["audience"],
+            market=row["market"],
+            language=row["language"],
+            geo_country=row["geo_country"],
+            minimum_score=float(row["minimum_score"] or 0.0),
+            hide_recurring=bool(row["hide_recurring"]),
+            notify_on_match=bool(row["notify_on_match"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    @staticmethod
+    def _trend_thesis_match_from_row(row: RowMapping) -> TrendThesisMatch:
+        return TrendThesisMatch(
+            thesis_id=row["thesis_id"],
+            trend_id=row["trend_id"],
+            trend_name=row["trend_name"],
+            active=bool(row["active"]),
+            first_matched_at=datetime.fromisoformat(row["first_matched_at"]),
+            last_matched_at=datetime.fromisoformat(row["last_matched_at"]),
+            lens_score=round(float(row["lens_score"] or 0.0), 1),
+            total_score=round(float(row["total_score"] or 0.0), 1),
+        )
 
     def _watchlist_from_row(self, row: RowMapping) -> Watchlist:
         """Build a watchlist model with nested items."""

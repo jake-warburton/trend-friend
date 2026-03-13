@@ -15,6 +15,7 @@ from app.data.repositories import (
     WatchlistRepository,
 )
 from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
+from app.theses.matching import ThesisMatchCandidate
 
 
 class RepositoryTests(unittest.TestCase):
@@ -519,6 +520,48 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(updated.items[0].trend_id, "ai-agents")
         self.assertEqual(repository.list_watchlists()[0].name, "Core Watchlist")
         self.assertEqual(repository.list_alert_rules()[0].rule_type, "score_above")
+
+    def test_watchlist_repository_persists_theses_and_matches(self) -> None:
+        repository = WatchlistRepository(self.connection)
+        watchlist = repository.create_watchlist("Research")
+
+        thesis = repository.create_trend_thesis(
+            watchlist_id=watchlist.id,
+            name="SEO opportunities",
+            lens="seo",
+            stage="nascent",
+            minimum_score=20.0,
+            notify_on_match=True,
+        )
+
+        self.assertEqual(repository.list_trend_theses()[0].name, "SEO opportunities")
+        thesis_rule = next(rule for rule in repository.list_alert_rules() if rule.thesis_id == thesis.id)
+        self.assertEqual(thesis_rule.rule_type, "thesis_match")
+
+        created_at = datetime(2026, 3, 10, tzinfo=timezone.utc)
+        new_matches = repository.replace_trend_thesis_matches(
+            [thesis],
+            {
+                thesis.id: [
+                    ThesisMatchCandidate(
+                        thesis_id=thesis.id,
+                        trend_id="ai-agents",
+                        trend_name="AI Agents",
+                        lens_score=71.2,
+                        total_score=42.0,
+                    ),
+                ]
+            },
+            matched_at=created_at,
+        )
+
+        self.assertEqual(new_matches[thesis.id][0].trend_id, "ai-agents")
+        stored_matches = repository.list_trend_thesis_matches()
+        self.assertEqual(stored_matches[0].trend_id, "ai-agents")
+        self.assertTrue(stored_matches[0].active)
+
+        repository.replace_trend_thesis_matches([thesis], {thesis.id: []}, matched_at=created_at)
+        self.assertFalse(repository.list_trend_thesis_matches()[0].active)
 
 
 def build_score(topic: str, total_score: float) -> TrendScoreResult:

@@ -44,6 +44,8 @@ import type {
   PublicWatchlistsResponse,
   TrendDetailRecord,
   TrendExplorerRecord,
+  TrendThesis,
+  TrendThesisMatch,
   Watchlist,
   WatchlistResponse,
 } from "@/lib/types";
@@ -203,6 +205,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [authPending, setAuthPending] = useState(false);
   const [shareExpiryPreset, setShareExpiryPreset] = useState<string>("none");
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
+  const [thesisName, setThesisName] = useState("");
+  const [notifyOnMatch, setNotifyOnMatch] = useState(true);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
@@ -237,6 +241,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const runsDetailsRef = useRef<HTMLDetailsElement>(null);
   const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
+  const savedTheses = watchlistData?.theses ?? [];
+  const savedThesisMatches = watchlistData?.thesisMatches ?? [];
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
   const deferredKeyword = useDeferredValue(keyword);
@@ -257,6 +263,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     [initialData.overview.sourceWatch, initialData.overview.sources],
   );
   const latestPipelineRun = initialData.overview.operations.recentRuns[0] ?? null;
+  const thesisMatchesById = useMemo(() => {
+    const map = new Map<number, TrendThesisMatch[]>();
+    for (const match of savedThesisMatches) {
+      const matches = map.get(match.thesisId) ?? [];
+      matches.push(match);
+      map.set(match.thesisId, matches);
+    }
+    return map;
+  }, [savedThesisMatches]);
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -822,6 +837,68 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         return;
       }
       setWatchlistError("Could not create alert");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleSaveThesis() {
+    if (defaultWatchlist == null || thesisName.trim().length === 0) {
+      return;
+    }
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create-thesis",
+          watchlistId: defaultWatchlist.id,
+          name: thesisName.trim(),
+          lens: selectedLens,
+          keywordQuery: keyword || null,
+          source: selectedSource === "all" ? null : selectedSource,
+          category: selectedCategory === "all" ? null : selectedCategory,
+          stage: selectedStage === "all" ? null : selectedStage,
+          confidence: selectedConfidence === "all" ? null : selectedConfidence,
+          metaTrend: selectedMetaTrend === "all" ? null : selectedMetaTrend,
+          audience: selectedAudience === "all" ? null : selectedAudience,
+          market: selectedMarket === "all" ? null : selectedMarket,
+          language: selectedLanguage === "all" ? null : selectedLanguage,
+          geoCountry: selectedGeoCountry === "all" ? null : selectedGeoCountry,
+          minimumScore: minimumScore ?? 0,
+          hideRecurring,
+          notifyOnMatch,
+        }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not save thesis");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setThesisName("");
+      showActionNotice("Thesis saved");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleDeleteThesis(thesisId: number) {
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete-thesis", thesisId }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not remove thesis");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      showActionNotice("Thesis removed");
     } finally {
       setActionPending(false);
     }
@@ -1664,6 +1741,32 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </div>
                 </div>
 
+                {!watchlistsRequireAuth && defaultWatchlist != null ? (
+                  <div className="filter-field filter-field-wide">
+                    <span>Save current thesis</span>
+                    <div className="watchlist-form watchlist-form-stack">
+                      <Input
+                        className="text-input"
+                        placeholder="Name this thesis"
+                        value={thesisName}
+                        onChange={(event) => setThesisName(event.target.value)}
+                      />
+                      <div className="watchlist-form">
+                        <button
+                          className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+                          onClick={() => setNotifyOnMatch((current) => !current)}
+                          type="button"
+                        >
+                          {notifyOnMatch ? "Notify on new matches" : "No notifications"}
+                        </button>
+                        <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
+                          Save thesis
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <label className="filter-field">
                   <span>Minimum score</span>
                   <NumberField.Root
@@ -2167,6 +2270,52 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                         <p className="source-summary-copy">{formatCompactTimestamp(event.triggeredAt)}</p>
                       </section>
                     ))
+                  )}
+                </div>
+              </details>
+
+              <details className="sidebar-section" open={savedTheses.length > 0 ? true : undefined}>
+                <summary>
+                  <div className="section-heading section-heading-spaced">
+                    <h2>Saved theses</h2>
+                  </div>
+                </summary>
+
+                <div className="snapshot-list">
+                  {savedTheses.length === 0 ? (
+                    <p className="empty-state-hint">Save a thesis from the current explorer filters to track matching trends over time.</p>
+                  ) : (
+                    savedTheses.map((thesis) => {
+                      const matches = thesisMatchesById.get(thesis.id) ?? [];
+                      return (
+                        <section className="snapshot-card" key={thesis.id}>
+                          <header>
+                            <strong>{thesis.name}</strong>
+                            <span>{thesis.activeMatchCount} matches</span>
+                          </header>
+                          <p className="source-summary-copy">{summarizeThesisFilters(thesis)}</p>
+                          {matches.length > 0 ? (
+                            <div className="community-chip-group">
+                              {matches.slice(0, 3).map((match) => (
+                                <Link className="community-filter-chip" href={`/trends/${match.trendId}`} key={`${thesis.id}-${match.trendId}`}>
+                                  {match.trendName} · {match.lensScore.toFixed(1)}
+                                </Link>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="empty-state-hint">No active matches in the current ranking.</p>
+                          )}
+                          <div className="watchlist-form">
+                            <small className="source-summary-copy">
+                              {thesis.notifyOnMatch ? "Notifications on" : "Notifications off"}
+                            </small>
+                            <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleDeleteThesis(thesis.id)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </section>
+                      );
+                    })
                   )}
                 </div>
               </details>
@@ -2984,6 +3133,24 @@ function formatLensLabel(lens: string) {
     investment: "Investment",
   };
   return labels[lens] ?? lens;
+}
+
+function summarizeThesisFilters(thesis: TrendThesis) {
+  const filters = [
+    formatLensLabel(thesis.lens),
+    thesis.keywordQuery ? `keyword: ${thesis.keywordQuery}` : null,
+    thesis.source ? formatSourceLabel(thesis.source) : null,
+    thesis.category ? formatCategory(thesis.category) : null,
+    thesis.stage ? formatStageLabel(thesis.stage) : null,
+    thesis.metaTrend,
+    thesis.audience ? formatAudienceLabel(thesis.audience) : null,
+    thesis.market ? formatAudienceLabel(thesis.market) : null,
+    thesis.language ? thesis.language.toUpperCase() : null,
+    thesis.geoCountry ? thesis.geoCountry.toUpperCase() : null,
+    thesis.minimumScore > 0 ? `min ${thesis.minimumScore}` : null,
+    thesis.hideRecurring ? "non-recurring" : null,
+  ].filter(Boolean);
+  return filters.join(" · ");
 }
 
 function getOptionLabel<T extends { label: string; value: string }>(

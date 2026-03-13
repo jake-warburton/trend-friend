@@ -458,6 +458,7 @@ export type Watchlist = {
 export type AlertRule = {
   id: number;
   watchlistId: number;
+  thesisId?: number | null;
   name: string;
   ruleType: string;
   threshold: number;
@@ -482,6 +483,52 @@ export type WatchlistResponse = {
   watchlists: Watchlist[];
   alerts: AlertRule[];
   matches: AlertMatch[];
+  theses?: TrendThesis[];
+  thesisMatches?: TrendThesisMatch[];
+};
+
+export type TrendThesis = {
+  id: number;
+  watchlistId: number;
+  name: string;
+  lens: string;
+  keywordQuery?: string | null;
+  source?: string | null;
+  category?: string | null;
+  stage?: string | null;
+  confidence?: string | null;
+  metaTrend?: string | null;
+  audience?: string | null;
+  market?: string | null;
+  language?: string | null;
+  geoCountry?: string | null;
+  minimumScore: number;
+  hideRecurring: boolean;
+  notifyOnMatch: boolean;
+  activeMatchCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TrendThesisMatch = {
+  thesisId: number;
+  trendId: string;
+  trendName: string;
+  active: boolean;
+  firstMatchedAt: string;
+  lastMatchedAt: string;
+  lensScore: number;
+  totalScore: number;
+  stage?: string | null;
+  metaTrend?: string | null;
+  confidence?: number | null;
+};
+
+export type PublicTrendThesis = {
+  id: number;
+  name: string;
+  lens: string;
+  notifyOnMatch: boolean;
 };
 
 export type SharedWatchlistResponse = {
@@ -520,6 +567,7 @@ export type PublicWatchlistSummary = {
   geoSummary?: TrendGeoSummary[];
   audienceSummary?: TrendAudienceSegment[];
   sourceContributions?: TrendSourceContribution[];
+  theses?: PublicTrendThesis[];
 };
 
 export type PublicWatchlistsResponse = {

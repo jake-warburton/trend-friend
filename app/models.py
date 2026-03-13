@@ -487,6 +487,7 @@ class AlertRule:
 
     id: int
     watchlist_id: int
+    thesis_id: int | None
     name: str
     rule_type: str
     threshold: float
@@ -509,6 +510,45 @@ class AlertEventRecord:
     message: str
     triggered_at: datetime
     read: bool
+
+
+@dataclass(frozen=True)
+class TrendThesis:
+    """Saved thesis definition attached to one watchlist."""
+
+    id: int
+    watchlist_id: int
+    name: str
+    lens: str
+    keyword_query: str | None
+    source: str | None
+    category: str | None
+    stage: str | None
+    confidence: str | None
+    meta_trend: str | None
+    audience: str | None
+    market: str | None
+    language: str | None
+    geo_country: str | None
+    minimum_score: float
+    hide_recurring: bool
+    notify_on_match: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class TrendThesisMatch:
+    """Persisted active or historical match for a saved thesis."""
+
+    thesis_id: int
+    trend_id: str
+    trend_name: str
+    active: bool
+    first_matched_at: datetime
+    last_matched_at: datetime
+    lens_score: float
+    total_score: float
 
 
 @dataclass(frozen=True)

@@ -196,6 +196,34 @@ class APITests(unittest.TestCase):
         )
 
     @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
+    def test_user_can_create_thesis_from_watchlist_route(self) -> None:
+        self._seed_data()
+        client = TestClient(self.app)
+        client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
+        watchlist_id = client.get("/api/v1/watchlists").json()["watchlists"][0]["id"]
+
+        response = client.post(
+            "/api/v1/watchlists",
+            json={
+                "action": "create-thesis",
+                "watchlistId": watchlist_id,
+                "name": "SEO opportunities",
+                "lens": "seo",
+                "keywordQuery": "agents",
+                "stage": "nascent",
+                "minimumScore": 20,
+                "notifyOnMatch": True,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["theses"][0]["name"], "SEO opportunities")
+        self.assertEqual(payload["theses"][0]["activeMatchCount"], 1)
+        self.assertEqual(payload["thesisMatches"][0]["trendId"], "ai-agents")
+        self.assertEqual(payload["alerts"][0]["ruleType"], "thesis_match")
+
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_user_can_revoke_own_share(self) -> None:
         client = TestClient(self.app)
         client.post("/api/v1/auth/register", json={"username": "owner1", "password": "password123"})
