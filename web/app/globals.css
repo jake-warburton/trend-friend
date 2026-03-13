@@ -2832,6 +2832,10 @@ input {
   border-top: 1px solid var(--panel-raised-border);
 }
 
+.settings-card-wide {
+  grid-column: 1 / -1;
+}
+
 .settings-card header {
   display: block;
   margin-bottom: 10px;
@@ -2851,6 +2855,57 @@ input {
   margin: 0;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.settings-preferences-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-copy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.settings-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+}
+
+.settings-provider-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--panel-raised-border);
+}
+
+.settings-provider-card:first-child,
+.settings-provider-card:nth-child(2) {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+.settings-provider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.status-pill-success {
+  border-color: var(--positive-badge-border);
+  background: var(--positive-badge-bg);
+  color: var(--success-strong-text);
 }
 
 .detail-stat-item {
@@ -3369,6 +3424,7 @@ input {
   .detail-grid,
   .market-footprint-grid,
   .settings-grid,
+  .settings-provider-grid,
   .detail-hero,
   .community-spotlight-grid,
   .community-rail-list,
@@ -3397,6 +3453,11 @@ input {
   .analytics-card:first-child {
     border-top: 0;
     padding-top: 0;
+  }
+
+  .settings-toggle-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .analytics-card {

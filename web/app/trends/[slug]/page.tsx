@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
 import { slugifyBrowseValue } from "@/lib/trend-browse";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
@@ -29,6 +31,13 @@ export const dynamic = "force-dynamic";
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
+  let showEstimatedMetrics = true;
+  try {
+    const cookieStore = await cookies();
+    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
+  } catch {
+    showEstimatedMetrics = true;
+  }
   const [trend, history, sourceSummary] = await Promise.all([
     loadTrendDetail(slug),
     loadTrendHistory(),
@@ -150,6 +159,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
   const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
   const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
+  const visibleMarketFootprint = showEstimatedMetrics
+    ? trend.marketFootprint
+    : trend.marketFootprint.filter((metric) => !metric.isEstimated);
 
   return (
     <main className="detail-page">
@@ -256,9 +268,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
           </div>
 
-          {trend.marketFootprint.length > 0 ? (
+          {visibleMarketFootprint.length > 0 ? (
             <div className="market-footprint-grid">
-              {trend.marketFootprint.map((metric) => {
+              {visibleMarketFootprint.map((metric) => {
                 const freshness = formatDateOnly(metric.capturedAt);
                 return (
                   <article className="market-footprint-card" key={`${metric.source}-${metric.metricKey}`}>
@@ -280,6 +292,10 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 );
               })}
             </div>
+          ) : trend.marketFootprint.length > 0 && !showEstimatedMetrics ? (
+            <p className="detail-copy">
+              Estimated market metrics are currently hidden. Change this in <Link className="trend-link" href="/settings">Settings</Link>.
+            </p>
           ) : (
             <p className="detail-copy">
               Market footprint enrichment is still sparse for this trend. Source-level metrics will appear here as

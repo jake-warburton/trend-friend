@@ -1,13 +1,19 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 
-const SETTINGS_SECTIONS = [
-  { title: "Workspace", description: "Reserved for account-level defaults, workspace behavior, and preferences." },
-  { title: "Notifications", description: "Reserved for delivery channels, alert policies, and digest controls." },
-  { title: "Display", description: "Reserved for theme, density, typography, and data presentation settings." },
-  { title: "Data", description: "Reserved for source preferences, refresh behavior, and export defaults." },
-] as const;
+import { SettingsPreferences } from "@/components/settings-preferences";
+import { buildEnrichmentProviderStatuses, ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  let showEstimatedMetrics = true;
+  try {
+    const cookieStore = await cookies();
+    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
+  } catch {
+    showEstimatedMetrics = true;
+  }
+  const providerStatuses = buildEnrichmentProviderStatuses(process.env);
+
   return (
     <main className="detail-page">
       <section className="detail-hero">
@@ -18,25 +24,43 @@ export default function SettingsPage() {
           <p className="eyebrow">Settings</p>
           <h1>Settings</h1>
           <p className="detail-copy">
-            This page is intentionally blank for now. The layout is ready for grouped settings, switches, and system
-            information as those controls are added.
+            Configure how market-footprint enrichment behaves and see which live providers are currently wired into the
+            app.
           </p>
         </div>
       </section>
 
       <section className="detail-panel settings-panel">
         <div className="settings-grid">
-          {SETTINGS_SECTIONS.map((section) => (
-            <article className="settings-card" key={section.title}>
-              <header>
-                <p className="eyebrow">Reserved</p>
-                <h2>{section.title}</h2>
-              </header>
-              <div className="settings-card-body">
-                <p>{section.description}</p>
-              </div>
-            </article>
-          ))}
+          <article className="settings-card settings-card-wide">
+            <header>
+              <p className="eyebrow">Display</p>
+              <h2>UI preferences</h2>
+            </header>
+            <div className="settings-card-body">
+              <SettingsPreferences initialShowEstimatedMetrics={showEstimatedMetrics} />
+            </div>
+          </article>
+
+          <article className="settings-card settings-card-wide">
+            <header>
+              <p className="eyebrow">Data</p>
+              <h2>Enrichment status</h2>
+            </header>
+            <div className="settings-provider-grid">
+              {providerStatuses.map((provider) => (
+                <div className="settings-provider-card" key={provider.key}>
+                  <div className="settings-provider-header">
+                    <strong>{provider.label}</strong>
+                    <span className={provider.configured ? "status-pill status-pill-success" : "status-pill"}>
+                      {provider.configured ? "Configured" : "Fallback"}
+                    </span>
+                  </div>
+                  <p className="settings-copy">{provider.detail}</p>
+                </div>
+              ))}
+            </div>
+          </article>
         </div>
       </section>
     </main>
