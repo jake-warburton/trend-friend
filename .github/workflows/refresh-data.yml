@@ -40,6 +40,18 @@ jobs:
             exit 1
           fi
 
+      - name: Show runtime revision
+        run: |
+          git rev-parse HEAD
+          python3 - <<'PY'
+          from pathlib import Path
+
+          repository_file = Path("app/data/repositories.py")
+          for line_number, line in enumerate(repository_file.read_text(encoding="utf-8").splitlines(), start=1):
+              if 2650 <= line_number <= 2658:
+                  print(f"{line_number}: {line}")
+          PY
+
       - name: Refresh trend data
         run: |
           mkdir -p web/data
