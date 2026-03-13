@@ -2913,12 +2913,20 @@ input {
   border-top: 1px solid var(--panel-raised-border);
   background: transparent;
   color: inherit;
+  box-shadow: inset 0 0 0 1px transparent;
+  border-radius: var(--radius-md);
   text-align: left;
 }
 
 .settings-theme-option:first-child {
   border-top: 0;
   padding-top: 4px;
+}
+
+.settings-theme-option-active {
+  padding-inline: 12px;
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--selection-active-border);
 }
 
 .settings-theme-label {
@@ -3567,6 +3575,10 @@ input {
 
   .settings-theme-swatches {
     grid-column: 2;
+  }
+
+  .settings-theme-option-active {
+    padding-inline: 10px;
   }
 
   .analytics-card {
