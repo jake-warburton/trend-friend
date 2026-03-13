@@ -2757,7 +2757,6 @@ input {
   min-width: 0;
   align-content: start;
   padding: 14px 22px 0 18px;
-  border-right: 1px solid var(--inset-divider);
 }
 
 .detail-stat-item:first-child {
@@ -2766,7 +2765,6 @@ input {
 
 .detail-stat-item:last-child {
   padding-right: 0;
-  border-right: 0;
 }
 
 .detail-stat-item:last-child strong {
@@ -2774,7 +2772,7 @@ input {
 }
 
 .detail-stat-item:nth-child(2) {
-  border-right: 1px solid var(--inset-divider);
+  border-right: 0;
 }
 
 .detail-stat-item span {
