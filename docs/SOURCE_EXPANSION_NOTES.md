@@ -16,6 +16,7 @@
   - `npm`
   - `PyPI`
   - `YouTube`
+  - `Chrome Web Store`
   - `Lobsters`
 - Shared source metadata in `app/sources/catalog.py`:
   - signal type
@@ -46,6 +47,7 @@
 - Hugging Face, npm, and PyPI are highly useful for builder trends, but they skew technical by design.
 - YouTube improves social velocity coverage materially, but its live path depends on an API key and quota discipline.
 - Curated feeds improve editorial corroboration and source density, but they are still headline-heavy and therefore intentionally capped in topic fan-out.
+- Chrome Web Store adds distribution and utility signals, but it currently exposes ratings and listing relevance more cleanly than install counts, so scoring stays conservative.
 - DEV Community and Lobsters help with early social/builder corroboration, but their volumes are much smaller than Reddit.
 - Twitter/X remains optional because unauthenticated or unstable access should not become a critical dependency.
 

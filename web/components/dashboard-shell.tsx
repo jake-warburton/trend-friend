@@ -66,6 +66,7 @@ const UPDATED_TRENDS_FLASH_MS = 5_000;
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
   { label: "arXiv", value: "arxiv" },
+  { label: "Chrome Web Store", value: "chrome_web_store" },
   { label: "Curated Feeds", value: "curated_feeds" },
   { label: "DEV Community", value: "devto" },
   { label: "Hugging Face", value: "huggingface" },

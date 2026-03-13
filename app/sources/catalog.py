@@ -18,6 +18,7 @@ class SourceDefinition:
 
 SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
     "arxiv": SourceDefinition("arxiv", "knowledge", "research", 0.92),
+    "chrome_web_store": SourceDefinition("chrome_web_store", "social", "launch", 0.71),
     "curated_feeds": SourceDefinition("curated_feeds", "knowledge", "news", 0.73),
     "devto": SourceDefinition("devto", "social", "community", 0.7),
     "github": SourceDefinition("github", "developer", "developer", 0.9),

@@ -264,6 +264,25 @@ class TopicNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(topics, ["ai agents"])
 
+    def test_build_signals_from_items_filters_chrome_web_store_wrapper_terms(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="chrome_web_store",
+                external_id="ext-1",
+                title="Monica all in one AI assistant for writing, search, and browser workflows",
+                url="https://chromewebstore.google.com/detail/example/ext-1",
+                timestamp=timestamp,
+                engagement_score=100.0,
+                metadata={"query_family": "ai", "store": "chrome"},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("ai writing", [signal.topic for signal in signals])
+        self.assertNotIn("browser workflows", [signal.topic for signal in signals])
+
     def test_merge_similar_topics_groups_subset_variants(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [

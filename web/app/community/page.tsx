@@ -740,6 +740,7 @@ function formatTimestamp(value: string) {
 
 function formatSourceLabel(source: string) {
   const labels: Record<string, string> = {
+    chrome_web_store: "Chrome Web Store",
     curated_feeds: "Curated Feeds",
     devto: "DEV Community",
     reddit: "Reddit",

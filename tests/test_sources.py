@@ -8,6 +8,7 @@ from dataclasses import replace
 from app.config import load_settings
 from app.sources.devto import DevToSourceAdapter
 from app.sources.curated_rss import CuratedRssSourceAdapter, FeedSpec
+from app.sources.chrome_web_store import ChromeWebStoreSourceAdapter
 from app.sources.github import GitHubSourceAdapter
 from app.sources.google_news import GoogleNewsSourceAdapter, _TOPICS as GOOGLE_NEWS_TOPICS
 from app.sources.hacker_news import HackerNewsSourceAdapter
@@ -149,6 +150,23 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(len(atom_items), 1)
         self.assertEqual(atom_items[0].metadata["feed"], "OpenAI News")
         self.assertIn("agent workflows", atom_items[0].title.lower())
+
+    def test_chrome_web_store_adapter_parses_search_cards(self) -> None:
+        adapter = ChromeWebStoreSourceAdapter(self.settings)
+        html = """
+        <div class="Cb7Kte" data-item-id="ngammciiefcamimjfmbjbhijplgiankh">
+          <a class="q6LNgd" href="./detail/ai-productivity-suite/ngammciiefcamimjfmbjbhijplgiankh"></a>
+          <div class="IcZnBc" id="i6"><h2 class="CiI2if">AI Productivity Suite</h2></div>
+          <span class="GvZmud" aria-label="Average rating 5 out of 5 stars." id="i8"></span>
+          <div id="i9">Enhanced AI prompt management with ChatGPT and powerful organization features.</div>
+        </div>
+        """
+        items = adapter._parse_search_page(html, query_family="ai")
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].source, "chrome_web_store")
+        self.assertEqual(items[0].external_id, "ngammciiefcamimjfmbjbhijplgiankh")
+        self.assertIn("AI Productivity Suite", items[0].title)
+        self.assertGreater(items[0].engagement_score, 0)
 
     def test_wikipedia_adapter_skips_non_article_pages_and_uses_payload_date(self) -> None:
         adapter = WikipediaSourceAdapter(self.settings)
