@@ -228,6 +228,23 @@ class TrendSourceContribution:
 
 
 @dataclass(frozen=True)
+class TrendMetricSnapshot:
+    """Persisted market-footprint metric for one trend and source."""
+
+    source: str
+    metric_key: str
+    label: str
+    value_numeric: float
+    value_display: str
+    unit: str
+    period: str
+    captured_at: datetime
+    confidence: float
+    provenance_url: str | None = None
+    is_estimated: bool = False
+
+
+@dataclass(frozen=True)
 class TrendEvidenceItem:
     """Evidence item captured from a normalized signal."""
 
@@ -353,6 +370,7 @@ class TrendDetailRecord:
     primary_evidence: TrendPrimaryEvidence | None
     duplicate_candidates: list[TrendDuplicateCandidate]
     related_trends: list[RelatedTrend]
+    market_footprint: list[TrendMetricSnapshot] = field(default_factory=list)
     seasonality: SeasonalityResult | None = None
 
 

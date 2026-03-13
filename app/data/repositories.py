@@ -35,6 +35,7 @@ from app.models import (
     TrendExplorerRecord,
     TrendGeoSummary,
     TrendHistoryPoint,
+    TrendMetricSnapshot,
     TrendMomentum,
     TrendPrimaryEvidence,
     TrendSourceContribution,
@@ -1842,6 +1843,88 @@ class TrendScoreRepository:
         "google_trends": 3,
         "wikipedia": 1,
     }
+    MARKET_FOOTPRINT_CONFIG = {
+        "google_trends": {
+            "metric_key": "search_traffic",
+            "label": "Google search traffic",
+            "unit": "searches",
+            "period": "current run",
+            "aggregation": "max",
+            "confidence": 0.88,
+            "is_estimated": False,
+            "priority": 1,
+        },
+        "wikipedia": {
+            "metric_key": "page_views",
+            "label": "Wikipedia views",
+            "unit": "views",
+            "period": "daily",
+            "aggregation": "max",
+            "confidence": 0.92,
+            "is_estimated": False,
+            "priority": 2,
+        },
+        "github": {
+            "metric_key": "stars_forks",
+            "label": "GitHub stars + forks",
+            "unit": "stars/forks",
+            "period": "current snapshot",
+            "aggregation": "max",
+            "confidence": 0.76,
+            "is_estimated": False,
+            "priority": 3,
+        },
+        "hacker_news": {
+            "metric_key": "engagement",
+            "label": "Hacker News engagement",
+            "unit": "points/comments",
+            "period": "captured stories",
+            "aggregation": "sum",
+            "confidence": 0.7,
+            "is_estimated": False,
+            "priority": 4,
+        },
+        "twitter": {
+            "metric_key": "engagement",
+            "label": "X engagement",
+            "unit": "engagement",
+            "period": "captured posts",
+            "aggregation": "sum",
+            "confidence": 0.68,
+            "is_estimated": False,
+            "priority": 5,
+        },
+        "reddit": {
+            "metric_key": "engagement",
+            "label": "Reddit engagement",
+            "unit": "engagement",
+            "period": "captured posts",
+            "aggregation": "sum",
+            "confidence": 0.46,
+            "is_estimated": True,
+            "priority": 6,
+        },
+        "polymarket": {
+            "metric_key": "activity",
+            "label": "Prediction market activity",
+            "unit": "activity",
+            "period": "current markets",
+            "aggregation": "max",
+            "confidence": 0.52,
+            "is_estimated": True,
+            "priority": 7,
+        },
+        "producthunt": {
+            "metric_key": "launch_score",
+            "label": "Product Hunt launch score",
+            "unit": "score",
+            "period": "featured launches",
+            "aggregation": "max",
+            "confidence": 0.4,
+            "is_estimated": True,
+            "priority": 8,
+        },
+    }
 
     def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
@@ -1931,6 +2014,7 @@ class TrendScoreRepository:
             ],
         )
         self._upsert_trend_entities(scores, published_topics=published_topics)
+        self.refresh_trend_metric_snapshots(scores, captured_at=captured_at)
         self.connection.commit()
         return run_id
 
@@ -2362,6 +2446,7 @@ class TrendScoreRepository:
                     history=history,
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
                     source_contributions=self.get_topic_source_contributions(score.topic, score),
+                    market_footprint=self.get_topic_market_footprint(score.topic),
                     geo_summary=self.get_topic_geo_summary(score.topic),
                     audience_summary=self.get_topic_audience_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
@@ -2372,6 +2457,101 @@ class TrendScoreRepository:
                 )
             )
         return self._attach_related_trends(records)
+
+    def refresh_trend_metric_snapshots(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        captured_at: datetime,
+    ) -> None:
+        """Replace persisted market-footprint snapshots for the current score set."""
+
+        topics = [score.topic for score in scores]
+        if not topics:
+            return
+        self.connection.executemany(
+            "DELETE FROM trend_metric_snapshots WHERE topic_key = ?",
+            [(topic,) for topic in topics],
+        )
+        rows: list[tuple[object, ...]] = []
+        for score in scores:
+            for snapshot in self._build_topic_market_footprint(score.topic, captured_at):
+                rows.append(
+                    (
+                        score.topic,
+                        snapshot.source,
+                        snapshot.metric_key,
+                        snapshot.label,
+                        snapshot.value_numeric,
+                        snapshot.value_display,
+                        snapshot.unit,
+                        snapshot.period,
+                        snapshot.captured_at.isoformat(),
+                        snapshot.confidence,
+                        snapshot.provenance_url,
+                        int(snapshot.is_estimated),
+                    )
+                )
+        if rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_metric_snapshots (
+                    topic_key, source, metric_key, label, value_numeric, value_display,
+                    unit, period, captured_at, confidence, provenance_url, is_estimated
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(topic_key, source, metric_key)
+                DO UPDATE SET
+                    label = excluded.label,
+                    value_numeric = excluded.value_numeric,
+                    value_display = excluded.value_display,
+                    unit = excluded.unit,
+                    period = excluded.period,
+                    captured_at = excluded.captured_at,
+                    confidence = excluded.confidence,
+                    provenance_url = excluded.provenance_url,
+                    is_estimated = excluded.is_estimated
+                """,
+                rows,
+            )
+
+    def get_topic_market_footprint(self, topic: str) -> list[TrendMetricSnapshot]:
+        """Return persisted market-footprint metrics for one topic."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, metric_key, label, value_numeric, value_display, unit, period,
+                   captured_at, confidence, provenance_url, is_estimated
+            FROM trend_metric_snapshots
+            WHERE topic_key = ?
+            ORDER BY value_numeric DESC, source ASC
+            """,
+            (topic,),
+        ).fetchall()
+        metrics = [
+            TrendMetricSnapshot(
+                source=row["source"],
+                metric_key=row["metric_key"],
+                label=row["label"],
+                value_numeric=float(row["value_numeric"] or 0.0),
+                value_display=row["value_display"] or "0",
+                unit=row["unit"] or "",
+                period=row["period"] or "",
+                captured_at=datetime.fromisoformat(row["captured_at"]),
+                confidence=round(float(row["confidence"] or 0.0), 2),
+                provenance_url=row["provenance_url"],
+                is_estimated=bool(row["is_estimated"]),
+            )
+            for row in rows
+        ]
+        return sorted(
+            metrics,
+            key=lambda item: (
+                self.MARKET_FOOTPRINT_CONFIG.get(item.source, {}).get("priority", 999),
+                -item.value_numeric,
+                item.source,
+            ),
+        )
 
     def get_topic_source_breakdown(self, topic: str) -> list[TrendSourceBreakdown]:
         """Return source-level signal coverage for a topic."""
@@ -3070,6 +3250,89 @@ class TrendScoreRepository:
             len(item.evidence),
         )
 
+    def _build_topic_market_footprint(
+        self,
+        topic: str,
+        captured_at: datetime,
+    ) -> list[TrendMetricSnapshot]:
+        """Build market-footprint metrics from current source signals for one topic."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, value, timestamp, evidence_url
+            FROM signals
+            WHERE topic = ?
+            ORDER BY timestamp DESC, id DESC
+            """,
+            (topic,),
+        ).fetchall()
+        grouped: dict[str, list[RowMapping]] = {}
+        for row in rows:
+            if row["source"] not in self.MARKET_FOOTPRINT_CONFIG:
+                continue
+            grouped.setdefault(row["source"], []).append(row)
+
+        metrics: list[TrendMetricSnapshot] = []
+        for source, source_rows in grouped.items():
+            config = self.MARKET_FOOTPRINT_CONFIG[source]
+            values = [float(row["value"] or 0.0) for row in source_rows]
+            if not values:
+                continue
+            aggregation = str(config["aggregation"])
+            value_numeric = max(values) if aggregation == "max" else sum(values)
+            if value_numeric <= 0:
+                continue
+            provenance_url = next((row["evidence_url"] for row in source_rows if row["evidence_url"]), None)
+            metrics.append(
+                TrendMetricSnapshot(
+                    source=source,
+                    metric_key=str(config["metric_key"]),
+                    label=str(config["label"]),
+                    value_numeric=round(value_numeric, 2),
+                    value_display=self._format_metric_value(value_numeric, str(config["unit"])),
+                    unit=str(config["unit"]),
+                    period=str(config["period"]),
+                    captured_at=captured_at,
+                    confidence=float(config["confidence"]),
+                    provenance_url=provenance_url,
+                    is_estimated=bool(config["is_estimated"]),
+                )
+            )
+        return sorted(
+            metrics,
+            key=lambda item: (
+                self.MARKET_FOOTPRINT_CONFIG.get(item.source, {}).get("priority", 999),
+                -item.value_numeric,
+                item.source,
+            ),
+        )[:6]
+
+    @staticmethod
+    def _format_metric_value(value: float, unit: str) -> str:
+        """Render a compact, human-readable value for market-footprint cards."""
+
+        compact = TrendScoreRepository._format_compact_number(value)
+        if unit == "searches":
+            return compact
+        if unit == "views":
+            return compact
+        return compact
+
+    @staticmethod
+    def _format_compact_number(value: float) -> str:
+        """Format large values using compact suffixes."""
+
+        absolute = abs(value)
+        if absolute >= 1_000_000_000:
+            return f"{value / 1_000_000_000:.1f}B"
+        if absolute >= 1_000_000:
+            return f"{value / 1_000_000:.1f}M"
+        if absolute >= 1_000:
+            return f"{value / 1_000:.1f}K"
+        if value.is_integer():
+            return str(int(value))
+        return f"{value:.1f}"
+
     def _filter_suppressed_scores(self, scores: list[TrendScoreResult]) -> list[TrendScoreResult]:
         """Drop trends that have been manually suppressed from ranked read paths."""
 
@@ -3405,6 +3668,7 @@ class TrendScoreRepository:
                 history=record.history,
                 source_breakdown=record.source_breakdown,
                 source_contributions=record.source_contributions,
+                market_footprint=record.market_footprint,
                 geo_summary=record.geo_summary,
                 audience_summary=record.audience_summary,
                 evidence_items=record.evidence_items,

@@ -294,6 +294,7 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.deepEqual(result.history, []);
   assert.deepEqual(result.sourceBreakdown, []);
   assert.deepEqual(result.sourceContributions, []);
+  assert.deepEqual(result.marketFootprint, []);
   assert.deepEqual(result.geoSummary, []);
   assert.deepEqual(result.duplicateCandidates, []);
   assert.deepEqual(result.relatedTrends, []);
@@ -310,6 +311,21 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     summary: "AI Agents is a breakout AI trend.",
     whyNow: ["Social signals are leading."],
     aliases: ["AI Agents", "ai agents"],
+    marketFootprint: [
+      {
+        source: "google_trends",
+        metricKey: "search_traffic",
+        label: "Google search traffic",
+        valueNumeric: 2400000,
+        valueDisplay: "2.4M",
+        unit: "searches",
+        period: "current run",
+        capturedAt: "2026-03-10T00:00:00Z",
+        confidence: 0.88,
+        provenanceUrl: "https://trends.google.com/example",
+        isEstimated: false,
+      },
+    ],
     duplicateCandidates: [{ id: "ai-agent", name: "AI Agent", similarity: 0.8, reason: "Tracked aliases overlap." }],
     latestSignalAt: "2026-03-10T00:00:00Z",
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
@@ -332,6 +348,8 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.summary, "AI Agents is a breakout AI trend.");
   assert.deepEqual(result.whyNow, ["Social signals are leading."]);
   assert.deepEqual(result.aliases, ["AI Agents", "ai agents"]);
+  assert.equal(result.marketFootprint[0].label, "Google search traffic");
+  assert.equal(result.marketFootprint[0].valueDisplay, "2.4M");
   assert.equal(result.duplicateCandidates[0].id, "ai-agent");
   assert.equal(result.duplicateCandidates[0].similarity, 0.8);
   assert.equal(result.breakoutPrediction.confidence, 0.85);

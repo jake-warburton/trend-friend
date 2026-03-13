@@ -248,6 +248,46 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           <ScoreBreakdownChart score={trend.score} />
         </section>
 
+        <section className="detail-panel detail-panel-wide">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Market footprint</p>
+              <h2>Platform signals</h2>
+            </div>
+          </div>
+
+          {trend.marketFootprint.length > 0 ? (
+            <div className="market-footprint-grid">
+              {trend.marketFootprint.map((metric) => {
+                const freshness = formatDateOnly(metric.capturedAt);
+                return (
+                  <article className="market-footprint-card" key={`${metric.source}-${metric.metricKey}`}>
+                    <div className="market-footprint-card-header">
+                      <span>{formatSourceLabel(metric.source)}</span>
+                      {metric.isEstimated ? <small>Estimated</small> : null}
+                    </div>
+                    <strong>{metric.valueDisplay}</strong>
+                    <p>{metric.label}</p>
+                    <small>
+                      {metric.period} · {Math.round(metric.confidence * 100)}% confidence · Updated {freshness}
+                    </small>
+                    {metric.provenanceUrl ? (
+                      <a className="detail-back-link market-footprint-link" href={metric.provenanceUrl} rel="noreferrer" target="_blank">
+                        Open source
+                      </a>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="detail-copy">
+              Market footprint enrichment is still sparse for this trend. Source-level metrics will appear here as
+              more platform evidence is captured.
+            </p>
+          )}
+        </section>
+
         <section className="detail-panel">
           <div className="section-heading">
             <div>

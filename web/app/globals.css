@@ -2766,6 +2766,57 @@ input {
   padding: 22px 0 0;
 }
 
+.market-footprint-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.market-footprint-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 0 16px;
+  border-top: 1px solid var(--panel-raised-border);
+}
+
+.market-footprint-card:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+.market-footprint-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.market-footprint-card strong {
+  font-size: var(--type-size-lg);
+  font-weight: var(--type-weight-strong);
+}
+
+.market-footprint-card p,
+.market-footprint-card small {
+  margin: 0;
+}
+
+.market-footprint-card p {
+  color: var(--copy);
+  line-height: 1.4;
+}
+
+.market-footprint-card small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.market-footprint-link {
+  margin-bottom: 0;
+}
+
 .settings-panel {
   padding-top: 28px;
 }
@@ -3316,6 +3367,7 @@ input {
   .compare-grid,
   .filters-panel,
   .detail-grid,
+  .market-footprint-grid,
   .settings-grid,
   .detail-hero,
   .community-spotlight-grid,

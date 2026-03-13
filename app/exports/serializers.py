@@ -38,6 +38,7 @@ from app.exports.contracts import (
     TrendExplorerRecordPayload,
     TrendHistoryPointPayload,
     TrendHistoryPayload,
+    TrendMarketMetricPayload,
     TrendMomentumPayload,
     TrendPrimaryEvidencePayload,
     TrendRecord,
@@ -434,6 +435,22 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                 ),
             )
             for item in trend.source_contributions
+        ],
+        market_footprint=[
+            TrendMarketMetricPayload(
+                source=item.source,
+                metric_key=item.metric_key,
+                label=item.label,
+                value_numeric=round(item.value_numeric, 2),
+                value_display=item.value_display,
+                unit=item.unit,
+                period=item.period,
+                captured_at=to_timestamp(item.captured_at),
+                confidence=round(item.confidence, 2),
+                provenance_url=item.provenance_url,
+                is_estimated=item.is_estimated,
+            )
+            for item in trend.market_footprint
         ],
         geo_summary=[
             TrendGeoSummaryPayload(

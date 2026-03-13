@@ -28,6 +28,7 @@ from app.models import (
     TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
+    TrendMetricSnapshot,
     TrendPrimaryEvidence,
     NormalizedSignal,
     OpportunitySummary,
@@ -206,6 +207,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["score"]["social"], 18.2)
+        self.assertEqual(payload["trends"][0]["marketFootprint"][0]["metricKey"], "search_traffic")
+        self.assertEqual(payload["trends"][0]["marketFootprint"][0]["valueDisplay"], "2.4M")
+        self.assertEqual(payload["trends"][0]["marketFootprint"][0]["provenanceUrl"], "https://trends.google.com/example")
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["relationshipStrength"], 0.8)
         self.assertEqual(payload["trends"][0]["duplicateCandidates"][0]["id"], "ai-agent")
@@ -466,6 +470,21 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 knowledge_score=6.0,
                 search_score=0.0,
                 diversity_score=0.0,
+            )
+        ],
+        market_footprint=[
+            TrendMetricSnapshot(
+                source="google_trends",
+                metric_key="search_traffic",
+                label="Google search traffic",
+                value_numeric=2400000.0,
+                value_display="2.4M",
+                unit="searches",
+                period="current run",
+                captured_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                confidence=0.88,
+                provenance_url="https://trends.google.com/example",
+                is_estimated=False,
             )
         ],
         geo_summary=[

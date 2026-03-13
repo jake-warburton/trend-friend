@@ -286,6 +286,20 @@ export type TrendSourceContribution = {
   score: TrendScore;
 };
 
+export type TrendMarketMetric = {
+  source: string;
+  metricKey: string;
+  label: string;
+  valueNumeric: number;
+  valueDisplay: string;
+  unit: string;
+  period: string;
+  capturedAt: string;
+  confidence: number;
+  provenanceUrl: string | null;
+  isEstimated: boolean;
+};
+
 export type RelatedTrend = {
   id: string;
   name: string;
@@ -329,6 +343,7 @@ export type TrendDetailRecord = {
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
   sourceContributions: TrendSourceContribution[];
+  marketFootprint: TrendMarketMetric[];
   geoSummary: TrendGeoSummary[];
   audienceSummary: TrendAudienceSegment[];
   evidenceItems: TrendEvidenceItem[];
