@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   buildSourceFamilyInsights,
+  buildSourceFamilyHistoryInsights,
   buildSourceContributionInsights,
   buildSourceWatchlist,
   getSourceFreshnessBadge,
@@ -233,6 +234,110 @@ test("buildSourceFamilyInsights groups sources into sortable family rollups", ()
     [
       ["community", 2, 30, 10, 50],
       ["developer", 1, 20, 5, 70],
+    ],
+  );
+});
+
+test("buildSourceFamilyHistoryInsights summarizes recent family health from run history", () => {
+  const families = buildSourceFamilyHistoryInsights([
+    {
+      source: "reddit",
+      family: "community",
+      status: "healthy",
+      latestFetchAt: "2026-03-13T10:00:00Z",
+      latestSuccessAt: "2026-03-13T10:00:00Z",
+      rawItemCount: 20,
+      latestItemCount: 10,
+      keptItemCount: 8,
+      yieldRatePercent: 40,
+      durationMs: 100,
+      rawTopicCount: 0,
+      mergedTopicCount: 0,
+      duplicateTopicCount: 0,
+      duplicateTopicRate: 0,
+      usedFallback: false,
+      errorMessage: null,
+      signalCount: 18,
+      trendCount: 6,
+      runHistory: [
+        {
+          fetchedAt: "2026-03-13T10:00:00Z",
+          success: true,
+          rawItemCount: 20,
+          itemCount: 10,
+          keptItemCount: 8,
+          yieldRatePercent: 40,
+          durationMs: 100,
+          rawTopicCount: 0,
+          mergedTopicCount: 0,
+          duplicateTopicCount: 0,
+          duplicateTopicRate: 0,
+          usedFallback: false,
+          errorMessage: null,
+        },
+        {
+          fetchedAt: "2026-03-13T09:00:00Z",
+          success: true,
+          rawItemCount: 20,
+          itemCount: 12,
+          keptItemCount: 9,
+          yieldRatePercent: 45,
+          durationMs: 100,
+          rawTopicCount: 0,
+          mergedTopicCount: 0,
+          duplicateTopicCount: 0,
+          duplicateTopicRate: 0,
+          usedFallback: true,
+          errorMessage: null,
+        },
+      ],
+      topTrends: [],
+    },
+    {
+      source: "github",
+      family: "developer",
+      status: "healthy",
+      latestFetchAt: "2026-03-13T10:05:00Z",
+      latestSuccessAt: "2026-03-13T10:05:00Z",
+      rawItemCount: 12,
+      latestItemCount: 9,
+      keptItemCount: 7,
+      yieldRatePercent: 58,
+      durationMs: 100,
+      rawTopicCount: 0,
+      mergedTopicCount: 0,
+      duplicateTopicCount: 0,
+      duplicateTopicRate: 0,
+      usedFallback: false,
+      errorMessage: null,
+      signalCount: 20,
+      trendCount: 5,
+      runHistory: [
+        {
+          fetchedAt: "2026-03-13T10:05:00Z",
+          success: true,
+          rawItemCount: 12,
+          itemCount: 9,
+          keptItemCount: 7,
+          yieldRatePercent: 58,
+          durationMs: 100,
+          rawTopicCount: 0,
+          mergedTopicCount: 0,
+          duplicateTopicCount: 0,
+          duplicateTopicRate: 0,
+          usedFallback: false,
+          errorMessage: null,
+        },
+      ],
+      topTrends: [],
+    },
+  ]);
+
+  assert.deepEqual(
+    families.map((family) => [family.family, family.healthySourceCount, Math.round(family.recentAverageYieldRatePercent), Math.round(family.recentSuccessRatePercent)]),
+    [
+      ["community", 1, 43, 50],
+      ["developer", 1, 58, 100],
     ],
   );
 });

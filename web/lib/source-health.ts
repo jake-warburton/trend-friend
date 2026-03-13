@@ -46,6 +46,16 @@ export type SourceFamilyInsight = {
   averageYieldRatePercent: number;
 };
 
+export type SourceFamilyHistoryInsight = {
+  family: string;
+  label: string;
+  sourceCount: number;
+  healthySourceCount: number;
+  latestFetchAt: string | null;
+  recentAverageYieldRatePercent: number;
+  recentSuccessRatePercent: number;
+};
+
 const LOW_YIELD_PERCENT = 30;
 const MIXED_YIELD_PERCENT = 50;
 const MIN_RAW_VOLUME_FOR_YIELD_WARNING = 10;
@@ -205,6 +215,55 @@ export function buildSourceFamilyInsights(sources: SourceHealthLike[]): SourceFa
       averageYieldRatePercent: family.sourceCount === 0 ? 0 : family.averageYieldRatePercent / family.sourceCount,
     }))
     .sort((left, right) => right.trendCount - left.trendCount || right.signalCount - left.signalCount || left.label.localeCompare(right.label));
+}
+
+export function buildSourceFamilyHistoryInsights(sources: SourceSummaryRecord[]): SourceFamilyHistoryInsight[] {
+  const familyMap = new Map<string, SourceFamilyHistoryInsight & { yieldTotal: number; successCount: number; runCount: number }>();
+
+  for (const source of sources) {
+    const family = source.family || "other";
+    const existing = familyMap.get(family) ?? {
+      family,
+      label: formatSourceFamilyLabel(family),
+      sourceCount: 0,
+      healthySourceCount: 0,
+      latestFetchAt: null,
+      recentAverageYieldRatePercent: 0,
+      recentSuccessRatePercent: 0,
+      yieldTotal: 0,
+      successCount: 0,
+      runCount: 0,
+    };
+
+    existing.sourceCount += 1;
+    if (source.status === "healthy") {
+      existing.healthySourceCount += 1;
+    }
+    if (source.latestFetchAt && (existing.latestFetchAt == null || source.latestFetchAt > existing.latestFetchAt)) {
+      existing.latestFetchAt = source.latestFetchAt;
+    }
+    for (const run of source.runHistory ?? []) {
+      existing.runCount += 1;
+      existing.yieldTotal += run.yieldRatePercent ?? 0;
+      if (run.success && !run.usedFallback) {
+        existing.successCount += 1;
+      }
+    }
+
+    familyMap.set(family, existing);
+  }
+
+  return [...familyMap.values()]
+    .map((family) => ({
+      family: family.family,
+      label: family.label,
+      sourceCount: family.sourceCount,
+      healthySourceCount: family.healthySourceCount,
+      latestFetchAt: family.latestFetchAt,
+      recentAverageYieldRatePercent: family.runCount === 0 ? 0 : family.yieldTotal / family.runCount,
+      recentSuccessRatePercent: family.runCount === 0 ? 0 : (family.successCount / family.runCount) * 100,
+    }))
+    .sort((left, right) => right.healthySourceCount - left.healthySourceCount || right.sourceCount - left.sourceCount || left.label.localeCompare(right.label));
 }
 
 function severityWeight(severity: SourceWatchItem["severity"]): number {

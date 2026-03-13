@@ -21,6 +21,7 @@ import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
   buildSourceContributionInsights,
+  buildSourceFamilyHistoryInsights,
   buildSourceFamilyInsights,
   formatSourceFamilyLabel,
   buildSourceWatchlist,
@@ -360,6 +361,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const sourceFamilyInsights = useMemo(
     () => buildSourceFamilyInsights(initialData.overview.sources),
     [initialData.overview.sources],
+  );
+  const sourceFamilyHistoryInsights = useMemo(
+    () => buildSourceFamilyHistoryInsights(initialData.sourceSummary.sources),
+    [initialData.sourceSummary.sources],
   );
 
   const activeExplorerFilters = useMemo(
@@ -2514,6 +2519,31 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                           </span>
                         </div>
                         <small>{family.averageYieldRatePercent.toFixed(0)}%</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              {sourceFamilyHistoryInsights.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Family pulse</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Recent runs</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceFamilyHistoryInsights.slice(0, 6).map((family) => (
+                      <article className="detail-list-item" key={`${family.family}-pulse`}>
+                        <div>
+                          <strong>{family.label}</strong>
+                          <span>
+                            {family.healthySourceCount}/{family.sourceCount} healthy · {family.recentAverageYieldRatePercent.toFixed(0)}% avg yield
+                          </span>
+                          <span>
+                            {family.latestFetchAt ? formatCompactTimestamp(family.latestFetchAt) : "No recent fetch"} ·{" "}
+                            {family.recentSuccessRatePercent.toFixed(0)}% live success
+                          </span>
+                        </div>
+                        <small>{family.healthySourceCount}</small>
                       </article>
                     ))}
                   </div>
