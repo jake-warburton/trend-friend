@@ -26,6 +26,8 @@ SOURCE_TOPIC_LIMITS = {
     "google_trends": 2,
     "hacker_news": 2,
     "polymarket": 2,
+    "product_hunt": 1,
+    "producthunt": 1,
     "twitter": 2,
     "youtube": 2,
 }
@@ -241,6 +243,7 @@ NOISY_FALLBACK_SOURCES = {
     "twitter",
     "youtube",
 }
+PRODUCT_HUNT_SOURCES = {"product_hunt", "producthunt"}
 HIGH_CONFIDENCE_TOPIC_THRESHOLD = 0.78
 MIN_BIGRAM_CONFIDENCE = 0.2
 MAX_ENTITY_SPAN_TOKENS = 4
@@ -349,7 +352,9 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     protected_multiword_topics = {normalize_topic_name(topic) for topic in source_specific_topics + canonical_topics}
     for candidate in ranked_candidates:
         normalized = candidate.normalized_topic
-        if not normalized or not is_meaningful_topic(normalized):
+        if not normalized:
+            continue
+        if not is_meaningful_candidate_for_source(normalized, source_name, candidate.strategy):
             continue
         if not topic_passes_quality_gate(candidate, title, source_name, exact_phrase_topics):
             continue
@@ -390,6 +395,8 @@ def extract_candidate_topics_for_item(item: RawSourceItem) -> list[str]:
 def infer_source_specific_topics(title: str, tokens: list[str], source_name: str | None) -> list[str]:
     """Return source-specific canonical topics before general extraction heuristics."""
 
+    if source_name in PRODUCT_HUNT_SOURCES:
+        return infer_product_hunt_topics(title)
     if source_name == "google_news":
         return infer_google_news_topics(title, tokens)
     if source_name == "polymarket":
@@ -655,6 +662,42 @@ def infer_youtube_topics(tokens: list[str]) -> list[str]:
     if ("agent" in token_set or "agents" in token_set) and ("workflow" in token_set or "automation" in token_set):
         inferred_topics.append("ai agents")
     return inferred_topics
+
+
+def infer_product_hunt_topics(title: str) -> list[str]:
+    """Prefer the shipped product name over launch tagline fragments."""
+
+    prefix = title.split(":", 1)[0].strip()
+    if not prefix:
+        return []
+    prefix = re.sub(r"\s+by\s+[A-Za-z0-9_.+-]+$", "", prefix, flags=re.IGNORECASE).strip()
+    normalized = normalize_topic_name(prefix)
+    if not normalized:
+        return []
+    if not is_meaningful_product_hunt_name(normalized):
+        return []
+    return [normalized]
+
+
+def is_meaningful_product_hunt_name(topic_name: str) -> bool:
+    """Allow short launch names while still rejecting obvious wrappers."""
+
+    if is_meaningful_topic(topic_name):
+        return True
+    tokens = topic_name.split()
+    if len(tokens) == 1:
+        return len(tokens[0]) >= 3 and tokens[0] not in LOW_SIGNAL_BIGRAM_TOKENS
+    return len(tokens) <= 3 and tokens[-1] not in LOW_SIGNAL_BIGRAM_TOKENS
+
+
+def is_meaningful_candidate_for_source(topic_name: str, source_name: str | None, strategy: str) -> bool:
+    """Apply source-aware meaningfulness checks without weakening the global baseline."""
+
+    if is_meaningful_topic(topic_name):
+        return True
+    return source_name in PRODUCT_HUNT_SOURCES and strategy == "canonical_rule" and is_meaningful_product_hunt_name(
+        topic_name
+    )
 
 
 def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSignal]:

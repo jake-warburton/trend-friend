@@ -35,9 +35,46 @@ class TopicNormalizationTests(unittest.TestCase):
     def test_extract_candidate_topics_prefers_branded_product_phrase_over_trailing_instruction_words(self) -> None:
         topics = extract_candidate_topics(
             "Perplexity Computer Skills: Extend Computer’s capabilities with repeatable instructions",
-            source_name="product_hunt",
+            source_name="producthunt",
         )
         self.assertEqual(topics, ["perplexity computer skills"])
+
+    def test_extract_candidate_topics_prefers_product_hunt_launch_name_over_tagline_fragments(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics(
+                "doXmind: The AI editor Notion should have built",
+                source_name="producthunt",
+            ),
+            ["doxmind"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "deepidv: AI-native verification & anti-fraud Engine",
+                source_name="producthunt",
+            ),
+            ["deepidv"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Parker by Perfectly: Your AI career super-connector",
+                source_name="producthunt",
+            ),
+            ["parker"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Pre: Pre makes anybody an operator.",
+                source_name="producthunt",
+            ),
+            ["pre"],
+        )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Ask Maps by Google: Ask Maps questions, drive with immersive navigation.",
+                source_name="producthunt",
+            ),
+            ["ask maps"],
+        )
 
     def test_extract_candidate_topics_drops_ambiguous_conversational_reddit_titles(self) -> None:
         topics = extract_candidate_topics(
