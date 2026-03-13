@@ -9,6 +9,7 @@ import type {
   SourceSummaryResponse,
   TrendDetailIndexResponse,
   TrendDetailRecord,
+  TrendExplorerRecord,
   LatestTrendsResponse,
   TrendExplorerResponse,
   TrendHistoryResponse,
@@ -342,7 +343,24 @@ export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord |
     } catch { /* fall through to file */ }
   }
   const payload = await readTrendDetailIndex();
-  return payload.trends.find((trend) => trend.id === slug) ?? null;
+  const detailMatch = payload.trends.find((trend) => trend.id === slug) ?? null;
+  if (detailMatch) {
+    return detailMatch;
+  }
+
+  const explorer = await readTrendExplorer();
+  const explorerMatch = explorer.trends.find((trend) => trend.id === slug);
+  if (explorerMatch) {
+    return buildFallbackTrendDetailFromExplorer(explorerMatch, explorer.generatedAt);
+  }
+
+  const overview = await readDashboardOverview();
+  const experimentalMatch = overview.sections.experimentalTrends.find((trend) => trend.id === slug);
+  if (experimentalMatch) {
+    return buildFallbackTrendDetailFromOverviewItem(experimentalMatch, overview);
+  }
+
+  return null;
 }
 
 export async function loadSourceSummary(sourceId: string) {
@@ -506,6 +524,135 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
         }
       : null,
   };
+}
+
+export function buildFallbackTrendDetailFromExplorer(
+  trend: TrendExplorerRecord,
+  generatedAt: string,
+): TrendDetailRecord {
+  const latestSignalAt = trend.latestSignalAt || generatedAt;
+  return normalizeTrendDetailRecord({
+    id: trend.id,
+    name: trend.name,
+    category: trend.category,
+    metaTrend: trend.metaTrend,
+    stage: trend.stage,
+    confidence: trend.confidence,
+    summary: trend.summary || "This topic is available in the explorer, but full detail enrichment has not been generated yet.",
+    whyNow: trend.evidencePreview.length > 0 ? trend.evidencePreview.slice(0, 3) : ["Detail enrichment is still catching up for this trend."],
+    status: trend.status,
+    volatility: trend.volatility,
+    rank: trend.rank,
+    previousRank: trend.previousRank,
+    rankChange: trend.rankChange,
+    firstSeenAt: trend.firstSeenAt,
+    latestSignalAt,
+    score: trend.score,
+    momentum: trend.momentum,
+    breakoutPrediction: {
+      confidence: trend.confidence,
+      predictedDirection: trend.forecastDirection ?? "stable",
+      signals: trend.evidencePreview.slice(0, 3),
+    },
+    forecast: null,
+    opportunity: {
+      composite: trend.score.total / 100,
+      discovery: trend.score.total / 100,
+      seo: trend.score.search / 100,
+      content: trend.score.social / 100,
+      product: trend.score.developer / 100,
+      investment: trend.score.diversity / 100,
+      reasoning: ["Full opportunity reasoning is not available for this trend yet."],
+    },
+    coverage: trend.coverage,
+    sources: trend.sources,
+    aliases: [],
+    history: trend.recentHistory ?? [],
+    sourceBreakdown: trend.sources.map((source) => ({
+      source,
+      signalCount: 0,
+      latestSignalAt,
+    })),
+    sourceContributions: [],
+    geoSummary: [],
+    audienceSummary: trend.audienceSummary ?? [],
+    evidenceItems:
+      trend.primaryEvidence != null
+        ? [trend.primaryEvidence]
+        : [],
+    primaryEvidence: trend.primaryEvidence ?? null,
+    duplicateCandidates: [],
+    relatedTrends: [],
+    seasonality: trend.seasonality ?? null,
+  });
+}
+
+export function buildFallbackTrendDetailFromOverviewItem(
+  trend: DashboardOverviewResponse["sections"]["experimentalTrends"][number],
+  overview: DashboardOverviewResponse,
+): TrendDetailRecord {
+  return normalizeTrendDetailRecord({
+    id: trend.id,
+    name: trend.name,
+    category: trend.category,
+    metaTrend: "Experimental",
+    stage: "nascent",
+    confidence: 0.35,
+    summary: "This topic is currently surfaced as an experimental candidate before full detail enrichment is available.",
+    whyNow: ["This topic is currently ranked in the experimental bucket."],
+    status: "experimental",
+    volatility: "emerging",
+    rank: trend.rank,
+    previousRank: null,
+    rankChange: null,
+    firstSeenAt: null,
+    latestSignalAt: overview.generatedAt,
+    score: {
+      total: trend.scoreTotal,
+      social: 0,
+      developer: 0,
+      knowledge: 0,
+      search: 0,
+      diversity: 0,
+    },
+    momentum: {
+      previousRank: null,
+      rankChange: null,
+      absoluteDelta: null,
+      percentDelta: null,
+    },
+    breakoutPrediction: {
+      confidence: 0.35,
+      predictedDirection: "experimental",
+      signals: [],
+    },
+    forecast: null,
+    opportunity: {
+      composite: 0,
+      discovery: 0,
+      seo: 0,
+      content: 0,
+      product: 0,
+      investment: 0,
+      reasoning: ["Experimental candidates do not have full scoring decomposition yet."],
+    },
+    coverage: {
+      sourceCount: 0,
+      signalCount: 0,
+    },
+    sources: [],
+    aliases: [],
+    history: [],
+    sourceBreakdown: [],
+    sourceContributions: [],
+    geoSummary: [],
+    audienceSummary: [],
+    evidenceItems: [],
+    primaryEvidence: null,
+    duplicateCandidates: [],
+    relatedTrends: [],
+    seasonality: null,
+  });
 }
 
 export async function loadTrendDetails(): Promise<TrendDetailIndexResponse> {

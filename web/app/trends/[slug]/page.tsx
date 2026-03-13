@@ -660,6 +660,9 @@ function formatOpportunityScore(value: number) {
 }
 
 function formatPredictionDirection(direction: string) {
+  if (direction === "experimental") {
+    return "Experimental";
+  }
   return direction.charAt(0).toUpperCase() + direction.slice(1);
 }
 
@@ -733,6 +736,9 @@ function formatMomentum(value: number | null) {
 }
 
 function formatTrendStatus(status: string) {
+  if (status === "experimental") {
+    return "Experimental";
+  }
   if (status === "breakout") {
     return "Breakout";
   }
@@ -749,6 +755,9 @@ function formatTrendStatus(status: string) {
 }
 
 function trendStatusClassName(status: string) {
+  if (status === "experimental") {
+    return "trend-status-pill";
+  }
   if (status === "breakout") {
     return "trend-status-pill trend-status-pill-breakout";
   }
