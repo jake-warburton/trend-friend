@@ -144,6 +144,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["id"], "ai-agents")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
         self.assertEqual(payload["trends"][0]["category"], "artificial-intelligence")
+        self.assertEqual(payload["trends"][0]["metaTrend"], "AI and automation")
+        self.assertEqual(payload["trends"][0]["stage"], "breakout")
+        self.assertEqual(payload["trends"][0]["confidence"], 0.86)
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
@@ -168,6 +171,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["trends"][0]["status"], "breakout")
         self.assertEqual(payload["trends"][0]["category"], "artificial-intelligence")
+        self.assertEqual(payload["trends"][0]["metaTrend"], "AI and automation")
+        self.assertEqual(payload["trends"][0]["stage"], "breakout")
+        self.assertEqual(payload["trends"][0]["confidence"], 0.86)
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
@@ -310,6 +316,9 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
         id="ai-agents",
         name="AI Agents",
         category="artificial-intelligence",
+        meta_trend="AI and automation",
+        stage="breakout",
+        confidence=0.86,
         status="breakout",
         volatility="spiking",
         rank=1,
@@ -368,6 +377,9 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         id="ai-agents",
         name="AI Agents",
         category="artificial-intelligence",
+        meta_trend="AI and automation",
+        stage="breakout",
+        confidence=0.86,
         status="breakout",
         volatility="spiking",
         rank=1,

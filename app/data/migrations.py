@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 from app.data.connection import DatabaseConnection
+from app.data.sql_dialect import SQLITE_DIALECT
 
 
 @dataclass(frozen=True)
@@ -47,8 +48,9 @@ def apply_migrations(connection: DatabaseConnection, migrations: list[Migration]
         if migration.version in applied_versions:
             continue
         migration.apply(connection)
+        dialect = getattr(connection, "dialect", SQLITE_DIALECT)
         connection.execute(
-            f"INSERT INTO schema_migrations (version) VALUES ({connection.dialect.placeholders(1)})",
+            f"INSERT INTO schema_migrations (version) VALUES ({dialect.placeholders(1)})",
             (migration.version,),
         )
         connection.commit()

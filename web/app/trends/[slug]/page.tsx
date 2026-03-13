@@ -160,6 +160,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           <p className="eyebrow">Trend detail</p>
           <div className="detail-pill-row">
             <span className="trend-date-chip">{formatCategory(trend.category)}</span>
+            <span className="trend-date-chip">{trend.metaTrend}</span>
+            <span className="trend-date-chip">{formatLabel(trend.stage)}</span>
+            <span className="trend-date-chip">{Math.round(trend.confidence * 100)}% confidence</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
             <span className={volatilityClassName(trend.volatility)}>{formatVolatility(trend.volatility)}</span>
             {seasonalityBadge ? (
@@ -562,6 +565,13 @@ function formatDateOnly(value: string) {
 
 function formatCategory(category: string) {
   return formatCategoryLabel(category);
+}
+
+function formatLabel(value: string) {
+  return value
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(" ");
 }
 
 function formatSignalType(signalType: string) {

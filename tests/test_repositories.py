@@ -287,6 +287,9 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.momentum.percent_delta, 200.0)
         self.assertEqual(ai_agents.status, "breakout")
         self.assertEqual(ai_agents.category, "ai-machine-learning")
+        self.assertEqual(ai_agents.meta_trend, "AI and automation")
+        self.assertEqual(ai_agents.stage, "nascent")
+        self.assertGreater(ai_agents.confidence, 0.35)
         self.assertEqual(ai_agents.volatility, "spiking")
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
@@ -333,6 +336,9 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].history[0].captured_at, previous_captured_at)
         self.assertEqual(records[0].status, "breakout")
         self.assertEqual(records[0].category, "ai-machine-learning")
+        self.assertEqual(records[0].meta_trend, "AI and automation")
+        self.assertEqual(records[0].stage, "nascent")
+        self.assertGreater(records[0].confidence, 0.35)
         self.assertEqual(records[0].volatility, "spiking")
         self.assertEqual(records[0].geo_summary[0].country_code, "GB")
         self.assertEqual(records[0].geo_summary[0].signal_count, 1)
@@ -395,6 +401,26 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(tax_detail.seasonality.tag, "recurring")
         self.assertEqual(tax_detail.seasonality.recurrence_count, 2)
         self.assertEqual(tax_explorer.seasonality.tag, "recurring")
+
+    def test_trend_score_repository_persists_trend_entities(self) -> None:
+        repository = TrendScoreRepository(self.connection)
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        repository.append_snapshot(
+            [build_score(topic="ai agents", total_score=30.0)],
+            captured_at=captured_at,
+        )
+
+        entity = repository.get_trend_entity("ai agents")
+
+        self.assertIsNotNone(entity)
+        assert entity is not None
+        self.assertEqual(entity.canonical_name, "AI Agents")
+        self.assertEqual(entity.category, "ai-machine-learning")
+        self.assertEqual(entity.meta_trend, "AI and automation")
+        self.assertEqual(entity.stage, "nascent")
+        self.assertGreater(entity.confidence, 0.0)
+        self.assertEqual(entity.last_seen_at, datetime(2026, 3, 8, tzinfo=timezone.utc))
 
     def test_watchlist_repository_round_trip(self) -> None:
         repository = WatchlistRepository(self.connection)

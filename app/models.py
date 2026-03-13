@@ -155,12 +155,29 @@ class OpportunitySummary:
 
 
 @dataclass(frozen=True)
+class TrendEntity:
+    """Canonical persisted metadata for one tracked trend."""
+
+    topic_key: str
+    canonical_name: str
+    category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    first_seen_at: datetime | None
+    last_seen_at: datetime
+
+
+@dataclass(frozen=True)
 class TrendExplorerRecord:
     """Richer read model for the explorer dashboard."""
 
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
     status: str
     volatility: str
     rank: int
@@ -276,6 +293,9 @@ class TrendDetailRecord:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
     status: str
     volatility: str
     rank: int

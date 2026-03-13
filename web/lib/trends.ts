@@ -289,6 +289,9 @@ export function normalizeTrendExplorer(payload: TrendExplorerResponse): TrendExp
     trends: payload.trends.map((trend) => ({
       ...trend,
       category: trend.category ?? "general-tech",
+      metaTrend: trend.metaTrend ?? "General",
+      stage: trend.stage ?? "steady",
+      confidence: trend.confidence ?? 0,
       status: trend.status ?? "steady",
       volatility: trend.volatility ?? "stable",
       previousRank: trend.previousRank ?? null,
@@ -422,6 +425,9 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
   return {
     ...trend,
     category: trend.category ?? "general-tech",
+    metaTrend: trend.metaTrend ?? "General",
+    stage: trend.stage ?? "steady",
+    confidence: trend.confidence ?? 0,
     status: trend.status ?? "steady",
     volatility: trend.volatility ?? "stable",
     previousRank: trend.previousRank ?? null,

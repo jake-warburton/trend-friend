@@ -14,6 +14,7 @@ POSTGRES_MIGRATIONS = [
     Migration("0004_pipeline_quality_metrics", load_sql_migration("postgres_migrations/0004_pipeline_quality_metrics.sql")),
     Migration("0005_source_topic_metrics", load_sql_migration("postgres_migrations/0005_source_topic_metrics.sql")),
     Migration("0006_experimental_trend_tiers", load_sql_migration("postgres_migrations/0006_experimental_trend_tiers.sql")),
+    Migration("0007_trend_entities", load_sql_migration("postgres_migrations/0007_trend_entities.sql")),
 ]
 
 

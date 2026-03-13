@@ -202,6 +202,9 @@ export type TrendExplorerRecord = {
   id: string;
   name: string;
   category: string;
+  metaTrend: string;
+  stage: string;
+  confidence: number;
   status: string;
   volatility: string;
   rank: number;
@@ -292,6 +295,9 @@ export type TrendDetailRecord = {
   id: string;
   name: string;
   category: string;
+  metaTrend: string;
+  stage: string;
+  confidence: number;
   status: string;
   volatility: string;
   rank: number;

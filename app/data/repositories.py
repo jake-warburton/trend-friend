@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
 from app.data.connection import DatabaseConnection
+from app.data.sql_dialect import SQLITE_DIALECT
 from app.data.write_helpers import execute_insert_and_return_id
 from app.topics.categorize import categorize_topic
 from app.topics.display import build_display_name
@@ -25,6 +26,7 @@ from app.models import (
     SeasonalityResult,
     SourceIngestionRun,
     TrendDetailRecord,
+    TrendEntity,
     DigestMover,
     TrendEvidenceItem,
     TrendForecast,
@@ -53,7 +55,13 @@ def sql_placeholders(connection: DatabaseConnection, count: int) -> str:
     database engine.
     """
 
-    return connection.dialect.placeholders(count)
+    return get_connection_dialect(connection).placeholders(count)
+
+
+def get_connection_dialect(connection: DatabaseConnection):
+    """Return the configured SQL dialect, defaulting to SQLite semantics."""
+
+    return getattr(connection, "dialect", SQLITE_DIALECT)
 
 
 class SignalRepository:
@@ -1447,7 +1455,7 @@ class WatchlistRepository:
         """Insert one watchlist item if it does not already exist."""
 
         self.connection.execute(
-            self.connection.dialect.insert_or_ignore_statement(
+            get_connection_dialect(self.connection).insert_or_ignore_statement(
                 "watchlist_items",
                 ("watchlist_id", "trend_id", "trend_name"),
             ),
@@ -1458,7 +1466,7 @@ class WatchlistRepository:
         """Upsert the per-day share access row."""
 
         self.connection.execute(
-            self.connection.dialect.incrementing_upsert_statement(
+            get_connection_dialect(self.connection).incrementing_upsert_statement(
                 "watchlist_share_daily_access",
                 ("share_id", "access_date"),
                 "access_count",
@@ -1520,6 +1528,7 @@ class TrendScoreRepository:
                 for score in scores
             ],
         )
+        self._upsert_trend_entities(scores, published_topics=published_topics)
         self.connection.commit()
 
     def append_snapshot(
@@ -1566,6 +1575,7 @@ class TrendScoreRepository:
                 for rank_position, score in enumerate(scores, start=1)
             ],
         )
+        self._upsert_trend_entities(scores, published_topics=published_topics)
         self.connection.commit()
         return run_id
 
@@ -1586,6 +1596,21 @@ class TrendScoreRepository:
         return [
             self._score_from_row(row) for row in rows
         ]
+
+    def get_trend_entity(self, topic: str) -> TrendEntity | None:
+        """Return persisted canonical metadata for one topic when available."""
+
+        row = self.connection.execute(
+            """
+            SELECT topic_key, canonical_name, category, meta_trend, stage, confidence, first_seen_at, last_seen_at
+            FROM trend_entities
+            WHERE topic_key = ?
+            """,
+            (topic,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._trend_entity_from_row(row)
 
     def list_latest_snapshot(self, limit: int) -> tuple[datetime | None, list[TrendScoreResult]]:
         """Return the most recent stored snapshot and its capture time."""
@@ -1754,11 +1779,15 @@ class TrendScoreRepository:
             momentum = self._build_momentum(score.total_score, recent_history)
             forecast = forecast_trend(full_history)
             seasonality = self.get_topic_seasonality(score.topic)
+            entity = self._get_or_create_trend_entity(score, recent_history)
             records.append(
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
-                    name=score.display_name or build_display_name(score.topic, score.evidence),
-                    category=self._build_category(score.topic, score.source_counts),
+                    name=entity.canonical_name,
+                    category=entity.category,
+                    meta_trend=entity.meta_trend,
+                    stage=entity.stage,
+                    confidence=entity.confidence,
                     status=self._build_trend_status(momentum),
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -1843,11 +1872,15 @@ class TrendScoreRepository:
             slug = self._slugify_topic(score.topic)
             opportunity = opportunities.get(slug)
             prediction = predictions.get(slug)
+            entity = self._get_or_create_trend_entity(score, list(reversed(history)))
             records.append(
                 TrendDetailRecord(
                     id=slug,
-                    name=score.display_name or build_display_name(score.topic, score.evidence),
-                    category=self._build_category(score.topic, score.source_counts),
+                    name=entity.canonical_name,
+                    category=entity.category,
+                    meta_trend=entity.meta_trend,
+                    stage=entity.stage,
+                    confidence=entity.confidence,
                     status=status_by_topic[score.topic],
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -2109,6 +2142,129 @@ class TrendScoreRepository:
         segments.sort(key=lambda item: (-item.signal_count, item.segment_type, item.label))
         return segments[:limit]
 
+    def _upsert_trend_entities(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        published_topics: set[str],
+    ) -> None:
+        """Persist canonical metadata for currently published trends."""
+
+        rows = [
+            self._build_trend_entity_row(score, self.get_topic_history(score.topic, limit_runs=6))
+            for score in scores
+            if score.topic in published_topics
+        ]
+        if not rows:
+            return
+
+        self.connection.executemany(
+            """
+            INSERT INTO trend_entities (
+                topic_key, canonical_name, category, meta_trend, stage, confidence, first_seen_at, last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key)
+            DO UPDATE SET
+                canonical_name = excluded.canonical_name,
+                category = excluded.category,
+                meta_trend = excluded.meta_trend,
+                stage = excluded.stage,
+                confidence = excluded.confidence,
+                first_seen_at = COALESCE(trend_entities.first_seen_at, excluded.first_seen_at),
+                last_seen_at = excluded.last_seen_at,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            rows,
+        )
+
+    def _get_or_create_trend_entity(
+        self,
+        score: TrendScoreResult,
+        history: list[TrendHistoryPoint],
+    ) -> TrendEntity:
+        """Return canonical trend metadata, creating a fallback row when needed."""
+
+        entity = self.get_trend_entity(score.topic)
+        if entity is not None:
+            return entity
+
+        row = self._build_trend_entity_row(score, history)
+        self.connection.execute(
+            """
+            INSERT INTO trend_entities (
+                topic_key, canonical_name, category, meta_trend, stage, confidence, first_seen_at, last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key)
+            DO UPDATE SET
+                canonical_name = excluded.canonical_name,
+                category = excluded.category,
+                meta_trend = excluded.meta_trend,
+                stage = excluded.stage,
+                confidence = excluded.confidence,
+                first_seen_at = COALESCE(trend_entities.first_seen_at, excluded.first_seen_at),
+                last_seen_at = excluded.last_seen_at,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            row,
+        )
+        self.connection.commit()
+        return self.get_trend_entity(score.topic) or self._trend_entity_from_tuple(row)
+
+    def _build_trend_entity_row(
+        self,
+        score: TrendScoreResult,
+        history: list[TrendHistoryPoint],
+    ) -> tuple[object, ...]:
+        """Build one persisted trend-entity row from the current trend state."""
+
+        ordered_history = sorted(history, key=lambda point: point.captured_at, reverse=True)
+        momentum = self._build_momentum(score.total_score, ordered_history)
+        category = self._build_category(score.topic, score.source_counts)
+        first_seen_at = self.get_first_seen_at(score.topic)
+        return (
+            score.topic,
+            score.display_name or build_display_name(score.topic, score.evidence),
+            category,
+            self._build_meta_trend(category),
+            self._build_trend_stage(momentum, len(ordered_history), score.total_score),
+            self._build_trend_confidence(score, ordered_history),
+            first_seen_at.isoformat() if first_seen_at is not None else None,
+            score.latest_timestamp.isoformat(),
+        )
+
+    @staticmethod
+    def _trend_entity_from_row(row: RowMapping) -> TrendEntity:
+        """Build a trend entity from a stored row."""
+
+        return TrendEntity(
+            topic_key=row["topic_key"],
+            canonical_name=row["canonical_name"],
+            category=row["category"],
+            meta_trend=row["meta_trend"],
+            stage=row["stage"],
+            confidence=round(float(row["confidence"] or 0.0), 3),
+            first_seen_at=datetime.fromisoformat(row["first_seen_at"]) if row["first_seen_at"] else None,
+            last_seen_at=datetime.fromisoformat(row["last_seen_at"]),
+        )
+
+    @staticmethod
+    def _trend_entity_from_tuple(row: tuple[object, ...]) -> TrendEntity:
+        """Build a trend entity from an upsert tuple."""
+
+        first_seen_at = row[6]
+        return TrendEntity(
+            topic_key=str(row[0]),
+            canonical_name=str(row[1]),
+            category=str(row[2]),
+            meta_trend=str(row[3]),
+            stage=str(row[4]),
+            confidence=round(float(row[5]), 3),
+            first_seen_at=datetime.fromisoformat(str(first_seen_at)) if first_seen_at else None,
+            last_seen_at=datetime.fromisoformat(str(row[7])),
+        )
+
     @staticmethod
     def _score_from_row(row: RowMapping) -> TrendScoreResult:
         """Build a score model from one database row."""
@@ -2195,6 +2351,53 @@ class TrendScoreRepository:
         return categorize_topic(topic, source_counts)
 
     @staticmethod
+    def _build_meta_trend(category: str) -> str:
+        """Map explorer categories into broader trend database buckets."""
+
+        meta_trend_map = {
+            "ai-machine-learning": "AI and automation",
+            "developer-tools": "Developer workflows",
+            "consumer-products": "Consumer behavior",
+            "fintech-crypto": "Financial technology",
+            "health-biotech": "Health and biotech",
+            "climate-energy": "Climate and energy",
+            "enterprise-software": "Business software",
+        }
+        return meta_trend_map.get(category, category.replace("-", " ").title())
+
+    @staticmethod
+    def _build_trend_stage(momentum: TrendMomentum, history_length: int, total_score: float) -> str:
+        """Return a coarse lifecycle stage for a trend."""
+
+        if momentum.previous_rank is None or history_length <= 2:
+            return "nascent"
+        if (momentum.rank_change or 0) < 0 or (momentum.percent_delta or 0) < 0:
+            return "cooling"
+        if (momentum.rank_change or 0) >= 3 or (momentum.percent_delta or 0) >= 25:
+            return "breakout"
+        if history_length >= 5 and total_score >= 30:
+            return "validated"
+        if (momentum.rank_change or 0) > 0 or (momentum.percent_delta or 0) > 0:
+            return "rising"
+        return "steady"
+
+    @staticmethod
+    def _build_trend_confidence(score: TrendScoreResult, history: list[TrendHistoryPoint]) -> float:
+        """Estimate how trustworthy a trend is from breadth and continuity."""
+
+        source_factor = min(len(score.source_counts) / 4.0, 1.0)
+        signal_factor = min(sum(score.source_counts.values()) / 6.0, 1.0)
+        history_factor = min(len(history) / 5.0, 1.0)
+        evidence_factor = min(len(score.evidence) / 5.0, 1.0)
+        confidence = (
+            source_factor * 0.35
+            + signal_factor * 0.2
+            + history_factor * 0.3
+            + evidence_factor * 0.15
+        )
+        return round(min(1.0, confidence), 3)
+
+    @staticmethod
     def _slugify_topic(topic: str) -> str:
         """Convert a topic to a stable slug identifier."""
 
@@ -2254,6 +2457,9 @@ class TrendScoreRepository:
                 id=record.id,
                 name=record.name,
                 category=record.category,
+                meta_trend=record.meta_trend,
+                stage=record.stage,
+                confidence=record.confidence,
                 status=record.status,
                 volatility=record.volatility,
                 rank=record.rank,

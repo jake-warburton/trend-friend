@@ -155,6 +155,9 @@ class TrendExplorerRecordPayload:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
     status: str
     volatility: str
     rank: int
@@ -280,6 +283,9 @@ class TrendDetailRecordPayload:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
     status: str
     volatility: str
     rank: int
@@ -659,6 +665,7 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     """Serialize an explorer record using API-style keys."""
 
     payload = asdict(trend)
+    payload["metaTrend"] = payload.pop("meta_trend")
     payload["previousRank"] = payload.pop("previous_rank")
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
@@ -693,6 +700,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     """Serialize a trend detail record using API-style keys."""
 
     payload = asdict(trend)
+    payload["metaTrend"] = payload.pop("meta_trend")
     payload["previousRank"] = payload.pop("previous_rank")
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")

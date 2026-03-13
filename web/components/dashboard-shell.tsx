@@ -79,6 +79,26 @@ const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as con
 const DEFAULT_AUDIENCE_OPTION = { label: "All audiences", value: "all" } as const;
 const DEFAULT_MARKET_OPTION = { label: "All markets", value: "all" } as const;
 const DEFAULT_LANGUAGE_OPTION = { label: "All languages", value: "all" } as const;
+const DEFAULT_STAGE_OPTION = { label: "All stages", value: "all" } as const;
+const DEFAULT_CONFIDENCE_OPTION = { label: "All confidence", value: "all" } as const;
+const DEFAULT_META_TREND_OPTION = { label: "All meta trends", value: "all" } as const;
+
+const STAGE_OPTIONS = [
+  DEFAULT_STAGE_OPTION,
+  { label: "Nascent", value: "nascent" },
+  { label: "Rising", value: "rising" },
+  { label: "Breakout", value: "breakout" },
+  { label: "Validated", value: "validated" },
+  { label: "Cooling", value: "cooling" },
+  { label: "Steady", value: "steady" },
+] as const;
+
+const CONFIDENCE_OPTIONS = [
+  DEFAULT_CONFIDENCE_OPTION,
+  { label: "High confidence", value: "high" },
+  { label: "Medium confidence", value: "medium" },
+  { label: "Low confidence", value: "low" },
+] as const;
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
@@ -89,7 +109,19 @@ const SORT_OPTIONS = [
 const WATCHLISTS_ENABLED = false;
 
 type ExplorerActiveFilter = {
-  key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "geo" | "sort" | "seasonality";
+  key:
+    | "keyword"
+    | "source"
+    | "category"
+    | "stage"
+    | "confidence"
+    | "metaTrend"
+    | "audience"
+    | "market"
+    | "language"
+    | "geo"
+    | "sort"
+    | "seasonality";
   label: string;
   value: string;
 };
@@ -100,6 +132,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [keyword, setKeyword] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStage, setSelectedStage] = useState<string>("all");
+  const [selectedConfidence, setSelectedConfidence] = useState<string>("all");
+  const [selectedMetaTrend, setSelectedMetaTrend] = useState<string>("all");
   const [selectedAudience, setSelectedAudience] = useState<string>("all");
   const [selectedMarket, setSelectedMarket] = useState<string>("all");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
@@ -193,6 +228,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     () => buildAudienceFilterOptions(initialData.details.trends),
     [initialData.details.trends],
   );
+  const metaTrendOptions = useMemo(() => {
+    const metaTrends = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.metaTrend))).sort();
+    return [
+      DEFAULT_META_TREND_OPTION,
+      ...metaTrends.map((metaTrend) => ({ label: metaTrend, value: metaTrend })),
+    ];
+  }, [initialData.explorer.trends]);
   const marketOptions = useMemo(
     () => buildMarketFilterOptions(initialData.details.trends),
     [initialData.details.trends],
@@ -220,6 +262,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         keyword,
         selectedSource,
         selectedCategory,
+        selectedStage,
+        selectedConfidence,
+        selectedMetaTrend,
         selectedAudience,
         selectedMarket,
         selectedLanguage,
@@ -227,10 +272,26 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         sortBy,
         hideRecurring,
       }),
-    [hideRecurring, keyword, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy],
+    [
+      hideRecurring,
+      keyword,
+      selectedAudience,
+      selectedCategory,
+      selectedConfidence,
+      selectedGeoCountry,
+      selectedLanguage,
+      selectedMarket,
+      selectedMetaTrend,
+      selectedSource,
+      selectedStage,
+      sortBy,
+    ],
   );
   const selectedSourceLabel = getOptionLabel(SOURCE_FILTER_OPTIONS, selectedSource, "All sources");
   const selectedCategoryLabel = getOptionLabel(categoryOptions, selectedCategory, "All categories");
+  const selectedStageLabel = getOptionLabel(STAGE_OPTIONS, selectedStage, "All stages");
+  const selectedConfidenceLabel = getOptionLabel(CONFIDENCE_OPTIONS, selectedConfidence, "All confidence");
+  const selectedMetaTrendLabel = getOptionLabel(metaTrendOptions, selectedMetaTrend, "All meta trends");
   const selectedAudienceLabel = getOptionLabel(audienceOptions, selectedAudience, "All audiences");
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
@@ -245,6 +306,12 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         selectedSource === "all" || trend.sources.includes(selectedSource);
       const matchesCategory =
         selectedCategory === "all" || trend.category === selectedCategory;
+      const matchesStage =
+        selectedStage === "all" || trend.stage === selectedStage;
+      const matchesConfidence =
+        selectedConfidence === "all" || confidenceBucketForTrend(trend.confidence) === selectedConfidence;
+      const matchesMetaTrend =
+        selectedMetaTrend === "all" || trend.metaTrend === selectedMetaTrend;
       const matchesAudience = trendMatchesAudience(detail, selectedAudience);
       const matchesMarket = trendMatchesMarket(detail, selectedMarket);
       const matchesLanguage = trendMatchesLanguage(detail, selectedLanguage);
@@ -258,6 +325,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       return (
         matchesSource &&
         matchesCategory &&
+        matchesStage &&
+        matchesConfidence &&
+        matchesMetaTrend &&
         matchesAudience &&
         matchesMarket &&
         matchesLanguage &&
@@ -280,7 +350,23 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       }
       return left.rank - right.rank;
     });
-  }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedGeoCountry, selectedLanguage, selectedMarket, selectedSource, sortBy]);
+  }, [
+    deferredKeyword,
+    detailsByTrendId,
+    hideRecurring,
+    initialData.explorer.trends,
+    minimumScore,
+    selectedAudience,
+    selectedCategory,
+    selectedConfidence,
+    selectedGeoCountry,
+    selectedLanguage,
+    selectedMarket,
+    selectedMetaTrend,
+    selectedSource,
+    selectedStage,
+    sortBy,
+  ]);
 
   const explorerGeoMapData = useMemo(
     () => buildExplorerGeoMapData(baseFilteredTrends, detailsByTrendId),
@@ -293,6 +379,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     const params = new URLSearchParams();
     if (selectedSource !== "all") params.set("source", selectedSource);
     if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedStage !== "all") params.set("stage", selectedStage);
+    if (selectedConfidence !== "all") params.set("confidence", selectedConfidence);
+    if (selectedMetaTrend !== "all") params.set("metaTrend", selectedMetaTrend);
     if (selectedAudience !== "all") params.set("audience", selectedAudience);
     if (selectedMarket !== "all") params.set("market", selectedMarket);
     if (selectedLanguage !== "all") params.set("language", selectedLanguage);
@@ -302,7 +391,21 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     if (hideRecurring) params.set("hideRecurring", "1");
     params.set("sort", sortBy);
     return `/api/export?${params.toString()}`;
-  }, [selectedSource, selectedCategory, selectedAudience, selectedMarket, selectedLanguage, selectedGeoCountry, keyword, minimumScore, hideRecurring, sortBy]);
+  }, [
+    selectedSource,
+    selectedCategory,
+    selectedStage,
+    selectedConfidence,
+    selectedMetaTrend,
+    selectedAudience,
+    selectedMarket,
+    selectedLanguage,
+    selectedGeoCountry,
+    keyword,
+    minimumScore,
+    hideRecurring,
+    sortBy,
+  ]);
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -319,6 +422,18 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     }
     if (filterKey === "category") {
       setSelectedCategory("all");
+      return;
+    }
+    if (filterKey === "stage") {
+      setSelectedStage("all");
+      return;
+    }
+    if (filterKey === "confidence") {
+      setSelectedConfidence("all");
+      return;
+    }
+    if (filterKey === "metaTrend") {
+      setSelectedMetaTrend("all");
       return;
     }
     if (filterKey === "audience") {
@@ -348,6 +463,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setKeyword("");
     setSelectedSource("all");
     setSelectedCategory("all");
+    setSelectedStage("all");
+    setSelectedConfidence("all");
+    setSelectedMetaTrend("all");
     setSelectedAudience("all");
     setSelectedMarket("all");
     setSelectedLanguage("all");
@@ -1262,6 +1380,75 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+                  <span>Stage</span>
+                  <Select.Root value={selectedStage} onValueChange={(value) => setSelectedStage(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedStageLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {STAGE_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Confidence</span>
+                  <Select.Root value={selectedConfidence} onValueChange={(value) => setSelectedConfidence(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedConfidenceLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {CONFIDENCE_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Meta trend</span>
+                  <Select.Root value={selectedMetaTrend} onValueChange={(value) => setSelectedMetaTrend(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedMetaTrendLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {metaTrendOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
                   <span>Audience</span>
                   <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1423,12 +1610,14 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   .filter((item): item is string => Boolean(item))
                   .join(" · ");
                 const compactSummaryParts = [
+                  formatStageLabel(trend.stage),
+                  formatConfidenceLabel(trend.confidence),
                   formatTrendStatus(trend.status),
                   formatVolatility(trend.volatility),
                   forecastBadge?.label ?? null,
                   seasonalityBadge?.label ?? null,
                   audienceBadge ?? null,
-                  formatCategory(trend.category),
+                  trend.metaTrend,
                 ].filter((item): item is string => Boolean(item));
                 const collapsedSourceInsights = detail
                   ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
@@ -1456,6 +1645,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                       <div className="explorer-card-meta">
                         <span>{trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}</span>
                         <span>Sources: {trend.sources.length}</span>
+                        <span>{formatCategory(trend.category)}</span>
                       </div>
                       <div className="explorer-card-summary">
                         <span>{compactSummaryParts.join(" / ")}</span>
@@ -1658,6 +1848,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                               <div className="explorer-expand-section">
                                 <strong>Outlook</strong>
                                 <div className="explorer-expand-outlook">
+                                  <div>
+                                    <small>Stage</small>
+                                    <strong>{formatStageLabel(trend.stage)}</strong>
+                                    <small>{formatConfidenceLabel(trend.confidence)}</small>
+                                  </div>
                                   <div>
                                     <small>Breakout</small>
                                     <strong>{detail.breakoutPrediction.predictedDirection}</strong>
@@ -2465,6 +2660,9 @@ export function listActiveExplorerFilters(filters: {
   keyword: string;
   selectedSource: string;
   selectedCategory: string;
+  selectedStage?: string;
+  selectedConfidence?: string;
+  selectedMetaTrend?: string;
   selectedAudience: string;
   selectedMarket: string;
   selectedLanguage: string;
@@ -2481,6 +2679,15 @@ export function listActiveExplorerFilters(filters: {
   }
   if (filters.selectedCategory !== "all") {
     result.push({ key: "category", label: "Category", value: formatCategory(filters.selectedCategory) });
+  }
+  if ((filters.selectedStage ?? "all") !== "all") {
+    result.push({ key: "stage", label: "Stage", value: formatStageLabel(filters.selectedStage) });
+  }
+  if ((filters.selectedConfidence ?? "all") !== "all") {
+    result.push({ key: "confidence", label: "Confidence", value: formatConfidenceBucketLabel(filters.selectedConfidence) });
+  }
+  if ((filters.selectedMetaTrend ?? "all") !== "all") {
+    result.push({ key: "metaTrend", label: "Meta trend", value: filters.selectedMetaTrend ?? "General" });
   }
   if (filters.selectedAudience !== "all") {
     result.push({ key: "audience", label: "Audience", value: formatAudienceLabel(filters.selectedAudience) });
@@ -2523,6 +2730,37 @@ function buildSegmentFilterOptions(
       .sort()
       .map((label) => ({ label: formatAudienceLabel(label), value: label })),
   ];
+}
+
+export function confidenceBucketForTrend(confidence: number) {
+  if (confidence >= 0.75) {
+    return "high";
+  }
+  if (confidence >= 0.5) {
+    return "medium";
+  }
+  return "low";
+}
+
+function formatConfidenceLabel(confidence: number) {
+  return `${formatConfidenceBucketLabel(confidenceBucketForTrend(confidence))} confidence`;
+}
+
+function formatConfidenceBucketLabel(confidence: string | undefined) {
+  if (confidence === "high") {
+    return "High";
+  }
+  if (confidence === "medium") {
+    return "Medium";
+  }
+  return "Low";
+}
+
+function formatStageLabel(stage: string | undefined) {
+  return (stage ?? "steady")
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(" ");
 }
 
 function trendMatchesSegment(detail: TrendDetailRecord | undefined, selectedValue: string, segmentType: string) {
