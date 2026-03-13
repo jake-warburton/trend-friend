@@ -298,12 +298,12 @@
   --snapshot-background: linear-gradient(180deg, rgba(41, 47, 56, 0.98), rgba(31, 36, 43, 0.98));
   --inset-divider: rgba(255, 255, 255, 0.05);
   --page-background:
-    radial-gradient(circle at 18% 0%, rgba(79, 195, 247, 0.05), transparent 22%),
-    radial-gradient(circle at 86% 8%, rgba(255, 255, 255, 0.02), transparent 18%),
-    linear-gradient(180deg, #2c333c 0%, #242a32 42%, #1d222a 100%);
+    radial-gradient(circle at 18% 0%, rgba(79, 195, 247, 0.04), transparent 22%),
+    radial-gradient(circle at 86% 8%, rgba(255, 255, 255, 0.016), transparent 18%),
+    linear-gradient(180deg, #272e37 0%, #20262e 42%, #181d25 100%);
   --body-background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.006), transparent 12%, transparent 88%, rgba(79, 195, 247, 0.012)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.006), transparent 24%);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.005), transparent 12%, transparent 88%, rgba(79, 195, 247, 0.01)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.005), transparent 24%);
 }
 
 .theme-tech-light {
@@ -1120,22 +1120,22 @@ input {
 
 .trend-status-pill-breakout {
   background: var(--accent-badge-bg);
-  color: var(--accent-strong);
+  color: #ffffff;
 }
 
 .trend-status-pill-rising {
   background: var(--success-soft);
-  color: var(--success-text);
+  color: #ffffff;
 }
 
 .trend-status-pill-cooling {
   background: var(--danger-soft);
-  color: var(--danger-text);
+  color: #ffffff;
 }
 
 .trend-status-pill-new {
   background: var(--accent-badge-bg);
-  color: var(--info-soft-text);
+  color: #ffffff;
 }
 
 .volatility-pill {
@@ -1154,17 +1154,17 @@ input {
 
 .volatility-pill-spiking {
   background: var(--negative-bg-soft);
-  color: var(--danger-text);
+  color: #ffffff;
 }
 
 .volatility-pill-volatile {
   background: var(--warning-bg-strong);
-  color: var(--warning-text);
+  color: #ffffff;
 }
 
 .volatility-pill-emerging {
   background: var(--accent-badge-bg);
-  color: var(--highlight-text);
+  color: #ffffff;
 }
 
 .source-health-pill-healthy {
@@ -2371,13 +2371,13 @@ input {
 .seasonality-badge-recurring {
   border: 1px solid var(--seasonal-badge-border);
   background: var(--seasonal-badge-bg);
-  color: var(--seasonal-badge-text);
+  color: #ffffff;
 }
 
 .seasonality-badge-evergreen {
   border: 1px solid var(--evergreen-badge-border);
   background: var(--evergreen-badge-bg);
-  color: var(--evergreen-badge-text);
+  color: #ffffff;
 }
 
 .trend-cell span,
@@ -2492,7 +2492,7 @@ input {
 .toggle-chip-active {
   border-color: var(--seasonal-badge-border);
   background: var(--seasonal-badge-bg);
-  color: var(--seasonal-badge-text);
+  color: #ffffff;
 }
 
 .export-button {
