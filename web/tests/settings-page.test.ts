@@ -57,7 +57,10 @@ test("theme helpers default safely and resolve CSS classes", () => {
   assert.equal(getDefaultThemeForScheme(false), LIGHT_THEME);
   assert.equal(getDefaultThemeForScheme(true), "soft-charcoal");
   assert.equal(getThemeClass("soft-charcoal"), "theme-soft-charcoal");
+  assert.equal(readThemePreference("tech-light"), "tech-light");
+  assert.equal(getThemeClass("tech-light"), "theme-tech-light");
   assert.equal(THEME_OPTIONS[0]?.label, "Tech Light");
+  assert.equal(THEME_OPTIONS[0]?.key, "tech-light");
   assert.equal(THEME_OPTIONS[1]?.key, "soft-charcoal");
   assert.equal(THEME_OPTIONS[2]?.key, "ocean");
   assert.equal(THEME_OPTIONS.length, 3);

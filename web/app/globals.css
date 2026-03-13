@@ -14,7 +14,7 @@
 }
 
 .theme-ocean {
-  /* Theme tokens: add future themes as sibling classes, e.g. .theme-atlassian-light */
+  /* Theme tokens: add future themes as sibling classes, e.g. .theme-tech-light */
   --bg: #24415d;
   --bg-accent: #2b4f70;
   --surface: rgba(44, 68, 95, 0.86);
@@ -210,7 +210,7 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.008), transparent 24%);
 }
 
-.theme-atlassian-light {
+.theme-tech-light {
   --bg: #f7f8f9;
   --bg-accent: #ffffff;
   --surface: rgba(255, 255, 255, 0.92);
@@ -349,8 +349,8 @@
   --body-background: #ffffff;
 }
 
-html.theme-atlassian-light,
-html.theme-atlassian-light body {
+html.theme-tech-light,
+html.theme-tech-light body {
   color-scheme: light;
 }
 
@@ -518,7 +518,7 @@ input {
   padding: 10px 0 24px;
 }
 
-.theme-atlassian-light .dashboard-page {
+.theme-tech-light .dashboard-page {
   display: grid;
   gap: 18px;
   align-content: start;
@@ -1359,7 +1359,7 @@ input {
   border-left: 0;
 }
 
-.theme-atlassian-light .hero-panel {
+.theme-tech-light .hero-panel {
   padding: 12px 14px;
   border: 0;
   border-radius: 0;
@@ -1367,11 +1367,11 @@ input {
   box-shadow: none;
 }
 
-.theme-atlassian-light .hero-rail {
+.theme-tech-light .hero-rail {
   gap: 10px;
 }
 
-.theme-atlassian-light .hero-summary-card {
+.theme-tech-light .hero-summary-card {
   padding: 10px 14px;
   border: 0;
   border-left: 1px solid rgba(9, 30, 66, 0.05);
@@ -1380,14 +1380,14 @@ input {
   box-shadow: none;
 }
 
-.theme-atlassian-light .hero-summary-card-status {
+.theme-tech-light .hero-summary-card-status {
   min-width: 240px;
   border-left: 0;
   padding-left: 0;
 }
 
-.theme-atlassian-light .analytics-card,
-.theme-atlassian-light .explorer-geo-panel {
+.theme-tech-light .analytics-card,
+.theme-tech-light .explorer-geo-panel {
   padding: 14px 16px;
   border: 0;
   border-left: 1px solid rgba(9, 30, 66, 0.05);
@@ -1397,37 +1397,37 @@ input {
   box-shadow: none;
 }
 
-.theme-atlassian-light .analytics-strip,
-.theme-atlassian-light .curated-strip {
+.theme-tech-light .analytics-strip,
+.theme-tech-light .curated-strip {
   gap: 12px;
 }
 
-.theme-atlassian-light .analytics-strip,
-.theme-atlassian-light .trajectory-strip,
-.theme-atlassian-light .curated-strip,
-.theme-atlassian-light .explorer-geo-strip,
-.theme-atlassian-light .content-grid {
+.theme-tech-light .analytics-strip,
+.theme-tech-light .trajectory-strip,
+.theme-tech-light .curated-strip,
+.theme-tech-light .explorer-geo-strip,
+.theme-tech-light .content-grid {
   margin-top: 8px;
 }
 
-.theme-atlassian-light .analytics-strip,
-.theme-atlassian-light .trajectory-strip,
-.theme-atlassian-light .curated-strip,
-.theme-atlassian-light .explorer-geo-panel,
-.theme-atlassian-light .ranking-panel,
-.theme-atlassian-light .history-panel {
+.theme-tech-light .analytics-strip,
+.theme-tech-light .trajectory-strip,
+.theme-tech-light .curated-strip,
+.theme-tech-light .explorer-geo-panel,
+.theme-tech-light .ranking-panel,
+.theme-tech-light .history-panel {
   border-top: 1px solid rgba(9, 30, 66, 0.05);
   border-bottom: 1px solid rgba(9, 30, 66, 0.05);
 }
 
-.theme-atlassian-light .mini-bar-track,
-.theme-atlassian-light .watchlist-share-analytics-card,
-.theme-atlassian-light .explorer-metric-card,
-.theme-atlassian-light .explorer-metrics-panel {
+.theme-tech-light .mini-bar-track,
+.theme-tech-light .watchlist-share-analytics-card,
+.theme-tech-light .explorer-metric-card,
+.theme-tech-light .explorer-metrics-panel {
   box-shadow: none;
 }
 
-.theme-atlassian-light .curated-item {
+.theme-tech-light .curated-item {
   padding: 10px 0;
   border: 0;
   border-top: 1px solid rgba(9, 30, 66, 0.05);
@@ -1436,13 +1436,13 @@ input {
   box-shadow: none;
 }
 
-.theme-atlassian-light .curated-item:hover {
+.theme-tech-light .curated-item:hover {
   border-color: rgba(12, 102, 228, 0.08);
   background: transparent;
 }
 
-.theme-atlassian-light .ranking-panel,
-.theme-atlassian-light .history-panel {
+.theme-tech-light .ranking-panel,
+.theme-tech-light .history-panel {
   background: linear-gradient(180deg, rgba(248, 249, 251, 0.34), rgba(241, 242, 244, 0.2));
   border-left: 0;
   border-right: 0;

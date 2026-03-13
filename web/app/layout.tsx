@@ -30,10 +30,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           ? 'theme-soft-charcoal'
           : themeValue === 'ocean'
             ? 'theme-ocean'
-            : themeValue === 'atlassian-light'
-              ? 'theme-atlassian-light'
-              : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-soft-charcoal' : 'theme-atlassian-light');
-        document.documentElement.classList.remove('theme-atlassian-light', 'theme-soft-charcoal', 'theme-ocean');
+            : themeValue === 'tech-light'
+              ? 'theme-tech-light'
+              : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-soft-charcoal' : 'theme-tech-light');
+        document.documentElement.classList.remove('theme-tech-light', 'theme-soft-charcoal', 'theme-ocean');
         document.documentElement.classList.add(themeClassName);
       } catch (error) {}
     }());

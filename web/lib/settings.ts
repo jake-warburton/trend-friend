@@ -1,6 +1,6 @@
 export const ESTIMATED_METRICS_COOKIE = "signal_eye_show_estimated_metrics";
 export const THEME_COOKIE = "signal_eye_theme";
-export const LIGHT_THEME = "atlassian-light";
+export const LIGHT_THEME = "tech-light";
 export const DARK_THEME = "soft-charcoal";
 
 export type ThemeOption = {
@@ -19,9 +19,9 @@ export type EnrichmentProviderStatus = {
 
 export const THEME_OPTIONS: readonly ThemeOption[] = [
   {
-    key: "atlassian-light",
+    key: "tech-light",
     label: "Tech Light",
-    className: "theme-atlassian-light",
+    className: "theme-tech-light",
     swatches: ["#f7f8fa", "#dfe1e6", "#0052cc", "#172b4d"],
   },
   {
