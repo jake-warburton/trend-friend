@@ -36,6 +36,7 @@ from app.models import (
     RelatedTrend,
     TrendDuplicateCandidate,
     SourceIngestionRun,
+    SourceFamilySnapshot,
     SourceSummaryRecord,
     SourceSummaryTrend,
     TrendScoreResult,
@@ -109,6 +110,7 @@ class ExportPayloadTests(unittest.TestCase):
             sources=[
                 build_source_summary_record("reddit"),
             ],
+            family_history=[build_source_family_snapshot()],
         )
         write_export_payloads(
             self.export_directory,
@@ -135,6 +137,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(explorer_data["trends"][0]["previousRank"], 4)
         self.assertEqual(detail_data["trends"][0]["sourceBreakdown"][0]["latestSignalAt"], "2026-03-08T00:00:00Z")
         self.assertEqual(source_summary_data["sources"][0]["runHistory"][0]["durationMs"], 120)
+        self.assertEqual(source_summary_data["familyHistory"][0]["family"], "community")
+        self.assertEqual(source_summary_data["familyHistory"][0]["topRankedTrendCount"], 2)
 
     def test_build_trend_explorer_payload_uses_api_style_keys(self) -> None:
         generated_at = datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc)
@@ -278,6 +282,7 @@ class ExportPayloadTests(unittest.TestCase):
         payload = build_source_summary_payload(
             generated_at=generated_at,
             sources=[build_source_summary_record("reddit")],
+            family_history=[build_source_family_snapshot()],
         ).to_dict()
         self.assertEqual(payload["generatedAt"], "2026-03-09T21:08:16Z")
         self.assertEqual(payload["sources"][0]["latestFetchAt"], "2026-03-08T00:00:00Z")
@@ -288,6 +293,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sources"][0]["yieldRatePercent"], 60.0)
         self.assertEqual(payload["sources"][0]["signalYieldRatio"], 0.6)
         self.assertEqual(payload["sources"][0]["topTrends"][0]["scoreTotal"], 42.4)
+        self.assertEqual(payload["familyHistory"][0]["capturedAt"], "2026-03-09T21:08:16Z")
+        self.assertEqual(payload["familyHistory"][0]["corroboratedTrendCount"], 3)
 
     def test_build_source_summary_records_uses_runs_and_trends(self) -> None:
         records = build_source_summary_records(
@@ -643,6 +650,24 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
                 score_total=42.4,
             )
         ],
+    )
+
+
+def build_source_family_snapshot() -> SourceFamilySnapshot:
+    """Create a stable source-family snapshot fixture."""
+
+    return SourceFamilySnapshot(
+        family="community",
+        captured_at=datetime(2026, 3, 9, 21, 8, 16, tzinfo=timezone.utc),
+        source_count=3,
+        healthy_source_count=2,
+        signal_count=18,
+        trend_count=5,
+        corroborated_trend_count=3,
+        top_ranked_trend_count=2,
+        average_score=28.4,
+        average_yield_rate_percent=56.2,
+        success_rate_percent=66.7,
     )
 
 

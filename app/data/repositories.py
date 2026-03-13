@@ -24,6 +24,7 @@ from app.models import (
     RelatedTrend,
     RunDigest,
     SeasonalityResult,
+    SourceFamilySnapshot,
     SourceIngestionRun,
     TrendCurationOverride,
     TrendDetailRecord,
@@ -292,6 +293,89 @@ class SourceIngestionRunRepository:
                     duplicate_topic_rate=row["duplicate_topic_rate"],
                     used_fallback=bool(row["used_fallback"]),
                     error_message=row["error_message"],
+                )
+            )
+        return grouped
+
+
+class SourceFamilySnapshotRepository:
+    """Persist and retrieve family-level source impact history."""
+
+    def __init__(self, connection: DatabaseConnection) -> None:
+        self.connection = connection
+
+    def append_snapshots(self, snapshots: list[SourceFamilySnapshot]) -> None:
+        """Persist family analytics for one scoring run."""
+
+        if not snapshots:
+            return
+        self.connection.executemany(
+            """
+            INSERT INTO source_family_snapshots (
+                family,
+                captured_at,
+                source_count,
+                healthy_source_count,
+                signal_count,
+                trend_count,
+                corroborated_trend_count,
+                top_ranked_trend_count,
+                average_score,
+                average_yield_rate_percent,
+                success_rate_percent
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    snapshot.family,
+                    snapshot.captured_at.isoformat(),
+                    snapshot.source_count,
+                    snapshot.healthy_source_count,
+                    snapshot.signal_count,
+                    snapshot.trend_count,
+                    snapshot.corroborated_trend_count,
+                    snapshot.top_ranked_trend_count,
+                    snapshot.average_score,
+                    snapshot.average_yield_rate_percent,
+                    snapshot.success_rate_percent,
+                )
+                for snapshot in snapshots
+            ],
+        )
+        self.connection.commit()
+
+    def list_recent_snapshots(self, limit_per_family: int) -> dict[str, list[SourceFamilySnapshot]]:
+        """Return recent family analytics ordered newest first for each family."""
+
+        rows = self.connection.execute(
+            """
+            SELECT family, captured_at, source_count, healthy_source_count, signal_count,
+                   trend_count, corroborated_trend_count, top_ranked_trend_count,
+                   average_score, average_yield_rate_percent, success_rate_percent
+            FROM source_family_snapshots
+            ORDER BY captured_at DESC, id DESC
+            """
+        ).fetchall()
+        grouped: dict[str, list[SourceFamilySnapshot]] = {}
+        for row in rows:
+            family = row["family"]
+            snapshots = grouped.setdefault(family, [])
+            if len(snapshots) >= limit_per_family:
+                continue
+            snapshots.append(
+                SourceFamilySnapshot(
+                    family=family,
+                    captured_at=datetime.fromisoformat(row["captured_at"]),
+                    source_count=row["source_count"],
+                    healthy_source_count=row["healthy_source_count"],
+                    signal_count=row["signal_count"],
+                    trend_count=row["trend_count"],
+                    corroborated_trend_count=row["corroborated_trend_count"],
+                    top_ranked_trend_count=row["top_ranked_trend_count"],
+                    average_score=row["average_score"],
+                    average_yield_rate_percent=row["average_yield_rate_percent"],
+                    success_rate_percent=row["success_rate_percent"],
                 )
             )
         return grouped

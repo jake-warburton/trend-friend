@@ -15,10 +15,11 @@ from app.config import load_settings
 from app.data.database import initialize_database
 from app.data.repositories import (
     SignalRepository,
+    SourceFamilySnapshotRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
 )
-from app.models import NormalizedSignal, SourceIngestionRun, TrendScoreResult
+from app.models import NormalizedSignal, SourceFamilySnapshot, SourceIngestionRun, TrendScoreResult
 
 
 def _build_score(topic: str = "ai agents", total_score: float = 42.0) -> TrendScoreResult:
@@ -64,6 +65,7 @@ class APITests(unittest.TestCase):
         """Insert minimal test data."""
         score_repo = TrendScoreRepository(self.connection)
         signal_repo = SignalRepository(self.connection)
+        source_family_repo = SourceFamilySnapshotRepository(self.connection)
         source_run_repo = SourceIngestionRunRepository(self.connection)
 
         captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
@@ -80,6 +82,21 @@ class APITests(unittest.TestCase):
                 kept_item_count=10,
                 duration_ms=500,
             ),
+        ])
+        source_family_repo.append_snapshots([
+            SourceFamilySnapshot(
+                family="community",
+                captured_at=captured_at,
+                source_count=1,
+                healthy_source_count=1,
+                signal_count=1,
+                trend_count=1,
+                corroborated_trend_count=0,
+                top_ranked_trend_count=1,
+                average_score=42.0,
+                average_yield_rate_percent=66.7,
+                success_rate_percent=100.0,
+            )
         ])
         score_repo.append_snapshot(
             [_build_score("ai agents", 42.0), _build_score("battery recycling", 25.0)],
@@ -156,10 +173,12 @@ class APITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("sources", data)
+        self.assertIn("familyHistory", data)
         reddit = next(source for source in data["sources"] if source["source"] == "reddit")
         self.assertEqual(reddit["rawItemCount"], 15)
         self.assertEqual(reddit["keptItemCount"], 10)
         self.assertEqual(reddit["yieldRatePercent"], 66.7)
+        self.assertEqual(data["familyHistory"][0]["family"], "community")
 
     def test_get_source_not_found(self) -> None:
         response = self.client.get("/api/v1/sources/nonexistent")

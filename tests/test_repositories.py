@@ -10,12 +10,13 @@ from app.data.database import connect_database, initialize_database
 from app.data.repositories import (
     PipelineRunRepository,
     SignalRepository,
+    SourceFamilySnapshotRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
     WatchlistRepository,
     format_category_label,
 )
-from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendMomentum, TrendScoreResult
+from app.models import NormalizedSignal, PipelineRun, SourceFamilySnapshot, SourceIngestionRun, TrendMomentum, TrendScoreResult
 from app.theses.matching import ThesisMatchCandidate
 
 
@@ -236,6 +237,59 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(runs[0].multi_source_trend_count, 5)
         self.assertEqual(runs[0].low_evidence_trend_count, 1)
         self.assertEqual(runs[1].top_topic, "ai agents")
+
+    def test_source_family_snapshot_repository_returns_recent_snapshots_per_family(self) -> None:
+        repository = SourceFamilySnapshotRepository(self.connection)
+        repository.append_snapshots(
+            [
+                SourceFamilySnapshot(
+                    family="community",
+                    captured_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                    source_count=2,
+                    healthy_source_count=2,
+                    signal_count=14,
+                    trend_count=4,
+                    corroborated_trend_count=2,
+                    top_ranked_trend_count=1,
+                    average_score=24.2,
+                    average_yield_rate_percent=58.0,
+                    success_rate_percent=100.0,
+                ),
+                SourceFamilySnapshot(
+                    family="community",
+                    captured_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+                    source_count=3,
+                    healthy_source_count=2,
+                    signal_count=18,
+                    trend_count=5,
+                    corroborated_trend_count=3,
+                    top_ranked_trend_count=2,
+                    average_score=28.4,
+                    average_yield_rate_percent=54.0,
+                    success_rate_percent=66.7,
+                ),
+                SourceFamilySnapshot(
+                    family="developer",
+                    captured_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+                    source_count=2,
+                    healthy_source_count=1,
+                    signal_count=12,
+                    trend_count=3,
+                    corroborated_trend_count=2,
+                    top_ranked_trend_count=1,
+                    average_score=26.0,
+                    average_yield_rate_percent=48.0,
+                    success_rate_percent=50.0,
+                ),
+            ]
+        )
+
+        snapshots = repository.list_recent_snapshots(limit_per_family=1)
+
+        self.assertEqual(set(snapshots), {"community", "developer"})
+        self.assertEqual(snapshots["community"][0].captured_at, datetime(2026, 3, 9, tzinfo=timezone.utc))
+        self.assertEqual(snapshots["community"][0].top_ranked_trend_count, 2)
+        self.assertEqual(snapshots["developer"][0].signal_count, 12)
 
     def test_trend_score_repository_stores_history_snapshots(self) -> None:
         repository = TrendScoreRepository(self.connection)

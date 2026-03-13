@@ -11,6 +11,7 @@ from app.data.repositories import (
     PipelineRunRepository,
     PublishedPayloadRepository,
     SignalRepository,
+    SourceFamilySnapshotRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
 )
@@ -35,6 +36,7 @@ from app.exports.serializers import (
 
 PIPELINE_RUN_LIMIT = 6
 SOURCE_RUN_HISTORY_LIMIT = 6
+SOURCE_FAMILY_HISTORY_LIMIT = 8
 
 
 def export_web_data_payloads(settings: Settings) -> None:
@@ -45,6 +47,7 @@ def export_web_data_payloads(settings: Settings) -> None:
     pipeline_run_repository = PipelineRunRepository(connection)
     published_payload_repository = PublishedPayloadRepository(connection)
     source_run_repository = SourceIngestionRunRepository(connection)
+    source_family_repository = SourceFamilySnapshotRepository(connection)
     repository = TrendScoreRepository(connection)
     generated_at = datetime.now(tz=timezone.utc)
     signals = signal_repository.list_signals()
@@ -89,6 +92,11 @@ def export_web_data_payloads(settings: Settings) -> None:
             latest_source_runs=source_runs,
             source_run_history=source_run_history,
         ),
+        family_history=[
+            snapshot
+            for snapshots in source_family_repository.list_recent_snapshots(limit_per_family=SOURCE_FAMILY_HISTORY_LIMIT).values()
+            for snapshot in snapshots
+        ],
     )
     latest_payload_dict = latest_payload.to_dict()
     history_payload_dict = history_payload.to_dict()

@@ -21,6 +21,7 @@ import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
   buildSourceContributionInsights,
+  buildSourceFamilyHistoryInsightsFromSnapshots,
   buildSourceFamilyHistoryInsights,
   buildSourceFamilyInsights,
   formatSourceFamilyLabel,
@@ -130,19 +131,6 @@ const SORT_OPTIONS = [
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
-type ThesisPreset = {
-  key: string;
-  label: string;
-  description: string;
-  lens: string;
-  source?: string;
-  stage?: string;
-  audience?: string;
-  hideRecurring?: boolean;
-  minimumScore?: number;
-};
-
-const THESIS_PRESETS: readonly ThesisPreset[] = [
 type ThesisPreset = {
   key: string;
   label: string;
@@ -376,8 +364,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     [initialData.overview.sources],
   );
   const sourceFamilyHistoryInsights = useMemo(
-    () => buildSourceFamilyHistoryInsights(initialData.sourceSummary.sources),
-    [initialData.sourceSummary.sources],
+    () =>
+      initialData.sourceSummary.familyHistory.length > 0
+        ? buildSourceFamilyHistoryInsightsFromSnapshots(initialData.sourceSummary.familyHistory)
+        : buildSourceFamilyHistoryInsights(initialData.sourceSummary.sources),
+    [initialData.sourceSummary.familyHistory, initialData.sourceSummary.sources],
   );
 
   const activeExplorerFilters = useMemo(
@@ -2549,14 +2540,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                         <div>
                           <strong>{family.label}</strong>
                           <span>
-                            {family.healthySourceCount}/{family.sourceCount} healthy · {family.recentAverageYieldRatePercent.toFixed(0)}% avg yield
+                            {family.healthySourceCount}/{family.sourceCount} healthy · {family.trendCount} ranked ·{" "}
+                            {family.corroboratedTrendCount} corroborated
                           </span>
                           <span>
-                            {family.latestFetchAt ? formatCompactTimestamp(family.latestFetchAt) : "No recent fetch"} ·{" "}
+                            {family.topRankedTrendCount} top ranked · {family.recentAverageYieldRatePercent.toFixed(0)}% avg yield ·{" "}
+                            {family.averageScore.toFixed(1)} avg score
+                          </span>
+                          <span>
+                            {family.capturedAt ? formatCompactTimestamp(family.capturedAt) : "No recent snapshot"} ·{" "}
                             {family.recentSuccessRatePercent.toFixed(0)}% live success
                           </span>
                         </div>
-                        <small>{family.healthySourceCount}</small>
+                        <small>{family.topRankedTrendCount}</small>
                       </article>
                     ))}
                   </div>

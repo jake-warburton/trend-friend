@@ -383,6 +383,21 @@ export type SourceSummaryTrend = {
   scoreTotal: number;
 };
 
+export type SourceFamilySnapshot = {
+  family: string;
+  label: string;
+  capturedAt: string;
+  sourceCount: number;
+  healthySourceCount: number;
+  signalCount: number;
+  trendCount: number;
+  corroboratedTrendCount: number;
+  topRankedTrendCount: number;
+  averageScore: number;
+  averageYieldRatePercent: number;
+  successRatePercent: number;
+};
+
 export type SourceSummaryRecord = {
   source: string;
   family: string;
@@ -410,6 +425,7 @@ export type SourceSummaryRecord = {
 export type SourceSummaryResponse = {
   generatedAt: string;
   sources: SourceSummaryRecord[];
+  familyHistory: SourceFamilySnapshot[];
 };
 
 export type WatchlistItem = {

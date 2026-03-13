@@ -1,4 +1,9 @@
-import type { DashboardOverviewSource, SourceSummaryRecord, TrendSourceContribution } from "@/lib/types";
+import type {
+  DashboardOverviewSource,
+  SourceFamilySnapshot,
+  SourceSummaryRecord,
+  TrendSourceContribution,
+} from "@/lib/types";
 
 type SourceHealthLike = Pick<
   DashboardOverviewSource | SourceSummaryRecord,
@@ -49,8 +54,14 @@ export type SourceFamilyInsight = {
 export type SourceFamilyHistoryInsight = {
   family: string;
   label: string;
+  capturedAt: string | null;
   sourceCount: number;
   healthySourceCount: number;
+  signalCount: number;
+  trendCount: number;
+  corroboratedTrendCount: number;
+  topRankedTrendCount: number;
+  averageScore: number;
   latestFetchAt: string | null;
   recentAverageYieldRatePercent: number;
   recentSuccessRatePercent: number;
@@ -225,8 +236,14 @@ export function buildSourceFamilyHistoryInsights(sources: SourceSummaryRecord[])
     const existing = familyMap.get(family) ?? {
       family,
       label: formatSourceFamilyLabel(family),
+      capturedAt: null,
       sourceCount: 0,
       healthySourceCount: 0,
+      signalCount: 0,
+      trendCount: 0,
+      corroboratedTrendCount: 0,
+      topRankedTrendCount: 0,
+      averageScore: 0,
       latestFetchAt: null,
       recentAverageYieldRatePercent: 0,
       recentSuccessRatePercent: 0,
@@ -257,13 +274,56 @@ export function buildSourceFamilyHistoryInsights(sources: SourceSummaryRecord[])
     .map((family) => ({
       family: family.family,
       label: family.label,
+      capturedAt: family.latestFetchAt,
       sourceCount: family.sourceCount,
       healthySourceCount: family.healthySourceCount,
+      signalCount: 0,
+      trendCount: 0,
+      corroboratedTrendCount: 0,
+      topRankedTrendCount: 0,
+      averageScore: 0,
       latestFetchAt: family.latestFetchAt,
       recentAverageYieldRatePercent: family.runCount === 0 ? 0 : family.yieldTotal / family.runCount,
       recentSuccessRatePercent: family.runCount === 0 ? 0 : (family.successCount / family.runCount) * 100,
     }))
     .sort((left, right) => right.healthySourceCount - left.healthySourceCount || right.sourceCount - left.sourceCount || left.label.localeCompare(right.label));
+}
+
+export function buildSourceFamilyHistoryInsightsFromSnapshots(
+  snapshots: SourceFamilySnapshot[],
+): SourceFamilyHistoryInsight[] {
+  const latestByFamily = new Map<string, SourceFamilySnapshot>();
+
+  for (const snapshot of snapshots) {
+    const existing = latestByFamily.get(snapshot.family);
+    if (!existing || snapshot.capturedAt > existing.capturedAt) {
+      latestByFamily.set(snapshot.family, snapshot);
+    }
+  }
+
+  return [...latestByFamily.values()]
+    .map((snapshot) => ({
+      family: snapshot.family,
+      label: snapshot.label,
+      capturedAt: snapshot.capturedAt,
+      sourceCount: snapshot.sourceCount,
+      healthySourceCount: snapshot.healthySourceCount,
+      signalCount: snapshot.signalCount,
+      trendCount: snapshot.trendCount,
+      corroboratedTrendCount: snapshot.corroboratedTrendCount,
+      topRankedTrendCount: snapshot.topRankedTrendCount,
+      averageScore: snapshot.averageScore,
+      latestFetchAt: snapshot.capturedAt,
+      recentAverageYieldRatePercent: snapshot.averageYieldRatePercent,
+      recentSuccessRatePercent: snapshot.successRatePercent,
+    }))
+    .sort(
+      (left, right) =>
+        right.topRankedTrendCount - left.topRankedTrendCount ||
+        right.corroboratedTrendCount - left.corroboratedTrendCount ||
+        right.trendCount - left.trendCount ||
+        left.label.localeCompare(right.label),
+    );
 }
 
 function severityWeight(severity: SourceWatchItem["severity"]): number {

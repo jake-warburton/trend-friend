@@ -447,6 +447,7 @@ test("normalizeSourceSummary defaults missing source fields", () => {
   const input: SourceSummaryResponse = {
     generatedAt: "2026-03-10T00:00:00Z",
     sources: [{ source: "reddit" } as any],
+    familyHistory: [],
   };
   const result = normalizeSourceSummary(input);
   const source = result.sources[0];
@@ -460,6 +461,7 @@ test("normalizeSourceSummary defaults missing source fields", () => {
   assert.equal(source.errorMessage, null);
   assert.deepEqual(source.runHistory, []);
   assert.deepEqual(source.topTrends, []);
+  assert.deepEqual(result.familyHistory, []);
 });
 
 test("normalizeSourceSummary handles empty sources array", () => {
@@ -467,6 +469,7 @@ test("normalizeSourceSummary handles empty sources array", () => {
   const result = normalizeSourceSummary(input);
 
   assert.deepEqual(result.sources, []);
+  assert.deepEqual(result.familyHistory, []);
 });
 
 test("normalizeSourceSummary preserves run history with defaults", () => {
@@ -478,13 +481,24 @@ test("normalizeSourceSummary preserves run history with defaults", () => {
         runHistory: [{ fetchedAt: "2026-03-10T00:00:00Z" } as any],
       } as any,
     ],
+    familyHistory: [
+      {
+        family: "community",
+        label: "Community",
+        capturedAt: "2026-03-10T00:00:00Z",
+      } as any,
+    ],
   };
   const result = normalizeSourceSummary(input);
   const run = result.sources[0].runHistory[0];
+  const family = result.familyHistory[0];
 
   assert.equal(run.fetchedAt, "2026-03-10T00:00:00Z");
   assert.equal(run.success, false);
   assert.equal(run.rawItemCount, 0);
   assert.equal(run.usedFallback, false);
   assert.equal(run.errorMessage, null);
+  assert.equal(family.family, "community");
+  assert.equal(family.topRankedTrendCount, 0);
+  assert.equal(family.successRatePercent, 0);
 });

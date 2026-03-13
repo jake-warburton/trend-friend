@@ -413,6 +413,23 @@ class SourceSummaryRecord:
 
 
 @dataclass(frozen=True)
+class SourceFamilySnapshot:
+    """Historical impact summary for one source family during a scoring run."""
+
+    family: str
+    captured_at: datetime
+    source_count: int
+    healthy_source_count: int
+    signal_count: int
+    trend_count: int
+    corroborated_trend_count: int
+    top_ranked_trend_count: int
+    average_score: float
+    average_yield_rate_percent: float
+    success_rate_percent: float
+
+
+@dataclass(frozen=True)
 class SourceWatchRecord:
     """Operational warning or advisory derived from recent source behavior."""
 

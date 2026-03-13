@@ -620,6 +620,24 @@ class SourceSummaryTrendPayload:
 
 
 @dataclass(frozen=True)
+class SourceFamilySnapshotPayload:
+    """Historical rollup for one source family."""
+
+    family: str
+    label: str
+    captured_at: str
+    source_count: int
+    healthy_source_count: int
+    signal_count: int
+    trend_count: int
+    corroborated_trend_count: int
+    top_ranked_trend_count: int
+    average_score: float
+    average_yield_rate_percent: float
+    success_rate_percent: float
+
+
+@dataclass(frozen=True)
 class SourceSummaryRecordPayload:
     """Detailed source summary for source health pages."""
 
@@ -652,12 +670,14 @@ class SourceSummaryPayload:
 
     generated_at: str
     sources: list[SourceSummaryRecordPayload]
+    family_history: list[SourceFamilySnapshotPayload]
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serializable dictionary with API-style keys."""
 
         payload = asdict(self)
         payload["generatedAt"] = payload.pop("generated_at")
+        payload["familyHistory"] = payload.pop("family_history")
         for source in payload["sources"]:
             source["latestFetchAt"] = source.pop("latest_fetch_at")
             source["latestSuccessAt"] = source.pop("latest_success_at")
@@ -692,6 +712,17 @@ class SourceSummaryPayload:
                 run["errorMessage"] = run.pop("error_message")
             for trend in source["topTrends"]:
                 trend["scoreTotal"] = trend.pop("score_total")
+        for family in payload["familyHistory"]:
+            family["capturedAt"] = family.pop("captured_at")
+            family["sourceCount"] = family.pop("source_count")
+            family["healthySourceCount"] = family.pop("healthy_source_count")
+            family["signalCount"] = family.pop("signal_count")
+            family["trendCount"] = family.pop("trend_count")
+            family["corroboratedTrendCount"] = family.pop("corroborated_trend_count")
+            family["topRankedTrendCount"] = family.pop("top_ranked_trend_count")
+            family["averageScore"] = family.pop("average_score")
+            family["averageYieldRatePercent"] = family.pop("average_yield_rate_percent")
+            family["successRatePercent"] = family.pop("success_rate_percent")
         return payload
 
 

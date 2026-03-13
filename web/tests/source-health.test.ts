@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   buildSourceFamilyInsights,
   buildSourceFamilyHistoryInsights,
+  buildSourceFamilyHistoryInsightsFromSnapshots,
   buildSourceContributionInsights,
   buildSourceWatchlist,
   getSourceFreshnessBadge,
@@ -338,6 +339,61 @@ test("buildSourceFamilyHistoryInsights summarizes recent family health from run 
     [
       ["community", 1, 43, 50],
       ["developer", 1, 58, 100],
+    ],
+  );
+});
+
+test("buildSourceFamilyHistoryInsightsFromSnapshots prefers the latest family snapshot and preserves impact metrics", () => {
+  const families = buildSourceFamilyHistoryInsightsFromSnapshots([
+    {
+      family: "community",
+      label: "Community",
+      capturedAt: "2026-03-12T10:00:00Z",
+      sourceCount: 2,
+      healthySourceCount: 1,
+      signalCount: 12,
+      trendCount: 4,
+      corroboratedTrendCount: 2,
+      topRankedTrendCount: 1,
+      averageScore: 22.4,
+      averageYieldRatePercent: 48,
+      successRatePercent: 50,
+    },
+    {
+      family: "community",
+      label: "Community",
+      capturedAt: "2026-03-13T10:00:00Z",
+      sourceCount: 3,
+      healthySourceCount: 2,
+      signalCount: 18,
+      trendCount: 5,
+      corroboratedTrendCount: 3,
+      topRankedTrendCount: 2,
+      averageScore: 28.4,
+      averageYieldRatePercent: 56,
+      successRatePercent: 66.7,
+    },
+    {
+      family: "developer",
+      label: "Developer",
+      capturedAt: "2026-03-13T10:00:00Z",
+      sourceCount: 2,
+      healthySourceCount: 1,
+      signalCount: 10,
+      trendCount: 3,
+      corroboratedTrendCount: 2,
+      topRankedTrendCount: 1,
+      averageScore: 24.1,
+      averageYieldRatePercent: 44,
+      successRatePercent: 50,
+    },
+  ]);
+
+  assert.deepEqual(
+    families.map((family) => [family.family, family.topRankedTrendCount, family.corroboratedTrendCount, family.trendCount]),
+    [
+      ["community", 2, 3, 5],
+      ["developer", 1, 2, 3],
     ],
   );
 });

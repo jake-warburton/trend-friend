@@ -40,6 +40,9 @@
   - source reliability adjustment
   - cross-family corroboration bonus
   - stronger generic-topic penalties
+- Source analytics improvements:
+  - persisted `source_family_snapshots`
+  - family-level pulse history for ranked, corroborated, and top-ranked trend contribution
 
 ## Tradeoffs
 

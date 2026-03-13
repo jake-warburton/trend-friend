@@ -21,6 +21,7 @@ from app.exports.contracts import (
     DashboardOverviewTrendItemPayload,
     LatestTrendsPayload,
     SourceRunPayload,
+    SourceFamilySnapshotPayload,
     SourceSummaryPayload,
     SourceSummaryRecordPayload,
     SourceSummaryTrendPayload,
@@ -53,6 +54,7 @@ from app.models import (
     PipelineRun,
     RelatedTrend,
     SourceIngestionRun,
+    SourceFamilySnapshot,
     SourceSummaryRecord,
     SourceWatchRecord,
     SourceSummaryTrend,
@@ -182,6 +184,7 @@ def build_dashboard_overview_payload(
 def build_source_summary_payload(
     generated_at: datetime,
     sources: list[SourceSummaryRecord],
+    family_history: list[SourceFamilySnapshot] | None = None,
 ) -> SourceSummaryPayload:
     """Create the source summary payload for Dashboard V2."""
 
@@ -238,7 +241,42 @@ def build_source_summary_payload(
             )
             for source in sources
         ],
+        family_history=[
+            SourceFamilySnapshotPayload(
+                family=snapshot.family,
+                label=format_source_family_label(snapshot.family),
+                captured_at=to_timestamp(snapshot.captured_at),
+                source_count=snapshot.source_count,
+                healthy_source_count=snapshot.healthy_source_count,
+                signal_count=snapshot.signal_count,
+                trend_count=snapshot.trend_count,
+                corroborated_trend_count=snapshot.corroborated_trend_count,
+                top_ranked_trend_count=snapshot.top_ranked_trend_count,
+                average_score=snapshot.average_score,
+                average_yield_rate_percent=snapshot.average_yield_rate_percent,
+                success_rate_percent=snapshot.success_rate_percent,
+            )
+            for snapshot in (family_history or [])
+        ],
     )
+
+
+def format_source_family_label(family: str) -> str:
+    """Return a readable label for a cross-source family bucket."""
+
+    labels = {
+        "community": "Community",
+        "developer": "Developer",
+        "distribution": "Distribution",
+        "editorial": "Editorial",
+        "knowledge": "Knowledge",
+        "market": "Market",
+        "research": "Research",
+        "search": "Search",
+        "social": "Social",
+        "other": "Other",
+    }
+    return labels.get(family, family.replace("_", " ").title())
 
 
 def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:

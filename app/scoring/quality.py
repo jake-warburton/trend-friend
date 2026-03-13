@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
-from app.models import NormalizedSignal, TopicAggregate, TrendScoreResult
+from app.models import NormalizedSignal, SourceFamilySnapshot, SourceIngestionRun, TopicAggregate, TrendScoreResult
+from app.sources.catalog import source_family_for_source
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,9 @@ class SourceQualityMetrics:
     merged_topic_count: int
     duplicate_topic_count: int
     duplicate_topic_rate: float
+
+
+TOP_RANKED_FAMILY_WINDOW = 10
 
 
 def calculate_pipeline_quality_metrics(
@@ -87,3 +92,74 @@ def calculate_source_quality_metrics(
             duplicate_topic_rate=duplicate_topic_rate,
         )
     return metrics
+
+
+def build_yield_rate_percent(run: SourceIngestionRun) -> float:
+    """Return the kept-item yield percentage for one source run."""
+
+    if run.raw_item_count <= 0:
+        return 0.0
+    return round((run.kept_item_count / run.raw_item_count) * 100, 1)
+
+
+def calculate_source_family_snapshots(
+    captured_at: datetime,
+    signals: list[NormalizedSignal],
+    source_runs: list[SourceIngestionRun],
+    ranked_scores: list[TrendScoreResult],
+) -> list[SourceFamilySnapshot]:
+    """Return one historical rollup per source family for the current run."""
+
+    family_sources: dict[str, set[str]] = {}
+    healthy_source_counts: dict[str, int] = {}
+    yield_totals: dict[str, float] = {}
+
+    for run in source_runs:
+        family = source_family_for_source(run.source)
+        family_sources.setdefault(family, set()).add(run.source)
+        if run.success and not run.used_fallback:
+            healthy_source_counts[family] = healthy_source_counts.get(family, 0) + 1
+        yield_totals[family] = yield_totals.get(family, 0.0) + build_yield_rate_percent(run)
+
+    signal_counts: dict[str, int] = {}
+    for signal in signals:
+        family = source_family_for_source(signal.source)
+        signal_counts[family] = signal_counts.get(family, 0) + 1
+
+    family_trend_counts: dict[str, int] = {}
+    corroborated_trend_counts: dict[str, int] = {}
+    top_ranked_trend_counts: dict[str, int] = {}
+    score_totals: dict[str, float] = {}
+
+    for rank, score in enumerate(ranked_scores, start=1):
+        families = {source_family_for_source(source) for source in score.source_counts}
+        multi_family = len(families) > 1
+        for family in families:
+            family_trend_counts[family] = family_trend_counts.get(family, 0) + 1
+            score_totals[family] = score_totals.get(family, 0.0) + score.total_score
+            if multi_family:
+                corroborated_trend_counts[family] = corroborated_trend_counts.get(family, 0) + 1
+            if rank <= TOP_RANKED_FAMILY_WINDOW:
+                top_ranked_trend_counts[family] = top_ranked_trend_counts.get(family, 0) + 1
+
+    families = set(family_sources) | set(signal_counts) | set(family_trend_counts)
+    snapshots: list[SourceFamilySnapshot] = []
+    for family in sorted(families):
+        source_count = len(family_sources.get(family, set()))
+        trend_count = family_trend_counts.get(family, 0)
+        snapshots.append(
+            SourceFamilySnapshot(
+                family=family,
+                captured_at=captured_at,
+                source_count=source_count,
+                healthy_source_count=healthy_source_counts.get(family, 0),
+                signal_count=signal_counts.get(family, 0),
+                trend_count=trend_count,
+                corroborated_trend_count=corroborated_trend_counts.get(family, 0),
+                top_ranked_trend_count=top_ranked_trend_counts.get(family, 0),
+                average_score=round(score_totals.get(family, 0.0) / trend_count, 1) if trend_count else 0.0,
+                average_yield_rate_percent=round(yield_totals.get(family, 0.0) / source_count, 1) if source_count else 0.0,
+                success_rate_percent=round((healthy_source_counts.get(family, 0) / source_count) * 100, 1) if source_count else 0.0,
+            )
+        )
+    return snapshots
