@@ -1545,6 +1545,27 @@ input {
   box-shadow: none;
 }
 
+.theme-soft-charcoal .hero-panel,
+.theme-ocean .hero-panel,
+.theme-soft-charcoal .analytics-strip,
+.theme-ocean .analytics-strip,
+.theme-soft-charcoal .trajectory-strip,
+.theme-ocean .trajectory-strip,
+.theme-soft-charcoal .curated-strip,
+.theme-ocean .curated-strip {
+  background: transparent;
+}
+
+.theme-soft-charcoal .analytics-strip,
+.theme-ocean .analytics-strip,
+.theme-soft-charcoal .trajectory-strip,
+.theme-ocean .trajectory-strip,
+.theme-soft-charcoal .curated-strip,
+.theme-ocean .curated-strip {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
 .section-heading {
   display: flex;
   align-items: flex-start;
