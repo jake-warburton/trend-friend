@@ -111,6 +111,10 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
               <strong>{summary.rawItemCount}</strong>
             </article>
             <article className="source-metric-card">
+              <span>Signals per kept item</span>
+              <strong>{(summary.signalYieldRatio ?? 0).toFixed(2)}</strong>
+            </article>
+            <article className="source-metric-card">
               <span>Topic dupes</span>
               <strong>{summary.duplicateTopicRate.toFixed(1)}%</strong>
             </article>

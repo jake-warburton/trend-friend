@@ -450,6 +450,7 @@ class DashboardOverviewSourcePayload:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
     raw_topic_count: int
     merged_topic_count: int
@@ -576,6 +577,7 @@ class DashboardOverviewPayload:
             source["latestItemCount"] = source.pop("latest_item_count")
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
+            source["signalYieldRatio"] = source.pop("signal_yield_ratio")
             source["durationMs"] = source.pop("duration_ms")
             source["rawTopicCount"] = source.pop("raw_topic_count")
             source["mergedTopicCount"] = source.pop("merged_topic_count")
@@ -628,6 +630,7 @@ class SourceSummaryRecordPayload:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
     raw_topic_count: int
     merged_topic_count: int
@@ -660,6 +663,7 @@ class SourceSummaryPayload:
             source["latestItemCount"] = source.pop("latest_item_count")
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
+            source["signalYieldRatio"] = source.pop("signal_yield_ratio")
             source["durationMs"] = source.pop("duration_ms")
             source["rawTopicCount"] = source.pop("raw_topic_count")
             source["mergedTopicCount"] = source.pop("merged_topic_count")

@@ -253,6 +253,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sources"][1]["status"], "degraded")
         self.assertEqual(payload["sources"][1]["keptItemCount"], 2)
         self.assertEqual(payload["sources"][1]["yieldRatePercent"], 100.0)
+        self.assertEqual(payload["sources"][1]["signalYieldRatio"], 0.5)
         self.assertTrue(payload["sources"][1]["usedFallback"])
         self.assertEqual(payload["sources"][1]["durationMs"], 85)
 
@@ -285,6 +286,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sources"][0]["runHistory"][0]["keptItemCount"], 3)
         self.assertEqual(payload["sources"][0]["runHistory"][0]["yieldRatePercent"], 100.0)
         self.assertEqual(payload["sources"][0]["yieldRatePercent"], 60.0)
+        self.assertEqual(payload["sources"][0]["signalYieldRatio"], 0.6)
         self.assertEqual(payload["sources"][0]["topTrends"][0]["scoreTotal"], 42.4)
 
     def test_build_source_summary_records_uses_runs_and_trends(self) -> None:
@@ -302,6 +304,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(reddit_record.raw_item_count, 3)
         self.assertEqual(reddit_record.kept_item_count, 3)
         self.assertEqual(reddit_record.yield_rate_percent, 100.0)
+        self.assertEqual(reddit_record.signal_yield_ratio, 0.67)
         self.assertEqual(reddit_record.top_trends[0].id, "ai-agents")
 
 
@@ -620,6 +623,7 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
         latest_item_count=3,
         kept_item_count=3,
         yield_rate_percent=60.0,
+        signal_yield_ratio=0.6,
         duration_ms=120,
         raw_topic_count=4,
         merged_topic_count=3,

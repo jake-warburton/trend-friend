@@ -104,6 +104,7 @@ export type DashboardOverviewSource = {
   latestItemCount: number;
   keptItemCount: number;
   yieldRatePercent: number;
+  signalYieldRatio?: number;
   durationMs: number;
   rawTopicCount: number;
   mergedTopicCount: number;
@@ -390,6 +391,7 @@ export type SourceSummaryRecord = {
   latestItemCount: number;
   keptItemCount: number;
   yieldRatePercent: number;
+  signalYieldRatio?: number;
   durationMs: number;
   rawTopicCount: number;
   mergedTopicCount: number;

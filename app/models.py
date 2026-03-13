@@ -396,6 +396,7 @@ class SourceSummaryRecord:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
     raw_topic_count: int
     merged_topic_count: int

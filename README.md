@@ -80,7 +80,9 @@ Supported environment variables:
 - `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME`: Opt-in flag for running the current backend against `SIGNAL_EYE_DATABASE_URL`. Default: `false`
 - `SIGNAL_EYE_WEB_DATA_PATH`: Export directory for web JSON payloads. Default: `web/data`
 - `SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
-- `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
+- `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `45`
+- `SIGNAL_EYE_REDDIT_PAGE_LIMIT`: Max curated Reddit feed modes to fetch per subreddit batch. Default: `4`
+- `SIGNAL_EYE_GITHUB_PAGE_LIMIT`: Max GitHub result pages to fetch per query family. Default: `3`
 - `SIGNAL_EYE_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
 - `SIGNAL_EYE_MARKET_ENRICHMENT_ENABLED`: Enable external market-footprint enrichment. Default: `true`
 - `SIGNAL_EYE_MARKET_ENRICHMENT_LIMIT`: Max ranked trends to enrich per run. Default: `25`

@@ -7,10 +7,11 @@ from dataclasses import replace
 
 from app.config import load_settings
 from app.sources.github import GitHubSourceAdapter
-from app.sources.google_news import GoogleNewsSourceAdapter
+from app.sources.google_news import GoogleNewsSourceAdapter, _TOPICS as GOOGLE_NEWS_TOPICS
 from app.sources.hacker_news import HackerNewsSourceAdapter
 from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
+from app.sources.twitter import TwitterSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
 
 
@@ -40,8 +41,13 @@ class SourceNormalizationTests(unittest.TestCase):
                 "opensource",
                 "startups",
                 "entrepreneur",
+                "SaaS",
+                "singularity",
+                "sideproject",
+                "indiehackers",
             ],
         )
+        self.assertEqual(adapter.FEED_SPECS, (("hot", None), ("new", None), ("top", "day"), ("top", "week")))
 
     def test_github_adapter_handles_missing_description(self) -> None:
         adapter = GitHubSourceAdapter(self.settings)
@@ -295,6 +301,10 @@ class SourceNormalizationTests(unittest.TestCase):
         </feed>"""
 
         class TestAdapter(RedditSourceAdapter):
+            FEED_SPECS = (("hot", None),)
+            TREND_SUBREDDITS = ["technology", "programming", "startups"]
+            SUBREDDITS_PER_FEED = 3
+
             def get_url(self, url: str, headers=None):
                 return rss_xml
 
@@ -304,6 +314,7 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(adapter.raw_item_count, 4)
         self.assertEqual(adapter.kept_item_count, 3)
         self.assertEqual(items[0].metadata["subreddit"], "technology")
+        self.assertEqual(items[0].metadata["feed"], "hot")
         # Position-based engagement: first item gets highest score
         self.assertGreater(items[0].engagement_score, items[2].engagement_score)
 
@@ -339,6 +350,8 @@ class SourceNormalizationTests(unittest.TestCase):
         settings = replace(self.settings, max_items_per_source=4, github_page_limit=3)
 
         class TestAdapter(GitHubSourceAdapter):
+            QUERY_FAMILIES = (("recent", "stars:>80 archived:false"),)
+
             def __init__(self, settings):
                 super().__init__(settings)
                 self.calls: list[str] = []
@@ -401,6 +414,18 @@ class SourceNormalizationTests(unittest.TestCase):
         items = adapter.fetch()
         self.assertEqual([item.external_id for item in items], ["1", "2", "3"])
         self.assertEqual(len(adapter.calls), 3)
+        self.assertEqual(items[0].metadata["query_family"], "recent")
+
+    def test_twitter_adapter_uses_multiple_query_families(self) -> None:
+        adapter = TwitterSourceAdapter(self.settings)
+        self.assertGreater(len(adapter.QUERY_FAMILIES), 1)
+        self.assertEqual(adapter.QUERY_FAMILIES[0][0], "ai")
+
+    def test_google_news_adapter_expands_topic_coverage(self) -> None:
+        self.assertEqual(
+            [section for _topic, section in GOOGLE_NEWS_TOPICS],
+            ["world", "business", "technology", "science", "health"],
+        )
 
 
 if __name__ == "__main__":

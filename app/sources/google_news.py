@@ -1,4 +1,4 @@
-"""Google News RSS source adapter for broad world, business, and sports coverage."""
+"""Google News RSS source adapter for broad editorial topic coverage."""
 
 from __future__ import annotations
 
@@ -15,7 +15,9 @@ _RSS_BASE = "https://news.google.com/rss/headlines/section/topic/{topic}?hl=en-U
 _TOPICS = [
     ("WORLD", "world"),
     ("BUSINESS", "business"),
-    ("SPORTS", "sports"),
+    ("TECHNOLOGY", "technology"),
+    ("SCIENCE", "science"),
+    ("HEALTH", "health"),
 ]
 
 
