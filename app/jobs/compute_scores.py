@@ -19,6 +19,7 @@ from app.data.repositories import (
 from app.models import PipelineRun, SourceIngestionRun, TrendScoreResult
 from app.notifications.deliver import deliver_post_run_notifications
 from app.notifications.digest import build_run_digest
+from app.enrichment.service import refresh_external_market_metrics
 from app.scoring.calculator import calculate_trend_scores
 from app.scoring.quality import calculate_pipeline_quality_metrics, calculate_source_quality_metrics
 from app.scoring.ranking import rank_experimental_topics, rank_topics_by_score
@@ -83,6 +84,12 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
 
     repository.replace_scores(stored_scores, published_topics=published_topics)
     repository.append_snapshot(stored_scores, captured_at=captured_at, published_topics=published_topics)
+    refresh_external_market_metrics(
+        settings,
+        repository,
+        ranked_scores,
+        captured_at=captured_at,
+    )
     PipelineRunRepository(connection).append_run(
         PipelineRun(
             captured_at=captured_at,

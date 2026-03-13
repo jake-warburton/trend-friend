@@ -82,11 +82,18 @@ Supported environment variables:
 - `SIGNAL_EYE_REQUEST_TIMEOUT_SECONDS`: HTTP timeout in seconds. Default: `10`
 - `SIGNAL_EYE_MAX_ITEMS_PER_SOURCE`: Max records fetched per source. Default: `30`
 - `SIGNAL_EYE_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
+- `SIGNAL_EYE_MARKET_ENRICHMENT_ENABLED`: Enable external market-footprint enrichment. Default: `true`
+- `SIGNAL_EYE_MARKET_ENRICHMENT_LIMIT`: Max ranked trends to enrich per run. Default: `25`
 - `SIGNAL_EYE_REDDIT_USER_AGENT`: User agent for Reddit requests
 - `SIGNAL_EYE_CORS_ORIGINS`: Comma-separated allowed origins for the REST API
 - `SIGNAL_EYE_REFRESH_SECRET`: Optional shared secret required by `POST /api/v1/refresh`
 - `GITHUB_TOKEN`: Optional token for higher GitHub API rate limits
 - `TWITTER_BEARER_TOKEN`: Optional token for live Twitter/X ingestion
+- `YOUTUBE_API_KEY`: Optional official YouTube Data API key for live YouTube footprint metrics
+- `SIGNAL_EYE_GOOGLE_SEARCH_METRICS_URL`: Optional provider endpoint for Google monthly searches / interest
+- `SIGNAL_EYE_GOOGLE_SEARCH_METRICS_TOKEN`: Optional bearer token for the Google metrics provider
+- `SIGNAL_EYE_TIKTOK_METRICS_URL`: Optional provider endpoint for TikTok views / video counts
+- `SIGNAL_EYE_TIKTOK_METRICS_TOKEN`: Optional bearer token for the TikTok metrics provider
 
 ## Running The MVP
 

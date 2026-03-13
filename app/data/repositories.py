@@ -1924,6 +1924,36 @@ class TrendScoreRepository:
             "is_estimated": True,
             "priority": 8,
         },
+        "google_search": {
+            "metric_key": "monthly_searches",
+            "label": "Monthly Google searches",
+            "unit": "searches",
+            "period": "monthly",
+            "aggregation": "max",
+            "confidence": 0.9,
+            "is_estimated": False,
+            "priority": 1,
+        },
+        "youtube": {
+            "metric_key": "video_views",
+            "label": "YouTube views",
+            "unit": "views",
+            "period": "search footprint",
+            "aggregation": "max",
+            "confidence": 0.9,
+            "is_estimated": False,
+            "priority": 2,
+        },
+        "tiktok": {
+            "metric_key": "video_views",
+            "label": "TikTok views",
+            "unit": "views",
+            "period": "search footprint",
+            "aggregation": "max",
+            "confidence": 0.9,
+            "is_estimated": False,
+            "priority": 3,
+        },
     }
 
     def __init__(self, connection: DatabaseConnection) -> None:
@@ -2551,6 +2581,53 @@ class TrendScoreRepository:
                 -item.value_numeric,
                 item.source,
             ),
+        )
+
+    def upsert_topic_market_footprint(
+        self,
+        topic: str,
+        snapshots: list[TrendMetricSnapshot],
+    ) -> None:
+        """Upsert additional market-footprint snapshots for one topic."""
+
+        if not snapshots:
+            return
+        self.connection.executemany(
+            """
+            INSERT INTO trend_metric_snapshots (
+                topic_key, source, metric_key, label, value_numeric, value_display,
+                unit, period, captured_at, confidence, provenance_url, is_estimated
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key, source, metric_key)
+            DO UPDATE SET
+                label = excluded.label,
+                value_numeric = excluded.value_numeric,
+                value_display = excluded.value_display,
+                unit = excluded.unit,
+                period = excluded.period,
+                captured_at = excluded.captured_at,
+                confidence = excluded.confidence,
+                provenance_url = excluded.provenance_url,
+                is_estimated = excluded.is_estimated
+            """,
+            [
+                (
+                    topic,
+                    snapshot.source,
+                    snapshot.metric_key,
+                    snapshot.label,
+                    snapshot.value_numeric,
+                    snapshot.value_display,
+                    snapshot.unit,
+                    snapshot.period,
+                    snapshot.captured_at.isoformat(),
+                    snapshot.confidence,
+                    snapshot.provenance_url,
+                    int(snapshot.is_estimated),
+                )
+                for snapshot in snapshots
+            ],
         )
 
     def get_topic_source_breakdown(self, topic: str) -> list[TrendSourceBreakdown]:
