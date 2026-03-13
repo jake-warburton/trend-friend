@@ -427,6 +427,12 @@ input {
   box-shadow: none;
 }
 
+.theme-ocean .nav-bar-blend {
+  background: linear-gradient(180deg, rgba(67, 98, 131, 0.88), rgba(49, 76, 104, 0.9));
+  backdrop-filter: blur(18px) saturate(125%);
+  box-shadow: 0 10px 26px rgba(29, 44, 64, 0.16);
+}
+
 .nav-bar-brand {
   display: inline-flex;
   align-items: center;
