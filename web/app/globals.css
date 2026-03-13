@@ -1114,27 +1114,27 @@ input {
   background: var(--neutral-badge-bg);
   color: var(--neutral-text-strong);
   font-size: 0.58rem;
-  font-weight: 560;
+  font-weight: 700;
   letter-spacing: 0.015em;
 }
 
 .trend-status-pill-breakout {
-  background: var(--accent-badge-bg);
+  background: color-mix(in srgb, var(--accent) 38%, var(--accent-badge-bg) 62%);
   color: #ffffff;
 }
 
 .trend-status-pill-rising {
-  background: var(--success-soft);
+  background: color-mix(in srgb, var(--success-text) 34%, var(--success-soft) 66%);
   color: #ffffff;
 }
 
 .trend-status-pill-cooling {
-  background: var(--danger-soft);
+  background: color-mix(in srgb, var(--danger-text) 34%, var(--danger-soft) 66%);
   color: #ffffff;
 }
 
 .trend-status-pill-new {
-  background: var(--accent-badge-bg);
+  background: color-mix(in srgb, var(--accent) 34%, var(--accent-badge-bg) 66%);
   color: #ffffff;
 }
 
@@ -1153,17 +1153,17 @@ input {
 }
 
 .volatility-pill-spiking {
-  background: var(--negative-bg-soft);
+  background: color-mix(in srgb, var(--danger-text) 34%, var(--negative-bg-soft) 66%);
   color: #ffffff;
 }
 
 .volatility-pill-volatile {
-  background: var(--warning-bg-strong);
+  background: color-mix(in srgb, var(--warning-text) 34%, var(--warning-bg-strong) 66%);
   color: #ffffff;
 }
 
 .volatility-pill-emerging {
-  background: var(--accent-badge-bg);
+  background: color-mix(in srgb, var(--accent) 34%, var(--accent-badge-bg) 66%);
   color: #ffffff;
 }
 
@@ -2364,19 +2364,19 @@ input {
   padding: 1px 5px;
   border-radius: var(--radius-pill);
   font-size: 0.5rem;
-  font-weight: 560;
+  font-weight: 700;
   letter-spacing: 0.015em;
 }
 
 .seasonality-badge-recurring {
   border: 1px solid var(--seasonal-badge-border);
-  background: var(--seasonal-badge-bg);
+  background: color-mix(in srgb, var(--seasonal-badge-text) 34%, var(--seasonal-badge-bg) 66%);
   color: #ffffff;
 }
 
 .seasonality-badge-evergreen {
   border: 1px solid var(--evergreen-badge-border);
-  background: var(--evergreen-badge-bg);
+  background: color-mix(in srgb, var(--evergreen-badge-text) 34%, var(--evergreen-badge-bg) 66%);
   color: #ffffff;
 }
 
@@ -2491,7 +2491,7 @@ input {
 
 .toggle-chip-active {
   border-color: var(--seasonal-badge-border);
-  background: var(--seasonal-badge-bg);
+  background: color-mix(in srgb, var(--seasonal-badge-text) 34%, var(--seasonal-badge-bg) 66%);
   color: #ffffff;
 }
 
