@@ -625,6 +625,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   }
 
   function applyThesisPreset(preset: ThesisPreset) {
+    if (shouldClearActiveThesisPreset(activeThesisPresetKey, preset)) {
+      clearAllExplorerFilters();
+      return;
+    }
     setKeyword("");
     setSelectedSource(preset.source ?? "all");
     setSelectedCategory("all");
@@ -3090,6 +3094,10 @@ export function isThesisPresetApplied(preset: ThesisPreset, state: ThesisPresetF
     state.sortBy === "rank" &&
     state.hideRecurring === (preset.hideRecurring ?? false)
   );
+}
+
+export function shouldClearActiveThesisPreset(activePresetKey: string | null, preset: ThesisPreset) {
+  return activePresetKey === preset.key;
 }
 
 function buildSegmentFilterOptions(

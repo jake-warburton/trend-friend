@@ -10,6 +10,7 @@ import {
   buildMarketFilterOptions,
   isThesisPresetApplied,
   listActiveExplorerFilters,
+  shouldClearActiveThesisPreset,
   trendMatchesAudience,
   trendMatchesLanguage,
   trendMatchesMarket,
@@ -420,4 +421,20 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
     }),
     false,
   );
+});
+
+test("shouldClearActiveThesisPreset only clears when clicking the active preset", () => {
+  const preset = {
+    key: "product",
+    label: "Build ideas",
+    description: "Tilt toward builder demand, product fit, and non-recurring opportunity.",
+    lens: "product",
+    audience: "developer",
+    hideRecurring: true,
+    minimumScore: 16,
+  };
+
+  assert.equal(shouldClearActiveThesisPreset("product", preset), true);
+  assert.equal(shouldClearActiveThesisPreset("seo", preset), false);
+  assert.equal(shouldClearActiveThesisPreset(null, preset), false);
 });
