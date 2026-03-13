@@ -3,7 +3,13 @@ import test from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import SettingsPage from "@/app/settings/page";
-import { buildEnrichmentProviderStatuses, readEstimatedMetricsPreference } from "@/lib/settings";
+import {
+  buildEnrichmentProviderStatuses,
+  getThemeClass,
+  readEstimatedMetricsPreference,
+  readThemePreference,
+  THEME_OPTIONS,
+} from "@/lib/settings";
 
 test("settings page renders preferences and enrichment status sections", async () => {
   const html = renderToStaticMarkup(await SettingsPage());
@@ -11,6 +17,10 @@ test("settings page renders preferences and enrichment status sections", async (
   assert.match(html, /<h1>Settings<\/h1>/);
   assert.match(html, /Back to explorer/);
   assert.match(html, /UI preferences/);
+  assert.match(html, /Interface theme/);
+  assert.match(html, /Atlassian Light/);
+  assert.match(html, /Ocean/);
+  assert.match(html, /Soft Charcoal/);
   assert.match(html, /Estimated market metrics/);
   assert.match(html, /Enrichment status/);
   assert.match(html, /Google search provider/);
@@ -36,4 +46,12 @@ test("readEstimatedMetricsPreference defaults on and honors explicit false", () 
   assert.equal(readEstimatedMetricsPreference(undefined), true);
   assert.equal(readEstimatedMetricsPreference("true"), true);
   assert.equal(readEstimatedMetricsPreference("false"), false);
+});
+
+test("theme helpers default safely and resolve CSS classes", () => {
+  assert.equal(readThemePreference(undefined), "atlassian-light");
+  assert.equal(readThemePreference("ocean"), "ocean");
+  assert.equal(readThemePreference("unknown"), "atlassian-light");
+  assert.equal(getThemeClass("soft-charcoal"), "theme-soft-charcoal");
+  assert.equal(THEME_OPTIONS.length, 3);
 });

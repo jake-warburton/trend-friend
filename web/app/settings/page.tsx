@@ -2,15 +2,25 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 
 import { SettingsPreferences } from "@/components/settings-preferences";
-import { buildEnrichmentProviderStatuses, ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
+import {
+  buildEnrichmentProviderStatuses,
+  ESTIMATED_METRICS_COOKIE,
+  readEstimatedMetricsPreference,
+  readThemePreference,
+  THEME_COOKIE,
+  THEME_OPTIONS,
+} from "@/lib/settings";
 
 export default async function SettingsPage() {
   let showEstimatedMetrics = true;
+  let selectedTheme = readThemePreference(undefined);
   try {
     const cookieStore = await cookies();
     showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
+    selectedTheme = readThemePreference(cookieStore.get(THEME_COOKIE)?.value);
   } catch {
     showEstimatedMetrics = true;
+    selectedTheme = readThemePreference(undefined);
   }
   const providerStatuses = buildEnrichmentProviderStatuses(process.env);
 
@@ -38,7 +48,11 @@ export default async function SettingsPage() {
               <h2>UI preferences</h2>
             </header>
             <div className="settings-card-body">
-              <SettingsPreferences initialShowEstimatedMetrics={showEstimatedMetrics} />
+              <SettingsPreferences
+                initialShowEstimatedMetrics={showEstimatedMetrics}
+                initialTheme={selectedTheme}
+                themes={THEME_OPTIONS}
+              />
             </div>
           </article>
 

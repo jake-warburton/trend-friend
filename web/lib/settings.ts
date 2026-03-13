@@ -1,4 +1,13 @@
 export const ESTIMATED_METRICS_COOKIE = "signal_eye_show_estimated_metrics";
+export const THEME_COOKIE = "signal_eye_theme";
+export const DEFAULT_THEME = "atlassian-light";
+
+export type ThemeOption = {
+  key: string;
+  label: string;
+  className: string;
+  swatches: [string, string, string, string];
+};
 
 export type EnrichmentProviderStatus = {
   key: string;
@@ -6,6 +15,27 @@ export type EnrichmentProviderStatus = {
   configured: boolean;
   detail: string;
 };
+
+export const THEME_OPTIONS: readonly ThemeOption[] = [
+  {
+    key: "atlassian-light",
+    label: "Atlassian Light",
+    className: "theme-atlassian-light",
+    swatches: ["#f7f8fa", "#dfe1e6", "#0052cc", "#172b4d"],
+  },
+  {
+    key: "ocean",
+    label: "Ocean",
+    className: "theme-ocean",
+    swatches: ["#24415d", "#385678", "#6aa3d9", "#eef5fb"],
+  },
+  {
+    key: "soft-charcoal",
+    label: "Soft Charcoal",
+    className: "theme-soft-charcoal",
+    swatches: ["#1e232b", "#2d3641", "#78c2ad", "#f4f7fb"],
+  },
+] as const;
 
 export function buildEnrichmentProviderStatuses(env: NodeJS.ProcessEnv): EnrichmentProviderStatus[] {
   return [
@@ -47,4 +77,12 @@ export function buildEnrichmentProviderStatuses(env: NodeJS.ProcessEnv): Enrichm
 
 export function readEstimatedMetricsPreference(value: string | undefined): boolean {
   return value !== "false";
+}
+
+export function readThemePreference(value: string | undefined): string {
+  return THEME_OPTIONS.some((theme) => theme.key === value) ? (value as string) : DEFAULT_THEME;
+}
+
+export function getThemeClass(themeKey: string): string {
+  return THEME_OPTIONS.find((theme) => theme.key === themeKey)?.className ?? THEME_OPTIONS[0].className;
 }
