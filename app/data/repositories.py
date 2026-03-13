@@ -2652,7 +2652,7 @@ class TrendScoreRepository:
                 value_display=row["value_display"] or "0",
                 unit=row["unit"] or "",
                 period=row["period"] or "",
-                captured_at=datetime.fromisoformat(row["captured_at"]),
+                captured_at=self._coerce_datetime_value(row["captured_at"]),
                 confidence=round(float(row["confidence"] or 0.0), 2),
                 provenance_url=row["provenance_url"],
                 is_estimated=bool(row["is_estimated"]),
@@ -3135,6 +3135,14 @@ class TrendScoreRepository:
             first_seen_at=datetime.fromisoformat(str(first_seen_at)) if first_seen_at else None,
             last_seen_at=datetime.fromisoformat(str(row[9])),
         )
+
+    @staticmethod
+    def _coerce_datetime_value(value: object) -> datetime:
+        """Return a datetime from either a native adapter value or an ISO string."""
+
+        if isinstance(value, datetime):
+            return value
+        return datetime.fromisoformat(str(value))
 
     @staticmethod
     def _curation_override_from_row(row: RowMapping) -> TrendCurationOverride:

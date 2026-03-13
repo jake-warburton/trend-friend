@@ -363,6 +363,13 @@ class RepositoryTests(unittest.TestCase):
         self.assertTrue(repository.get_topic_market_footprint("ai agents"))
         self.assertEqual(repository.get_topic_market_footprint("google workspace cli"), [])
 
+    def test_trend_score_repository_coerces_datetime_values_from_multiple_adapters(self) -> None:
+        parsed = TrendScoreRepository._coerce_datetime_value("2026-03-09T00:00:00+00:00")
+        native = datetime(2026, 3, 9, tzinfo=timezone.utc)
+
+        self.assertEqual(parsed, native)
+        self.assertIs(TrendScoreRepository._coerce_datetime_value(native), native)
+
     def test_trend_score_repository_builds_explorer_records_with_movement(self) -> None:
         repository = TrendScoreRepository(self.connection)
         previous_captured_at = datetime(2026, 3, 8, tzinfo=timezone.utc)
