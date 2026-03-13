@@ -2996,8 +2996,9 @@ class TrendScoreRepository:
         source_count = len(score.source_counts)
         signal_count = sum(score.source_counts.values())
         stage = TrendScoreRepository._build_trend_stage(momentum, history_length, score.total_score)
+        category_descriptor = "trend" if category == "general-tech" else f"{category_label} trend"
         return (
-            f"{build_display_name(score.topic, score.evidence)} is a {stage} {category_label} trend "
+            f"{build_display_name(score.topic, score.evidence)} is a {stage} {category_descriptor} "
             f"validated by {signal_count} signals across {source_count} sources."
         )
 

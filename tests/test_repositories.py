@@ -15,7 +15,7 @@ from app.data.repositories import (
     WatchlistRepository,
     format_category_label,
 )
-from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
+from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendMomentum, TrendScoreResult
 from app.theses.matching import ThesisMatchCandidate
 
 
@@ -129,6 +129,26 @@ class RepositoryTests(unittest.TestCase):
     def test_format_category_label_preserves_acronyms_and_title_cases_words(self) -> None:
         self.assertEqual(format_category_label("ai-machine-learning"), "AI Machine Learning")
         self.assertEqual(format_category_label("hardware-robotics"), "Hardware Robotics")
+        self.assertEqual(format_category_label("general-tech"), "General Tech")
+
+    def test_build_trend_summary_omits_generic_general_tech_category_label(self) -> None:
+        score = TrendScoreResult(
+            topic="robotics",
+            total_score=18.0,
+            search_score=4.0,
+            social_score=5.0,
+            developer_score=6.0,
+            knowledge_score=2.0,
+            diversity_score=1.0,
+            evidence=["Robotics"],
+            source_counts={"github": 1, "reddit": 1},
+            latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        )
+        momentum = TrendMomentum(previous_rank=8, rank_change=-1, absolute_delta=-2.0, percent_delta=-10.0)
+
+        summary = TrendScoreRepository._build_trend_summary(score, "general-tech", momentum, history_length=4)
+
+        self.assertEqual(summary, "Robotics is a cooling trend validated by 2 signals across 2 sources.")
 
     def test_trend_score_repository_round_trip(self) -> None:
         score = TrendScoreResult(
