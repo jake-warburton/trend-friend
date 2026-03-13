@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class RawSourceItem:
     url: str
     timestamp: datetime
     engagement_score: float
-    metadata: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None
@@ -228,6 +229,23 @@ class TrendSourceContribution:
 
 
 @dataclass(frozen=True)
+class TrendMetricSnapshot:
+    """Persisted market-footprint metric for one trend and source."""
+
+    source: str
+    metric_key: str
+    label: str
+    value_numeric: float
+    value_display: str
+    unit: str
+    period: str
+    captured_at: datetime
+    confidence: float
+    provenance_url: str | None = None
+    is_estimated: bool = False
+
+
+@dataclass(frozen=True)
 class TrendEvidenceItem:
     """Evidence item captured from a normalized signal."""
 
@@ -353,6 +371,7 @@ class TrendDetailRecord:
     primary_evidence: TrendPrimaryEvidence | None
     duplicate_candidates: list[TrendDuplicateCandidate]
     related_trends: list[RelatedTrend]
+    market_footprint: list[TrendMetricSnapshot] = field(default_factory=list)
     seasonality: SeasonalityResult | None = None
 
 
@@ -371,6 +390,7 @@ class SourceSummaryRecord:
     """Detailed source health and contribution summary."""
 
     source: str
+    family: str
     status: str
     latest_fetch_at: datetime | None
     latest_success_at: datetime | None
@@ -378,6 +398,7 @@ class SourceSummaryRecord:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
     raw_topic_count: int
     merged_topic_count: int

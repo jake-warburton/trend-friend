@@ -38,6 +38,7 @@ from app.exports.contracts import (
     TrendExplorerRecordPayload,
     TrendHistoryPointPayload,
     TrendHistoryPayload,
+    TrendMarketMetricPayload,
     TrendMomentumPayload,
     TrendPrimaryEvidencePayload,
     TrendRecord,
@@ -60,6 +61,7 @@ from app.models import (
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.sources.catalog import source_family_for_source
 from app.topics.categorize import categorize_topic
 from app.topics.display import build_display_name, fallback_display_name
 
@@ -188,6 +190,7 @@ def build_source_summary_payload(
         sources=[
             SourceSummaryRecordPayload(
                 source=source.source,
+                family=source.family,
                 status=source.status,
                 latest_fetch_at=to_optional_timestamp(source.latest_fetch_at),
                 latest_success_at=to_optional_timestamp(source.latest_success_at),
@@ -195,6 +198,7 @@ def build_source_summary_payload(
                 latest_item_count=source.latest_item_count,
                 kept_item_count=source.kept_item_count,
                 yield_rate_percent=source.yield_rate_percent,
+                signal_yield_ratio=source.signal_yield_ratio,
                 duration_ms=source.duration_ms,
                 raw_topic_count=source.raw_topic_count,
                 merged_topic_count=source.merged_topic_count,
@@ -435,6 +439,22 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             )
             for item in trend.source_contributions
         ],
+        market_footprint=[
+            TrendMarketMetricPayload(
+                source=item.source,
+                metric_key=item.metric_key,
+                label=item.label,
+                value_numeric=round(item.value_numeric, 2),
+                value_display=item.value_display,
+                unit=item.unit,
+                period=item.period,
+                captured_at=to_timestamp(item.captured_at),
+                confidence=round(item.confidence, 2),
+                provenance_url=item.provenance_url,
+                is_estimated=item.is_estimated,
+            )
+            for item in trend.market_footprint
+        ],
         geo_summary=[
             TrendGeoSummaryPayload(
                 label=item.label,
@@ -577,6 +597,7 @@ def build_source_summaries(
     return [
         DashboardOverviewSourcePayload(
             source=source,
+            family=source_family_for_source(source),
             signal_count=signal_counts.get(source, 0),
             trend_count=len(source_map.get(source, set())),
             status=build_source_status(latest_by_source.get(source)),
@@ -594,6 +615,10 @@ def build_source_summaries(
             latest_item_count=latest_by_source[source].item_count if source in latest_by_source else 0,
             kept_item_count=latest_by_source[source].kept_item_count if source in latest_by_source else 0,
             yield_rate_percent=build_yield_rate_percent(latest_by_source.get(source)),
+            signal_yield_ratio=build_signal_yield_ratio(
+                signal_counts.get(source, 0),
+                latest_by_source.get(source),
+            ),
             duration_ms=latest_by_source[source].duration_ms if source in latest_by_source else 0,
             raw_topic_count=latest_by_source[source].raw_topic_count if source in latest_by_source else 0,
             merged_topic_count=latest_by_source[source].merged_topic_count if source in latest_by_source else 0,
@@ -622,6 +647,14 @@ def build_yield_rate_percent(run: SourceIngestionRun | None) -> float:
     if run is None or run.raw_item_count <= 0:
         return 0.0
     return round((run.kept_item_count / run.raw_item_count) * 100, 1)
+
+
+def build_signal_yield_ratio(signal_count: int, run: SourceIngestionRun | None) -> float:
+    """Return how many normalized signals survive per kept source item."""
+
+    if run is None or run.kept_item_count <= 0:
+        return 0.0
+    return round(signal_count / run.kept_item_count, 2)
 
 
 def build_source_watch_records(sources: list[DashboardOverviewSourcePayload]) -> list[SourceWatchRecord]:
@@ -889,6 +922,7 @@ def build_source_summary_records(
         summaries.append(
             SourceSummaryRecord(
                 source=source,
+                family=source_family_for_source(source),
                 status=build_source_status(latest_run),
                 latest_fetch_at=latest_run.fetched_at if latest_run is not None else None,
                 latest_success_at=successful_runs[0].fetched_at if successful_runs else None,
@@ -896,6 +930,7 @@ def build_source_summary_records(
                 latest_item_count=latest_run.item_count if latest_run is not None else 0,
                 kept_item_count=latest_run.kept_item_count if latest_run is not None else 0,
                 yield_rate_percent=build_yield_rate_percent(latest_run),
+                signal_yield_ratio=build_signal_yield_ratio(signal_counts.get(source, 0), latest_run),
                 duration_ms=latest_run.duration_ms if latest_run is not None else 0,
                 raw_topic_count=latest_run.raw_topic_count if latest_run is not None else 0,
                 merged_topic_count=latest_run.merged_topic_count if latest_run is not None else 0,

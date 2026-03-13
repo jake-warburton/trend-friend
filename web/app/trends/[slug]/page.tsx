@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
 import { slugifyBrowseValue } from "@/lib/trend-browse";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
@@ -29,6 +31,13 @@ export const dynamic = "force-dynamic";
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
+  let showEstimatedMetrics = true;
+  try {
+    const cookieStore = await cookies();
+    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
+  } catch {
+    showEstimatedMetrics = true;
+  }
   const [trend, history, sourceSummary] = await Promise.all([
     loadTrendDetail(slug),
     loadTrendHistory(),
@@ -150,6 +159,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
   const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
   const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
+  const visibleMarketFootprint = showEstimatedMetrics
+    ? trend.marketFootprint
+    : trend.marketFootprint.filter((metric) => !metric.isEstimated);
 
   return (
     <main className="detail-page">
@@ -246,6 +258,63 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
 
           <ScoreBreakdownChart score={trend.score} />
+        </section>
+
+        <section className="detail-panel detail-panel-wide">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Market footprint</p>
+              <h2>Platform signals</h2>
+            </div>
+          </div>
+          <div className="market-footprint-legend" aria-label="Metric source types">
+            <span className="market-footprint-legend-item">
+              <span className="market-footprint-legend-dot market-footprint-legend-dot-live" aria-hidden="true" />
+              Live provider metric
+            </span>
+            <span className="market-footprint-legend-item">
+              <span
+                className="market-footprint-legend-dot market-footprint-legend-dot-estimated"
+                aria-hidden="true"
+              />
+              Estimated fallback metric
+            </span>
+          </div>
+
+          {visibleMarketFootprint.length > 0 ? (
+            <div className="market-footprint-grid">
+              {visibleMarketFootprint.map((metric) => {
+                const freshness = formatDateOnly(metric.capturedAt);
+                return (
+                  <article className="market-footprint-card" key={`${metric.source}-${metric.metricKey}`}>
+                    <div className="market-footprint-card-header">
+                      <span>{formatSourceLabel(metric.source)}</span>
+                      {metric.isEstimated ? <small>Estimated</small> : null}
+                    </div>
+                    <strong>{metric.valueDisplay}</strong>
+                    <p>{metric.label}</p>
+                    <small>
+                      {metric.period} · {Math.round(metric.confidence * 100)}% confidence · Updated {freshness}
+                    </small>
+                    {metric.provenanceUrl ? (
+                      <a className="detail-back-link market-footprint-link" href={metric.provenanceUrl} rel="noreferrer" target="_blank">
+                        Open source
+                      </a>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : trend.marketFootprint.length > 0 && !showEstimatedMetrics ? (
+            <p className="detail-copy">
+              Estimated market metrics are currently hidden. Change this in <Link className="trend-link" href="/settings">Settings</Link>.
+            </p>
+          ) : (
+            <p className="detail-copy">
+              Market footprint enrichment is still sparse for this trend. Source-level metrics will appear here as
+              more platform evidence is captured.
+            </p>
+          )}
         </section>
 
         <section className="detail-panel">
@@ -660,6 +729,9 @@ function formatOpportunityScore(value: number) {
 }
 
 function formatPredictionDirection(direction: string) {
+  if (direction === "experimental") {
+    return "Experimental";
+  }
   return direction.charAt(0).toUpperCase() + direction.slice(1);
 }
 
@@ -733,6 +805,9 @@ function formatMomentum(value: number | null) {
 }
 
 function formatTrendStatus(status: string) {
+  if (status === "experimental") {
+    return "Experimental";
+  }
   if (status === "breakout") {
     return "Breakout";
   }
@@ -749,6 +824,9 @@ function formatTrendStatus(status: string) {
 }
 
 function trendStatusClassName(status: string) {
+  if (status === "experimental") {
+    return "trend-status-pill";
+  }
   if (status === "breakout") {
     return "trend-status-pill trend-status-pill-breakout";
   }

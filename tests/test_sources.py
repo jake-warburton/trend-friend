@@ -6,12 +6,21 @@ import unittest
 from dataclasses import replace
 
 from app.config import load_settings
+from app.sources.devto import DevToSourceAdapter
+from app.sources.curated_rss import CuratedRssSourceAdapter, FeedSpec
+from app.sources.chrome_web_store import ChromeWebStoreSourceAdapter
 from app.sources.github import GitHubSourceAdapter
-from app.sources.google_news import GoogleNewsSourceAdapter
+from app.sources.google_news import GoogleNewsSourceAdapter, _TOPICS as GOOGLE_NEWS_TOPICS
 from app.sources.hacker_news import HackerNewsSourceAdapter
+from app.sources.huggingface import HuggingFaceSourceAdapter
+from app.sources.lobsters import LobstersSourceAdapter
+from app.sources.npm import NpmSourceAdapter
+from app.sources.pypi import PyPISourceAdapter
 from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
+from app.sources.twitter import TwitterSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
+from app.sources.youtube import YouTubeSourceAdapter
 
 
 class SourceNormalizationTests(unittest.TestCase):
@@ -40,8 +49,13 @@ class SourceNormalizationTests(unittest.TestCase):
                 "opensource",
                 "startups",
                 "entrepreneur",
+                "SaaS",
+                "singularity",
+                "sideproject",
+                "indiehackers",
             ],
         )
+        self.assertEqual(adapter.FEED_SPECS, (("hot", None), ("new", None), ("top", "day"), ("top", "week")))
 
     def test_github_adapter_handles_missing_description(self) -> None:
         adapter = GitHubSourceAdapter(self.settings)
@@ -96,6 +110,64 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(items[0].metadata["publisher"], "Reuters")
         self.assertEqual(items[0].metadata["section"], "world")
 
+    def test_curated_rss_adapter_parses_rss_and_atom_feeds(self) -> None:
+        adapter = CuratedRssSourceAdapter(self.settings)
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0">
+          <channel>
+            <item>
+              <title>AI coding assistants accelerate in startup teams - TechCrunch</title>
+              <link>https://techcrunch.com/example-ai-coding</link>
+              <pubDate>Thu, 12 Mar 2026 12:00:00 GMT</pubDate>
+              <description><![CDATA[New developer workflows are emerging around AI coding tools.]]></description>
+            </item>
+          </channel>
+        </rss>"""
+        rss_items = adapter._parse_feed(
+            rss_xml,
+            feed=FeedSpec("TechCrunch AI", "TechCrunch", "https://techcrunch.com/category/artificial-intelligence/feed/"),
+            limit=3,
+        )
+        self.assertEqual(len(rss_items), 1)
+        self.assertEqual(rss_items[0].source, "curated_feeds")
+        self.assertEqual(rss_items[0].metadata["publisher"], "TechCrunch")
+        self.assertIn("developer workflows", rss_items[0].title.lower())
+
+        atom_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <title>OpenAI launches new agent tooling</title>
+            <link rel="alternate" href="https://openai.com/news/example-agent-tooling" />
+            <updated>2026-03-12T13:00:00Z</updated>
+            <summary>Agent workflows are becoming easier to ship.</summary>
+          </entry>
+        </feed>"""
+        atom_items = adapter._parse_feed(
+            atom_xml,
+            feed=FeedSpec("OpenAI News", "OpenAI", "https://openai.com/news/rss.xml", kind="atom"),
+            limit=3,
+        )
+        self.assertEqual(len(atom_items), 1)
+        self.assertEqual(atom_items[0].metadata["feed"], "OpenAI News")
+        self.assertIn("agent workflows", atom_items[0].title.lower())
+
+    def test_chrome_web_store_adapter_parses_search_cards(self) -> None:
+        adapter = ChromeWebStoreSourceAdapter(self.settings)
+        html = """
+        <div class="Cb7Kte" data-item-id="ngammciiefcamimjfmbjbhijplgiankh">
+          <a class="q6LNgd" href="./detail/ai-productivity-suite/ngammciiefcamimjfmbjbhijplgiankh"></a>
+          <div class="IcZnBc" id="i6"><h2 class="CiI2if">AI Productivity Suite</h2></div>
+          <span class="GvZmud" aria-label="Average rating 5 out of 5 stars." id="i8"></span>
+          <div id="i9">Enhanced AI prompt management with ChatGPT and powerful organization features.</div>
+        </div>
+        """
+        items = adapter._parse_search_page(html, query_family="ai")
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].source, "chrome_web_store")
+        self.assertEqual(items[0].external_id, "ngammciiefcamimjfmbjbhijplgiankh")
+        self.assertIn("AI Productivity Suite", items[0].title)
+        self.assertGreater(items[0].engagement_score, 0)
+
     def test_wikipedia_adapter_skips_non_article_pages_and_uses_payload_date(self) -> None:
         adapter = WikipediaSourceAdapter(self.settings)
         payload = {
@@ -116,6 +188,60 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "Artificial intelligence")
         self.assertEqual(items[0].timestamp.isoformat(), "2026-03-08T00:00:00+00:00")
+
+    def test_pypi_adapter_parses_rss_and_normalizes_package_json(self) -> None:
+        adapter = PyPISourceAdapter(self.settings)
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0">
+          <channel>
+            <item>
+              <title>agent-observability 0.4.0</title>
+              <link>https://pypi.org/project/agent-observability/0.4.0/</link>
+              <pubDate>Thu, 12 Mar 2026 12:00:00 GMT</pubDate>
+            </item>
+          </channel>
+        </rss>"""
+        entries = adapter._parse_rss(rss_xml)
+        self.assertEqual(entries[0][0], "agent-observability")
+
+        payload = {
+            "info": {
+                "summary": "Tracing toolkit for AI agent workflows",
+                "keywords": "ai,agents,observability",
+                "classifiers": ["Topic :: Software Development", "Programming Language :: Python"],
+                "package_url": "https://pypi.org/project/agent-observability/",
+                "project_urls": {"Homepage": "https://example.com"},
+            },
+            "urls": [{"upload_time_iso_8601": "2026-03-12T11:30:00Z"}],
+        }
+        item = adapter._normalize_package(payload, "agent-observability", entries[0][1], entries[0][2])
+        self.assertIsNotNone(item)
+        assert item is not None
+        self.assertEqual(item.source, "pypi")
+        self.assertIn("agents", item.metadata["keywords"])
+        self.assertGreater(item.engagement_score, 0)
+
+    def test_youtube_adapter_normalizes_video_statistics(self) -> None:
+        adapter = YouTubeSourceAdapter(self.settings)
+        payload = {
+            "items": [
+                {
+                    "id": "video-1",
+                    "snippet": {
+                        "title": "AI agents for operator workflows",
+                        "publishedAt": "2026-03-12T12:00:00Z",
+                        "channelTitle": "Builder Signals",
+                        "tags": ["ai", "agents", "workflow"],
+                    },
+                    "statistics": {"viewCount": "10000", "likeCount": "800", "commentCount": "90"},
+                }
+            ]
+        }
+        items = adapter._normalize_videos(payload, query_family="agents")
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].source, "youtube")
+        self.assertEqual(items[0].metadata["channel_title"], "Builder Signals")
+        self.assertGreater(items[0].engagement_score, 0)
 
     def test_polymarket_adapter_normalizes_sample_payload(self) -> None:
         adapter = PolymarketSourceAdapter(self.settings)
@@ -295,6 +421,10 @@ class SourceNormalizationTests(unittest.TestCase):
         </feed>"""
 
         class TestAdapter(RedditSourceAdapter):
+            FEED_SPECS = (("hot", None),)
+            TREND_SUBREDDITS = ["technology", "programming", "startups"]
+            SUBREDDITS_PER_FEED = 3
+
             def get_url(self, url: str, headers=None):
                 return rss_xml
 
@@ -304,6 +434,7 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(adapter.raw_item_count, 4)
         self.assertEqual(adapter.kept_item_count, 3)
         self.assertEqual(items[0].metadata["subreddit"], "technology")
+        self.assertEqual(items[0].metadata["feed"], "hot")
         # Position-based engagement: first item gets highest score
         self.assertGreater(items[0].engagement_score, items[2].engagement_score)
 
@@ -339,6 +470,8 @@ class SourceNormalizationTests(unittest.TestCase):
         settings = replace(self.settings, max_items_per_source=4, github_page_limit=3)
 
         class TestAdapter(GitHubSourceAdapter):
+            QUERY_FAMILIES = (("recent", "stars:>80 archived:false"),)
+
             def __init__(self, settings):
                 super().__init__(settings)
                 self.calls: list[str] = []
@@ -401,6 +534,43 @@ class SourceNormalizationTests(unittest.TestCase):
         items = adapter.fetch()
         self.assertEqual([item.external_id for item in items], ["1", "2", "3"])
         self.assertEqual(len(adapter.calls), 3)
+        self.assertEqual(items[0].metadata["query_family"], "recent")
+
+    def test_twitter_adapter_uses_multiple_query_families(self) -> None:
+        adapter = TwitterSourceAdapter(self.settings)
+        self.assertGreater(len(adapter.QUERY_FAMILIES), 1)
+        self.assertEqual(adapter.QUERY_FAMILIES[0][0], "ai")
+
+    def test_google_news_adapter_expands_topic_coverage(self) -> None:
+        self.assertEqual(
+            [section for _topic, section in GOOGLE_NEWS_TOPICS],
+            ["world", "business", "technology", "science", "health"],
+        )
+
+    def test_devto_adapter_fallback_items_include_tags(self) -> None:
+        adapter = DevToSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "devto")
+        self.assertIn("ai", items[0].metadata["tags"])
+
+    def test_huggingface_adapter_fallback_items_include_kind_and_tags(self) -> None:
+        adapter = HuggingFaceSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "huggingface")
+        self.assertEqual(items[0].metadata["kind"], "models")
+        self.assertIn("llm", items[0].metadata["tags"])
+
+    def test_npm_adapter_fallback_items_include_keywords(self) -> None:
+        adapter = NpmSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "npm")
+        self.assertIn("workflow", items[0].metadata["keywords"])
+
+    def test_lobsters_adapter_fallback_items_include_tags(self) -> None:
+        adapter = LobstersSourceAdapter(self.settings)
+        items = adapter._fallback_items()
+        self.assertEqual(items[0].source, "lobsters")
+        self.assertIn("mcp", items[0].metadata["tags"])
 
 
 if __name__ == "__main__":

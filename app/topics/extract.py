@@ -6,6 +6,7 @@ import re
 from math import log10
 
 from app.models import NormalizedSignal, RawSourceItem
+from app.sources.catalog import signal_type_for_source
 from app.topics.audience import assign_audience_flags
 from app.topics.geo import assign_geo_flags
 from app.topics.normalize import (
@@ -18,23 +19,32 @@ from app.topics.normalize import (
 MAX_TOPICS_PER_ITEM = 3
 MAX_BIGRAMS_PER_ITEM = 2
 SOURCE_TOPIC_LIMITS = {
+    "chrome_web_store": 2,
+    "curated_feeds": 2,
     "google_news": 2,
     "google_trends": 2,
     "hacker_news": 2,
     "polymarket": 2,
     "twitter": 2,
+    "youtube": 2,
 }
 SOURCE_BIGRAM_LIMITS = {
+    "chrome_web_store": 1,
+    "curated_feeds": 0,
     "google_news": 1,
     "google_trends": 1,
     "hacker_news": 1,
     "polymarket": 1,
     "twitter": 1,
+    "youtube": 1,
 }
 SOURCE_LOW_SIGNAL_TOKENS = {
+    "chrome_web_store": {"assistant", "browser", "chrome", "extension", "extensions", "sidebar", "tool"},
+    "curated_feeds": {"announces", "explains", "introducing", "latest", "new", "says", "using", "why"},
     "google_news": {"live", "updates", "update", "latest", "watch", "watching", "says"},
     "hacker_news": {"watching", "people", "report", "reports", "footage"},
     "twitter": {"watching", "people", "report", "reports", "footage"},
+    "youtube": {"build", "building", "demo", "explained", "how", "review", "tutorial", "using", "video"},
 }
 BIGRAM_HEAD_TOKENS = {
     "analytics",
@@ -153,6 +163,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "per",
     "process",
     "promote",
+    "remotely",
     "rule",
     "rules",
     "shuts",
@@ -177,6 +188,42 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "your",
     "dont",
     "mention",
+}
+METADATA_TOPIC_KEYS = (
+    "tags",
+    "keywords",
+    "tag_list",
+    "pipeline_tag",
+    "library_name",
+    "package_name",
+    "channel_title",
+)
+GENERIC_METADATA_TOPICS = {
+    "ai",
+    "api",
+    "app",
+    "apps",
+    "cli",
+    "dataset",
+    "datasets",
+    "developer",
+    "javascript",
+    "library",
+    "machine-learning",
+    "model",
+    "models",
+    "nodejs",
+    "open-source",
+    "opensource",
+    "package",
+    "packages",
+    "python package",
+    "python",
+    "space",
+    "spaces",
+    "tool",
+    "tools",
+    "youtube channel",
 }
 
 
@@ -222,6 +269,24 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
     return ordered_candidates
 
 
+def extract_candidate_topics_for_item(item: RawSourceItem) -> list[str]:
+    """Extract candidates from the title plus selective metadata topic hints."""
+
+    candidates: list[str] = []
+    seen: set[str] = set()
+    metadata_topics = infer_metadata_topics(item)
+    title_topics = extract_candidate_topics(item.title, source_name=item.source)
+    for candidate in metadata_topics + title_topics:
+        normalized = normalize_topic_name(candidate)
+        if not normalized or normalized in seen or not is_meaningful_topic(normalized):
+            continue
+        seen.add(normalized)
+        candidates.append(normalized)
+        if len(candidates) >= SOURCE_TOPIC_LIMITS.get(item.source, MAX_TOPICS_PER_ITEM):
+            break
+    return candidates
+
+
 def infer_source_specific_topics(title: str, tokens: list[str], source_name: str | None) -> list[str]:
     """Return source-specific canonical topics before general extraction heuristics."""
 
@@ -229,6 +294,10 @@ def infer_source_specific_topics(title: str, tokens: list[str], source_name: str
         return infer_google_news_topics(title, tokens)
     if source_name == "polymarket":
         return infer_polymarket_topics(tokens)
+    if source_name == "huggingface":
+        return infer_huggingface_topics(tokens)
+    if source_name == "youtube":
+        return infer_youtube_topics(tokens)
     return []
 
 
@@ -432,6 +501,44 @@ def infer_polymarket_topics(tokens: list[str]) -> list[str]:
     return []
 
 
+def infer_huggingface_topics(tokens: list[str]) -> list[str]:
+    """Prefer stable model-family or task phrases for Hugging Face items."""
+
+    token_set = set(tokens)
+    inferred_topics: list[str] = []
+    if {"text", "embedding"} <= token_set:
+        inferred_topics.append("text embeddings")
+    if {"image", "generation"} <= token_set:
+        inferred_topics.append("image generation")
+    if {"speech", "recognition"} <= token_set:
+        inferred_topics.append("speech recognition")
+    if {"vision", "language"} <= token_set:
+        inferred_topics.append("vision language models")
+    if {"agent", "agents"} & token_set and ("framework" in token_set or "tool" in token_set):
+        inferred_topics.append("ai agents")
+    return inferred_topics
+
+
+def infer_youtube_topics(tokens: list[str]) -> list[str]:
+    """Prefer durable topics over generic creator framing for YouTube titles."""
+
+    token_set = set(tokens)
+    inferred_topics: list[str] = []
+    if {"vibe", "coding"} <= token_set:
+        inferred_topics.append("vibe coding")
+    if {"ai", "avatar"} <= token_set:
+        inferred_topics.append("ai avatars")
+    if {"video", "generation"} <= token_set:
+        inferred_topics.append("video generation")
+    if {"open", "source"} <= token_set and ("ai" in token_set or "llm" in token_set):
+        inferred_topics.append("open source ai")
+    if {"model", "context", "protocol"} <= token_set:
+        inferred_topics.append("model context protocol")
+    if ("agent" in token_set or "agents" in token_set) and ("workflow" in token_set or "automation" in token_set):
+        inferred_topics.append("ai agents")
+    return inferred_topics
+
+
 def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSignal]:
     """Convert raw source items into topic-level normalized signals."""
 
@@ -439,7 +546,7 @@ def build_signals_from_items(items: list[RawSourceItem]) -> list[NormalizedSigna
     for item in items:
         geo = assign_geo_flags(item)
         audience = assign_audience_flags(item, geo)
-        for topic in extract_candidate_topics(item.title, source_name=item.source):
+        for topic in extract_candidate_topics_for_item(item):
             signals.append(
                 NormalizedSignal(
                     topic=topic,
@@ -488,25 +595,42 @@ def polymarket_signal_value(item: RawSourceItem) -> float:
     return round(normalized_value, 2)
 
 
-def signal_type_for_source(source_name: str) -> str:
-    """Map a source name to a stable signal type."""
+def infer_metadata_topics(item: RawSourceItem) -> list[str]:
+    """Return conservative topic hints from structured metadata fields."""
 
-    return {
-        "arxiv": "knowledge",
-        "github": "developer",
-        "google_news": "knowledge",
-        "google_trends": "search",
-        "producthunt": "social",
-        "stackoverflow": "developer",
-        "hacker_news": "social",
-        "polymarket": "search",
-        "reddit": "social",
-        "twitter": "social",
-        "wikipedia": "knowledge",
-    }.get(source_name, "social")
+    metadata_topics: list[str] = []
+    for key in METADATA_TOPIC_KEYS:
+        metadata_value = item.metadata.get(key)
+        values = _metadata_values(metadata_value)
+        for value in values:
+            normalized = normalize_topic_name(value)
+            if (
+                not normalized
+                or normalized in metadata_topics
+                or normalized in GENERIC_METADATA_TOPICS
+                or not is_meaningful_topic(normalized)
+            ):
+                continue
+            metadata_topics.append(normalized)
+    return metadata_topics
 
 
-def _metadata_float(metadata: dict[str, str], key: str, default: float = 0.0) -> float:
+def _metadata_values(value: object) -> list[str]:
+    """Normalize a metadata field into a list of text values."""
+
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [part.strip() for part in re.split(r"[|,]", value) if part.strip()]
+    if isinstance(value, (list, tuple, set)):
+        values: list[str] = []
+        for item in value:
+            values.extend(_metadata_values(item))
+        return values
+    return [str(value).strip()]
+
+
+def _metadata_float(metadata: dict[str, object], key: str, default: float = 0.0) -> float:
     """Read a numeric metadata value safely."""
 
     try:

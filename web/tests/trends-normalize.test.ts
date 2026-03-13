@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildFallbackTrendDetailFromExplorer,
+  buildFallbackTrendDetailFromOverviewItem,
   normalizeDashboardOverview,
   normalizeTrendExplorer,
   normalizeTrendDetailRecord,
@@ -101,6 +103,7 @@ test("normalizeDashboardOverview defaults missing source quality fields", () => 
   assert.equal(result.sources[0].rawTopicCount, 0);
   assert.equal(result.sources[0].mergedTopicCount, 0);
   assert.equal(result.sources[0].duplicateTopicRate, 0);
+  assert.equal(result.sources[0].family, "other");
 });
 
 test("normalizeDashboardOverview preserves provided values", () => {
@@ -292,6 +295,7 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.deepEqual(result.history, []);
   assert.deepEqual(result.sourceBreakdown, []);
   assert.deepEqual(result.sourceContributions, []);
+  assert.deepEqual(result.marketFootprint, []);
   assert.deepEqual(result.geoSummary, []);
   assert.deepEqual(result.duplicateCandidates, []);
   assert.deepEqual(result.relatedTrends, []);
@@ -308,6 +312,21 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     summary: "AI Agents is a breakout AI trend.",
     whyNow: ["Social signals are leading."],
     aliases: ["AI Agents", "ai agents"],
+    marketFootprint: [
+      {
+        source: "google_trends",
+        metricKey: "search_traffic",
+        label: "Google search traffic",
+        valueNumeric: 2400000,
+        valueDisplay: "2.4M",
+        unit: "searches",
+        period: "current run",
+        capturedAt: "2026-03-10T00:00:00Z",
+        confidence: 0.88,
+        provenanceUrl: "https://trends.google.com/example",
+        isEstimated: false,
+      },
+    ],
     duplicateCandidates: [{ id: "ai-agent", name: "AI Agent", similarity: 0.8, reason: "Tracked aliases overlap." }],
     latestSignalAt: "2026-03-10T00:00:00Z",
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
@@ -330,6 +349,8 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.summary, "AI Agents is a breakout AI trend.");
   assert.deepEqual(result.whyNow, ["Social signals are leading."]);
   assert.deepEqual(result.aliases, ["AI Agents", "ai agents"]);
+  assert.equal(result.marketFootprint[0].label, "Google search traffic");
+  assert.equal(result.marketFootprint[0].valueDisplay, "2.4M");
   assert.equal(result.duplicateCandidates[0].id, "ai-agent");
   assert.equal(result.duplicateCandidates[0].similarity, 0.8);
   assert.equal(result.breakoutPrediction.confidence, 0.85);
@@ -337,6 +358,87 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.opportunity.discovery, 6.5);
   assert.equal(result.opportunity.seo, 6.8);
   assert.equal(result.opportunity.reasoning[0], "Strong momentum");
+});
+
+test("buildFallbackTrendDetailFromExplorer synthesizes a usable detail record", () => {
+  const result = buildFallbackTrendDetailFromExplorer(
+    {
+      id: "awesome-multimodal-object-tracking",
+      name: "Awesome Multimodal Object Tracking",
+      category: "developer-tools",
+      metaTrend: "Computer vision",
+      stage: "nascent",
+      confidence: 0.42,
+      summary: "",
+      status: "experimental",
+      volatility: "emerging",
+      rank: 91,
+      previousRank: null,
+      rankChange: null,
+      firstSeenAt: null,
+      latestSignalAt: "2026-03-13T00:00:00Z",
+      score: { total: 14.4, social: 1.2, developer: 9.4, knowledge: 0.8, search: 1.1, diversity: 1.9 },
+      momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
+      coverage: { sourceCount: 2, signalCount: 4 },
+      sources: ["github", "reddit"],
+      evidencePreview: ["GitHub repo stars accelerated this run."],
+      audienceSummary: [],
+      primaryEvidence: null,
+      seasonality: null,
+      forecastDirection: null,
+    },
+    "2026-03-13T00:00:00Z",
+  );
+
+  assert.equal(result.id, "awesome-multimodal-object-tracking");
+  assert.equal(result.status, "experimental");
+  assert.equal(result.summary.includes("full detail enrichment"), true);
+  assert.equal(result.whyNow[0], "GitHub repo stars accelerated this run.");
+  assert.equal(result.sourceBreakdown.length, 2);
+  assert.equal(result.breakoutPrediction.predictedDirection, "stable");
+});
+
+test("buildFallbackTrendDetailFromOverviewItem synthesizes experimental detail from overview data", () => {
+  const overview = normalizeDashboardOverview({
+    generatedAt: "2026-03-13T00:00:00Z",
+    summary: { trackedTrends: 0, totalSignals: 0, sourceCount: 0, averageScore: 0 },
+    highlights: {
+      topTrendId: null,
+      topTrendName: null,
+      biggestMoverId: null,
+      biggestMoverName: null,
+      newestTrendId: null,
+      newestTrendName: null,
+    },
+    charts: { topTrendScores: [], sourceShare: [], statusBreakdown: [] },
+    sections: {
+      topTrends: [],
+      breakoutTrends: [],
+      risingTrends: [],
+      experimentalTrends: [
+        {
+          id: "awesome-multimodal-object-tracking",
+          name: "Awesome Multimodal Object Tracking",
+          category: "developer-tools",
+          status: "experimental",
+          rank: 91,
+          scoreTotal: 14.4,
+        },
+      ],
+      metaTrends: [],
+    },
+    operations: { lastRunAt: null, successRate: 0, averageDurationMs: 0, recentRuns: [] },
+    sources: [],
+  });
+
+  const result = buildFallbackTrendDetailFromOverviewItem(overview.sections.experimentalTrends[0], overview);
+
+  assert.equal(result.id, "awesome-multimodal-object-tracking");
+  assert.equal(result.status, "experimental");
+  assert.equal(result.metaTrend, "Experimental");
+  assert.equal(result.rank, 91);
+  assert.equal(result.score.total, 14.4);
+  assert.equal(result.whyNow[0], "This topic is currently ranked in the experimental bucket.");
 });
 
 // ── normalizeSourceSummary ──────────────────────────────────────────────
@@ -350,6 +452,7 @@ test("normalizeSourceSummary defaults missing source fields", () => {
   const source = result.sources[0];
 
   assert.equal(source.status, "stale");
+  assert.equal(source.family, "other");
   assert.equal(source.latestFetchAt, null);
   assert.equal(source.signalCount, 0);
   assert.equal(source.trendCount, 0);

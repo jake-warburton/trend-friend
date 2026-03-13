@@ -95,6 +95,7 @@ export type DashboardOverviewSections = {
 
 export type DashboardOverviewSource = {
   source: string;
+  family: string;
   signalCount: number;
   trendCount: number;
   status: string;
@@ -104,6 +105,7 @@ export type DashboardOverviewSource = {
   latestItemCount: number;
   keptItemCount: number;
   yieldRatePercent: number;
+  signalYieldRatio?: number;
   durationMs: number;
   rawTopicCount: number;
   mergedTopicCount: number;
@@ -286,6 +288,20 @@ export type TrendSourceContribution = {
   score: TrendScore;
 };
 
+export type TrendMarketMetric = {
+  source: string;
+  metricKey: string;
+  label: string;
+  valueNumeric: number;
+  valueDisplay: string;
+  unit: string;
+  period: string;
+  capturedAt: string;
+  confidence: number;
+  provenanceUrl: string | null;
+  isEstimated: boolean;
+};
+
 export type RelatedTrend = {
   id: string;
   name: string;
@@ -329,6 +345,7 @@ export type TrendDetailRecord = {
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
   sourceContributions: TrendSourceContribution[];
+  marketFootprint: TrendMarketMetric[];
   geoSummary: TrendGeoSummary[];
   audienceSummary: TrendAudienceSegment[];
   evidenceItems: TrendEvidenceItem[];
@@ -368,6 +385,7 @@ export type SourceSummaryTrend = {
 
 export type SourceSummaryRecord = {
   source: string;
+  family: string;
   status: string;
   latestFetchAt: string | null;
   latestSuccessAt: string | null;
@@ -375,6 +393,7 @@ export type SourceSummaryRecord = {
   latestItemCount: number;
   keptItemCount: number;
   yieldRatePercent: number;
+  signalYieldRatio?: number;
   durationMs: number;
   rawTopicCount: number;
   mergedTopicCount: number;

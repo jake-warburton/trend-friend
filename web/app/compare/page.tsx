@@ -191,6 +191,21 @@ function formatDateOnly(value: string) {
 }
 
 function formatSourceLabel(source: string) {
+  const labels: Record<string, string> = {
+    chrome_web_store: "Chrome Web Store",
+    curated_feeds: "Curated Feeds",
+    devto: "DEV Community",
+    google_trends: "Google Trends",
+    hacker_news: "Hacker News",
+    huggingface: "Hugging Face",
+    pypi: "PyPI",
+    stackoverflow: "Stack Overflow",
+    twitter: "Twitter/X",
+    youtube: "YouTube",
+  };
+  if (labels[source]) {
+    return labels[source];
+  }
   return source
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

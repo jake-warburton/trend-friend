@@ -4,19 +4,24 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from urllib.parse import quote_plus
 
 from app.models import RawSourceItem
 from app.sources.base import SourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
-TECH_QUERY = "(AI OR machine learning OR startup OR open source OR robotics) lang:en -is:retweet"
-
 
 class TwitterSourceAdapter(SourceAdapter):
     """Fetch recent tech-related tweets and normalize them."""
 
     source_name = "twitter"
+    QUERY_FAMILIES = (
+        ("ai", "(AI OR LLM OR agents OR copilots) lang:en -is:retweet"),
+        ("builders", "(startup OR founders OR indie hackers OR SaaS) lang:en -is:retweet"),
+        ("developer", "(open source OR developer tools OR GitHub OR framework) lang:en -is:retweet"),
+        ("deep-tech", "(robotics OR machine learning OR computer vision) lang:en -is:retweet"),
+    )
 
     def fetch(self) -> list[RawSourceItem]:
         if not self.settings.twitter_bearer_token:
@@ -31,19 +36,35 @@ class TwitterSourceAdapter(SourceAdapter):
     def _fetch_recent_search(self) -> list[RawSourceItem]:
         """Fetch recent tweets matching tech keywords via v2 search."""
 
-        url = (
-            "https://api.twitter.com/2/tweets/search/recent"
-            f"?query={TECH_QUERY}"
-            f"&max_results={min(self.settings.max_items_per_source, 100)}"
-            "&tweet.fields=created_at,public_metrics,author_id"
-        )
-        payload = self.get_json(
-            url,
-            headers={"Authorization": f"Bearer {self.settings.twitter_bearer_token}"},
-        )
-        return self._normalize_search(payload)
+        items: list[RawSourceItem] = []
+        seen_ids: set[str] = set()
+        max_results = min(max(self.settings.max_items_per_source, 10), 100)
+        headers = {"Authorization": f"Bearer {self.settings.twitter_bearer_token}"}
+        for query_name, query in self.QUERY_FAMILIES:
+            url = (
+                "https://api.twitter.com/2/tweets/search/recent"
+                f"?query={quote_plus(query)}"
+                f"&max_results={max_results}"
+                "&tweet.fields=created_at,public_metrics,author_id"
+            )
+            payload = self.get_json(url, headers=headers)
+            page_items = self._normalize_search(payload, query_name=query_name)
+            self.raw_item_count += len(payload.get("data", []))
+            for item in page_items:
+                if item.external_id in seen_ids:
+                    continue
+                seen_ids.add(item.external_id)
+                items.append(item)
+                self.kept_item_count += 1
+                if len(items) >= self.settings.max_items_per_source:
+                    return items
+        return items
 
-    def _normalize_search(self, payload: dict[str, object]) -> list[RawSourceItem]:
+    def _normalize_search(
+        self,
+        payload: dict[str, object],
+        query_name: str | None = None,
+    ) -> list[RawSourceItem]:
         """Normalize Twitter v2 search response into shared models."""
 
         tweets = payload.get("data", [])
@@ -78,7 +99,10 @@ class TwitterSourceAdapter(SourceAdapter):
                     url=f"https://x.com/i/status/{tweet_id}",
                     timestamp=timestamp,
                     engagement_score=engagement,
-                    metadata={"author_id": str(tweet.get("author_id", ""))},
+                    metadata={
+                        "author_id": str(tweet.get("author_id", "")),
+                        "query_family": query_name or "default",
+                    },
                 )
             )
         return items

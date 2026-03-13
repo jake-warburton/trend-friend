@@ -28,6 +28,7 @@ from app.models import (
     TrendGeoSummary,
     TrendHistoryPoint,
     TrendMomentum,
+    TrendMetricSnapshot,
     TrendPrimaryEvidence,
     NormalizedSignal,
     OpportunitySummary,
@@ -206,6 +207,9 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["estimatedScore"], 24.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["scoreSharePercent"], 57.1)
         self.assertEqual(payload["trends"][0]["sourceContributions"][0]["score"]["social"], 18.2)
+        self.assertEqual(payload["trends"][0]["marketFootprint"][0]["metricKey"], "search_traffic")
+        self.assertEqual(payload["trends"][0]["marketFootprint"][0]["valueDisplay"], "2.4M")
+        self.assertEqual(payload["trends"][0]["marketFootprint"][0]["provenanceUrl"], "https://trends.google.com/example")
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["scoreTotal"], 28.1)
         self.assertEqual(payload["trends"][0]["relatedTrends"][0]["relationshipStrength"], 0.8)
         self.assertEqual(payload["trends"][0]["duplicateCandidates"][0]["id"], "ai-agent")
@@ -249,6 +253,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sources"][1]["status"], "degraded")
         self.assertEqual(payload["sources"][1]["keptItemCount"], 2)
         self.assertEqual(payload["sources"][1]["yieldRatePercent"], 100.0)
+        self.assertEqual(payload["sources"][1]["signalYieldRatio"], 0.5)
         self.assertTrue(payload["sources"][1]["usedFallback"])
         self.assertEqual(payload["sources"][1]["durationMs"], 85)
 
@@ -281,6 +286,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["sources"][0]["runHistory"][0]["keptItemCount"], 3)
         self.assertEqual(payload["sources"][0]["runHistory"][0]["yieldRatePercent"], 100.0)
         self.assertEqual(payload["sources"][0]["yieldRatePercent"], 60.0)
+        self.assertEqual(payload["sources"][0]["signalYieldRatio"], 0.6)
         self.assertEqual(payload["sources"][0]["topTrends"][0]["scoreTotal"], 42.4)
 
     def test_build_source_summary_records_uses_runs_and_trends(self) -> None:
@@ -298,6 +304,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(reddit_record.raw_item_count, 3)
         self.assertEqual(reddit_record.kept_item_count, 3)
         self.assertEqual(reddit_record.yield_rate_percent, 100.0)
+        self.assertEqual(reddit_record.signal_yield_ratio, 0.67)
         self.assertEqual(reddit_record.top_trends[0].id, "ai-agents")
 
 
@@ -468,6 +475,21 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 diversity_score=0.0,
             )
         ],
+        market_footprint=[
+            TrendMetricSnapshot(
+                source="google_trends",
+                metric_key="search_traffic",
+                label="Google search traffic",
+                value_numeric=2400000.0,
+                value_display="2.4M",
+                unit="searches",
+                period="current run",
+                captured_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
+                confidence=0.88,
+                provenance_url="https://trends.google.com/example",
+                is_estimated=False,
+            )
+        ],
         geo_summary=[
             TrendGeoSummary(
                 label="US",
@@ -594,6 +616,7 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
 
     return SourceSummaryRecord(
         source=source,
+        family="community",
         status="healthy",
         latest_fetch_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
         latest_success_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
@@ -601,6 +624,7 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
         latest_item_count=3,
         kept_item_count=3,
         yield_rate_percent=60.0,
+        signal_yield_ratio=0.6,
         duration_ms=120,
         raw_topic_count=4,
         merged_topic_count=3,

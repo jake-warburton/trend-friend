@@ -227,6 +227,23 @@ class TrendSourceContributionPayload:
 
 
 @dataclass(frozen=True)
+class TrendMarketMetricPayload:
+    """Persisted market-footprint metric exposed on detail pages."""
+
+    source: str
+    metric_key: str
+    label: str
+    value_numeric: float
+    value_display: str
+    unit: str
+    period: str
+    captured_at: str
+    confidence: float
+    provenance_url: str | None
+    is_estimated: bool
+
+
+@dataclass(frozen=True)
 class TrendEvidenceItemPayload:
     """Evidence item exposed on the trend detail page."""
 
@@ -320,6 +337,7 @@ class TrendDetailRecordPayload:
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
     source_contributions: list[TrendSourceContributionPayload]
+    market_footprint: list[TrendMarketMetricPayload]
     geo_summary: list[TrendGeoSummaryPayload]
     audience_summary: list[TrendAudienceSegmentPayload]
     evidence_items: list[TrendEvidenceItemPayload]
@@ -423,6 +441,7 @@ class DashboardOverviewSourcePayload:
     """Source-level aggregate for overview and source health summary."""
 
     source: str
+    family: str
     signal_count: int
     trend_count: int
     status: str
@@ -432,6 +451,7 @@ class DashboardOverviewSourcePayload:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
     raw_topic_count: int
     merged_topic_count: int
@@ -558,6 +578,7 @@ class DashboardOverviewPayload:
             source["latestItemCount"] = source.pop("latest_item_count")
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
+            source["signalYieldRatio"] = source.pop("signal_yield_ratio")
             source["durationMs"] = source.pop("duration_ms")
             source["rawTopicCount"] = source.pop("raw_topic_count")
             source["mergedTopicCount"] = source.pop("merged_topic_count")
@@ -603,6 +624,7 @@ class SourceSummaryRecordPayload:
     """Detailed source summary for source health pages."""
 
     source: str
+    family: str
     status: str
     latest_fetch_at: str | None
     latest_success_at: str | None
@@ -610,6 +632,7 @@ class SourceSummaryRecordPayload:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
     raw_topic_count: int
     merged_topic_count: int
@@ -642,6 +665,7 @@ class SourceSummaryPayload:
             source["latestItemCount"] = source.pop("latest_item_count")
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
+            source["signalYieldRatio"] = source.pop("signal_yield_ratio")
             source["durationMs"] = source.pop("duration_ms")
             source["rawTopicCount"] = source.pop("raw_topic_count")
             source["mergedTopicCount"] = source.pop("merged_topic_count")
@@ -738,6 +762,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
     payload["sourceContributions"] = payload.pop("source_contributions")
+    payload["marketFootprint"] = payload.pop("market_footprint")
     payload["geoSummary"] = payload.pop("geo_summary")
     payload["audienceSummary"] = payload.pop("audience_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
@@ -756,6 +781,13 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         source["latestSignalAt"] = source.pop("latest_signal_at")
         source["estimatedScore"] = source.pop("estimated_score")
         source["scoreSharePercent"] = source.pop("score_share_percent")
+    for metric in payload["marketFootprint"]:
+        metric["metricKey"] = metric.pop("metric_key")
+        metric["valueNumeric"] = metric.pop("value_numeric")
+        metric["valueDisplay"] = metric.pop("value_display")
+        metric["capturedAt"] = metric.pop("captured_at")
+        metric["provenanceUrl"] = metric.pop("provenance_url")
+        metric["isEstimated"] = metric.pop("is_estimated")
     for geo in payload["geoSummary"]:
         geo["countryCode"] = geo.pop("country_code")
         geo["signalCount"] = geo.pop("signal_count")

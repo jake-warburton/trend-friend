@@ -8,7 +8,9 @@ import {
   buildSharedWatchlistExportHref,
   buildLanguageFilterOptions,
   buildMarketFilterOptions,
+  isThesisPresetApplied,
   listActiveExplorerFilters,
+  shouldClearActiveThesisPreset,
   trendMatchesAudience,
   trendMatchesLanguage,
   trendMatchesMarket,
@@ -348,4 +350,91 @@ test("listActiveExplorerFilters returns readable chips for non-default explorer 
       { key: "seasonality", label: "Seasonality", value: "Hide recurring" },
     ],
   );
+});
+
+test("isThesisPresetApplied only stays active while the full preset remains applied", () => {
+  const preset = {
+    key: "seo",
+    label: "SEO opportunities",
+    description: "Surface search-backed demand with enough evidence breadth to publish into.",
+    lens: "seo",
+    hideRecurring: true,
+    minimumScore: 18,
+  };
+
+  assert.equal(
+    isThesisPresetApplied(preset, {
+      keyword: "",
+      selectedSource: "all",
+      selectedCategory: "all",
+      selectedStage: "all",
+      selectedConfidence: "all",
+      selectedLens: "seo",
+      selectedMetaTrend: "all",
+      selectedAudience: "all",
+      selectedMarket: "all",
+      selectedLanguage: "all",
+      selectedGeoCountry: "all",
+      minimumScore: 18,
+      sortBy: "rank",
+      hideRecurring: true,
+    }),
+    true,
+  );
+
+  assert.equal(
+    isThesisPresetApplied(preset, {
+      keyword: "",
+      selectedSource: "all",
+      selectedCategory: "all",
+      selectedStage: "all",
+      selectedConfidence: "all",
+      selectedLens: "seo",
+      selectedMetaTrend: "all",
+      selectedAudience: "all",
+      selectedMarket: "all",
+      selectedLanguage: "all",
+      selectedGeoCountry: "all",
+      minimumScore: 18,
+      sortBy: "rank",
+      hideRecurring: false,
+    }),
+    false,
+  );
+
+  assert.equal(
+    isThesisPresetApplied(preset, {
+      keyword: "",
+      selectedSource: "all",
+      selectedCategory: "all",
+      selectedStage: "all",
+      selectedConfidence: "all",
+      selectedLens: "seo",
+      selectedMetaTrend: "all",
+      selectedAudience: "all",
+      selectedMarket: "all",
+      selectedLanguage: "all",
+      selectedGeoCountry: "all",
+      minimumScore: 12,
+      sortBy: "rank",
+      hideRecurring: true,
+    }),
+    false,
+  );
+});
+
+test("shouldClearActiveThesisPreset only clears when clicking the active preset", () => {
+  const preset = {
+    key: "product",
+    label: "Build ideas",
+    description: "Tilt toward builder demand, product fit, and non-recurring opportunity.",
+    lens: "product",
+    audience: "developer",
+    hideRecurring: true,
+    minimumScore: 16,
+  };
+
+  assert.equal(shouldClearActiveThesisPreset("product", preset), true);
+  assert.equal(shouldClearActiveThesisPreset("seo", preset), false);
+  assert.equal(shouldClearActiveThesisPreset(null, preset), false);
 });

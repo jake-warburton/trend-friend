@@ -13,8 +13,9 @@ from app.data.repositories import (
     SourceIngestionRunRepository,
     TrendScoreRepository,
     WatchlistRepository,
+    format_category_label,
 )
-from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
+from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendMomentum, TrendScoreResult
 from app.theses.matching import ThesisMatchCandidate
 
 
@@ -124,6 +125,30 @@ class RepositoryTests(unittest.TestCase):
         self.assertTrue(github_run.used_fallback)
         self.assertEqual(github_run.kept_item_count, 4)
         self.assertEqual(github_run.duration_ms, 80)
+
+    def test_format_category_label_preserves_acronyms_and_title_cases_words(self) -> None:
+        self.assertEqual(format_category_label("ai-machine-learning"), "AI Machine Learning")
+        self.assertEqual(format_category_label("hardware-robotics"), "Hardware Robotics")
+        self.assertEqual(format_category_label("general-tech"), "General Tech")
+
+    def test_build_trend_summary_omits_generic_general_tech_category_label(self) -> None:
+        score = TrendScoreResult(
+            topic="robotics",
+            total_score=18.0,
+            search_score=4.0,
+            social_score=5.0,
+            developer_score=6.0,
+            knowledge_score=2.0,
+            diversity_score=1.0,
+            evidence=["Robotics"],
+            source_counts={"github": 1, "reddit": 1},
+            latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+        )
+        momentum = TrendMomentum(previous_rank=8, rank_change=-1, absolute_delta=-2.0, percent_delta=-10.0)
+
+        summary = TrendScoreRepository._build_trend_summary(score, "general-tech", momentum, history_length=4)
+
+        self.assertEqual(summary, "Robotics is a cooling trend validated by 2 signals across 2 sources.")
 
     def test_trend_score_repository_round_trip(self) -> None:
         score = TrendScoreResult(
@@ -292,6 +317,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.stage, "nascent")
         self.assertGreater(ai_agents.confidence, 0.35)
         self.assertIn("AI Agents is a nascent", ai_agents.summary)
+        self.assertIn("AI Machine Learning trend", ai_agents.summary)
         self.assertEqual(ai_agents.volatility, "spiking")
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
@@ -353,6 +379,12 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].source_contributions[0].source, "reddit")
         self.assertEqual(records[0].source_contributions[0].score_share_percent, 36.7)
         self.assertEqual(records[0].source_contributions[0].social_score, 10.0)
+        self.assertEqual(records[0].market_footprint[0].source, "github")
+        self.assertEqual(records[0].market_footprint[0].label, "GitHub stars + forks")
+        self.assertEqual(records[0].market_footprint[0].value_display, "9")
+        self.assertFalse(records[0].market_footprint[0].is_estimated)
+        self.assertEqual(records[0].market_footprint[1].source, "reddit")
+        self.assertTrue(records[0].market_footprint[1].is_estimated)
         self.assertEqual(records[0].breakout_prediction.predicted_direction, "breakout")
         self.assertIsNone(records[0].forecast)
         self.assertGreater(records[0].opportunity.composite, 0.0)

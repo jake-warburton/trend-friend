@@ -9,6 +9,7 @@ import type {
   SourceSummaryResponse,
   TrendDetailIndexResponse,
   TrendDetailRecord,
+  TrendExplorerRecord,
   LatestTrendsResponse,
   TrendExplorerResponse,
   TrendHistoryResponse,
@@ -234,6 +235,7 @@ export function normalizeDashboardOverview(payload: DashboardOverviewResponse): 
     })),
     sources: (payload.sources ?? []).map((source) => ({
       source: source.source,
+      family: source.family ?? "other",
       signalCount: source.signalCount ?? 0,
       trendCount: source.trendCount ?? 0,
       status: source.status ?? "stale",
@@ -243,6 +245,7 @@ export function normalizeDashboardOverview(payload: DashboardOverviewResponse): 
       latestItemCount: source.latestItemCount ?? 0,
       keptItemCount: source.keptItemCount ?? source.latestItemCount ?? 0,
       yieldRatePercent: source.yieldRatePercent ?? 0,
+      signalYieldRatio: source.signalYieldRatio ?? 0,
       durationMs: source.durationMs ?? 0,
       rawTopicCount: source.rawTopicCount ?? 0,
       mergedTopicCount: source.mergedTopicCount ?? 0,
@@ -342,7 +345,24 @@ export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord |
     } catch { /* fall through to file */ }
   }
   const payload = await readTrendDetailIndex();
-  return payload.trends.find((trend) => trend.id === slug) ?? null;
+  const detailMatch = payload.trends.find((trend) => trend.id === slug) ?? null;
+  if (detailMatch) {
+    return detailMatch;
+  }
+
+  const explorer = await readTrendExplorer();
+  const explorerMatch = explorer.trends.find((trend) => trend.id === slug);
+  if (explorerMatch) {
+    return buildFallbackTrendDetailFromExplorer(explorerMatch, explorer.generatedAt);
+  }
+
+  const overview = await readDashboardOverview();
+  const experimentalMatch = overview.sections.experimentalTrends.find((trend) => trend.id === slug);
+  if (experimentalMatch) {
+    return buildFallbackTrendDetailFromOverviewItem(experimentalMatch, overview);
+  }
+
+  return null;
 }
 
 export async function loadSourceSummary(sourceId: string) {
@@ -359,6 +379,7 @@ export async function loadSourceSummary(sourceId: string) {
 function normalizeSourceRecord(source: SourceSummaryRecord): SourceSummaryRecord {
   return {
     source: source.source,
+    family: source.family ?? "other",
     status: source.status ?? "stale",
     latestFetchAt: source.latestFetchAt ?? null,
     latestSuccessAt: source.latestSuccessAt ?? null,
@@ -366,6 +387,7 @@ function normalizeSourceRecord(source: SourceSummaryRecord): SourceSummaryRecord
     latestItemCount: source.latestItemCount ?? 0,
     keptItemCount: source.keptItemCount ?? source.latestItemCount ?? 0,
     yieldRatePercent: source.yieldRatePercent ?? 0,
+    signalYieldRatio: source.signalYieldRatio ?? 0,
     durationMs: source.durationMs ?? 0,
     rawTopicCount: source.rawTopicCount ?? 0,
     mergedTopicCount: source.mergedTopicCount ?? 0,
@@ -473,6 +495,19 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
     history: trend.history ?? [],
     sourceBreakdown: trend.sourceBreakdown ?? [],
     sourceContributions: trend.sourceContributions ?? [],
+    marketFootprint: (trend.marketFootprint ?? []).map((metric) => ({
+      source: metric.source,
+      metricKey: metric.metricKey ?? "metric",
+      label: metric.label ?? metric.source,
+      valueNumeric: metric.valueNumeric ?? 0,
+      valueDisplay: metric.valueDisplay ?? "0",
+      unit: metric.unit ?? "",
+      period: metric.period ?? "",
+      capturedAt: metric.capturedAt ?? trend.latestSignalAt,
+      confidence: metric.confidence ?? 0,
+      provenanceUrl: metric.provenanceUrl ?? null,
+      isEstimated: metric.isEstimated ?? false,
+    })),
     geoSummary: trend.geoSummary ?? [],
     evidenceItems: (trend.evidenceItems ?? []).map((item) => ({
       ...item,
@@ -508,6 +543,137 @@ export function normalizeTrendDetailRecord(trend: TrendDetailRecord): TrendDetai
   };
 }
 
+export function buildFallbackTrendDetailFromExplorer(
+  trend: TrendExplorerRecord,
+  generatedAt: string,
+): TrendDetailRecord {
+  const latestSignalAt = trend.latestSignalAt || generatedAt;
+  return normalizeTrendDetailRecord({
+    id: trend.id,
+    name: trend.name,
+    category: trend.category,
+    metaTrend: trend.metaTrend,
+    stage: trend.stage,
+    confidence: trend.confidence,
+    summary: trend.summary || "This topic is available in the explorer, but full detail enrichment has not been generated yet.",
+    whyNow: trend.evidencePreview.length > 0 ? trend.evidencePreview.slice(0, 3) : ["Detail enrichment is still catching up for this trend."],
+    status: trend.status,
+    volatility: trend.volatility,
+    rank: trend.rank,
+    previousRank: trend.previousRank,
+    rankChange: trend.rankChange,
+    firstSeenAt: trend.firstSeenAt,
+    latestSignalAt,
+    score: trend.score,
+    momentum: trend.momentum,
+    breakoutPrediction: {
+      confidence: trend.confidence,
+      predictedDirection: trend.forecastDirection ?? "stable",
+      signals: trend.evidencePreview.slice(0, 3),
+    },
+    forecast: null,
+    opportunity: {
+      composite: trend.score.total / 100,
+      discovery: trend.score.total / 100,
+      seo: trend.score.search / 100,
+      content: trend.score.social / 100,
+      product: trend.score.developer / 100,
+      investment: trend.score.diversity / 100,
+      reasoning: ["Full opportunity reasoning is not available for this trend yet."],
+    },
+    coverage: trend.coverage,
+    sources: trend.sources,
+    aliases: [],
+    history: trend.recentHistory ?? [],
+    sourceBreakdown: trend.sources.map((source) => ({
+      source,
+      signalCount: 0,
+      latestSignalAt,
+    })),
+    sourceContributions: [],
+    marketFootprint: [],
+    geoSummary: [],
+    audienceSummary: trend.audienceSummary ?? [],
+    evidenceItems:
+      trend.primaryEvidence != null
+        ? [trend.primaryEvidence]
+        : [],
+    primaryEvidence: trend.primaryEvidence ?? null,
+    duplicateCandidates: [],
+    relatedTrends: [],
+    seasonality: trend.seasonality ?? null,
+  });
+}
+
+export function buildFallbackTrendDetailFromOverviewItem(
+  trend: DashboardOverviewResponse["sections"]["experimentalTrends"][number],
+  overview: DashboardOverviewResponse,
+): TrendDetailRecord {
+  return normalizeTrendDetailRecord({
+    id: trend.id,
+    name: trend.name,
+    category: trend.category,
+    metaTrend: "Experimental",
+    stage: "nascent",
+    confidence: 0.35,
+    summary: "This topic is currently surfaced as an experimental candidate before full detail enrichment is available.",
+    whyNow: ["This topic is currently ranked in the experimental bucket."],
+    status: "experimental",
+    volatility: "emerging",
+    rank: trend.rank,
+    previousRank: null,
+    rankChange: null,
+    firstSeenAt: null,
+    latestSignalAt: overview.generatedAt,
+    score: {
+      total: trend.scoreTotal,
+      social: 0,
+      developer: 0,
+      knowledge: 0,
+      search: 0,
+      diversity: 0,
+    },
+    momentum: {
+      previousRank: null,
+      rankChange: null,
+      absoluteDelta: null,
+      percentDelta: null,
+    },
+    breakoutPrediction: {
+      confidence: 0.35,
+      predictedDirection: "experimental",
+      signals: [],
+    },
+    forecast: null,
+    opportunity: {
+      composite: 0,
+      discovery: 0,
+      seo: 0,
+      content: 0,
+      product: 0,
+      investment: 0,
+      reasoning: ["Experimental candidates do not have full scoring decomposition yet."],
+    },
+    coverage: {
+      sourceCount: 0,
+      signalCount: 0,
+    },
+    sources: [],
+    aliases: [],
+    history: [],
+    sourceBreakdown: [],
+    sourceContributions: [],
+    marketFootprint: [],
+    geoSummary: [],
+    audienceSummary: [],
+    evidenceItems: [],
+    primaryEvidence: null,
+    duplicateCandidates: [],
+    relatedTrends: [],
+    seasonality: null,
+  });
+}
+
 export async function loadTrendDetails(): Promise<TrendDetailIndexResponse> {
   return readTrendDetailIndex();
 }
@@ -538,6 +704,7 @@ export function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSu
     generatedAt: payload.generatedAt,
     sources: (payload.sources ?? []).map((source) => ({
       source: source.source,
+      family: source.family ?? "other",
       status: source.status ?? "stale",
       latestFetchAt: source.latestFetchAt ?? null,
       latestSuccessAt: source.latestSuccessAt ?? null,
@@ -545,6 +712,7 @@ export function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSu
       latestItemCount: source.latestItemCount ?? 0,
       keptItemCount: source.keptItemCount ?? source.latestItemCount ?? 0,
       yieldRatePercent: source.yieldRatePercent ?? 0,
+      signalYieldRatio: source.signalYieldRatio ?? 0,
       durationMs: source.durationMs ?? 0,
       rawTopicCount: source.rawTopicCount ?? 0,
       mergedTopicCount: source.mergedTopicCount ?? 0,

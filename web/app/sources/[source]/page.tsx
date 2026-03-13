@@ -55,12 +55,16 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
           <p className="eyebrow">Source health</p>
           <h1>{formatSourceLabel(summary.source)}</h1>
           <p className="detail-copy">
-            {summary.signalCount} signals across {summary.trendCount} trends. Latest fetch{" "}
+            {formatSourceFamilyLabel(summary.family)} family · {summary.signalCount} signals across {summary.trendCount} trends. Latest fetch{" "}
             {summary.latestFetchAt ? formatTimestamp(summary.latestFetchAt) : "not recorded"}.
           </p>
         </div>
 
         <div className="detail-meta-grid">
+          <div className="stat-card">
+            <span>Family</span>
+            <strong>{formatSourceFamilyLabel(summary.family)}</strong>
+          </div>
           <div className="stat-card">
             <span>Status</span>
             <strong>{formatSourceStatus(summary.status)}</strong>
@@ -109,6 +113,10 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
             <article className="source-metric-card">
               <span>Latest raw fetch</span>
               <strong>{summary.rawItemCount}</strong>
+            </article>
+            <article className="source-metric-card">
+              <span>Signals per kept item</span>
+              <strong>{(summary.signalYieldRatio ?? 0).toFixed(2)}</strong>
             </article>
             <article className="source-metric-card">
               <span>Topic dupes</span>
@@ -304,7 +312,40 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
 }
 
 function formatSourceLabel(source: string) {
+  const labels: Record<string, string> = {
+    chrome_web_store: "Chrome Web Store",
+    curated_feeds: "Curated Feeds",
+    devto: "DEV Community",
+    google_trends: "Google Trends",
+    hacker_news: "Hacker News",
+    huggingface: "Hugging Face",
+    pypi: "PyPI",
+    stackoverflow: "Stack Overflow",
+    twitter: "Twitter/X",
+    youtube: "YouTube",
+  };
+  if (labels[source]) {
+    return labels[source];
+  }
   return source
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatSourceFamilyLabel(family: string) {
+  const labels: Record<string, string> = {
+    community: "Community",
+    developer: "Developer",
+    knowledge: "Knowledge",
+    launch: "Launch",
+    market: "Market",
+    news: "News",
+    research: "Research",
+    search: "Search",
+    social: "Social",
+  };
+  return labels[family] ?? family
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");

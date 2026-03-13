@@ -25,6 +25,8 @@ class TopicNormalizationTests(unittest.TestCase):
     def test_normalize_topic_name_merges_ai_aliases(self) -> None:
         self.assertEqual(normalize_topic_name("AI"), "ai agents")
         self.assertEqual(normalize_topic_name("artificial intelligence"), "ai agents")
+        self.assertEqual(normalize_topic_name("LLMs"), "large language models")
+        self.assertEqual(normalize_topic_name("MCP"), "model context protocol")
 
     def test_extract_candidate_topics_filters_noise(self) -> None:
         topics = extract_candidate_topics("AI agents are replacing repetitive office workflows")
@@ -197,6 +199,100 @@ class TopicNormalizationTests(unittest.TestCase):
             extract_candidate_topics("Watching people build", source_name="hacker_news"),
             [],
         )
+
+    def test_build_signals_from_items_uses_metadata_topic_hints_conservatively(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="devto",
+                external_id="devto-1",
+                title="Why this observability stack matters for teams",
+                url="https://dev.to/example",
+                timestamp=timestamp,
+                engagement_score=20.0,
+                metadata={"tags": ["ai agents", "observability", "developer-tools"]},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("ai agents", [signal.topic for signal in signals])
+        self.assertIn("observability", [signal.topic for signal in signals])
+
+    def test_build_signals_from_items_prefers_youtube_domain_topics_over_creator_wrappers(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="youtube",
+                external_id="video-1",
+                title="How Model Context Protocol stacks are reshaping AI integrations",
+                url="https://youtube.com/watch?v=video-1",
+                timestamp=timestamp,
+                engagement_score=140.0,
+                metadata={"channel_title": "Builder Signals", "tags": ["mcp", "llm", "tooling"]},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("model context protocol", [signal.topic for signal in signals])
+        self.assertNotIn("builder signals", [signal.topic for signal in signals])
+
+    def test_build_signals_from_items_uses_pypi_package_metadata_without_generic_package_noise(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="pypi",
+                external_id="agent-observability",
+                title="agent-observability Python package for tracing AI agent workflows",
+                url="https://pypi.org/project/agent-observability/",
+                timestamp=timestamp,
+                engagement_score=120.0,
+                metadata={"keywords": ["ai", "agents", "observability"], "package_name": "agent-observability"},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("ai agents", [signal.topic for signal in signals])
+        self.assertIn("observability", [signal.topic for signal in signals])
+
+    def test_extract_candidate_topics_uses_tighter_limits_for_curated_feed_headlines(self) -> None:
+        topics = extract_candidate_topics(
+            "OpenAI launches new agent tooling for production builders",
+            source_name="curated_feeds",
+        )
+        self.assertEqual(topics, ["ai agents"])
+
+    def test_build_signals_from_items_filters_chrome_web_store_wrapper_terms(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="chrome_web_store",
+                external_id="ext-1",
+                title="Monica all in one AI assistant for writing, search, and browser workflows",
+                url="https://chromewebstore.google.com/detail/example/ext-1",
+                timestamp=timestamp,
+                engagement_score=100.0,
+                metadata={"query_family": "ai", "store": "chrome"},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("ai writing", [signal.topic for signal in signals])
+        self.assertNotIn("browser workflows", [signal.topic for signal in signals])
+
+    def test_merge_similar_topics_groups_subset_variants(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        signals = [
+            NormalizedSignal("model context protocol", "devto", "social", 8.0, timestamp, "Model Context Protocol"),
+            NormalizedSignal("context protocol", "lobsters", "social", 7.0, timestamp, "Context Protocol"),
+        ]
+
+        clusters = merge_similar_topics(signals)
+
+        self.assertEqual(list(clusters), ["model context protocol"])
 
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)

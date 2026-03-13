@@ -25,12 +25,15 @@ STOP_WORDS = {
     "from",
     "gains",
     "how",
+    "idea",
+    "ideas",
     "if",
     "internal",
     "in",
     "into",
     "interview",
     "list",
+    "lists",
     "milestone",
     "new",
     "office",
@@ -41,6 +44,7 @@ STOP_WORDS = {
     "or",
     "open",
     "process",
+    "playlist",
     "repetitive",
     "replace",
     "replacing",
@@ -53,17 +57,23 @@ STOP_WORDS = {
     "the",
     "their",
     "them",
+    "this",
     "to",
     "tool",
     "tooling",
     "tools",
+    "tutorial",
     "used",
     "using",
+    "use",
     "momentum",
     "walk",
     "workflows",
     "with",
+    "videos",
     "you",
+    "your",
+    "teams",
 }
 
 ALIASES = {
@@ -71,8 +81,41 @@ ALIASES = {
     "agents": "ai agents",
     "ai": "ai agents",
     "artificial intelligence": "ai agents",
+    "llm": "large language models",
+    "llms": "large language models",
+    "large language model": "large language models",
+    "rag": "retrieval augmented generation",
+    "mcp": "model context protocol",
+    "hf": "hugging face",
+    "chatgpt": "chat gpt",
 }
 SHORT_MEANINGFUL_TOKENS = {"ai"}
+NOISE_LEAD_TOKENS = {
+    "best",
+    "breaking",
+    "launch",
+    "show",
+    "top",
+    "why",
+}
+NOISE_TAIL_TOKENS = {
+    "guide",
+    "launch",
+    "news",
+    "podcast",
+    "today",
+    "update",
+    "updates",
+}
+GENERIC_MULTIWORD_TOPICS = {
+    "developer platform",
+    "developer tools",
+    "machine learning",
+    "new model",
+    "open source",
+    "python package",
+    "video tutorial",
+}
 
 
 def clean_text(text: str) -> str:
@@ -111,6 +154,10 @@ def normalize_topic_name(topic_name: str) -> str:
     for token in tokens:
         if token not in deduplicated_tokens:
             deduplicated_tokens.append(token)
+    while deduplicated_tokens and deduplicated_tokens[0] in NOISE_LEAD_TOKENS:
+        deduplicated_tokens.pop(0)
+    while deduplicated_tokens and deduplicated_tokens[-1] in NOISE_TAIL_TOKENS:
+        deduplicated_tokens.pop()
     normalized = " ".join(deduplicated_tokens)
     return ALIASES.get(normalized, normalized)
 
@@ -123,4 +170,12 @@ def is_meaningful_topic(topic_name: str) -> bool:
     tokens = topic_name.split()
     if len(tokens) == 1:
         return len(tokens[0]) >= 4 and tokens[0] not in STOP_WORDS
-    return all(token not in STOP_WORDS for token in tokens)
+    if topic_name in GENERIC_MULTIWORD_TOPICS:
+        return False
+    if tokens[0] in NOISE_LEAD_TOKENS or tokens[-1] in NOISE_TAIL_TOKENS:
+        return False
+    if all(token not in STOP_WORDS for token in tokens) is False:
+        return False
+    if all(len(token) <= 3 and token not in SHORT_MEANINGFUL_TOKENS for token in tokens):
+        return False
+    return True

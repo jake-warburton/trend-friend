@@ -21,6 +21,9 @@ import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
   buildSourceContributionInsights,
+  buildSourceFamilyHistoryInsights,
+  buildSourceFamilyInsights,
+  formatSourceFamilyLabel,
   buildSourceWatchlist,
   formatSourceLabel,
   getSourceFreshnessBadge,
@@ -66,7 +69,14 @@ const UPDATED_TRENDS_FLASH_MS = 5_000;
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
   { label: "arXiv", value: "arxiv" },
+  { label: "Chrome Web Store", value: "chrome_web_store" },
+  { label: "Curated Feeds", value: "curated_feeds" },
+  { label: "DEV Community", value: "devto" },
+  { label: "Hugging Face", value: "huggingface" },
+  { label: "Lobsters", value: "lobsters" },
+  { label: "npm", value: "npm" },
   { label: "Product Hunt", value: "producthunt" },
+  { label: "PyPI", value: "pypi" },
   { label: "Stack Overflow", value: "stackoverflow" },
   { label: "Reddit", value: "reddit" },
   { label: "Hacker News", value: "hacker_news" },
@@ -75,6 +85,7 @@ const SOURCE_FILTER_OPTIONS = [
   { label: "Google Trends", value: "google_trends" },
   { label: "Polymarket", value: "polymarket" },
   { label: "Twitter/X", value: "twitter" },
+  { label: "YouTube", value: "youtube" },
 ] as const;
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;
@@ -119,6 +130,19 @@ const SORT_OPTIONS = [
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
+type ThesisPreset = {
+  key: string;
+  label: string;
+  description: string;
+  lens: string;
+  source?: string;
+  stage?: string;
+  audience?: string;
+  hideRecurring?: boolean;
+  minimumScore?: number;
+};
+
+const THESIS_PRESETS: readonly ThesisPreset[] = [
 type ThesisPreset = {
   key: string;
   label: string;
@@ -185,6 +209,23 @@ type ExplorerActiveFilter = {
     | "seasonality";
   label: string;
   value: string;
+};
+
+type ThesisPresetFilterState = {
+  keyword: string;
+  selectedSource: string;
+  selectedCategory: string;
+  selectedStage: string;
+  selectedConfidence: string;
+  selectedLens: string;
+  selectedMetaTrend: string;
+  selectedAudience: string;
+  selectedMarket: string;
+  selectedLanguage: string;
+  selectedGeoCountry: string;
+  minimumScore: number | null;
+  sortBy: string;
+  hideRecurring: boolean;
 };
 
 export function DashboardShell({ initialData, canManualRefresh }: DashboardShellProps) {
@@ -330,6 +371,14 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     () => buildSourceImpactRows(initialData.overview.sources, initialData.explorer.trends, detailsByTrendId),
     [detailsByTrendId, initialData.explorer.trends, initialData.overview.sources],
   );
+  const sourceFamilyInsights = useMemo(
+    () => buildSourceFamilyInsights(initialData.overview.sources),
+    [initialData.overview.sources],
+  );
+  const sourceFamilyHistoryInsights = useMemo(
+    () => buildSourceFamilyHistoryInsights(initialData.sourceSummary.sources),
+    [initialData.sourceSummary.sources],
+  );
 
   const activeExplorerFilters = useMemo(
     () =>
@@ -374,6 +423,43 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
   const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
+  const activeThesisPresetKey = useMemo(
+    () =>
+      THESIS_PRESETS.find((preset) =>
+        isThesisPresetApplied(preset, {
+          keyword,
+          selectedSource,
+          selectedCategory,
+          selectedStage,
+          selectedConfidence,
+          selectedLens,
+          selectedMetaTrend,
+          selectedAudience,
+          selectedMarket,
+          selectedLanguage,
+          selectedGeoCountry,
+          minimumScore,
+          sortBy,
+          hideRecurring,
+        }),
+      )?.key ?? null,
+    [
+      hideRecurring,
+      keyword,
+      minimumScore,
+      selectedAudience,
+      selectedCategory,
+      selectedConfidence,
+      selectedGeoCountry,
+      selectedLanguage,
+      selectedLens,
+      selectedMarket,
+      selectedMetaTrend,
+      selectedSource,
+      selectedStage,
+      sortBy,
+    ],
+  );
 
   const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
@@ -571,6 +657,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   }
 
   function applyThesisPreset(preset: ThesisPreset) {
+    if (shouldClearActiveThesisPreset(activeThesisPresetKey, preset)) {
+      clearAllExplorerFilters();
+      return;
+    }
     setKeyword("");
     setSelectedSource(preset.source ?? "all");
     setSelectedCategory("all");
@@ -1488,14 +1578,66 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </div>
           </div>
 
-          {filteredTrends.length === 0 ? (
-            <div className="empty-state">
-              <h3>No trends match these filters.</h3>
-              <p>Lower the minimum score or broaden the keyword and source filters.</p>
-            </div>
-          ) : (
-            <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
-              <section className="filters-panel filters-panel-wide">
+          <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
+            <section className="thesis-filters-panel">
+              <div className="filter-field filter-field-wide thesis-filter-block">
+                <span>Thesis presets</span>
+                <div className="thesis-presets-grid">
+                  {THESIS_PRESETS.map((preset) => (
+                    <button
+                      aria-pressed={activeThesisPresetKey === preset.key}
+                      className={activeThesisPresetKey === preset.key ? "thesis-preset-card thesis-preset-card-active" : "thesis-preset-card"}
+                      key={preset.key}
+                      onClick={() => applyThesisPreset(preset)}
+                      type="button"
+                    >
+                      <strong>{preset.label}</strong>
+                      <small>{preset.description}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {!watchlistsRequireAuth && defaultWatchlist != null ? (
+                <div className="filter-field filter-field-wide thesis-filter-block">
+                  <span>Save current thesis</span>
+                  <div className="thesis-save-panel">
+                    <Input
+                      className="text-input"
+                      placeholder="Name this thesis"
+                      value={thesisName}
+                      onChange={(event) => setThesisName(event.target.value)}
+                    />
+                    <div className="thesis-save-actions">
+                      <button
+                        className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+                        onClick={() => setNotifyOnMatch((current) => !current)}
+                        type="button"
+                      >
+                        {notifyOnMatch ? "Notify on new matches" : "No notifications"}
+                      </button>
+                      <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
+                        Save thesis
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </section>
+
+            <details className="advanced-filters-panel">
+              <summary>
+                <span>Advanced filters</span>
+                <small>
+                  {activeExplorerFilters.length > 0
+                    ? `${activeExplorerFilters.length} active`
+                    : "Keyword, source, scoring, and audience controls"}
+                </small>
+                <span aria-hidden="true" className="advanced-filters-chevron">
+                  ▾
+                </span>
+              </summary>
+              <section className="advanced-filters-grid filters-panel-wide">
                 <label className="filter-field">
                   <span>Keyword</span>
                   <Input
@@ -1736,49 +1878,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </Select.Root>
                 </label>
 
-                <div className="filter-field filter-field-wide">
-                  <span>Thesis presets</span>
-                  <div className="curated-list">
-                    {THESIS_PRESETS.map((preset) => (
-                      <button
-                        className="curated-item curated-item-button"
-                        key={preset.key}
-                        onClick={() => applyThesisPreset(preset)}
-                        type="button"
-                      >
-                        <span>{preset.label}</span>
-                        <small>{preset.description}</small>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {!watchlistsRequireAuth && defaultWatchlist != null ? (
-                  <div className="filter-field filter-field-wide">
-                    <span>Save current thesis</span>
-                    <div className="watchlist-form watchlist-form-stack">
-                      <Input
-                        className="text-input"
-                        placeholder="Name this thesis"
-                        value={thesisName}
-                        onChange={(event) => setThesisName(event.target.value)}
-                      />
-                      <div className="watchlist-form">
-                        <button
-                          className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
-                          onClick={() => setNotifyOnMatch((current) => !current)}
-                          type="button"
-                        >
-                          {notifyOnMatch ? "Notify on new matches" : "No notifications"}
-                        </button>
-                        <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
-                          Save thesis
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
                 <label className="filter-field">
                   <span>Minimum score</span>
                   <NumberField.Root
@@ -1806,6 +1905,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </button>
                 </label>
               </section>
+            </details>
 
               {activeExplorerFilters.length > 0 ? (
                 <section className="explorer-active-filters" aria-label="Active explorer filters">
@@ -1831,39 +1931,45 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 <span>Trend</span>
                 <span>Metrics</span>
               </div>
-              {filteredTrends.map((trend) => {
-                const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
-                const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
-                const detail = detailsByTrendId.get(trend.id);
-                const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
-                const wikipediaLink = getWikipediaLinkFromDetail(detail);
-                const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
-                const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
-                const evidencePreviewText = primaryEvidenceLink
-                  ? summarizeEvidencePreview(primaryEvidenceLink.evidence, primaryEvidenceLink.source)
-                  : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
-                const evidenceMeta = [
-                  primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
-                  audienceSummary,
-                ]
-                  .filter((item): item is string => Boolean(item))
-                  .join(" · ");
-                const compactSummaryParts = [
-                  formatStageLabel(trend.stage),
-                  formatConfidenceLabel(trend.confidence),
-                  formatTrendStatus(trend.status),
-                  formatVolatility(trend.volatility),
-                  forecastBadge?.label ?? null,
-                  seasonalityBadge?.label ?? null,
-                  audienceBadge ?? null,
-                  trend.metaTrend,
-                ].filter((item): item is string => Boolean(item));
-                const collapsedSourceInsights = detail
-                  ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
-                  : [];
-                const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
-                const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
-                return (
+              {filteredTrends.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No trends match these filters.</h3>
+                  <p>Lower the minimum score or broaden the keyword and source filters.</p>
+                </div>
+              ) : (
+                filteredTrends.map((trend) => {
+                  const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
+                  const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
+                  const detail = detailsByTrendId.get(trend.id);
+                  const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
+                  const wikipediaLink = getWikipediaLinkFromDetail(detail);
+                  const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
+                  const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
+                  const evidencePreviewText = primaryEvidenceLink
+                    ? summarizeEvidencePreview(primaryEvidenceLink.evidence, primaryEvidenceLink.source)
+                    : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
+                  const evidenceMeta = [
+                    primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
+                    audienceSummary,
+                  ]
+                    .filter((item): item is string => Boolean(item))
+                    .join(" · ");
+                  const compactSummaryParts = [
+                    formatStageLabel(trend.stage),
+                    formatConfidenceLabel(trend.confidence),
+                    formatTrendStatus(trend.status),
+                    formatVolatility(trend.volatility),
+                    forecastBadge?.label ?? null,
+                    seasonalityBadge?.label ?? null,
+                    audienceBadge ?? null,
+                    trend.metaTrend,
+                  ].filter((item): item is string => Boolean(item));
+                  const collapsedSourceInsights = detail
+                    ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
+                    : [];
+                  const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
+                  const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
+                  return (
                 <article
                   className={changedTrendIds.includes(trend.id) ? "explorer-card explorer-card-updated" : "explorer-card"}
                   data-status={trend.status}
@@ -1871,15 +1977,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 >
                   <div className="explorer-card-top">
                     <div className="trend-cell explorer-card-head">
-                      <div className="explorer-card-kicker">
+                      <div className="explorer-card-title-line">
                         <span className="explorer-rank-chip">#{trend.rank}</span>
-                      </div>
-                      <div className="trend-title-row">
-                        <strong>
-                          <Link className="trend-link" href={`/trends/${trend.id}`}>
-                            {trend.name}
-                          </Link>
-                        </strong>
+                        <div className="trend-title-row">
+                          <strong>
+                            <Link className="trend-link" href={`/trends/${trend.id}`}>
+                              {trend.name}
+                            </Link>
+                          </strong>
+                        </div>
                       </div>
                       <div className="explorer-card-meta">
                         <span>{trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}</span>
@@ -1912,7 +2018,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 
                         <div className="explorer-metric-card">
                           <span className="explorer-metric-label">Change vs last run</span>
-                          <strong className={movementClassName(trend.rankChange)}>
+                          <strong className={`explorer-metric-value ${movementClassName(trend.rankChange)}`}>
                             {formatMomentumHeadline(trend)}
                           </strong>
                           <small className="explorer-metric-copy">{formatMomentumDetail(trend)}</small>
@@ -2183,10 +2289,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     </div>
                   </div>
                 </article>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
-          )}
         </div>
 
         <aside className="history-panel">
@@ -2410,6 +2516,52 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </div>
                 </section>
               ) : null}
+              {sourceFamilyInsights.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source families</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Cross-source mix</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceFamilyInsights.slice(0, 6).map((family) => (
+                      <article className="detail-list-item" key={family.family}>
+                        <div>
+                          <strong>{formatSourceFamilyLabel(family.family)}</strong>
+                          <span>
+                            {family.sourceCount} sources · {family.trendCount} trends · {family.signalCount} sig
+                          </span>
+                        </div>
+                        <small>{family.averageYieldRatePercent.toFixed(0)}%</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              {sourceFamilyHistoryInsights.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Family pulse</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Recent runs</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceFamilyHistoryInsights.slice(0, 6).map((family) => (
+                      <article className="detail-list-item" key={`${family.family}-pulse`}>
+                        <div>
+                          <strong>{family.label}</strong>
+                          <span>
+                            {family.healthySourceCount}/{family.sourceCount} healthy · {family.recentAverageYieldRatePercent.toFixed(0)}% avg yield
+                          </span>
+                          <span>
+                            {family.latestFetchAt ? formatCompactTimestamp(family.latestFetchAt) : "No recent fetch"} ·{" "}
+                            {family.recentSuccessRatePercent.toFixed(0)}% live success
+                          </span>
+                        </div>
+                        <small>{family.healthySourceCount}</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
               {sourceWatchlist.length > 0 ? (
                 <section className="snapshot-card">
                   <header>
@@ -2445,6 +2597,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                       {formatSourceStatus(source.status)}
                     </span>
                   </header>
+                  <p className="source-summary-copy">
+                    {formatSourceFamilyLabel(source.family)} family
+                  </p>
                   <p className="source-summary-copy">
                     {source.signalCount} sig · {source.trendCount} trends
                   </p>
@@ -3001,6 +3156,29 @@ export function listActiveExplorerFilters(filters: {
     result.push({ key: "seasonality", label: "Seasonality", value: "Hide recurring" });
   }
   return result;
+}
+
+export function isThesisPresetApplied(preset: ThesisPreset, state: ThesisPresetFilterState) {
+  return (
+    state.keyword.trim().length === 0 &&
+    state.selectedSource === (preset.source ?? "all") &&
+    state.selectedCategory === "all" &&
+    state.selectedStage === (preset.stage ?? "all") &&
+    state.selectedConfidence === "all" &&
+    state.selectedLens === preset.lens &&
+    state.selectedMetaTrend === "all" &&
+    state.selectedAudience === (preset.audience ?? "all") &&
+    state.selectedMarket === "all" &&
+    state.selectedLanguage === "all" &&
+    state.selectedGeoCountry === "all" &&
+    (state.minimumScore ?? 0) === (preset.minimumScore ?? 0) &&
+    state.sortBy === "rank" &&
+    state.hideRecurring === (preset.hideRecurring ?? false)
+  );
+}
+
+export function shouldClearActiveThesisPreset(activePresetKey: string | null, preset: ThesisPreset) {
+  return activePresetKey === preset.key;
 }
 
 function buildSegmentFilterOptions(

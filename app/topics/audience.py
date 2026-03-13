@@ -24,13 +24,21 @@ _MARKET_KEYWORDS: dict[str, tuple[str, ...]] = {
 }
 
 _SOURCE_AUDIENCE_FLAGS: dict[str, tuple[str, ...]] = {
+    "chrome_web_store": ("consumer", "founder"),
+    "curated_feeds": ("founder", "research"),
+    "devto": ("developer", "founder"),
     "github": ("developer",),
     "hacker_news": ("developer", "founder"),
+    "huggingface": ("developer", "research"),
+    "lobsters": ("developer",),
+    "npm": ("developer",),
+    "pypi": ("developer",),
     "reddit": (),
     "google_trends": ("consumer",),
     "wikipedia": ("research",),
     "polymarket": ("founder", "consumer"),
     "twitter": ("consumer", "founder"),
+    "youtube": ("consumer", "developer"),
 }
 
 _LANGUAGE_KEYS = ("lang", "language_code", "content_language")
