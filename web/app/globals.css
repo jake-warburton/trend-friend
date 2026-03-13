@@ -1101,6 +1101,47 @@ input {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.thesis-filters-panel {
+  margin-bottom: 10px;
+}
+
+.advanced-filters-panel {
+  margin-bottom: 12px;
+  border: 1px solid var(--panel-raised-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-panel-strong) 78%, transparent 22%);
+}
+
+.advanced-filters-panel summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced-filters-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-filters-panel summary span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.advanced-filters-panel summary small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.advanced-filters-panel .filters-panel {
+  padding: 0 16px 16px;
+}
+
 .filter-field {
   display: grid;
   gap: 7px;
@@ -3100,6 +3141,11 @@ input {
 
   .filter-field-wide {
     grid-column: auto;
+  }
+
+  .advanced-filters-panel summary {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .thesis-presets-grid {

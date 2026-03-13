@@ -374,6 +374,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
   const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
+  const hasAdvancedFiltersApplied = activeExplorerFilters.some((filter) => filter.key !== "seasonality") || hideRecurring;
 
   const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
@@ -1489,6 +1490,60 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           </div>
 
           <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
+            <section className="filters-panel thesis-filters-panel">
+              <div className="filter-field filter-field-wide thesis-filter-block">
+                <span>Thesis presets</span>
+                <div className="thesis-presets-grid">
+                  {THESIS_PRESETS.map((preset) => (
+                    <button
+                      className="thesis-preset-card"
+                      key={preset.key}
+                      onClick={() => applyThesisPreset(preset)}
+                      type="button"
+                    >
+                      <strong>{preset.label}</strong>
+                      <small>{preset.description}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {!watchlistsRequireAuth && defaultWatchlist != null ? (
+                <div className="filter-field filter-field-wide thesis-filter-block">
+                  <span>Save current thesis</span>
+                  <div className="thesis-save-panel">
+                    <Input
+                      className="text-input"
+                      placeholder="Name this thesis"
+                      value={thesisName}
+                      onChange={(event) => setThesisName(event.target.value)}
+                    />
+                    <div className="thesis-save-actions">
+                      <button
+                        className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+                        onClick={() => setNotifyOnMatch((current) => !current)}
+                        type="button"
+                      >
+                        {notifyOnMatch ? "Notify on new matches" : "No notifications"}
+                      </button>
+                      <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
+                        Save thesis
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </section>
+
+            <details className="advanced-filters-panel" open={hasAdvancedFiltersApplied ? true : undefined}>
+              <summary>
+                <span>Advanced filters</span>
+                <small>
+                  {activeExplorerFilters.length > 0
+                    ? `${activeExplorerFilters.length} active`
+                    : "Keyword, source, scoring, and audience controls"}
+                </small>
+              </summary>
               <section className="filters-panel filters-panel-wide">
                 <label className="filter-field">
                   <span>Keyword</span>
@@ -1730,49 +1785,6 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </Select.Root>
                 </label>
 
-                <div className="filter-field filter-field-wide thesis-filter-block">
-                  <span>Thesis presets</span>
-                  <div className="thesis-presets-grid">
-                    {THESIS_PRESETS.map((preset) => (
-                      <button
-                        className="thesis-preset-card"
-                        key={preset.key}
-                        onClick={() => applyThesisPreset(preset)}
-                        type="button"
-                      >
-                        <strong>{preset.label}</strong>
-                        <small>{preset.description}</small>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {!watchlistsRequireAuth && defaultWatchlist != null ? (
-                  <div className="filter-field filter-field-wide thesis-filter-block">
-                    <span>Save current thesis</span>
-                    <div className="thesis-save-panel">
-                      <Input
-                        className="text-input"
-                        placeholder="Name this thesis"
-                        value={thesisName}
-                        onChange={(event) => setThesisName(event.target.value)}
-                      />
-                      <div className="thesis-save-actions">
-                        <button
-                          className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
-                          onClick={() => setNotifyOnMatch((current) => !current)}
-                          type="button"
-                        >
-                          {notifyOnMatch ? "Notify on new matches" : "No notifications"}
-                        </button>
-                        <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
-                          Save thesis
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
                 <label className="filter-field">
                   <span>Minimum score</span>
                   <NumberField.Root
@@ -1800,6 +1812,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </button>
                 </label>
               </section>
+            </details>
 
               {activeExplorerFilters.length > 0 ? (
                 <section className="explorer-active-filters" aria-label="Active explorer filters">
