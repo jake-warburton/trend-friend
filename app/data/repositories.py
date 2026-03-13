@@ -51,6 +51,7 @@ from app.models import (
 from app.theses.matching import ThesisMatchCandidate
 
 RowMapping = Mapping[str, Any]
+UPPERCASE_CATEGORY_TOKENS = frozenset({"ai", "api", "ml", "llm", "vr", "ar", "ev", "b2b", "b2c"})
 
 
 def sql_placeholders(connection: DatabaseConnection, count: int) -> str:
@@ -67,6 +68,18 @@ def get_connection_dialect(connection: DatabaseConnection):
     """Return the configured SQL dialect, defaulting to SQLite semantics."""
 
     return getattr(connection, "dialect", SQLITE_DIALECT)
+
+
+def format_category_label(category: str) -> str:
+    """Return a display label for a slug-like category value."""
+
+    parts = []
+    for part in category.split("-"):
+        if part.lower() in UPPERCASE_CATEGORY_TOKENS:
+            parts.append(part.upper())
+        else:
+            parts.append(part[:1].upper() + part[1:])
+    return " ".join(parts)
 
 
 class SignalRepository:
@@ -2979,7 +2992,7 @@ class TrendScoreRepository:
     ) -> str:
         """Return a compact reusable database summary for a trend."""
 
-        category_label = category.replace("-", " ")
+        category_label = format_category_label(category)
         source_count = len(score.source_counts)
         signal_count = sum(score.source_counts.values())
         stage = TrendScoreRepository._build_trend_stage(momentum, history_length, score.total_score)

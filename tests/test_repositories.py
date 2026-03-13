@@ -13,6 +13,7 @@ from app.data.repositories import (
     SourceIngestionRunRepository,
     TrendScoreRepository,
     WatchlistRepository,
+    format_category_label,
 )
 from app.models import NormalizedSignal, PipelineRun, SourceIngestionRun, TrendScoreResult
 from app.theses.matching import ThesisMatchCandidate
@@ -124,6 +125,10 @@ class RepositoryTests(unittest.TestCase):
         self.assertTrue(github_run.used_fallback)
         self.assertEqual(github_run.kept_item_count, 4)
         self.assertEqual(github_run.duration_ms, 80)
+
+    def test_format_category_label_preserves_acronyms_and_title_cases_words(self) -> None:
+        self.assertEqual(format_category_label("ai-machine-learning"), "AI Machine Learning")
+        self.assertEqual(format_category_label("hardware-robotics"), "Hardware Robotics")
 
     def test_trend_score_repository_round_trip(self) -> None:
         score = TrendScoreResult(
@@ -292,6 +297,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.stage, "nascent")
         self.assertGreater(ai_agents.confidence, 0.35)
         self.assertIn("AI Agents is a nascent", ai_agents.summary)
+        self.assertIn("AI Machine Learning trend", ai_agents.summary)
         self.assertEqual(ai_agents.volatility, "spiking")
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
