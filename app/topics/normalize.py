@@ -52,8 +52,6 @@ STOP_WORDS = {
     "software",
     "sdk",
     "source",
-    "startup",
-    "startups",
     "the",
     "their",
     "them",
@@ -114,7 +112,15 @@ GENERIC_MULTIWORD_TOPICS = {
     "new model",
     "open source",
     "python package",
+    "repeatable instructions",
     "video tutorial",
+}
+GENERIC_PHRASE_FRAGMENTS = {
+    "alone journey",
+    "capabilities repeatable",
+    "feel really alone",
+    "not promote",
+    "really alone",
 }
 
 
@@ -171,6 +177,8 @@ def is_meaningful_topic(topic_name: str) -> bool:
     if len(tokens) == 1:
         return len(tokens[0]) >= 4 and tokens[0] not in STOP_WORDS
     if topic_name in GENERIC_MULTIWORD_TOPICS:
+        return False
+    if topic_name in GENERIC_PHRASE_FRAGMENTS:
         return False
     if tokens[0] in NOISE_LEAD_TOKENS or tokens[-1] in NOISE_TAIL_TOKENS:
         return False

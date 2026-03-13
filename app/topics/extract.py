@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import re
 from math import log10
 
@@ -85,9 +86,11 @@ BIGRAM_HEAD_TOKENS = {
     "tuner",
     "view",
     "vision",
+    "war",
     "words",
     "workflow",
     "workflows",
+    "solo",
 }
 BIGRAM_MODIFIER_TOKENS = {
     "agent",
@@ -123,6 +126,7 @@ BIGRAM_MODIFIER_TOKENS = {
 }
 LOW_SIGNAL_BIGRAM_TOKENS = {
     "all",
+    "accidentally",
     "adopted",
     "away",
     "based",
@@ -130,6 +134,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "build",
     "can",
     "cost",
+    "coverage",
     "cross",
     "doesn",
     "each",
@@ -149,6 +154,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "interview",
     "its",
     "last",
+    "learned",
     "legal",
     "legitimate",
     "launch",
@@ -163,6 +169,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "per",
     "process",
     "promote",
+    "reimagining",
     "remotely",
     "rule",
     "rules",
@@ -182,6 +189,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "was",
     "walk",
     "walking",
+    "were",
     "will",
     "years",
     "you",
@@ -225,10 +233,70 @@ GENERIC_METADATA_TOPICS = {
     "tools",
     "youtube channel",
 }
+NOISY_FALLBACK_SOURCES = {
+    "curated_feeds",
+    "google_news",
+    "hacker_news",
+    "reddit",
+    "twitter",
+    "youtube",
+}
+HIGH_CONFIDENCE_TOPIC_THRESHOLD = 0.78
+MIN_BIGRAM_CONFIDENCE = 0.2
+MAX_ENTITY_SPAN_TOKENS = 4
+ENTITY_SPAN_CONNECTOR_TOKENS = {"and", "for", "of", "the", "to"}
+ENTITY_SPAN_STOP_TOKENS = {
+    "capabilities",
+    "capability",
+    "discussion",
+    "explain",
+    "explains",
+    "explanation",
+    "guide",
+    "instructions",
+    "people",
+    "promote",
+    "repeatable",
+    "thoughts",
+    "tips",
+    "tutorial",
+    "using",
+}
+CONVERSATIONAL_PATTERNS = (
+    "do you feel it too",
+    "feel really alone",
+    "i feel really alone",
+    "i will not promote",
+    "will not promote",
+)
+ENTITY_SPAN_LEAD_STOP_TOKENS = {"can", "could", "does", "how", "is", "should", "were", "will", "why"}
+ENTITY_SPAN_TAIL_STOP_TOKENS = {
+    "capabilities",
+    "coverage",
+    "explained",
+    "instructions",
+    "learned",
+    "promote",
+    "reimagining",
+    "supports",
+}
+ENTITY_PREFIX_PATTERNS = (
+    re.compile(r"^\s*([A-Z][A-Za-z0-9+.-]*(?:\s+[A-Z][A-Za-z0-9+.-]*){0,3})\s*[:|–-]"),
+)
+
+
+@dataclass(frozen=True)
+class ExtractedTopicCandidate:
+    """A ranked topic candidate before final filtering."""
+
+    raw_text: str
+    normalized_topic: str
+    strategy: str
+    confidence: float
 
 
 def extract_candidate_topics(title: str, source_name: str | None = None) -> list[str]:
-    """Extract unigram and bigram candidates from a title."""
+    """Extract ranked candidates from a title."""
 
     tokens = remove_stop_words(tokenize_text(title))
     if source_name:
@@ -236,36 +304,68 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
         tokens = [token for token in tokens if token not in blocked_tokens]
     if not tokens:
         return []
-    candidates: list[str] = []
+    ranked_candidates: list[ExtractedTopicCandidate] = []
+    ranked_candidates.extend(infer_entity_span_topics(title, source_name))
+
     source_specific_topics = infer_source_specific_topics(title, tokens, source_name)
-    candidates.extend(source_specific_topics)
+    ranked_candidates.extend(
+        build_ranked_candidates(source_specific_topics, strategy="canonical_rule", confidence=0.96)
+    )
+
     canonical_topics = infer_canonical_topics(tokens)
+    ranked_candidates.extend(build_ranked_candidates(canonical_topics, strategy="canonical_rule", confidence=0.9))
+
     repository_topic = infer_repository_topic(title)
     if repository_topic:
-        candidates.append(repository_topic)
-    candidates.extend(canonical_topics)
-    if not repository_topic and not source_specific_topics:
-        candidates.extend(infer_meaningful_bigrams(tokens))
-    if not candidates and source_name not in {"google_news", "google_trends", "hacker_news", "polymarket", "twitter"}:
-        candidates.extend(infer_meaningful_unigrams(tokens))
+        ranked_candidates.append(
+            ExtractedTopicCandidate(
+                raw_text=repository_topic,
+                normalized_topic=repository_topic,
+                strategy="repository",
+                confidence=0.99,
+            )
+        )
+
+    has_strong_entity_span = any(
+        candidate.strategy == "entity_span" and candidate.confidence >= HIGH_CONFIDENCE_TOPIC_THRESHOLD
+        for candidate in ranked_candidates
+    )
+    if not repository_topic and not source_specific_topics and not has_strong_entity_span:
+        ranked_candidates.extend(infer_meaningful_bigrams(tokens))
+
+    if (
+        not ranked_candidates
+        and source_name not in {"google_news", "google_trends", "hacker_news", "polymarket", "reddit", "twitter"}
+    ):
+        ranked_candidates.extend(infer_meaningful_unigrams(tokens))
+
+    ranked_candidates.sort(key=lambda candidate: -candidate.confidence)
+    exact_phrase_topics = exact_phrase_topics_for_title(title)
     seen: set[str] = set()
     ordered_candidates: list[str] = []
     added_bigrams = 0
     max_topics = SOURCE_TOPIC_LIMITS.get(source_name or "", MAX_TOPICS_PER_ITEM)
     max_bigrams = SOURCE_BIGRAM_LIMITS.get(source_name or "", MAX_BIGRAMS_PER_ITEM)
     protected_multiword_topics = {normalize_topic_name(topic) for topic in source_specific_topics + canonical_topics}
-    for candidate in candidates:
-        normalized = normalize_topic_name(candidate)
-        if normalized and is_meaningful_topic(normalized) and normalized not in seen:
-            is_non_canonical_bigram = " " in normalized and normalized not in protected_multiword_topics
-            if is_non_canonical_bigram and added_bigrams >= max_bigrams:
-                continue
-            seen.add(normalized)
-            ordered_candidates.append(normalized)
-            if is_non_canonical_bigram:
-                added_bigrams += 1
-            if len(ordered_candidates) >= max_topics:
-                break
+    for candidate in ranked_candidates:
+        normalized = candidate.normalized_topic
+        if not normalized or not is_meaningful_topic(normalized):
+            continue
+        if not topic_passes_quality_gate(candidate, title, source_name, exact_phrase_topics):
+            continue
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        is_non_canonical_bigram = (
+            candidate.strategy == "bigram" and " " in normalized and normalized not in protected_multiword_topics
+        )
+        if is_non_canonical_bigram and added_bigrams >= max_bigrams:
+            continue
+        ordered_candidates.append(normalized)
+        if is_non_canonical_bigram:
+            added_bigrams += 1
+        if len(ordered_candidates) >= max_topics:
+            break
     return ordered_candidates
 
 
@@ -390,10 +490,10 @@ def infer_repository_topic(title: str) -> str | None:
     return normalize_topic_name(topic) if topic else None
 
 
-def infer_meaningful_bigrams(tokens: list[str]) -> list[str]:
+def infer_meaningful_bigrams(tokens: list[str]) -> list[ExtractedTopicCandidate]:
     """Return a small set of higher-signal bigrams from an ordered token list."""
 
-    scored_bigrams: list[tuple[float, int, str]] = []
+    scored_bigrams: list[ExtractedTopicCandidate] = []
     for index, (first, second) in enumerate(zip(tokens, tokens[1:])):
         if first == second:
             continue
@@ -406,19 +506,37 @@ def infer_meaningful_bigrams(tokens: list[str]) -> list[str]:
         bigram = f"{first} {second}"
         normalized = normalize_topic_name(bigram)
         if is_meaningful_topic(normalized):
-            scored_bigrams.append((score_bigram_candidate(first, second, index), index, bigram))
-    scored_bigrams.sort(key=lambda item: (-item[0], item[1]))
-    return [bigram for _, _, bigram in scored_bigrams]
+            confidence = min(0.95, score_bigram_candidate(first, second, index) / 10.0)
+            scored_bigrams.append(
+                ExtractedTopicCandidate(
+                    raw_text=bigram,
+                    normalized_topic=normalized,
+                    strategy="bigram",
+                    confidence=confidence,
+                )
+            )
+    scored_bigrams.sort(key=lambda item: (-item.confidence, item.normalized_topic))
+    return scored_bigrams
 
 
-def infer_meaningful_unigrams(tokens: list[str]) -> list[str]:
+def infer_meaningful_unigrams(tokens: list[str]) -> list[ExtractedTopicCandidate]:
     """Return fallback single-token topics after removing weak tokens."""
 
-    return [
-        token
-        for token in tokens
-        if token not in LOW_SIGNAL_BIGRAM_TOKENS and not token_contains_number(token)
-    ][:MAX_TOPICS_PER_ITEM]
+    candidates: list[ExtractedTopicCandidate] = []
+    for token in tokens:
+        if token in LOW_SIGNAL_BIGRAM_TOKENS or token_contains_number(token):
+            continue
+        candidates.append(
+            ExtractedTopicCandidate(
+                raw_text=token,
+                normalized_topic=token,
+                strategy="unigram",
+                confidence=0.45,
+            )
+        )
+        if len(candidates) >= MAX_TOPICS_PER_ITEM:
+            break
+    return candidates
 
 
 def token_contains_number(token: str) -> bool:
@@ -613,6 +731,140 @@ def infer_metadata_topics(item: RawSourceItem) -> list[str]:
                 continue
             metadata_topics.append(normalized)
     return metadata_topics
+
+
+def build_ranked_candidates(topics: list[str], strategy: str, confidence: float) -> list[ExtractedTopicCandidate]:
+    """Convert normalized topic strings into ranked candidates."""
+
+    candidates: list[ExtractedTopicCandidate] = []
+    for topic in topics:
+        normalized = normalize_topic_name(topic)
+        if not normalized:
+            continue
+        candidates.append(
+            ExtractedTopicCandidate(
+                raw_text=topic,
+                normalized_topic=normalized,
+                strategy=strategy,
+                confidence=confidence,
+            )
+        )
+    return candidates
+
+
+def infer_entity_span_topics(title: str, source_name: str | None) -> list[ExtractedTopicCandidate]:
+    """Prefer leading branded or title-cased phrases over generic token pairs."""
+
+    raw_title = title.strip()
+    if not raw_title:
+        return []
+    if source_name == "google_news":
+        return []
+    normalized_title = normalize_topic_name(raw_title)
+    if any(pattern in normalized_title for pattern in CONVERSATIONAL_PATTERNS):
+        return []
+
+    spans: list[ExtractedTopicCandidate] = []
+    leading_segment = re.split(r"\s*[:|–-]\s*", raw_title, maxsplit=1)[0].strip()
+    for pattern in ENTITY_PREFIX_PATTERNS:
+        match = pattern.match(raw_title)
+        if match is None:
+            continue
+        candidate = normalize_entity_span(match.group(1), source_name)
+        if candidate is None:
+            continue
+        spans.append(
+            ExtractedTopicCandidate(
+                raw_text=match.group(1).strip(),
+                normalized_topic=candidate,
+                strategy="entity_span",
+                confidence=0.98,
+            )
+        )
+
+    title_case_spans = re.findall(
+        r"\b(?:[A-Z][A-Za-z0-9+.-]*|[A-Z]{2,})(?:\s+(?:[A-Z][A-Za-z0-9+.-]*|[A-Z]{2,}|of|for|and|to|the)){1,3}\b",
+        leading_segment,
+    )
+    for span in title_case_spans:
+        candidate = normalize_entity_span(span, source_name)
+        if candidate is None:
+            continue
+        spans.append(
+            ExtractedTopicCandidate(
+                raw_text=span,
+                normalized_topic=candidate,
+                strategy="entity_span",
+                confidence=0.88,
+            )
+        )
+
+    deduped: dict[str, ExtractedTopicCandidate] = {}
+    for candidate in spans:
+        previous = deduped.get(candidate.normalized_topic)
+        if previous is None or previous.confidence < candidate.confidence:
+            deduped[candidate.normalized_topic] = candidate
+    return list(deduped.values())
+
+
+def normalize_entity_span(span: str, source_name: str | None) -> str | None:
+    """Normalize a raw entity span and reject generic wrapper phrases."""
+
+    normalized = normalize_topic_name(span)
+    if not normalized or not is_meaningful_topic(normalized):
+        return None
+    tokens = normalized.split()
+    if len(tokens) > MAX_ENTITY_SPAN_TOKENS:
+        return None
+    if tokens[0] in ENTITY_SPAN_LEAD_STOP_TOKENS or tokens[-1] in ENTITY_SPAN_TAIL_STOP_TOKENS:
+        return None
+    if any(token in LOW_SIGNAL_BIGRAM_TOKENS for token in tokens[:-1]):
+        return None
+    if any(token in ENTITY_SPAN_STOP_TOKENS for token in tokens[1:]):
+        return None
+    if tokens[0] in {"hi", "hello", "why"}:
+        return None
+    if source_name in NOISY_FALLBACK_SOURCES and len(tokens) == 1 and len(tokens[0]) < 6:
+        return None
+    return normalized
+
+
+def exact_phrase_topics_for_title(title: str) -> set[str]:
+    """Return normalized two-to-four-token exact phrases seen in the original title."""
+
+    tokens = tokenize_text(title)
+    exact_topics: set[str] = set()
+    for window_size in range(2, 5):
+        for index in range(len(tokens) - window_size + 1):
+            phrase = " ".join(tokens[index : index + window_size])
+            normalized = normalize_topic_name(phrase)
+            if normalized:
+                exact_topics.add(normalized)
+    return exact_topics
+
+
+def topic_passes_quality_gate(
+    candidate: ExtractedTopicCandidate,
+    title: str,
+    source_name: str | None,
+    exact_phrase_topics: set[str],
+) -> bool:
+    """Return True when a candidate is precise enough to keep."""
+
+    normalized_title = normalize_topic_name(title)
+    if candidate.normalized_topic in {"alone journey", "capabilities repeatable"}:
+        return False
+    if any(pattern in normalized_title for pattern in CONVERSATIONAL_PATTERNS):
+        return candidate.strategy in {"canonical_rule", "entity_span", "repository"}
+    if (
+        candidate.strategy == "bigram"
+        and candidate.confidence < MIN_BIGRAM_CONFIDENCE
+        and candidate.normalized_topic not in exact_phrase_topics
+    ):
+        return False
+    if source_name in NOISY_FALLBACK_SOURCES and candidate.confidence < HIGH_CONFIDENCE_TOPIC_THRESHOLD:
+        return candidate.normalized_topic in exact_phrase_topics and candidate.strategy != "unigram"
+    return True
 
 
 def _metadata_values(value: object) -> list[str]:

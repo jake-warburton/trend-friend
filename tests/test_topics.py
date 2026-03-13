@@ -32,6 +32,30 @@ class TopicNormalizationTests(unittest.TestCase):
         topics = extract_candidate_topics("AI agents are replacing repetitive office workflows")
         self.assertEqual(topics, ["ai agents"])
 
+    def test_extract_candidate_topics_prefers_branded_product_phrase_over_trailing_instruction_words(self) -> None:
+        topics = extract_candidate_topics(
+            "Perplexity Computer Skills: Extend Computer’s capabilities with repeatable instructions",
+            source_name="product_hunt",
+        )
+        self.assertEqual(topics, ["perplexity computer skills"])
+
+    def test_extract_candidate_topics_drops_ambiguous_conversational_reddit_titles(self) -> None:
+        topics = extract_candidate_topics(
+            "Hi, everyone I feel really alone on my startup journey, Do you feel it too?- I will not promote",
+            source_name="reddit",
+        )
+        self.assertEqual(topics, [])
+
+    def test_extract_candidate_topics_rejects_non_topic_fragments(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics("Accidentally Learned That AI Agents Can Replace Internal Ops", source_name="reddit"),
+            ["ai agents"],
+        )
+        self.assertEqual(
+            extract_candidate_topics("Were Reimagining Iran War Coverage", source_name="reddit"),
+            ["iran war"],
+        )
+
     def test_extract_candidate_topics_limits_single_headline_fan_out(self) -> None:
         topics = extract_candidate_topics(
             "Workers report watching Ray Ban Meta shot footage of people using the bathroom"
