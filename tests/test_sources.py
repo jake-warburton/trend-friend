@@ -42,6 +42,19 @@ class SourceNormalizationTests(unittest.TestCase):
             adapter.TREND_SUBREDDITS,
             [
                 "technology",
+                "news",
+                "worldnews",
+                "politics",
+                "geopolitics",
+                "sports",
+                "nba",
+                "nfl",
+                "soccer",
+                "games",
+                "pcgaming",
+                "movies",
+                "television",
+                "popculturechat",
                 "programming",
                 "MachineLearning",
                 "artificial",
@@ -80,10 +93,11 @@ class SourceNormalizationTests(unittest.TestCase):
     def test_google_news_adapter_normalizes_sample_payload(self) -> None:
         adapter = GoogleNewsSourceAdapter(self.settings)
         items = adapter._normalize_items(adapter.sample_payload())
-        self.assertEqual(len(items), 3)
+        self.assertEqual(len(items), 4)
         self.assertEqual(items[0].source, "google_news")
         self.assertEqual(items[0].metadata["section"], "world")
         self.assertEqual(items[1].metadata["publisher"], "Bloomberg")
+        self.assertEqual(items[-1].metadata["section"], "entertainment")
 
     def test_google_news_adapter_parses_rss_and_strips_publisher_suffix(self) -> None:
         adapter = GoogleNewsSourceAdapter(self.settings)
@@ -109,6 +123,11 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(items[0].title, "Ceasefire talks intensify in Gaza")
         self.assertEqual(items[0].metadata["publisher"], "Reuters")
         self.assertEqual(items[0].metadata["section"], "world")
+
+    def test_google_news_adapter_covers_sports_and_entertainment_sections(self) -> None:
+        self.assertIn(("SPORTS", "sports"), GOOGLE_NEWS_TOPICS)
+        self.assertIn(("ENTERTAINMENT", "entertainment"), GOOGLE_NEWS_TOPICS)
+        self.assertIn(("NATION", "nation"), GOOGLE_NEWS_TOPICS)
 
     def test_curated_rss_adapter_parses_rss_and_atom_feeds(self) -> None:
         adapter = CuratedRssSourceAdapter(self.settings)
@@ -544,7 +563,7 @@ class SourceNormalizationTests(unittest.TestCase):
     def test_google_news_adapter_expands_topic_coverage(self) -> None:
         self.assertEqual(
             [section for _topic, section in GOOGLE_NEWS_TOPICS],
-            ["world", "business", "technology", "science", "health"],
+            ["world", "nation", "business", "technology", "science", "health", "sports", "entertainment"],
         )
 
     def test_devto_adapter_fallback_items_include_tags(self) -> None:

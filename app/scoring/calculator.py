@@ -9,6 +9,7 @@ from app.models import TopicAggregate, TrendScoreResult
 from app.sources.catalog import source_family_for_source, source_reliability_for_source
 from app.scoring.weights import DEFAULT_WEIGHTS, ScoreWeights
 from app.topics.normalize import clean_text
+from app.topics.categorize import categorize_topic
 
 GENERIC_LEAD_TOKENS = {
     "important",
@@ -28,7 +29,17 @@ MAX_FRESHNESS_BONUS = 5.0
 MAX_VELOCITY_BONUS = 4.5
 MAX_RELIABILITY_BONUS = 4.0
 MAX_FAMILY_DIVERSITY_BONUS = 4.5
+MAX_SIGNAL_TYPE_DIVERSITY_BONUS = 3.5
+MAX_BROAD_INTEREST_BONUS = 4.0
+ECOSYSTEM_CONCENTRATION_PENALTY = 1.75
 GENERIC_TOPIC_PENALTY = 2.5
+BROAD_INTEREST_CATEGORIES = {
+    "business-economy",
+    "culture-entertainment",
+    "general-news",
+    "geopolitics-world",
+    "sports",
+}
 
 
 def calculate_trend_scores(
@@ -112,6 +123,9 @@ def topic_quality_adjustment(aggregate: TopicAggregate, reference_time: datetime
     adjustment += velocity_adjustment(aggregate)
     adjustment += reliability_adjustment(aggregate)
     adjustment += family_diversity_adjustment(aggregate)
+    adjustment += signal_type_diversity_adjustment(aggregate)
+    adjustment += broad_interest_adjustment(aggregate)
+    adjustment -= ecosystem_concentration_penalty(aggregate)
     return adjustment
 
 
@@ -179,3 +193,41 @@ def family_diversity_adjustment(aggregate: TopicAggregate) -> float:
     if len(families) <= 1:
         return 0.0
     return round(min(1.0, (len(families) - 1) / 4.0) * MAX_FAMILY_DIVERSITY_BONUS, 2)
+
+
+def signal_type_diversity_adjustment(aggregate: TopicAggregate) -> float:
+    """Reward trends confirmed across multiple signal types, not only one ecosystem."""
+
+    active_signal_types = [signal_type for signal_type, count in aggregate.signal_counts.items() if count > 0]
+    if len(active_signal_types) <= 1:
+        return 0.0
+    return round(min(1.0, (len(active_signal_types) - 1) / 3.0) * MAX_SIGNAL_TYPE_DIVERSITY_BONUS, 2)
+
+
+def broad_interest_adjustment(aggregate: TopicAggregate) -> float:
+    """Reward mixed-source corroboration for broad-interest news and culture topics."""
+
+    category = categorize_topic(aggregate.topic, aggregate.source_counts)
+    if category not in BROAD_INTEREST_CATEGORIES:
+        return 0.0
+    active_signal_types = {signal_type for signal_type, count in aggregate.signal_counts.items() if count > 0}
+    families = {source_family_for_source(source) for source in aggregate.source_counts}
+    if len(active_signal_types) < 2 or len(families) < 2:
+        return 0.0
+    score = 0.0
+    if {"social", "knowledge"} <= active_signal_types or {"social", "search"} <= active_signal_types:
+        score += 2.3
+    score += min(1.0, (len(families) - 1) / 3.0) * 1.7
+    return round(min(score, MAX_BROAD_INTEREST_BONUS), 2)
+
+
+def ecosystem_concentration_penalty(aggregate: TopicAggregate) -> float:
+    """Penalize topics that are only echoed inside the same builder/community ecosystem."""
+
+    active_signal_types = {signal_type for signal_type, count in aggregate.signal_counts.items() if count > 0}
+    families = {source_family_for_source(source) for source in aggregate.source_counts}
+    if active_signal_types == {"developer"}:
+        return ECOSYSTEM_CONCENTRATION_PENALTY
+    if active_signal_types <= {"developer", "social"} and families <= {"community", "developer", "launch"}:
+        return ECOSYSTEM_CONCENTRATION_PENALTY
+    return 0.0

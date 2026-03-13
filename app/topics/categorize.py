@@ -15,7 +15,9 @@ CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "ceasefire", "sanctions", "nato", "tariff", "trade war", "red sea",
             "gaza", "ukraine", "russia", "china", "taiwan", "middle east",
             "shipping route", "defense", "foreign policy", "embassy", "diplomatic",
-            "missile", "military", "border", "election",
+            "missile", "military", "border", "election", "white house", "prime minister",
+            "president", "senate", "congress", "supreme court", "cabinet", "campaign",
+            "trump", "biden", "starmer", "putin", "zelensky", "netanyahu",
         ),
     ),
     (
@@ -32,6 +34,8 @@ CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "premier league", "champions league", "nba", "nfl", "mlb", "nhl",
             "formula 1", "f1", "world cup", "olympics", "tennis", "golf",
             "title race", "playoffs", "grand slam", "transfer window", "uefa",
+            "lakers", "arsenal", "liverpool", "manchester united", "real madrid",
+            "nfl draft", "march madness", "super bowl",
         ),
     ),
     (
@@ -39,7 +43,9 @@ CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
         (
             "box office", "streaming", "netflix", "hollywood", "celebrity",
             "album", "film", "movie", "tv series", "music video", "festival",
-            "awards", "grammys", "oscars",
+            "awards", "grammys", "oscars", "playstation", "xbox", "nintendo",
+            "grand theft auto", "gta", "fortnite", "call of duty", "minecraft",
+            "ign", "variety", "billboard", "taylor swift", "superman", "marvel",
         ),
     ),
     (

@@ -250,6 +250,34 @@ class TopicNormalizationTests(unittest.TestCase):
             ["premier league title race"],
         )
 
+    def test_extract_candidate_topics_supports_named_news_entities_and_issue_phrases(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics("Donald Trump rallies supporters after court ruling", source_name="google_news"),
+            ["donald trump", "court ruling"],
+        )
+        self.assertEqual(
+            extract_candidate_topics("Iran war fears grow as oil prices spike", source_name="google_news"),
+            ["iran war", "oil prices"],
+        )
+        self.assertEqual(
+            extract_candidate_topics("Taylor Swift breaks streaming records with new album", source_name="google_news"),
+            ["taylor swift"],
+        )
+        self.assertEqual(
+            extract_candidate_topics("Grand Theft Auto VI rumors surge after teaser", source_name="google_news"),
+            ["grand theft auto"],
+        )
+
+    def test_extract_candidate_topics_rejects_news_headline_wrappers(self) -> None:
+        self.assertEqual(
+            extract_candidate_topics("Live updates: Fans react after latest on the Lakers", source_name="google_news"),
+            [],
+        )
+        self.assertEqual(
+            extract_candidate_topics("What to know about score updates and transfer rumors", source_name="google_news"),
+            [],
+        )
+
     def test_extract_candidate_topics_collapses_polymarket_threshold_markets_to_assets(self) -> None:
         self.assertEqual(
             extract_candidate_topics(

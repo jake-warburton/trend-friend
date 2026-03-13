@@ -44,7 +44,7 @@ SOURCE_BIGRAM_LIMITS = {
 SOURCE_LOW_SIGNAL_TOKENS = {
     "chrome_web_store": {"assistant", "browser", "chrome", "extension", "extensions", "sidebar", "tool"},
     "curated_feeds": {"announces", "explains", "introducing", "latest", "new", "says", "using", "why"},
-    "google_news": {"live", "updates", "update", "latest", "watch", "watching", "says"},
+    "google_news": {"live", "updates", "update", "latest", "watch", "watching", "says", "know"},
     "hacker_news": {"watching", "people", "report", "reports", "footage"},
     "twitter": {"watching", "people", "report", "reports", "footage"},
     "youtube": {"build", "building", "demo", "explained", "how", "review", "tutorial", "using", "video"},
@@ -130,6 +130,8 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "all",
     "accidentally",
     "adopted",
+    "after",
+    "amid",
     "away",
     "based",
     "becomes",
@@ -143,6 +145,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "everything",
     "extend",
     "extends",
+    "fans",
     "finally",
     "film",
     "find",
@@ -174,12 +177,17 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "promote",
     "reimagining",
     "remotely",
+    "react",
+    "released",
     "rule",
     "rules",
+    "rumors",
     "shuts",
     "show",
     "same",
+    "score",
     "started",
+    "stories",
     "supports",
     "successful",
     "take",
@@ -192,7 +200,9 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "was",
     "walk",
     "walking",
+    "watch",
     "were",
+    "what",
     "will",
     "wanna",
     "years",
@@ -295,6 +305,43 @@ ENTITY_SPAN_TAIL_STOP_TOKENS = {
     "reimagining",
     "supports",
 }
+NEWS_HEADLINE_WRAPPER_PHRASES = (
+    "breaking news",
+    "fans react",
+    "latest on",
+    "live updates",
+    "score updates",
+    "top stories",
+    "watch live",
+    "what to know",
+)
+NEWS_EXACT_PHRASE_TOPICS = {
+    "donald trump",
+    "grand theft auto",
+    "iran war",
+    "joe biden",
+    "los angeles lakers",
+    "premier league",
+    "taylor swift",
+    "trade war",
+    "us president",
+}
+NEWS_ENTITY_STOP_WORDS = {
+    "again",
+    "amid",
+    "after",
+    "comments",
+    "fans",
+    "latest",
+    "live",
+    "react",
+    "released",
+    "rumors",
+    "says",
+    "stories",
+    "updates",
+    "watch",
+}
 ENTITY_PREFIX_PATTERNS = (
     re.compile(r"^\s*([A-Z][A-Za-z0-9+.-]*(?:\s+[A-Z][A-Za-z0-9+.-]*){0,3})\s*[:|–-]"),
 )
@@ -383,7 +430,18 @@ def extract_candidate_topics(title: str, source_name: str | None = None) -> list
             added_bigrams += 1
         if len(ordered_candidates) >= max_topics:
             break
-    return ordered_candidates
+    return [
+        topic
+        for topic in ordered_candidates
+        if not any(
+            topic != other
+            and (
+                set(topic.split()) < set(other.split())
+                or (other.startswith(topic) and len(other.split()) > len(topic.split()))
+            )
+            for other in ordered_candidates
+        )
+    ]
 
 
 def extract_candidate_topics_for_item(item: RawSourceItem) -> list[str]:
@@ -426,15 +484,24 @@ def infer_google_news_topics(title: str, tokens: list[str]) -> list[str]:
     token_set = set(tokens)
     normalized_title = normalize_topic_name(title)
     inferred_topics: list[str] = []
+    inferred_topics.extend(infer_google_news_entity_topics(title))
 
     phrase_patterns: tuple[tuple[str, str], ...] = (
+        ("donald trump", "donald trump"),
+        ("joe biden", "joe biden"),
+        ("taylor swift", "taylor swift"),
+        ("grand theft auto", "grand theft auto"),
+        ("nfl draft", "nfl draft"),
+        ("iran war", "iran war"),
         ("red sea shipping", "red sea shipping"),
         ("ceasefire talks", "ceasefire talks"),
         ("fed rate cuts", "fed rate cuts"),
         ("fed rate cut", "fed rate cuts"),
         ("inflation data", "inflation data"),
         ("oil prices", "oil prices"),
+        ("los angeles lakers", "los angeles lakers"),
         ("premier league title race", "premier league title race"),
+        ("premier league", "premier league"),
         ("champions league", "champions league"),
         ("transfer window", "transfer window"),
         ("court ruling", "court ruling"),
@@ -454,14 +521,18 @@ def infer_google_news_topics(title: str, tokens: list[str]) -> list[str]:
         ({"fed", "rate", "cuts"}, "fed rate cuts"),
         ({"fed", "rate", "cut"}, "fed rate cuts"),
         ({"inflation", "data"}, "inflation data"),
+        ({"iran", "war"}, "iran war"),
         ({"oil", "prices"}, "oil prices"),
+        ({"los", "angeles", "lakers"}, "los angeles lakers"),
         ({"premier", "league", "title", "race"}, "premier league title race"),
+        ({"premier", "league"}, "premier league"),
         ({"champions", "league"}, "champions league"),
         ({"transfer", "window"}, "transfer window"),
         ({"court", "ruling"}, "court ruling"),
         ({"storm", "warning"}, "storm warning"),
         ({"wildfire", "risk"}, "wildfire risk"),
         ({"trade", "war"}, "trade war"),
+        ({"nfl", "draft"}, "nfl draft"),
     )
     for required_tokens, topic in entity_patterns:
         if required_tokens <= token_set and topic not in inferred_topics:
@@ -492,7 +563,42 @@ def infer_google_news_topics(title: str, tokens: list[str]) -> list[str]:
         if normalized and normalized not in seen:
             seen.add(normalized)
             ordered_topics.append(normalized)
-    return ordered_topics
+    return [
+        topic
+        for topic in ordered_topics
+        if not any(
+            topic != other and set(topic.split()) < set(other.split())
+            for other in ordered_topics
+        )
+    ]
+
+
+def infer_google_news_entity_topics(title: str) -> list[str]:
+    """Extract strong named entities and title phrases from news headlines."""
+
+    leading_segment = re.split(r"\s*[:|–-]\s*", title, maxsplit=1)[0].strip()
+    if not leading_segment:
+        return []
+    normalized_segment = normalize_topic_name(leading_segment)
+    if any(phrase in normalized_segment for phrase in NEWS_HEADLINE_WRAPPER_PHRASES):
+        return []
+
+    spans = re.findall(
+        r"\b(?:[A-Z][A-Za-z0-9+.'-]*|[A-Z]{2,})(?:\s+(?:[A-Z][A-Za-z0-9+.'-]*|[A-Z]{2,}|of|for|and|the)){1,4}\b",
+        leading_segment,
+    )
+    topics: list[str] = []
+    for span in spans:
+        normalized = normalize_entity_span(span, "google_news")
+        if not normalized or normalized in topics:
+            continue
+        if normalized.startswith("grand theft auto "):
+            normalized = "grand theft auto"
+        tokens = normalized.split()
+        if any(token in NEWS_ENTITY_STOP_WORDS for token in tokens):
+            continue
+        topics.append(normalized)
+    return topics
 
 
 def infer_repository_topic(title: str) -> str | None:
@@ -600,6 +706,22 @@ def infer_canonical_topics(tokens: list[str]) -> list[str]:
         inferred_topics.append("street view")
     if "world" in token_set and "cup" in token_set:
         inferred_topics.append("world cup")
+    if {"iran", "war"} <= token_set:
+        inferred_topics.append("iran war")
+    if {"donald", "trump"} <= token_set:
+        inferred_topics.append("donald trump")
+    if {"joe", "biden"} <= token_set:
+        inferred_topics.append("joe biden")
+    if {"us", "president"} <= token_set:
+        inferred_topics.append("us president")
+    if {"premier", "league"} <= token_set:
+        inferred_topics.append("premier league")
+    if {"nfl", "draft"} <= token_set:
+        inferred_topics.append("nfl draft")
+    if {"grand", "theft", "auto"} <= token_set:
+        inferred_topics.append("grand theft auto")
+    if {"taylor", "swift"} <= token_set:
+        inferred_topics.append("taylor swift")
     if ("ai" in token_set or "openai" in token_set or "artificial" in token_set) and (
         "agent" in token_set or "agents" in token_set
     ):
@@ -922,7 +1044,11 @@ def topic_passes_quality_gate(
     """Return True when a candidate is precise enough to keep."""
 
     normalized_title = normalize_topic_name(title)
+    if candidate.normalized_topic in NEWS_EXACT_PHRASE_TOPICS:
+        return True
     if candidate.normalized_topic in {"alone journey", "capabilities repeatable"}:
+        return False
+    if any(fragment in candidate.normalized_topic for fragment in {"latest on", "watch live", "what know"}):
         return False
     if any(pattern in normalized_title for pattern in CONVERSATIONAL_PATTERNS):
         return candidate.strategy in {"canonical_rule", "entity_span", "repository"}

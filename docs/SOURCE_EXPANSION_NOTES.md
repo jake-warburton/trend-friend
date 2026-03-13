@@ -54,6 +54,23 @@
 - DEV Community and Lobsters help with early social/builder corroboration, but their volumes are much smaller than Reddit.
 - Twitter/X remains optional because unauthenticated or unstable access should not become a critical dependency.
 
+## Broader News Expansion
+
+- `google_news` now samples `WORLD`, `NATION`, `BUSINESS`, `TECHNOLOGY`, `SCIENCE`, `HEALTH`, `SPORTS`, and `ENTERTAINMENT`.
+- `curated_feeds` is no longer only AI-builder oriented; it now mixes BBC world/politics/entertainment coverage with the existing tech feeds plus a gaming feed.
+- `reddit` now spans broader community/news subreddits across politics, world news, sports, gaming, movies, television, and pop culture in addition to the existing tech-builder communities.
+- Topic extraction now has explicit support for:
+  - named news entities
+  - issue phrases like `iran war`
+  - sports competitions and teams
+  - gaming and entertainment titles
+- Topic normalization now suppresses more headline scaffolding such as `live updates`, `watch live`, `fans react`, and `what to know`.
+- Scoring now gives more weight to:
+  - mixed signal types
+  - broad-interest corroboration
+  - non-tech topics confirmed across search, news, and social
+- Scoring now penalizes topics that only echo within the same developer/community ecosystem.
+
 ## Recommended Next Sources
 
 - Chrome Web Store or browser-extension rankings

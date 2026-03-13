@@ -55,6 +55,31 @@ class TrendScoringTests(unittest.TestCase):
 
         self.assertGreater(corroborated_score.total_score, single_family_score.total_score)
 
+    def test_calculate_trend_scores_rewards_broad_interest_mixed_signal_topics(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        broad_interest = TopicAggregate(
+            topic="iran war",
+            source_counts={"google_news": 1, "reddit": 1, "google_trends": 1},
+            signal_counts={"knowledge": 1, "social": 1, "search": 1},
+            total_signal_value=210.0,
+            average_signal_value=70.0,
+            latest_timestamp=timestamp,
+            evidence=["Iran war fears grow", "Iran war discussion", "Iran war search demand"],
+        )
+        dev_cluster = TopicAggregate(
+            topic="python package",
+            source_counts={"github": 1, "lobsters": 1, "devto": 1},
+            signal_counts={"developer": 1, "social": 2},
+            total_signal_value=210.0,
+            average_signal_value=70.0,
+            latest_timestamp=timestamp,
+            evidence=["Python package release", "Python package launch", "Python package post"],
+        )
+
+        broad_score, dev_score = calculate_trend_scores([broad_interest, dev_cluster])
+
+        self.assertGreater(broad_score.total_score, dev_score.total_score)
+
     def test_calculate_trend_scores_prefers_fresher_topics(self) -> None:
         fresh = TopicAggregate(
             topic="ai agents",

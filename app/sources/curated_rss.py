@@ -1,4 +1,4 @@
-"""Curated RSS adapter for stable AI and builder-news corroboration."""
+"""Curated RSS adapter for stable world, culture, gaming, sports, and tech corroboration."""
 
 from __future__ import annotations
 
@@ -24,12 +24,16 @@ class FeedSpec:
 
 
 FEEDS: tuple[FeedSpec, ...] = (
+    FeedSpec("BBC World", "BBC", "https://feeds.bbci.co.uk/news/world/rss.xml"),
+    FeedSpec("BBC Politics", "BBC", "https://feeds.bbci.co.uk/news/politics/rss.xml"),
+    FeedSpec("BBC Entertainment", "BBC", "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"),
     FeedSpec("TechCrunch AI", "TechCrunch", "https://techcrunch.com/category/artificial-intelligence/feed/"),
     FeedSpec("The Verge AI", "The Verge", "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
     FeedSpec("OpenAI News", "OpenAI", "https://openai.com/news/rss.xml"),
     FeedSpec("Google AI Blog", "Google", "https://blog.google/technology/ai/rss/"),
     FeedSpec("MarkTechPost", "MarkTechPost", "https://www.marktechpost.com/feed/"),
     FeedSpec("AI News", "AI News", "https://www.artificialintelligence-news.com/feed/"),
+    FeedSpec("IGN News", "IGN", "https://feeds.ign.com/ign/games-all"),
 )
 
 
@@ -174,19 +178,19 @@ class CuratedRssSourceAdapter(SourceAdapter):
             RawSourceItem(
                 source=self.source_name,
                 external_id="curated-1",
-                title="OpenAI launches new agent tooling for production builders",
-                url="https://openai.com/news/",
+                title="BBC tracks ceasefire negotiations as regional tensions intensify",
+                url="https://www.bbc.co.uk/news",
                 timestamp=now,
                 engagement_score=142.0,
-                metadata={"feed": "OpenAI News", "publisher": "OpenAI"},
+                metadata={"feed": "BBC World", "publisher": "BBC"},
             ),
             RawSourceItem(
                 source=self.source_name,
                 external_id="curated-2",
-                title="TechCrunch tracks rising demand for AI coding assistants in startups",
-                url="https://techcrunch.com/category/artificial-intelligence/",
+                title="IGN watches Grand Theft Auto speculation surge after a new teaser",
+                url="https://www.ign.com",
                 timestamp=now,
                 engagement_score=128.0,
-                metadata={"feed": "TechCrunch AI", "publisher": "TechCrunch"},
+                metadata={"feed": "IGN News", "publisher": "IGN"},
             ),
         ]

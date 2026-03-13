@@ -14,10 +14,13 @@ LOGGER = logging.getLogger(__name__)
 _RSS_BASE = "https://news.google.com/rss/headlines/section/topic/{topic}?hl=en-US&gl=US&ceid=US:en"
 _TOPICS = [
     ("WORLD", "world"),
+    ("NATION", "nation"),
     ("BUSINESS", "business"),
     ("TECHNOLOGY", "technology"),
     ("SCIENCE", "science"),
     ("HEALTH", "health"),
+    ("SPORTS", "sports"),
+    ("ENTERTAINMENT", "entertainment"),
 ]
 
 
@@ -164,5 +167,13 @@ class GoogleNewsSourceAdapter(SourceAdapter):
                 "section": "sports",
                 "publisher": "ESPN",
                 "rank": 7,
+            },
+            {
+                "id": "gn-4",
+                "title": "Grand Theft Auto VI trailer speculation drives gaming chatter",
+                "url": "https://news.google.com/articles/example-4",
+                "section": "entertainment",
+                "publisher": "IGN",
+                "rank": 6,
             },
         ]

@@ -27,6 +27,19 @@ class RedditSourceAdapter(SourceAdapter):
     source_name = "reddit"
     TREND_SUBREDDITS = [
         "technology",
+        "news",
+        "worldnews",
+        "politics",
+        "geopolitics",
+        "sports",
+        "nba",
+        "nfl",
+        "soccer",
+        "games",
+        "pcgaming",
+        "movies",
+        "television",
+        "popculturechat",
         "programming",
         "MachineLearning",
         "artificial",
@@ -59,12 +72,13 @@ class RedditSourceAdapter(SourceAdapter):
 
         items: list[RawSourceItem] = []
         seen_ids: set[str] = set()
-        feed_limit = max(4, min(self.settings.max_items_per_source, 25))
+        subreddit_groups = self._subreddit_groups()
+        feed_limit = max(4, min(self.settings.max_items_per_source // max(len(subreddit_groups), 1), 8))
         feed_specs = self.FEED_SPECS[: max(1, min(self.settings.reddit_page_limit, len(self.FEED_SPECS)))]
 
-        for subreddit_group in self._subreddit_groups():
-            subreddit_path = "+".join(subreddit_group)
-            for feed_name, time_window in feed_specs:
+        for feed_name, time_window in feed_specs:
+            for subreddit_group in subreddit_groups:
+                subreddit_path = "+".join(subreddit_group)
                 url = self._build_feed_url(subreddit_path, feed_name, feed_limit, time_window)
                 headers = {
                     "User-Agent": self.settings.reddit_user_agent,

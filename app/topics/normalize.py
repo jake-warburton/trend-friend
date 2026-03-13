@@ -65,6 +65,7 @@ STOP_WORDS = {
     "using",
     "use",
     "momentum",
+    "know",
     "walk",
     "workflows",
     "with",
@@ -106,25 +107,42 @@ NOISE_TAIL_TOKENS = {
     "updates",
 }
 GENERIC_MULTIWORD_TOPICS = {
+    "breaking news",
     "developer platform",
     "developer tools",
+    "fans react",
     "finally dead",
+    "latest on",
+    "live updates",
     "machine learning",
     "new model",
     "open source",
     "python package",
     "repeatable instructions",
+    "score updates",
+    "top stories",
     "video tutorial",
+    "watch live",
+    "what know",
     "wanna collaborate",
 }
 GENERIC_PHRASE_FRAGMENTS = {
     "alone journey",
+    "after comments",
+    "amid concerns",
     "also awful",
     "capabilities repeatable",
     "down again",
     "feel really alone",
+    "latest on",
     "not promote",
     "really alone",
+    "says about",
+    "trailer released",
+    "transfer rumors",
+    "watch live",
+    "what know",
+    "wins again",
 }
 GENERIC_SINGLE_TOKEN_TOPICS = {
     "automation",
@@ -138,6 +156,14 @@ GENERIC_SINGLE_TOKEN_TOPICS = {
     "struct",
     "workflow",
 }
+GENERIC_PREFIXES = (
+    "breaking ",
+    "latest on ",
+    "live updates ",
+    "top stories ",
+    "watch live ",
+    "what know ",
+)
 
 
 def clean_text(text: str) -> str:
@@ -196,6 +222,8 @@ def is_meaningful_topic(topic_name: str) -> bool:
             and tokens[0] not in STOP_WORDS
             and tokens[0] not in GENERIC_SINGLE_TOKEN_TOPICS
         )
+    if any(topic_name.startswith(prefix) for prefix in GENERIC_PREFIXES):
+        return False
     if topic_name in GENERIC_MULTIWORD_TOPICS:
         return False
     if topic_name in GENERIC_PHRASE_FRAGMENTS:
