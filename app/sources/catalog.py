@@ -26,11 +26,13 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
     "huggingface": SourceDefinition("huggingface", "developer", "research", 0.84),
     "lobsters": SourceDefinition("lobsters", "social", "community", 0.74),
     "npm": SourceDefinition("npm", "developer", "developer", 0.86),
+    "pypi": SourceDefinition("pypi", "developer", "developer", 0.82),
     "polymarket": SourceDefinition("polymarket", "search", "market", 0.58, experimental=True),
     "producthunt": SourceDefinition("producthunt", "social", "launch", 0.78),
     "reddit": SourceDefinition("reddit", "social", "community", 0.72),
     "stackoverflow": SourceDefinition("stackoverflow", "developer", "developer", 0.88),
     "twitter": SourceDefinition("twitter", "social", "social", 0.45, experimental=True),
+    "youtube": SourceDefinition("youtube", "social", "social", 0.79),
     "wikipedia": SourceDefinition("wikipedia", "knowledge", "knowledge", 0.67),
 }
 

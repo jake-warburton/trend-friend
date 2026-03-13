@@ -24,6 +24,7 @@ SOURCE_TOPIC_LIMITS = {
     "hacker_news": 2,
     "polymarket": 2,
     "twitter": 2,
+    "youtube": 2,
 }
 SOURCE_BIGRAM_LIMITS = {
     "google_news": 1,
@@ -31,11 +32,13 @@ SOURCE_BIGRAM_LIMITS = {
     "hacker_news": 1,
     "polymarket": 1,
     "twitter": 1,
+    "youtube": 1,
 }
 SOURCE_LOW_SIGNAL_TOKENS = {
     "google_news": {"live", "updates", "update", "latest", "watch", "watching", "says"},
     "hacker_news": {"watching", "people", "report", "reports", "footage"},
     "twitter": {"watching", "people", "report", "reports", "footage"},
+    "youtube": {"build", "building", "demo", "explained", "how", "review", "tutorial", "using", "video"},
 }
 BIGRAM_HEAD_TOKENS = {
     "analytics",
@@ -180,7 +183,15 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "dont",
     "mention",
 }
-METADATA_TOPIC_KEYS = ("tags", "keywords", "tag_list", "pipeline_tag", "library_name", "package_name")
+METADATA_TOPIC_KEYS = (
+    "tags",
+    "keywords",
+    "tag_list",
+    "pipeline_tag",
+    "library_name",
+    "package_name",
+    "channel_title",
+)
 GENERIC_METADATA_TOPICS = {
     "ai",
     "api",
@@ -200,11 +211,13 @@ GENERIC_METADATA_TOPICS = {
     "opensource",
     "package",
     "packages",
+    "python package",
     "python",
     "space",
     "spaces",
     "tool",
     "tools",
+    "youtube channel",
 }
 
 
@@ -277,6 +290,8 @@ def infer_source_specific_topics(title: str, tokens: list[str], source_name: str
         return infer_polymarket_topics(tokens)
     if source_name == "huggingface":
         return infer_huggingface_topics(tokens)
+    if source_name == "youtube":
+        return infer_youtube_topics(tokens)
     return []
 
 
@@ -494,6 +509,26 @@ def infer_huggingface_topics(tokens: list[str]) -> list[str]:
     if {"vision", "language"} <= token_set:
         inferred_topics.append("vision language models")
     if {"agent", "agents"} & token_set and ("framework" in token_set or "tool" in token_set):
+        inferred_topics.append("ai agents")
+    return inferred_topics
+
+
+def infer_youtube_topics(tokens: list[str]) -> list[str]:
+    """Prefer durable topics over generic creator framing for YouTube titles."""
+
+    token_set = set(tokens)
+    inferred_topics: list[str] = []
+    if {"vibe", "coding"} <= token_set:
+        inferred_topics.append("vibe coding")
+    if {"ai", "avatar"} <= token_set:
+        inferred_topics.append("ai avatars")
+    if {"video", "generation"} <= token_set:
+        inferred_topics.append("video generation")
+    if {"open", "source"} <= token_set and ("ai" in token_set or "llm" in token_set):
+        inferred_topics.append("open source ai")
+    if {"model", "context", "protocol"} <= token_set:
+        inferred_topics.append("model context protocol")
+    if ("agent" in token_set or "agents" in token_set) and ("workflow" in token_set or "automation" in token_set):
         inferred_topics.append("ai agents")
     return inferred_topics
 

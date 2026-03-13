@@ -13,10 +13,12 @@ from app.sources.hacker_news import HackerNewsSourceAdapter
 from app.sources.huggingface import HuggingFaceSourceAdapter
 from app.sources.lobsters import LobstersSourceAdapter
 from app.sources.npm import NpmSourceAdapter
+from app.sources.pypi import PyPISourceAdapter
 from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.twitter import TwitterSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
+from app.sources.youtube import YouTubeSourceAdapter
 
 
 class SourceNormalizationTests(unittest.TestCase):
@@ -126,6 +128,60 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "Artificial intelligence")
         self.assertEqual(items[0].timestamp.isoformat(), "2026-03-08T00:00:00+00:00")
+
+    def test_pypi_adapter_parses_rss_and_normalizes_package_json(self) -> None:
+        adapter = PyPISourceAdapter(self.settings)
+        rss_xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <rss version="2.0">
+          <channel>
+            <item>
+              <title>agent-observability 0.4.0</title>
+              <link>https://pypi.org/project/agent-observability/0.4.0/</link>
+              <pubDate>Thu, 12 Mar 2026 12:00:00 GMT</pubDate>
+            </item>
+          </channel>
+        </rss>"""
+        entries = adapter._parse_rss(rss_xml)
+        self.assertEqual(entries[0][0], "agent-observability")
+
+        payload = {
+            "info": {
+                "summary": "Tracing toolkit for AI agent workflows",
+                "keywords": "ai,agents,observability",
+                "classifiers": ["Topic :: Software Development", "Programming Language :: Python"],
+                "package_url": "https://pypi.org/project/agent-observability/",
+                "project_urls": {"Homepage": "https://example.com"},
+            },
+            "urls": [{"upload_time_iso_8601": "2026-03-12T11:30:00Z"}],
+        }
+        item = adapter._normalize_package(payload, "agent-observability", entries[0][1], entries[0][2])
+        self.assertIsNotNone(item)
+        assert item is not None
+        self.assertEqual(item.source, "pypi")
+        self.assertIn("agents", item.metadata["keywords"])
+        self.assertGreater(item.engagement_score, 0)
+
+    def test_youtube_adapter_normalizes_video_statistics(self) -> None:
+        adapter = YouTubeSourceAdapter(self.settings)
+        payload = {
+            "items": [
+                {
+                    "id": "video-1",
+                    "snippet": {
+                        "title": "AI agents for operator workflows",
+                        "publishedAt": "2026-03-12T12:00:00Z",
+                        "channelTitle": "Builder Signals",
+                        "tags": ["ai", "agents", "workflow"],
+                    },
+                    "statistics": {"viewCount": "10000", "likeCount": "800", "commentCount": "90"},
+                }
+            ]
+        }
+        items = adapter._normalize_videos(payload, query_family="agents")
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].source, "youtube")
+        self.assertEqual(items[0].metadata["channel_title"], "Builder Signals")
+        self.assertGreater(items[0].engagement_score, 0)
 
     def test_polymarket_adapter_normalizes_sample_payload(self) -> None:
         adapter = PolymarketSourceAdapter(self.settings)

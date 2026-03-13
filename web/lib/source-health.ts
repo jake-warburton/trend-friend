@@ -254,6 +254,7 @@ export function formatSourceLabel(source: string): string {
     huggingface: "Hugging Face",
     lobsters: "Lobsters",
     npm: "npm",
+    pypi: "PyPI",
     stackoverflow: "Stack Overflow",
     reddit: "Reddit",
     hacker_news: "Hacker News",
@@ -262,6 +263,7 @@ export function formatSourceLabel(source: string): string {
     google_trends: "Google Trends",
     polymarket: "Polymarket",
     twitter: "Twitter/X",
+    youtube: "YouTube",
   };
   return labels[source] ?? source
     .split("_")

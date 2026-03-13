@@ -30,11 +30,13 @@ _SOURCE_AUDIENCE_FLAGS: dict[str, tuple[str, ...]] = {
     "huggingface": ("developer", "research"),
     "lobsters": ("developer",),
     "npm": ("developer",),
+    "pypi": ("developer",),
     "reddit": (),
     "google_trends": ("consumer",),
     "wikipedia": ("research",),
     "polymarket": ("founder", "consumer"),
     "twitter": ("consumer", "founder"),
+    "youtube": ("consumer", "developer"),
 }
 
 _LANGUAGE_KEYS = ("lang", "language_code", "content_language")

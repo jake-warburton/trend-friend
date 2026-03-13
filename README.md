@@ -26,6 +26,8 @@ The MVP ingests signals from these free or very low-cost sources:
 - DEV Community
 - Hugging Face
 - npm registry search
+- PyPI release updates
+- YouTube discovery search
 - Lobsters
 - optional experimental sources such as Twitter/X and Polymarket
 
@@ -105,7 +107,7 @@ Supported environment variables:
 - `SIGNAL_EYE_REFRESH_SECRET`: Optional shared secret required by `POST /api/v1/refresh`
 - `GITHUB_TOKEN`: Optional token for higher GitHub API rate limits
 - `TWITTER_BEARER_TOKEN`: Optional token for live Twitter/X ingestion
-- `YOUTUBE_API_KEY`: Optional official YouTube Data API key for live YouTube footprint metrics
+- `YOUTUBE_API_KEY`: Optional official YouTube Data API key for live YouTube discovery plus market-footprint metrics
 - `SIGNAL_EYE_GOOGLE_SEARCH_METRICS_URL`: Optional provider endpoint for Google monthly searches / interest
 - `SIGNAL_EYE_GOOGLE_SEARCH_METRICS_TOKEN`: Optional bearer token for the Google metrics provider
 - `SIGNAL_EYE_TIKTOK_METRICS_URL`: Optional provider endpoint for TikTok views / video counts

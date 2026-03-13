@@ -13,6 +13,8 @@
   - `DEV Community`
   - `Hugging Face`
   - `npm`
+  - `PyPI`
+  - `YouTube`
   - `Lobsters`
 - Shared source metadata in `app/sources/catalog.py`:
   - signal type
@@ -40,14 +42,13 @@
 ## Tradeoffs
 
 - The new sources were chosen for stability and free access, not perfect volume coverage.
-- Hugging Face and npm are highly useful for builder trends, but they skew technical by design.
+- Hugging Face, npm, and PyPI are highly useful for builder trends, but they skew technical by design.
+- YouTube improves social velocity coverage materially, but its live path depends on an API key and quota discipline.
 - DEV Community and Lobsters help with early social/builder corroboration, but their volumes are much smaller than Reddit.
 - Twitter/X remains optional because unauthenticated or unstable access should not become a critical dependency.
 
 ## Recommended Next Sources
 
-- PyPI release/update signals
 - Chrome Web Store or browser-extension rankings
-- YouTube discovery signals
 - App Store / Google Play public rankings if a stable free path is acceptable
 - curated RSS bundles for niche sectors

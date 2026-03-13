@@ -219,6 +219,44 @@ class TopicNormalizationTests(unittest.TestCase):
         self.assertIn("ai agents", [signal.topic for signal in signals])
         self.assertIn("observability", [signal.topic for signal in signals])
 
+    def test_build_signals_from_items_prefers_youtube_domain_topics_over_creator_wrappers(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="youtube",
+                external_id="video-1",
+                title="How Model Context Protocol stacks are reshaping AI integrations",
+                url="https://youtube.com/watch?v=video-1",
+                timestamp=timestamp,
+                engagement_score=140.0,
+                metadata={"channel_title": "Builder Signals", "tags": ["mcp", "llm", "tooling"]},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("model context protocol", [signal.topic for signal in signals])
+        self.assertNotIn("builder signals", [signal.topic for signal in signals])
+
+    def test_build_signals_from_items_uses_pypi_package_metadata_without_generic_package_noise(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="pypi",
+                external_id="agent-observability",
+                title="agent-observability Python package for tracing AI agent workflows",
+                url="https://pypi.org/project/agent-observability/",
+                timestamp=timestamp,
+                engagement_score=120.0,
+                metadata={"keywords": ["ai", "agents", "observability"], "package_name": "agent-observability"},
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+
+        self.assertIn("ai agents", [signal.topic for signal in signals])
+        self.assertIn("observability", [signal.topic for signal in signals])
+
     def test_merge_similar_topics_groups_subset_variants(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [

@@ -66,7 +66,12 @@ const UPDATED_TRENDS_FLASH_MS = 5_000;
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
   { label: "arXiv", value: "arxiv" },
+  { label: "DEV Community", value: "devto" },
+  { label: "Hugging Face", value: "huggingface" },
+  { label: "Lobsters", value: "lobsters" },
+  { label: "npm", value: "npm" },
   { label: "Product Hunt", value: "producthunt" },
+  { label: "PyPI", value: "pypi" },
   { label: "Stack Overflow", value: "stackoverflow" },
   { label: "Reddit", value: "reddit" },
   { label: "Hacker News", value: "hacker_news" },
@@ -75,6 +80,7 @@ const SOURCE_FILTER_OPTIONS = [
   { label: "Google Trends", value: "google_trends" },
   { label: "Polymarket", value: "polymarket" },
   { label: "Twitter/X", value: "twitter" },
+  { label: "YouTube", value: "youtube" },
 ] as const;
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;

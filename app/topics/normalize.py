@@ -44,6 +44,7 @@ STOP_WORDS = {
     "or",
     "open",
     "process",
+    "playlist",
     "repetitive",
     "replace",
     "replacing",
@@ -61,6 +62,7 @@ STOP_WORDS = {
     "tool",
     "tooling",
     "tools",
+    "tutorial",
     "used",
     "using",
     "use",
@@ -68,6 +70,7 @@ STOP_WORDS = {
     "walk",
     "workflows",
     "with",
+    "videos",
     "you",
     "your",
     "teams",
@@ -99,6 +102,7 @@ NOISE_TAIL_TOKENS = {
     "guide",
     "launch",
     "news",
+    "podcast",
     "today",
     "update",
     "updates",
@@ -109,6 +113,8 @@ GENERIC_MULTIWORD_TOPICS = {
     "machine learning",
     "new model",
     "open source",
+    "python package",
+    "video tutorial",
 }
 
 

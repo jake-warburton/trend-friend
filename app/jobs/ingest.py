@@ -16,12 +16,14 @@ from app.sources.producthunt import ProductHuntSourceAdapter
 from app.sources.huggingface import HuggingFaceSourceAdapter
 from app.sources.lobsters import LobstersSourceAdapter
 from app.sources.npm import NpmSourceAdapter
+from app.sources.pypi import PyPISourceAdapter
 from app.sources.stackoverflow import StackOverflowSourceAdapter
 from app.sources.google_trends import GoogleTrendsSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
 from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.twitter import TwitterSourceAdapter
+from app.sources.youtube import YouTubeSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
 
 LOGGER = logging.getLogger(__name__)
@@ -43,6 +45,8 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         DevToSourceAdapter(settings),
         HuggingFaceSourceAdapter(settings),
         NpmSourceAdapter(settings),
+        PyPISourceAdapter(settings),
+        YouTubeSourceAdapter(settings),
         LobstersSourceAdapter(settings),
     ]
     if settings.enable_experimental_sources:
