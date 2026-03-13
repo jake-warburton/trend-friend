@@ -75,6 +75,13 @@ class TopicNormalizationTests(unittest.TestCase):
             ),
             ["ask maps"],
         )
+        self.assertEqual(
+            extract_candidate_topics(
+                "Manus Agents for Telegram: Personal AI Agent in Your Chat",
+                source_name="producthunt",
+            ),
+            ["manus agents for telegram"],
+        )
 
     def test_extract_candidate_topics_drops_ambiguous_conversational_reddit_titles(self) -> None:
         topics = extract_candidate_topics(

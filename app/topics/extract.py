@@ -687,7 +687,12 @@ def is_meaningful_product_hunt_name(topic_name: str) -> bool:
     tokens = topic_name.split()
     if len(tokens) == 1:
         return len(tokens[0]) >= 3 and tokens[0] not in LOW_SIGNAL_BIGRAM_TOKENS
-    return len(tokens) <= 3 and tokens[-1] not in LOW_SIGNAL_BIGRAM_TOKENS
+    non_connector_tokens = [token for token in tokens if token not in ENTITY_SPAN_CONNECTOR_TOKENS]
+    if len(non_connector_tokens) < 2 or len(tokens) > MAX_ENTITY_SPAN_TOKENS:
+        return False
+    if any(token in LOW_SIGNAL_BIGRAM_TOKENS for token in non_connector_tokens):
+        return False
+    return True
 
 
 def is_meaningful_candidate_for_source(topic_name: str, source_name: str | None, strategy: str) -> bool:
