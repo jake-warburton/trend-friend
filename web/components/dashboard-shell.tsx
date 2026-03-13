@@ -1982,7 +1982,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 
                         <div className="explorer-metric-card">
                           <span className="explorer-metric-label">Change vs last run</span>
-                          <strong className={movementClassName(trend.rankChange)}>
+                          <strong className={`explorer-metric-value ${movementClassName(trend.rankChange)}`}>
                             {formatMomentumHeadline(trend)}
                           </strong>
                           <small className="explorer-metric-copy">{formatMomentumDetail(trend)}</small>
