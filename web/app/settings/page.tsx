@@ -5,6 +5,7 @@ import { SettingsPreferences } from "@/components/settings-preferences";
 import {
   buildEnrichmentProviderStatuses,
   ESTIMATED_METRICS_COOKIE,
+  LIGHT_THEME,
   readEstimatedMetricsPreference,
   readThemePreference,
   THEME_COOKIE,
@@ -13,14 +14,14 @@ import {
 
 export default async function SettingsPage() {
   let showEstimatedMetrics = true;
-  let selectedTheme = readThemePreference(undefined);
+  let selectedTheme = LIGHT_THEME;
   try {
     const cookieStore = await cookies();
     showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
-    selectedTheme = readThemePreference(cookieStore.get(THEME_COOKIE)?.value);
+    selectedTheme = readThemePreference(cookieStore.get(THEME_COOKIE)?.value) ?? LIGHT_THEME;
   } catch {
     showEstimatedMetrics = true;
-    selectedTheme = readThemePreference(undefined);
+    selectedTheme = LIGHT_THEME;
   }
   const providerStatuses = buildEnrichmentProviderStatuses(process.env);
 

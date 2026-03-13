@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-import { ESTIMATED_METRICS_COOKIE, getThemeClass, THEME_COOKIE, type ThemeOption } from "@/lib/settings";
+import {
+  ESTIMATED_METRICS_COOKIE,
+  getDefaultThemeForScheme,
+  getThemeClass,
+  readThemePreference,
+  THEME_COOKIE,
+  type ThemeOption,
+} from "@/lib/settings";
 
 type SettingsPreferencesProps = {
   initialShowEstimatedMetrics: boolean;
@@ -17,6 +24,22 @@ export function SettingsPreferences({
 }: SettingsPreferencesProps) {
   const [showEstimatedMetrics, setShowEstimatedMetrics] = useState(initialShowEstimatedMetrics);
   const [selectedTheme, setSelectedTheme] = useState(initialTheme);
+
+  useEffect(() => {
+    const storedTheme = readThemePreference(
+      document.cookie
+        .split("; ")
+        .find((entry) => entry.startsWith(`${THEME_COOKIE}=`))
+        ?.split("=")
+        .slice(1)
+        .join("="),
+    );
+    if (storedTheme) {
+      setSelectedTheme(storedTheme);
+      return;
+    }
+    setSelectedTheme(getDefaultThemeForScheme(window.matchMedia("(prefers-color-scheme: dark)").matches));
+  }, []);
 
   useEffect(() => {
     const nextThemeClass = getThemeClass(selectedTheme);

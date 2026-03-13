@@ -5,7 +5,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import SettingsPage from "@/app/settings/page";
 import {
   buildEnrichmentProviderStatuses,
+  getDefaultThemeForScheme,
   getThemeClass,
+  LIGHT_THEME,
   readEstimatedMetricsPreference,
   readThemePreference,
   THEME_OPTIONS,
@@ -18,9 +20,9 @@ test("settings page renders preferences and enrichment status sections", async (
   assert.match(html, /Back to explorer/);
   assert.match(html, /UI preferences/);
   assert.match(html, /Interface theme/);
-  assert.match(html, /Atlassian Light/);
-  assert.match(html, /Ocean/);
+  assert.match(html, /Tech Light/);
   assert.match(html, /Soft Charcoal/);
+  assert.match(html, /Ocean/);
   assert.match(html, /Estimated market metrics/);
   assert.match(html, /Enrichment status/);
   assert.match(html, /Google search provider/);
@@ -49,9 +51,14 @@ test("readEstimatedMetricsPreference defaults on and honors explicit false", () 
 });
 
 test("theme helpers default safely and resolve CSS classes", () => {
-  assert.equal(readThemePreference(undefined), "atlassian-light");
+  assert.equal(readThemePreference(undefined), null);
   assert.equal(readThemePreference("ocean"), "ocean");
-  assert.equal(readThemePreference("unknown"), "atlassian-light");
+  assert.equal(readThemePreference("unknown"), null);
+  assert.equal(getDefaultThemeForScheme(false), LIGHT_THEME);
+  assert.equal(getDefaultThemeForScheme(true), "soft-charcoal");
   assert.equal(getThemeClass("soft-charcoal"), "theme-soft-charcoal");
+  assert.equal(THEME_OPTIONS[0]?.label, "Tech Light");
+  assert.equal(THEME_OPTIONS[1]?.key, "soft-charcoal");
+  assert.equal(THEME_OPTIONS[2]?.key, "ocean");
   assert.equal(THEME_OPTIONS.length, 3);
 });
