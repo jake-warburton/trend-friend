@@ -2678,7 +2678,7 @@ input {
 
 .detail-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(380px, 1.1fr);
   gap: 24px;
   border-top: 0;
   padding: 24px 0 0;
@@ -2767,6 +2767,10 @@ input {
 .detail-stat-item:last-child {
   padding-right: 0;
   border-right: 0;
+}
+
+.detail-stat-item:last-child strong {
+  white-space: nowrap;
 }
 
 .detail-stat-item:nth-child(2) {
