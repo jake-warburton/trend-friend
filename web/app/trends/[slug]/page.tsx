@@ -267,6 +267,19 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
               <h2>Platform signals</h2>
             </div>
           </div>
+          <div className="market-footprint-legend" aria-label="Metric source types">
+            <span className="market-footprint-legend-item">
+              <span className="market-footprint-legend-dot market-footprint-legend-dot-live" aria-hidden="true" />
+              Live provider metric
+            </span>
+            <span className="market-footprint-legend-item">
+              <span
+                className="market-footprint-legend-dot market-footprint-legend-dot-estimated"
+                aria-hidden="true"
+              />
+              Estimated fallback metric
+            </span>
+          </div>
 
           {visibleMarketFootprint.length > 0 ? (
             <div className="market-footprint-grid">

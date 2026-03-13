@@ -2772,6 +2772,37 @@ input {
   gap: 16px;
 }
 
+.market-footprint-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+
+.market-footprint-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.market-footprint-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.market-footprint-legend-dot-live {
+  background: var(--accent-strong);
+}
+
+.market-footprint-legend-dot-estimated {
+  border: 1px solid var(--warning-soft-text);
+  background: transparent;
+}
+
 .market-footprint-card {
   display: grid;
   gap: 8px;
@@ -3453,6 +3484,10 @@ input {
   .analytics-card:first-child {
     border-top: 0;
     padding-top: 0;
+  }
+
+  .market-footprint-legend {
+    margin-bottom: 12px;
   }
 
   .settings-toggle-row {
