@@ -2081,6 +2081,13 @@ input {
   padding-left: var(--explorer-left-inset);
 }
 
+.explorer-card-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .explorer-card-kicker {
   display: flex;
   flex-wrap: wrap;
@@ -2091,6 +2098,8 @@ input {
 .explorer-rank-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  align-self: center;
   padding: 3px 7px;
   border: 1px solid var(--explorer-kicker-border);
   border-radius: var(--radius-pill);
@@ -2103,15 +2112,21 @@ input {
 
 .trend-title-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .trend-title-row strong {
   font-size: 0.88rem;
   font-weight: 500;
   line-height: 1.08;
+  min-width: 0;
+}
+
+.trend-link {
+  display: block;
 }
 
 .explorer-card-meta,
@@ -3542,6 +3557,7 @@ input {
   }
 
   .explorer-card-head,
+  .explorer-card-title-line,
   .explorer-card-kicker,
   .trend-title-row,
   .explorer-card-meta,
@@ -3575,6 +3591,7 @@ input {
     padding-right: 34px;
   }
 
+  .explorer-card-title-line,
   .explorer-card-kicker,
   .trend-title-row,
   .explorer-card-meta,

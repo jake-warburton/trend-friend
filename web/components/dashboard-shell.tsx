@@ -1941,15 +1941,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 >
                   <div className="explorer-card-top">
                     <div className="trend-cell explorer-card-head">
-                      <div className="explorer-card-kicker">
+                      <div className="explorer-card-title-line">
                         <span className="explorer-rank-chip">#{trend.rank}</span>
-                      </div>
-                      <div className="trend-title-row">
-                        <strong>
-                          <Link className="trend-link" href={`/trends/${trend.id}`}>
-                            {trend.name}
-                          </Link>
-                        </strong>
+                        <div className="trend-title-row">
+                          <strong>
+                            <Link className="trend-link" href={`/trends/${trend.id}`}>
+                              {trend.name}
+                            </Link>
+                          </strong>
+                        </div>
                       </div>
                       <div className="explorer-card-meta">
                         <span>{trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}</span>
