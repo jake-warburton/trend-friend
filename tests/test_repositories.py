@@ -290,6 +290,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(ai_agents.meta_trend, "AI and automation")
         self.assertEqual(ai_agents.stage, "nascent")
         self.assertGreater(ai_agents.confidence, 0.35)
+        self.assertIn("AI Agents is a nascent", ai_agents.summary)
         self.assertEqual(ai_agents.volatility, "spiking")
         self.assertEqual(ai_agents.source_count, 2)
         self.assertEqual(ai_agents.signal_count, 2)
@@ -339,6 +340,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(records[0].meta_trend, "AI and automation")
         self.assertEqual(records[0].stage, "nascent")
         self.assertGreater(records[0].confidence, 0.35)
+        self.assertIn("AI Agents is a nascent", records[0].summary)
+        self.assertGreaterEqual(len(records[0].why_now), 2)
         self.assertEqual(records[0].volatility, "spiking")
         self.assertEqual(records[0].geo_summary[0].country_code, "GB")
         self.assertEqual(records[0].geo_summary[0].signal_count, 1)
@@ -420,6 +423,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(entity.meta_trend, "AI and automation")
         self.assertEqual(entity.stage, "nascent")
         self.assertGreater(entity.confidence, 0.0)
+        self.assertIn("AI Agents is a nascent", entity.summary)
+        self.assertGreaterEqual(len(entity.why_now), 1)
         self.assertEqual(entity.last_seen_at, datetime(2026, 3, 8, tzinfo=timezone.utc))
 
     def test_watchlist_repository_round_trip(self) -> None:

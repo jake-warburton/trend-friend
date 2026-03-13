@@ -164,6 +164,8 @@ class TrendEntity:
     meta_trend: str
     stage: str
     confidence: float
+    summary: str
+    why_now: list[str]
     first_seen_at: datetime | None
     last_seen_at: datetime
 
@@ -178,6 +180,7 @@ class TrendExplorerRecord:
     meta_trend: str
     stage: str
     confidence: float
+    summary: str
     status: str
     volatility: str
     rank: int
@@ -296,6 +299,8 @@ class TrendDetailRecord:
     meta_trend: str
     stage: str
     confidence: float
+    summary: str
+    why_now: list[str]
     status: str
     volatility: str
     rank: int

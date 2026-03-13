@@ -1650,6 +1650,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                       <div className="explorer-card-summary">
                         <span>{compactSummaryParts.join(" / ")}</span>
                       </div>
+                      {trend.summary ? <p className="source-summary-copy">{trend.summary}</p> : null}
                       {collapsedDriverSummary ? (
                         <div className="explorer-card-driver-line">
                           <span>{collapsedDriverSummary}</span>
@@ -1878,6 +1879,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 {detail.opportunity.reasoning[0] && (
                                   <p className="explorer-expand-reason">{detail.opportunity.reasoning[0]}</p>
                                 )}
+                                {detail.whyNow[0] ? (
+                                  <p className="explorer-expand-reason">{detail.whyNow[0]}</p>
+                                ) : null}
                                 {wikipediaLink ? (
                                   <p className="explorer-expand-reason">
                                     Wikipedia pageviews are concentrated on{" "}

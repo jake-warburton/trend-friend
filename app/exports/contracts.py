@@ -158,6 +158,7 @@ class TrendExplorerRecordPayload:
     meta_trend: str
     stage: str
     confidence: float
+    summary: str
     status: str
     volatility: str
     rank: int
@@ -286,6 +287,8 @@ class TrendDetailRecordPayload:
     meta_trend: str
     stage: str
     confidence: float
+    summary: str
+    why_now: list[str]
     status: str
     volatility: str
     rank: int
@@ -725,6 +728,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["primaryEvidence"] = payload.pop("primary_evidence")
     payload["relatedTrends"] = payload.pop("related_trends")
+    payload["whyNow"] = payload.pop("why_now")
     for point in payload["history"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")

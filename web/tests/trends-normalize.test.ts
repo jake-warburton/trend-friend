@@ -195,6 +195,7 @@ test("normalizeTrendExplorer defaults missing trend fields", () => {
   assert.equal(trend.metaTrend, "General");
   assert.equal(trend.stage, "steady");
   assert.equal(trend.confidence, 0);
+  assert.equal(trend.summary, "");
   assert.equal(trend.status, "steady");
   assert.equal(trend.volatility, "stable");
   assert.equal(trend.previousRank, null);
@@ -223,6 +224,7 @@ test("normalizeTrendExplorer preserves provided momentum and coverage", () => {
         metaTrend: "AI and automation",
         stage: "breakout",
         confidence: 0.91,
+        summary: "AI Agents is a breakout AI trend.",
         status: "breakout",
         volatility: "spiking",
         rank: 1,
@@ -246,6 +248,7 @@ test("normalizeTrendExplorer preserves provided momentum and coverage", () => {
   assert.equal(trend.metaTrend, "AI and automation");
   assert.equal(trend.stage, "breakout");
   assert.equal(trend.confidence, 0.91);
+  assert.equal(trend.summary, "AI Agents is a breakout AI trend.");
   assert.equal(trend.status, "breakout");
   assert.equal(trend.momentum.percentDelta, 40.2);
   assert.equal(trend.coverage.signalCount, 12);
@@ -273,6 +276,8 @@ test("normalizeTrendDetailRecord defaults breakout, forecast, and opportunity", 
   assert.equal(result.metaTrend, "General");
   assert.equal(result.stage, "steady");
   assert.equal(result.confidence, 0);
+  assert.equal(result.summary, "");
+  assert.deepEqual(result.whyNow, []);
   assert.equal(result.forecast, null);
   assert.deepEqual(result.opportunity, {
     composite: 0,
@@ -296,6 +301,8 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
     metaTrend: "AI and automation",
     stage: "breakout",
     confidence: 0.88,
+    summary: "AI Agents is a breakout AI trend.",
+    whyNow: ["Social signals are leading."],
     latestSignalAt: "2026-03-10T00:00:00Z",
     score: { total: 42, social: 15, developer: 10, knowledge: 6, search: 5, diversity: 6 },
     forecast: { predictedScores: [45, 48], confidence: "high", mape: 8.5, method: "holt" },
@@ -314,6 +321,8 @@ test("normalizeTrendDetailRecord normalizes existing forecast", () => {
   assert.equal(result.metaTrend, "AI and automation");
   assert.equal(result.stage, "breakout");
   assert.equal(result.confidence, 0.88);
+  assert.equal(result.summary, "AI Agents is a breakout AI trend.");
+  assert.deepEqual(result.whyNow, ["Social signals are leading."]);
   assert.equal(result.breakoutPrediction.confidence, 0.85);
   assert.equal(result.opportunity.composite, 7.5);
   assert.equal(result.opportunity.reasoning[0], "Strong momentum");

@@ -176,6 +176,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
+          {trend.summary ? <p className="detail-copy">{trend.summary}</p> : null}
           {wikipediaLink || primaryEvidenceLink?.evidenceUrl || trend.relatedTrends[0] ? (
             <div className="detail-action-links">
               {wikipediaLink ? (
@@ -238,6 +239,26 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
 
           <ScoreBreakdownChart score={trend.score} />
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Why now</p>
+              <h2>Current rationale</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {trend.whyNow.map((reason, index) => (
+              <article className="detail-list-item" key={`${trend.id}-why-now-${index}`}>
+                <div>
+                  <strong>Signal {index + 1}</strong>
+                  <span>{reason}</span>
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="detail-panel">

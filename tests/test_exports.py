@@ -147,6 +147,7 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["metaTrend"], "AI and automation")
         self.assertEqual(payload["trends"][0]["stage"], "breakout")
         self.assertEqual(payload["trends"][0]["confidence"], 0.86)
+        self.assertIn("AI Agents is a breakout", payload["trends"][0]["summary"])
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["previousRank"], 4)
         self.assertEqual(payload["trends"][0]["rankChange"], 3)
@@ -174,6 +175,8 @@ class ExportPayloadTests(unittest.TestCase):
         self.assertEqual(payload["trends"][0]["metaTrend"], "AI and automation")
         self.assertEqual(payload["trends"][0]["stage"], "breakout")
         self.assertEqual(payload["trends"][0]["confidence"], 0.86)
+        self.assertIn("AI Agents is a breakout", payload["trends"][0]["summary"])
+        self.assertIn("Cross-source confirmation", payload["trends"][0]["whyNow"][1])
         self.assertEqual(payload["trends"][0]["volatility"], "spiking")
         self.assertEqual(payload["trends"][0]["history"][0]["capturedAt"], "2026-03-07T00:00:00Z")
         self.assertEqual(payload["trends"][0]["history"][0]["scoreTotal"], 20.4)
@@ -319,6 +322,7 @@ def build_explorer_record(topic: str) -> TrendExplorerRecord:
         meta_trend="AI and automation",
         stage="breakout",
         confidence=0.86,
+        summary="AI Agents is a breakout artificial intelligence trend validated by 2 signals across 2 sources.",
         status="breakout",
         volatility="spiking",
         rank=1,
@@ -380,6 +384,12 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
         meta_trend="AI and automation",
         stage="breakout",
         confidence=0.86,
+        summary="AI Agents is a breakout artificial intelligence trend validated by 2 signals across 2 sources.",
+        why_now=[
+            "Social signals are leading the move (18.2 score).",
+            "Cross-source confirmation is present across 2 sources.",
+            "The trend improved by 3 ranking positions since the previous run.",
+        ],
         status="breakout",
         volatility="spiking",
         rank=1,

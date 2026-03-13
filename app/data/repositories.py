@@ -1602,7 +1602,8 @@ class TrendScoreRepository:
 
         row = self.connection.execute(
             """
-            SELECT topic_key, canonical_name, category, meta_trend, stage, confidence, first_seen_at, last_seen_at
+            SELECT topic_key, canonical_name, category, meta_trend, stage, confidence, summary, why_now_json,
+                   first_seen_at, last_seen_at
             FROM trend_entities
             WHERE topic_key = ?
             """,
@@ -1788,6 +1789,7 @@ class TrendScoreRepository:
                     meta_trend=entity.meta_trend,
                     stage=entity.stage,
                     confidence=entity.confidence,
+                    summary=entity.summary,
                     status=self._build_trend_status(momentum),
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -1881,6 +1883,8 @@ class TrendScoreRepository:
                     meta_trend=entity.meta_trend,
                     stage=entity.stage,
                     confidence=entity.confidence,
+                    summary=entity.summary,
+                    why_now=entity.why_now,
                     status=status_by_topic[score.topic],
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -2161,9 +2165,10 @@ class TrendScoreRepository:
         self.connection.executemany(
             """
             INSERT INTO trend_entities (
-                topic_key, canonical_name, category, meta_trend, stage, confidence, first_seen_at, last_seen_at
+                topic_key, canonical_name, category, meta_trend, stage, confidence, summary, why_now_json,
+                first_seen_at, last_seen_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(topic_key)
             DO UPDATE SET
                 canonical_name = excluded.canonical_name,
@@ -2171,6 +2176,8 @@ class TrendScoreRepository:
                 meta_trend = excluded.meta_trend,
                 stage = excluded.stage,
                 confidence = excluded.confidence,
+                summary = excluded.summary,
+                why_now_json = excluded.why_now_json,
                 first_seen_at = COALESCE(trend_entities.first_seen_at, excluded.first_seen_at),
                 last_seen_at = excluded.last_seen_at,
                 updated_at = CURRENT_TIMESTAMP
@@ -2193,9 +2200,10 @@ class TrendScoreRepository:
         self.connection.execute(
             """
             INSERT INTO trend_entities (
-                topic_key, canonical_name, category, meta_trend, stage, confidence, first_seen_at, last_seen_at
+                topic_key, canonical_name, category, meta_trend, stage, confidence, summary, why_now_json,
+                first_seen_at, last_seen_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(topic_key)
             DO UPDATE SET
                 canonical_name = excluded.canonical_name,
@@ -2203,6 +2211,8 @@ class TrendScoreRepository:
                 meta_trend = excluded.meta_trend,
                 stage = excluded.stage,
                 confidence = excluded.confidence,
+                summary = excluded.summary,
+                why_now_json = excluded.why_now_json,
                 first_seen_at = COALESCE(trend_entities.first_seen_at, excluded.first_seen_at),
                 last_seen_at = excluded.last_seen_at,
                 updated_at = CURRENT_TIMESTAMP
@@ -2230,6 +2240,8 @@ class TrendScoreRepository:
             self._build_meta_trend(category),
             self._build_trend_stage(momentum, len(ordered_history), score.total_score),
             self._build_trend_confidence(score, ordered_history),
+            self._build_trend_summary(score, category, momentum, len(ordered_history)),
+            json.dumps(self._build_why_now(score, momentum, len(ordered_history))),
             first_seen_at.isoformat() if first_seen_at is not None else None,
             score.latest_timestamp.isoformat(),
         )
@@ -2245,6 +2257,8 @@ class TrendScoreRepository:
             meta_trend=row["meta_trend"],
             stage=row["stage"],
             confidence=round(float(row["confidence"] or 0.0), 3),
+            summary=row["summary"] or "",
+            why_now=list(json.loads(row["why_now_json"] or "[]")),
             first_seen_at=datetime.fromisoformat(row["first_seen_at"]) if row["first_seen_at"] else None,
             last_seen_at=datetime.fromisoformat(row["last_seen_at"]),
         )
@@ -2253,7 +2267,7 @@ class TrendScoreRepository:
     def _trend_entity_from_tuple(row: tuple[object, ...]) -> TrendEntity:
         """Build a trend entity from an upsert tuple."""
 
-        first_seen_at = row[6]
+        first_seen_at = row[8]
         return TrendEntity(
             topic_key=str(row[0]),
             canonical_name=str(row[1]),
@@ -2261,8 +2275,10 @@ class TrendScoreRepository:
             meta_trend=str(row[3]),
             stage=str(row[4]),
             confidence=round(float(row[5]), 3),
+            summary=str(row[6]),
+            why_now=list(json.loads(str(row[7]))),
             first_seen_at=datetime.fromisoformat(str(first_seen_at)) if first_seen_at else None,
-            last_seen_at=datetime.fromisoformat(str(row[7])),
+            last_seen_at=datetime.fromisoformat(str(row[9])),
         )
 
     @staticmethod
@@ -2398,6 +2414,56 @@ class TrendScoreRepository:
         return round(min(1.0, confidence), 3)
 
     @staticmethod
+    def _build_trend_summary(
+        score: TrendScoreResult,
+        category: str,
+        momentum: TrendMomentum,
+        history_length: int,
+    ) -> str:
+        """Return a compact reusable database summary for a trend."""
+
+        category_label = category.replace("-", " ")
+        source_count = len(score.source_counts)
+        signal_count = sum(score.source_counts.values())
+        stage = TrendScoreRepository._build_trend_stage(momentum, history_length, score.total_score)
+        return (
+            f"{build_display_name(score.topic, score.evidence)} is a {stage} {category_label} trend "
+            f"validated by {signal_count} signals across {source_count} sources."
+        )
+
+    @staticmethod
+    def _build_why_now(
+        score: TrendScoreResult,
+        momentum: TrendMomentum,
+        history_length: int,
+    ) -> list[str]:
+        """Return concise rationale bullets explaining why the trend currently matters."""
+
+        reasons: list[str] = []
+        dominant_component = max(
+            (
+                ("social", score.social_score),
+                ("developer", score.developer_score),
+                ("knowledge", score.knowledge_score),
+                ("search", score.search_score),
+            ),
+            key=lambda item: item[1],
+        )
+        if dominant_component[1] > 0:
+            reasons.append(
+                f"{dominant_component[0].title()} signals are leading the move ({dominant_component[1]:.1f} score)."
+            )
+        if len(score.source_counts) >= 2:
+            reasons.append(f"Cross-source confirmation is present across {len(score.source_counts)} sources.")
+        if (momentum.rank_change or 0) > 0:
+            reasons.append(f"The trend improved by {momentum.rank_change} ranking positions since the previous run.")
+        elif (momentum.percent_delta or 0) > 0:
+            reasons.append(f"Total score is up {momentum.percent_delta:.1f}% versus the previous run.")
+        if history_length <= 2:
+            reasons.append("The trend is still early in its lifecycle, so competition may still be thin.")
+        return reasons[:3] or ["The trend is active, but the current run has limited explanatory evidence."]
+
+    @staticmethod
     def _slugify_topic(topic: str) -> str:
         """Convert a topic to a stable slug identifier."""
 
@@ -2460,6 +2526,8 @@ class TrendScoreRepository:
                 meta_trend=record.meta_trend,
                 stage=record.stage,
                 confidence=record.confidence,
+                summary=record.summary,
+                why_now=record.why_now,
                 status=record.status,
                 volatility=record.volatility,
                 rank=record.rank,
