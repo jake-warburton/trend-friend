@@ -83,7 +83,10 @@ def scaled_component_score(
     signal_count = aggregate.signal_counts.get(signal_type, 0)
     if signal_count == 0 or weight == 0:
         return 0.0
-    return log10(aggregate.total_signal_value + 1) * signal_count * weight * 10
+    total_signal_value = max(aggregate.total_signal_value, 0.0)
+    if total_signal_value == 0.0:
+        return 0.0
+    return log10(total_signal_value + 1.0) * signal_count * weight * 10
 
 
 def topic_quality_adjustment(aggregate: TopicAggregate, reference_time: datetime) -> float:
@@ -153,7 +156,8 @@ def velocity_adjustment(aggregate: TopicAggregate) -> float:
 
     corroborated_count = sum(aggregate.source_counts.values())
     density = min(1.0, corroborated_count / 6.0)
-    value_score = min(1.0, log10(aggregate.average_signal_value + 1) / 3.0)
+    average_signal_value = max(aggregate.average_signal_value, 0.0)
+    value_score = min(1.0, log10(average_signal_value + 1.0) / 3.0)
     return round((density * 0.45 + value_score * 0.55) * MAX_VELOCITY_BONUS, 2)
 
 

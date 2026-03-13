@@ -6,7 +6,7 @@ import unittest
 from datetime import datetime, timezone
 
 from app.models import TopicAggregate, TrendScoreResult
-from app.scoring.calculator import calculate_trend_scores
+from app.scoring.calculator import calculate_trend_scores, velocity_adjustment
 from app.scoring.ranking import rank_experimental_topics, rank_topics_by_score
 
 
@@ -78,6 +78,35 @@ class TrendScoringTests(unittest.TestCase):
         fresh_score, stale_score = calculate_trend_scores([fresh, stale])
 
         self.assertGreater(fresh_score.total_score, stale_score.total_score)
+
+    def test_calculate_trend_scores_handles_negative_aggregate_values(self) -> None:
+        aggregate = TopicAggregate(
+            topic="prediction market anomaly",
+            source_counts={"polymarket": 1},
+            signal_counts={"social": 1},
+            total_signal_value=-5.0,
+            average_signal_value=-5.0,
+            latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            evidence=["Prediction market anomaly"],
+        )
+
+        score = calculate_trend_scores([aggregate])[0]
+
+        self.assertEqual(score.social_score, 0.0)
+        self.assertGreaterEqual(score.total_score, 0.0)
+
+    def test_velocity_adjustment_handles_negative_average_signal_value(self) -> None:
+        aggregate = TopicAggregate(
+            topic="prediction market anomaly",
+            source_counts={"polymarket": 1},
+            signal_counts={"social": 1},
+            total_signal_value=5.0,
+            average_signal_value=-5.0,
+            latest_timestamp=datetime(2026, 3, 8, tzinfo=timezone.utc),
+            evidence=["Prediction market anomaly"],
+        )
+
+        self.assertGreaterEqual(velocity_adjustment(aggregate), 0.0)
 
     def test_rank_topics_by_score_is_deterministic(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
