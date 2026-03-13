@@ -99,6 +99,17 @@ class TopicNormalizationTests(unittest.TestCase):
             extract_candidate_topics("Were Reimagining Iran War Coverage", source_name="reddit"),
             ["iran war"],
         )
+        self.assertEqual(
+            extract_candidate_topics("Bucketsquatting is finally dead", source_name="lobsters"),
+            ["bucketsquatting"],
+        )
+        topics = extract_candidate_topics(
+            "[R] biomarker peak detection using machine learning - wanna collaborate?",
+            source_name="reddit",
+        )
+        self.assertIn("peak detection", topics)
+        self.assertNotIn("wanna collaborate", topics)
+        self.assertNotIn("learning wanna", topics)
 
     def test_extract_candidate_topics_limits_single_headline_fan_out(self) -> None:
         topics = extract_candidate_topics(
@@ -324,6 +335,33 @@ class TopicNormalizationTests(unittest.TestCase):
 
         self.assertIn("ai agents", [signal.topic for signal in signals])
         self.assertIn("observability", [signal.topic for signal in signals])
+
+    def test_build_signals_from_items_blocks_structural_metadata_labels(self) -> None:
+        timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
+        items = [
+            RawSourceItem(
+                source="huggingface",
+                external_id="hf-1",
+                title="FrameAI4687/Omni-Video-Factory image generation",
+                url="https://huggingface.co/FrameAI4687/Omni-Video-Factory",
+                timestamp=timestamp,
+                engagement_score=160.0,
+                metadata={
+                    "tags": ["region:us", "language:en", "license:apache-2.0", "image-generation"],
+                    "pipeline_tag": "task-categories:text-generation",
+                    "package_name": "omni-video-factory",
+                },
+            )
+        ]
+
+        signals = build_signals_from_items(items)
+        topics = [signal.topic for signal in signals]
+
+        self.assertIn("omni-video-factory", topics)
+        self.assertNotIn("region us", topics)
+        self.assertNotIn("language en", topics)
+        self.assertNotIn("license apache 2 0", topics)
+        self.assertFalse(any(topic.replace("-", " ").startswith("task categories") for topic in topics))
 
     def test_extract_candidate_topics_uses_tighter_limits_for_curated_feed_headlines(self) -> None:
         topics = extract_candidate_topics(

@@ -108,19 +108,35 @@ NOISE_TAIL_TOKENS = {
 GENERIC_MULTIWORD_TOPICS = {
     "developer platform",
     "developer tools",
+    "finally dead",
     "machine learning",
     "new model",
     "open source",
     "python package",
     "repeatable instructions",
     "video tutorial",
+    "wanna collaborate",
 }
 GENERIC_PHRASE_FRAGMENTS = {
     "alone journey",
+    "also awful",
     "capabilities repeatable",
+    "down again",
     "feel really alone",
     "not promote",
     "really alone",
+}
+GENERIC_SINGLE_TOKEN_TOPICS = {
+    "automation",
+    "browsers",
+    "core",
+    "editors",
+    "privacy",
+    "programming",
+    "startup",
+    "static",
+    "struct",
+    "workflow",
 }
 
 
@@ -175,7 +191,11 @@ def is_meaningful_topic(topic_name: str) -> bool:
         return False
     tokens = topic_name.split()
     if len(tokens) == 1:
-        return len(tokens[0]) >= 4 and tokens[0] not in STOP_WORDS
+        return (
+            len(tokens[0]) >= 4
+            and tokens[0] not in STOP_WORDS
+            and tokens[0] not in GENERIC_SINGLE_TOKEN_TOPICS
+        )
     if topic_name in GENERIC_MULTIWORD_TOPICS:
         return False
     if topic_name in GENERIC_PHRASE_FRAGMENTS:

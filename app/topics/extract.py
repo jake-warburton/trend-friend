@@ -143,6 +143,7 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "everything",
     "extend",
     "extends",
+    "finally",
     "film",
     "find",
     "have",
@@ -193,9 +194,12 @@ LOW_SIGNAL_BIGRAM_TOKENS = {
     "walking",
     "were",
     "will",
+    "wanna",
     "years",
     "you",
     "your",
+    "dead",
+    "collaborate",
     "dont",
     "mention",
 }
@@ -235,6 +239,14 @@ GENERIC_METADATA_TOPICS = {
     "tools",
     "youtube channel",
 }
+GENERIC_METADATA_PREFIXES = (
+    "format ",
+    "language ",
+    "license ",
+    "region ",
+    "size categories ",
+    "task categories ",
+)
 NOISY_FALLBACK_SOURCES = {
     "curated_feeds",
     "google_news",
@@ -774,11 +786,21 @@ def infer_metadata_topics(item: RawSourceItem) -> list[str]:
                 not normalized
                 or normalized in metadata_topics
                 or normalized in GENERIC_METADATA_TOPICS
+                or is_blocked_metadata_topic(normalized)
                 or not is_meaningful_topic(normalized)
             ):
                 continue
             metadata_topics.append(normalized)
     return metadata_topics
+
+
+def is_blocked_metadata_topic(topic_name: str) -> bool:
+    """Return True for structural metadata labels that should not become trends."""
+
+    normalized_label = topic_name.replace("-", " ")
+    if normalized_label.startswith(GENERIC_METADATA_PREFIXES):
+        return True
+    return normalized_label in {"language en", "region us"}
 
 
 def build_ranked_candidates(topics: list[str], strategy: str, confidence: float) -> list[ExtractedTopicCandidate]:
