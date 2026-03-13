@@ -1102,15 +1102,11 @@ input {
 }
 
 .thesis-filters-panel {
+  display: grid;
   grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
   margin-bottom: 10px;
-}
-
-.advanced-filters-panel {
-  margin-bottom: 12px;
-  border: 1px solid var(--panel-raised-border);
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--surface-panel-strong) 78%, transparent 22%);
 }
 
 .advanced-filters-panel summary {
@@ -1150,8 +1146,22 @@ input {
   transform: rotate(180deg);
 }
 
-.advanced-filters-panel .filters-panel {
+.advanced-filters-panel {
+  margin-bottom: 12px;
+  border: 1px solid var(--panel-raised-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-panel-strong) 78%, transparent 22%);
+}
+
+.advanced-filters-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 0;
   padding: 0 16px 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .filter-field {

@@ -1543,7 +1543,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           </div>
 
           <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
-            <section className="filters-panel thesis-filters-panel">
+            <section className="thesis-filters-panel">
               <div className="filter-field filter-field-wide thesis-filter-block">
                 <span>Thesis presets</span>
                 <div className="thesis-presets-grid">
@@ -1601,7 +1601,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   ▾
                 </span>
               </summary>
-              <section className="filters-panel filters-panel-wide">
+              <section className="advanced-filters-grid filters-panel-wide">
                 <label className="filter-field">
                   <span>Keyword</span>
                   <Input
