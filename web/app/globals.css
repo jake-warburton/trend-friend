@@ -2766,6 +2766,42 @@ input {
   padding: 22px 0 0;
 }
 
+.settings-panel {
+  padding-top: 28px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+}
+
+.settings-card {
+  padding: 18px 0 22px;
+  border-top: 1px solid var(--panel-raised-border);
+}
+
+.settings-card header {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.settings-card h2 {
+  margin: 0;
+  font-size: var(--type-size-lg);
+  font-weight: var(--type-weight-medium);
+}
+
+.settings-card-body {
+  min-height: 72px;
+}
+
+.settings-card-body p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .detail-stat-item {
   display: grid;
   gap: 4px;
@@ -3280,6 +3316,7 @@ input {
   .compare-grid,
   .filters-panel,
   .detail-grid,
+  .settings-grid,
   .detail-hero,
   .community-spotlight-grid,
   .community-rail-list,

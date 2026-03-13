@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "Explorer", href: "/" },
+  { label: "Settings", href: "/settings" },
 ] as const;
 
 export function NavBar() {
