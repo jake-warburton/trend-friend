@@ -210,7 +210,6 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.008), transparent 24%);
 }
 
-:root,
 .theme-atlassian-light {
   --bg: #f7f8f9;
   --bg-accent: #ffffff;
@@ -353,6 +352,13 @@
 html.theme-atlassian-light,
 html.theme-atlassian-light body {
   color-scheme: light;
+}
+
+html.theme-soft-charcoal,
+html.theme-soft-charcoal body,
+html.theme-ocean,
+html.theme-ocean body {
+  color-scheme: dark;
 }
 
 * {
