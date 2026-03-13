@@ -336,6 +336,33 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(len(latest_experimental), 1)
         self.assertEqual(latest_experimental[0].topic, experimental_score.topic)
 
+    def test_trend_score_repository_only_persists_market_footprint_for_published_topics(self) -> None:
+        captured_at = datetime(2026, 3, 9, tzinfo=timezone.utc)
+        SignalRepository(self.connection).replace_signals(
+            [
+                NormalizedSignal(
+                    "ai agents",
+                    "github",
+                    "developer",
+                    9.0,
+                    captured_at,
+                    "GitHub evidence",
+                )
+            ]
+        )
+        repository = TrendScoreRepository(self.connection)
+        published_score = build_score(topic="ai agents", total_score=20.0)
+        experimental_score = build_score(topic="google workspace cli", total_score=14.0)
+
+        repository.append_snapshot(
+            [published_score, experimental_score],
+            captured_at=captured_at,
+            published_topics={published_score.topic},
+        )
+
+        self.assertTrue(repository.get_topic_market_footprint("ai agents"))
+        self.assertEqual(repository.get_topic_market_footprint("google workspace cli"), [])
+
     def test_trend_score_repository_builds_explorer_records_with_movement(self) -> None:
         repository = TrendScoreRepository(self.connection)
         previous_captured_at = datetime(2026, 3, 8, tzinfo=timezone.utc)

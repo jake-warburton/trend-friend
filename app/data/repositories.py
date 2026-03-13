@@ -2128,7 +2128,8 @@ class TrendScoreRepository:
             ],
         )
         self._upsert_trend_entities(scores, published_topics=published_topics)
-        self.refresh_trend_metric_snapshots(scores, captured_at=captured_at)
+        published_scores = [score for score in scores if score.topic in published_topics]
+        self.refresh_trend_metric_snapshots(published_scores, captured_at=captured_at)
         self.connection.commit()
         return run_id
 
