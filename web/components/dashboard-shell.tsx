@@ -1736,17 +1736,17 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </Select.Root>
                 </label>
 
-                <div className="filter-field filter-field-wide">
+                <div className="filter-field filter-field-wide thesis-filter-block">
                   <span>Thesis presets</span>
-                  <div className="curated-list">
+                  <div className="thesis-presets-grid">
                     {THESIS_PRESETS.map((preset) => (
                       <button
-                        className="curated-item curated-item-button"
+                        className="thesis-preset-card"
                         key={preset.key}
                         onClick={() => applyThesisPreset(preset)}
                         type="button"
                       >
-                        <span>{preset.label}</span>
+                        <strong>{preset.label}</strong>
                         <small>{preset.description}</small>
                       </button>
                     ))}
@@ -1754,16 +1754,16 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </div>
 
                 {!watchlistsRequireAuth && defaultWatchlist != null ? (
-                  <div className="filter-field filter-field-wide">
+                  <div className="filter-field filter-field-wide thesis-filter-block">
                     <span>Save current thesis</span>
-                    <div className="watchlist-form watchlist-form-stack">
+                    <div className="thesis-save-panel">
                       <Input
                         className="text-input"
                         placeholder="Name this thesis"
                         value={thesisName}
                         onChange={(event) => setThesisName(event.target.value)}
                       />
-                      <div className="watchlist-form">
+                      <div className="thesis-save-actions">
                         <button
                           className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
                           onClick={() => setNotifyOnMatch((current) => !current)}

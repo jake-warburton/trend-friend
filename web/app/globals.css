@@ -1106,6 +1106,10 @@ input {
   gap: 7px;
 }
 
+.filter-field-wide {
+  grid-column: span 2;
+}
+
 .filter-field > span {
   font-size: 0.62rem;
   font-weight: 700;
@@ -1509,6 +1513,48 @@ input {
   font-family: inherit;
 }
 
+.thesis-filter-block {
+  align-content: start;
+}
+
+.thesis-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.thesis-preset-card {
+  display: grid;
+  gap: 6px;
+  min-height: 92px;
+  padding: 14px;
+  border: 1px solid var(--panel-raised-border);
+  border-radius: 16px;
+  background: var(--surface-panel-strong);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.thesis-preset-card:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--surface-panel-strong) 82%, var(--accent-soft) 18%);
+  transform: translateY(-1px);
+}
+
+.thesis-preset-card strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.thesis-preset-card small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
 .watch-toggle,
 .mini-action-button {
   border: 1px solid rgba(140, 160, 190, 0.12);
@@ -1553,6 +1599,22 @@ input {
 
 .watchlist-form .mini-action-button + .mini-action-button {
   margin-left: 6px;
+}
+
+.thesis-save-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.thesis-save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.thesis-save-actions .mini-action-button {
+  margin-left: 0;
 }
 
 .watchlist-items {
@@ -3036,6 +3098,14 @@ input {
     grid-template-columns: 1fr;
   }
 
+  .filter-field-wide {
+    grid-column: auto;
+  }
+
+  .thesis-presets-grid {
+    grid-template-columns: 1fr;
+  }
+
   .detail-panel-wide {
     grid-column: auto;
   }
@@ -3212,6 +3282,10 @@ input {
 
   .filter-checkbox-field,
   .filter-field-action {
+    grid-column: 1 / -1;
+  }
+
+  .filter-field-wide {
     grid-column: 1 / -1;
   }
 
