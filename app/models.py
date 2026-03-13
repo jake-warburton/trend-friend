@@ -390,6 +390,7 @@ class SourceSummaryRecord:
     """Detailed source health and contribution summary."""
 
     source: str
+    family: str
     status: str
     latest_fetch_at: datetime | None
     latest_success_at: datetime | None

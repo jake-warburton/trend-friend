@@ -441,6 +441,7 @@ class DashboardOverviewSourcePayload:
     """Source-level aggregate for overview and source health summary."""
 
     source: str
+    family: str
     signal_count: int
     trend_count: int
     status: str
@@ -623,6 +624,7 @@ class SourceSummaryRecordPayload:
     """Detailed source summary for source health pages."""
 
     source: str
+    family: str
     status: str
     latest_fetch_at: str | None
     latest_success_at: str | None

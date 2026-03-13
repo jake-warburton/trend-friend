@@ -103,6 +103,7 @@ test("normalizeDashboardOverview defaults missing source quality fields", () => 
   assert.equal(result.sources[0].rawTopicCount, 0);
   assert.equal(result.sources[0].mergedTopicCount, 0);
   assert.equal(result.sources[0].duplicateTopicRate, 0);
+  assert.equal(result.sources[0].family, "other");
 });
 
 test("normalizeDashboardOverview preserves provided values", () => {
@@ -451,6 +452,7 @@ test("normalizeSourceSummary defaults missing source fields", () => {
   const source = result.sources[0];
 
   assert.equal(source.status, "stale");
+  assert.equal(source.family, "other");
   assert.equal(source.latestFetchAt, null);
   assert.equal(source.signalCount, 0);
   assert.equal(source.trendCount, 0);

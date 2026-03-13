@@ -55,12 +55,16 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
           <p className="eyebrow">Source health</p>
           <h1>{formatSourceLabel(summary.source)}</h1>
           <p className="detail-copy">
-            {summary.signalCount} signals across {summary.trendCount} trends. Latest fetch{" "}
+            {formatSourceFamilyLabel(summary.family)} family · {summary.signalCount} signals across {summary.trendCount} trends. Latest fetch{" "}
             {summary.latestFetchAt ? formatTimestamp(summary.latestFetchAt) : "not recorded"}.
           </p>
         </div>
 
         <div className="detail-meta-grid">
+          <div className="stat-card">
+            <span>Family</span>
+            <strong>{formatSourceFamilyLabel(summary.family)}</strong>
+          </div>
           <div className="stat-card">
             <span>Status</span>
             <strong>{formatSourceStatus(summary.status)}</strong>
@@ -324,6 +328,24 @@ function formatSourceLabel(source: string) {
     return labels[source];
   }
   return source
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatSourceFamilyLabel(family: string) {
+  const labels: Record<string, string> = {
+    community: "Community",
+    developer: "Developer",
+    knowledge: "Knowledge",
+    launch: "Launch",
+    market: "Market",
+    news: "News",
+    research: "Research",
+    search: "Search",
+    social: "Social",
+  };
+  return labels[family] ?? family
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");

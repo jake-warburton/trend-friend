@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildSourceFamilyInsights,
   buildSourceContributionInsights,
   buildSourceWatchlist,
   getSourceFreshnessBadge,
@@ -12,6 +13,7 @@ test("buildSourceWatchlist prioritizes failed and fallback sources", () => {
   const items = buildSourceWatchlist([
     {
       source: "reddit",
+      family: "community",
       status: "healthy",
       usedFallback: false,
       errorMessage: null,
@@ -20,6 +22,7 @@ test("buildSourceWatchlist prioritizes failed and fallback sources", () => {
     },
     {
       source: "github",
+      family: "developer",
       status: "degraded",
       usedFallback: true,
       errorMessage: null,
@@ -28,6 +31,7 @@ test("buildSourceWatchlist prioritizes failed and fallback sources", () => {
     },
     {
       source: "hacker_news",
+      family: "community",
       status: "stale",
       usedFallback: false,
       errorMessage: "timeout",
@@ -68,6 +72,7 @@ test("buildSourceContributionInsights merges source health with contribution det
     [
       {
         source: "github",
+        family: "developer",
         status: "healthy",
         latestFetchAt: "2026-03-11T21:01:00Z",
         latestSuccessAt: "2026-03-11T21:01:00Z",
@@ -81,6 +86,7 @@ test("buildSourceContributionInsights merges source health with contribution det
       },
       {
         source: "reddit",
+        family: "community",
         status: "degraded",
         latestFetchAt: "2026-03-11T21:01:00Z",
         latestSuccessAt: "2026-03-11T21:01:00Z",
@@ -149,6 +155,7 @@ test("buildSourceWatchlist flags low-yield but otherwise healthy sources", () =>
   const items = buildSourceWatchlist([
     {
       source: "reddit",
+      family: "community",
       status: "healthy",
       usedFallback: false,
       errorMessage: null,
@@ -157,6 +164,7 @@ test("buildSourceWatchlist flags low-yield but otherwise healthy sources", () =>
     },
     {
       source: "google_trends",
+      family: "search",
       status: "healthy",
       usedFallback: false,
       errorMessage: null,
@@ -165,6 +173,7 @@ test("buildSourceWatchlist flags low-yield but otherwise healthy sources", () =>
     },
     {
       source: "wikipedia",
+      family: "knowledge",
       status: "healthy",
       usedFallback: false,
       errorMessage: null,
@@ -178,6 +187,52 @@ test("buildSourceWatchlist flags low-yield but otherwise healthy sources", () =>
     [
       ["reddit", "warning", "Low kept yield from recent fetches"],
       ["google_trends", "info", "Mixed kept yield from recent fetches"],
+    ],
+  );
+});
+
+test("buildSourceFamilyInsights groups sources into sortable family rollups", () => {
+  const families = buildSourceFamilyInsights([
+    {
+      source: "reddit",
+      family: "community",
+      status: "healthy",
+      usedFallback: false,
+      errorMessage: null,
+      yieldRatePercent: 40,
+      rawItemCount: 20,
+      signalCount: 18,
+      trendCount: 6,
+    },
+    {
+      source: "hacker_news",
+      family: "community",
+      status: "healthy",
+      usedFallback: false,
+      errorMessage: null,
+      yieldRatePercent: 60,
+      rawItemCount: 10,
+      signalCount: 12,
+      trendCount: 4,
+    },
+    {
+      source: "github",
+      family: "developer",
+      status: "healthy",
+      usedFallback: false,
+      errorMessage: null,
+      yieldRatePercent: 70,
+      rawItemCount: 10,
+      signalCount: 20,
+      trendCount: 5,
+    },
+  ]);
+
+  assert.deepEqual(
+    families.map((family) => [family.family, family.sourceCount, family.signalCount, family.trendCount, Math.round(family.averageYieldRatePercent)]),
+    [
+      ["community", 2, 30, 10, 50],
+      ["developer", 1, 20, 5, 70],
     ],
   );
 });

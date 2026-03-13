@@ -21,6 +21,8 @@ import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
   buildSourceContributionInsights,
+  buildSourceFamilyInsights,
+  formatSourceFamilyLabel,
   buildSourceWatchlist,
   formatSourceLabel,
   getSourceFreshnessBadge,
@@ -354,6 +356,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const sourceImpactRows = useMemo(
     () => buildSourceImpactRows(initialData.overview.sources, initialData.explorer.trends, detailsByTrendId),
     [detailsByTrendId, initialData.explorer.trends, initialData.overview.sources],
+  );
+  const sourceFamilyInsights = useMemo(
+    () => buildSourceFamilyInsights(initialData.overview.sources),
+    [initialData.overview.sources],
   );
 
   const activeExplorerFilters = useMemo(
@@ -2492,6 +2498,27 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </div>
                 </section>
               ) : null}
+              {sourceFamilyInsights.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source families</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Cross-source mix</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceFamilyInsights.slice(0, 6).map((family) => (
+                      <article className="detail-list-item" key={family.family}>
+                        <div>
+                          <strong>{formatSourceFamilyLabel(family.family)}</strong>
+                          <span>
+                            {family.sourceCount} sources · {family.trendCount} trends · {family.signalCount} sig
+                          </span>
+                        </div>
+                        <small>{family.averageYieldRatePercent.toFixed(0)}%</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
               {sourceWatchlist.length > 0 ? (
                 <section className="snapshot-card">
                   <header>
@@ -2527,6 +2554,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                       {formatSourceStatus(source.status)}
                     </span>
                   </header>
+                  <p className="source-summary-copy">
+                    {formatSourceFamilyLabel(source.family)} family
+                  </p>
                   <p className="source-summary-copy">
                     {source.signalCount} sig · {source.trendCount} trends
                   </p>

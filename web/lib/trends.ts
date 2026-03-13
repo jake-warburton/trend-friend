@@ -235,6 +235,7 @@ export function normalizeDashboardOverview(payload: DashboardOverviewResponse): 
     })),
     sources: (payload.sources ?? []).map((source) => ({
       source: source.source,
+      family: source.family ?? "other",
       signalCount: source.signalCount ?? 0,
       trendCount: source.trendCount ?? 0,
       status: source.status ?? "stale",
@@ -378,6 +379,7 @@ export async function loadSourceSummary(sourceId: string) {
 function normalizeSourceRecord(source: SourceSummaryRecord): SourceSummaryRecord {
   return {
     source: source.source,
+    family: source.family ?? "other",
     status: source.status ?? "stale",
     latestFetchAt: source.latestFetchAt ?? null,
     latestSuccessAt: source.latestSuccessAt ?? null,
@@ -702,6 +704,7 @@ export function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSu
     generatedAt: payload.generatedAt,
     sources: (payload.sources ?? []).map((source) => ({
       source: source.source,
+      family: source.family ?? "other",
       status: source.status ?? "stale",
       latestFetchAt: source.latestFetchAt ?? null,
       latestSuccessAt: source.latestSuccessAt ?? null,

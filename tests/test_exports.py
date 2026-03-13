@@ -616,6 +616,7 @@ def build_source_summary_record(source: str) -> SourceSummaryRecord:
 
     return SourceSummaryRecord(
         source=source,
+        family="community",
         status="healthy",
         latest_fetch_at=datetime(2026, 3, 8, tzinfo=timezone.utc),
         latest_success_at=datetime(2026, 3, 8, tzinfo=timezone.utc),

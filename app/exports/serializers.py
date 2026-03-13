@@ -61,6 +61,7 @@ from app.models import (
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.sources.catalog import source_family_for_source
 from app.topics.categorize import categorize_topic
 from app.topics.display import build_display_name, fallback_display_name
 
@@ -189,6 +190,7 @@ def build_source_summary_payload(
         sources=[
             SourceSummaryRecordPayload(
                 source=source.source,
+                family=source.family,
                 status=source.status,
                 latest_fetch_at=to_optional_timestamp(source.latest_fetch_at),
                 latest_success_at=to_optional_timestamp(source.latest_success_at),
@@ -595,6 +597,7 @@ def build_source_summaries(
     return [
         DashboardOverviewSourcePayload(
             source=source,
+            family=source_family_for_source(source),
             signal_count=signal_counts.get(source, 0),
             trend_count=len(source_map.get(source, set())),
             status=build_source_status(latest_by_source.get(source)),
@@ -919,6 +922,7 @@ def build_source_summary_records(
         summaries.append(
             SourceSummaryRecord(
                 source=source,
+                family=source_family_for_source(source),
                 status=build_source_status(latest_run),
                 latest_fetch_at=latest_run.fetched_at if latest_run is not None else None,
                 latest_success_at=successful_runs[0].fetched_at if successful_runs else None,

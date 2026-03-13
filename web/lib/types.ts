@@ -95,6 +95,7 @@ export type DashboardOverviewSections = {
 
 export type DashboardOverviewSource = {
   source: string;
+  family: string;
   signalCount: number;
   trendCount: number;
   status: string;
@@ -384,6 +385,7 @@ export type SourceSummaryTrend = {
 
 export type SourceSummaryRecord = {
   source: string;
+  family: string;
   status: string;
   latestFetchAt: string | null;
   latestSuccessAt: string | null;

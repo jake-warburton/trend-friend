@@ -2,11 +2,11 @@ import type { DashboardOverviewSource, SourceSummaryRecord, TrendSourceContribut
 
 type SourceHealthLike = Pick<
   DashboardOverviewSource | SourceSummaryRecord,
-  "source" | "status" | "usedFallback" | "errorMessage" | "yieldRatePercent" | "rawItemCount"
+  "source" | "family" | "status" | "usedFallback" | "errorMessage" | "yieldRatePercent" | "rawItemCount"
 > & Partial<
   Pick<
     DashboardOverviewSource | SourceSummaryRecord,
-    "latestFetchAt" | "latestSuccessAt" | "latestItemCount" | "keptItemCount" | "durationMs"
+    "latestFetchAt" | "latestSuccessAt" | "latestItemCount" | "keptItemCount" | "durationMs" | "signalCount" | "trendCount"
   >
 >;
 
@@ -35,6 +35,15 @@ export type SourceContributionInsight = {
 export type SourceFreshnessBadge = {
   tone: "fresh" | "aging" | "stale";
   label: string;
+};
+
+export type SourceFamilyInsight = {
+  family: string;
+  label: string;
+  sourceCount: number;
+  signalCount: number;
+  trendCount: number;
+  averageYieldRatePercent: number;
 };
 
 const LOW_YIELD_PERCENT = 30;
@@ -167,6 +176,37 @@ export function getSourceFreshnessBadge(
   return { tone: "stale", label: `${Math.round(diffMinutes / 1440)}d old` };
 }
 
+export function buildSourceFamilyInsights(sources: SourceHealthLike[]): SourceFamilyInsight[] {
+  const familyMap = new Map<string, SourceFamilyInsight>();
+
+  for (const source of sources) {
+    const family = source.family || "other";
+    const existing = familyMap.get(family);
+    if (existing) {
+      existing.sourceCount += 1;
+      existing.signalCount += source.signalCount ?? 0;
+      existing.trendCount += source.trendCount ?? 0;
+      existing.averageYieldRatePercent += source.yieldRatePercent ?? 0;
+      continue;
+    }
+    familyMap.set(family, {
+      family,
+      label: formatSourceFamilyLabel(family),
+      sourceCount: 1,
+      signalCount: source.signalCount ?? 0,
+      trendCount: source.trendCount ?? 0,
+      averageYieldRatePercent: source.yieldRatePercent ?? 0,
+    });
+  }
+
+  return [...familyMap.values()]
+    .map((family) => ({
+      ...family,
+      averageYieldRatePercent: family.sourceCount === 0 ? 0 : family.averageYieldRatePercent / family.sourceCount,
+    }))
+    .sort((left, right) => right.trendCount - left.trendCount || right.signalCount - left.signalCount || left.label.localeCompare(right.label));
+}
+
 function severityWeight(severity: SourceWatchItem["severity"]): number {
   if (severity === "critical") {
     return 3;
@@ -268,6 +308,24 @@ export function formatSourceLabel(source: string): string {
     youtube: "YouTube",
   };
   return labels[source] ?? source
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function formatSourceFamilyLabel(family: string): string {
+  const labels: Record<string, string> = {
+    community: "Community",
+    developer: "Developer",
+    knowledge: "Knowledge",
+    launch: "Launch",
+    market: "Market",
+    news: "News",
+    research: "Research",
+    search: "Search",
+    social: "Social",
+  };
+  return labels[family] ?? family
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
