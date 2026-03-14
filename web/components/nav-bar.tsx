@@ -4,17 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { label: "Explorer", href: "/" },
+  { label: "Explorer", href: "/explore" },
   { label: "Settings", href: "/settings" },
 ] as const;
 
 export function NavBar() {
   const pathname = usePathname();
-  const navClassName = pathname === "/" ? "nav-bar nav-bar-static nav-bar-blend" : "nav-bar";
+  const navClassName = pathname === "/explore" ? "nav-bar nav-bar-static nav-bar-blend" : "nav-bar";
 
   return (
     <nav className={navClassName}>
-      <Link className="nav-bar-brand" href="/">
+      <Link className="nav-bar-brand" href="/explore">
         <span className="nav-bar-brand-mark" aria-hidden="true">
           <svg viewBox="0 0 256 256" role="presentation" fill="none">
             <g
@@ -39,8 +39,8 @@ export function NavBar() {
       <div className="nav-bar-links">
         {NAV_LINKS.map((link) => {
           const active =
-            link.href === "/"
-              ? pathname === "/" || pathname.startsWith("/trends") || pathname.startsWith("/sources")
+            link.href === "/explore"
+              ? pathname === "/explore" || pathname.startsWith("/trends") || pathname.startsWith("/sources")
               : pathname.startsWith(link.href);
           return (
             <Link

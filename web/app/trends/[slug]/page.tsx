@@ -52,7 +52,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <main className="detail-page">
           <section className="detail-hero">
             <div>
-              <Link className="detail-back-link" href="/">
+              <Link className="detail-back-link" href="/explore">
                 Back to explorer
               </Link>
               <p className="eyebrow">Trend detail</p>
@@ -167,7 +167,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
     <main className="detail-page">
       <section className="detail-hero">
         <div>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to explorer
           </Link>
           <p className="eyebrow">Trend detail</p>

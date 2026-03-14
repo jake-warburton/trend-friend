@@ -49,7 +49,7 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
     <main className="detail-page">
       <section className="detail-hero">
         <div>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to overview
           </Link>
           <p className="eyebrow">Source health</p>

@@ -8,7 +8,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") || "/";
+  const nextPath = searchParams.get("next") || "/explore";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export default function LoginPage() {
     <main className="detail-page">
       <section className="detail-hero">
         <div>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to explorer
           </Link>
           <p className="eyebrow">Account</p>

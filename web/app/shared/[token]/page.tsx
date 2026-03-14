@@ -24,7 +24,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
           <p className="eyebrow">Shared Watchlist</p>
           <h1>Link expired</h1>
           <p className="source-summary-copy">This share link is no longer available.</p>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to dashboard
           </Link>
         </section>
@@ -52,7 +52,7 @@ export default async function SharedWatchlistPage({ params }: PageProps) {
             Export CSV
           </a>
         </div>
-        <Link className="detail-back-link" href="/">
+        <Link className="detail-back-link" href="/explore">
           Back to dashboard
         </Link>
       </section>

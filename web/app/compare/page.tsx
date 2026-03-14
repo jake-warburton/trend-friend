@@ -34,7 +34,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     <main className="detail-page">
       <section className="detail-hero">
         <div>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to explorer
           </Link>
           <p className="eyebrow">Compare</p>

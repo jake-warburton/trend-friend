@@ -121,7 +121,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
             </a>
           </div>
         </div>
-        <Link className="detail-back-link" href="/">
+        <Link className="detail-back-link" href="/explore">
           Back to dashboard
         </Link>
       </section>

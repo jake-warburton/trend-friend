@@ -103,7 +103,7 @@ export default function BillingPage() {
     <main className="detail-page">
       <section className="detail-hero">
         <div>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to explorer
           </Link>
           <p className="eyebrow">Account</p>

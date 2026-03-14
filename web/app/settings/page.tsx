@@ -29,7 +29,7 @@ export default async function SettingsPage() {
     <main className="detail-page">
       <section className="detail-hero">
         <div>
-          <Link className="detail-back-link" href="/">
+          <Link className="detail-back-link" href="/explore">
             Back to explorer
           </Link>
           <p className="eyebrow">Settings</p>
