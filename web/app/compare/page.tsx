@@ -1,7 +1,10 @@
 import Link from "next/link";
 
 import type { TrendDetailRecord } from "@/lib/types";
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendDetails, loadTrendHistory } from "@/lib/trends";
+import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
+import { buildComparisonSuggestions, slugifyBrowseValue } from "@/lib/trend-browse";
+import { formatCategoryLabel } from "@/lib/category-labels";
 
 type ComparePageProps = {
   searchParams: Promise<{
@@ -20,8 +23,12 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       : [];
 
   const uniqueIds = Array.from(new Set(ids.filter(Boolean))).slice(0, 3);
-  const details = await loadTrendDetails();
+  const [details, history] = await Promise.all([
+    loadTrendDetails(),
+    loadTrendHistory(),
+  ]);
   const compared = details.trends.filter((trend) => uniqueIds.includes(trend.id));
+  const suggestions = buildComparisonSuggestions(uniqueIds, details.trends);
 
   return (
     <main className="detail-page">
@@ -35,10 +42,46 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <p className="detail-copy">
             Compare score, momentum, source mix, and history across up to three tracked trends.
           </p>
+          {suggestions.length > 0 ? (
+            <div className="detail-action-links">
+              {suggestions.map((trend) => (
+                <Link className="detail-back-link" href={`/compare?ids=${[...uniqueIds, trend.id].slice(0, 3).join(",")}`} key={trend.id}>
+                  Add {trend.name}
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
+      {compared.length > 0 ? (
+        <section className="compare-chart-section">
+          <article className="detail-panel">
+            <div className="section-heading">
+              <h2>Score trajectories</h2>
+            </div>
+            <TrendTrajectoryChart
+              trends={compared}
+              history={history}
+              limit={3}
+            />
+          </article>
+        </section>
+      ) : null}
+
       <section className="compare-grid">
+        {compared.length === 0 ? (
+          <article className="detail-panel compare-panel">
+            <div className="section-heading">
+              <div>
+                <h2>Select trends to compare</h2>
+              </div>
+            </div>
+            <p className="detail-copy">
+              Start from any trend detail page or use one of the suggested compare links above.
+            </p>
+          </article>
+        ) : null}
         {compared.map((trend) => {
           const topHistoryScore = Math.max(...trend.history.map((point) => point.scoreTotal), trend.score.total);
           return (
@@ -46,6 +89,9 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               <div className="section-heading">
                 <div>
                   <h2>{trend.name}</h2>
+                  <p className="eyebrow">
+                    {trend.metaTrend} · {formatCategoryLabel(trend.category)} · {Math.round(trend.confidence * 100)}% confidence
+                  </p>
                 </div>
                 <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
               </div>
@@ -103,6 +149,15 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
               </div>
 
               <div className="detail-list">
+                {trend.duplicateCandidates.map((candidate) => (
+                  <article className="detail-list-item" key={`${trend.id}-duplicate-${candidate.id}`}>
+                    <div>
+                      <strong>Possible duplicate: {candidate.name}</strong>
+                      <span>{candidate.reason}</span>
+                    </div>
+                    <small>{Math.round(candidate.similarity * 100)}% overlap</small>
+                  </article>
+                ))}
                 {trend.sourceBreakdown.map((source) => (
                   <article className="detail-list-item" key={`${trend.id}-${source.source}`}>
                     <div>
@@ -112,6 +167,16 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                     <small>{formatTimestamp(source.latestSignalAt)}</small>
                   </article>
                 ))}
+                <article className="detail-list-item">
+                  <div>
+                    <strong>Browse from here</strong>
+                    <span>
+                      <Link href={`/meta-trends/${slugifyBrowseValue(trend.metaTrend)}`}>{trend.metaTrend}</Link>
+                      {" · "}
+                      <Link href={`/categories/${trend.category}`}>{formatCategoryLabel(trend.category)}</Link>
+                    </span>
+                  </div>
+                </article>
               </div>
             </article>
           );
@@ -145,6 +210,21 @@ function formatDateOnly(value: string) {
 }
 
 function formatSourceLabel(source: string) {
+  const labels: Record<string, string> = {
+    chrome_web_store: "Chrome Web Store",
+    curated_feeds: "Curated Feeds",
+    devto: "DEV Community",
+    google_trends: "Google Trends",
+    hacker_news: "Hacker News",
+    huggingface: "Hugging Face",
+    pypi: "PyPI",
+    stackoverflow: "Stack Overflow",
+    twitter: "Twitter/X",
+    youtube: "YouTube",
+  };
+  if (labels[source]) {
+    return labels[source];
+  }
   return source
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

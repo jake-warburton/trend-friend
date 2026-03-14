@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from app.models import RawSourceItem
 
@@ -11,6 +12,7 @@ from app.models import RawSourceItem
 GEO_CONFIDENCE_EXPLICIT = 0.95
 GEO_CONFIDENCE_INFERRED_REGION = 0.65
 GEO_CONFIDENCE_INFERRED_BROAD = 0.55
+GEO_CONFIDENCE_REINFORCED = 0.78
 GEO_CONFIDENCE_MINIMUM = 0.4
 
 COUNTRY_ALIASES: dict[str, tuple[str | None, str | None]] = {
@@ -21,19 +23,121 @@ COUNTRY_ALIASES: dict[str, tuple[str | None, str | None]] = {
     "united kingdom": ("GB", "United Kingdom"),
     "uk": ("GB", "United Kingdom"),
     "britain": ("GB", "United Kingdom"),
+    "great britain": ("GB", "United Kingdom"),
+    "british": ("GB", "United Kingdom"),
     "england": ("GB", "England"),
+    "scotland": ("GB", "Scotland"),
+    "wales": ("GB", "Wales"),
     "london": ("GB", "London"),
     "ireland": ("IE", "Ireland"),
+    "dublin": ("IE", "Dublin"),
     "europe": (None, "Europe"),
+    "eu": (None, "Europe"),
     "germany": ("DE", "Germany"),
     "berlin": ("DE", "Berlin"),
+    "munich": ("DE", "Munich"),
     "france": ("FR", "France"),
     "paris": ("FR", "Paris"),
+    "spain": ("ES", "Spain"),
+    "madrid": ("ES", "Madrid"),
+    "italy": ("IT", "Italy"),
+    "rome": ("IT", "Rome"),
+    "netherlands": ("NL", "Netherlands"),
+    "amsterdam": ("NL", "Amsterdam"),
+    "sweden": ("SE", "Sweden"),
+    "stockholm": ("SE", "Stockholm"),
+    "norway": ("NO", "Norway"),
+    "denmark": ("DK", "Denmark"),
+    "poland": ("PL", "Poland"),
+    "ukraine": ("UA", "Ukraine"),
+    "russia": ("RU", "Russia"),
+    "moscow": ("RU", "Moscow"),
+    "middle east": (None, "Middle East"),
+    "africa": (None, "Africa"),
+    "libya": ("LY", "Libya"),
+    "asia": (None, "Asia"),
     "india": ("IN", "India"),
+    "delhi": ("IN", "Delhi"),
+    "mumbai": ("IN", "Mumbai"),
     "china": ("CN", "China"),
+    "beijing": ("CN", "Beijing"),
+    "shanghai": ("CN", "Shanghai"),
     "japan": ("JP", "Japan"),
+    "tokyo": ("JP", "Tokyo"),
+    "south korea": ("KR", "South Korea"),
+    "seoul": ("KR", "Seoul"),
+    "singapore": ("SG", "Singapore"),
+    "uae": ("AE", "United Arab Emirates"),
+    "united arab emirates": ("AE", "United Arab Emirates"),
+    "emirates": ("AE", "United Arab Emirates"),
+    "dubai": ("AE", "Dubai"),
     "canada": ("CA", "Canada"),
+    "toronto": ("CA", "Toronto"),
+    "vancouver": ("CA", "Vancouver"),
     "australia": ("AU", "Australia"),
+    "sydney": ("AU", "Sydney"),
+    "melbourne": ("AU", "Melbourne"),
+    "new zealand": ("NZ", "New Zealand"),
+    "latin america": (None, "Latin America"),
+    "brazil": ("BR", "Brazil"),
+    "sao paulo": ("BR", "Sao Paulo"),
+    "mexico": ("MX", "Mexico"),
+}
+
+COUNTRY_CODE_REGIONS: dict[str, str] = {
+    "US": "US",
+    "GB": "United Kingdom",
+    "IE": "Ireland",
+    "DE": "Germany",
+    "FR": "France",
+    "ES": "Spain",
+    "IT": "Italy",
+    "NL": "Netherlands",
+    "SE": "Sweden",
+    "NO": "Norway",
+    "DK": "Denmark",
+    "PL": "Poland",
+    "UA": "Ukraine",
+    "RU": "Russia",
+    "LY": "Libya",
+    "IN": "India",
+    "CN": "China",
+    "JP": "Japan",
+    "KR": "South Korea",
+    "SG": "Singapore",
+    "AE": "United Arab Emirates",
+    "CA": "Canada",
+    "AU": "Australia",
+    "NZ": "New Zealand",
+    "BR": "Brazil",
+    "MX": "Mexico",
+}
+
+COUNTRY_TLDS: dict[str, str] = {
+    "uk": "GB",
+    "de": "DE",
+    "fr": "FR",
+    "es": "ES",
+    "it": "IT",
+    "nl": "NL",
+    "se": "SE",
+    "no": "NO",
+    "dk": "DK",
+    "pl": "PL",
+    "ua": "UA",
+    "ru": "RU",
+    "ly": "LY",
+    "in": "IN",
+    "cn": "CN",
+    "jp": "JP",
+    "kr": "KR",
+    "sg": "SG",
+    "ae": "AE",
+    "ca": "CA",
+    "au": "AU",
+    "nz": "NZ",
+    "br": "BR",
+    "mx": "MX",
 }
 
 
@@ -64,22 +168,36 @@ def assign_geo_flags(item: RawSourceItem) -> GeoAssignment:
     if explicit is not None:
         return explicit
 
-    inferred = _geo_from_text(f"{item.title} {' '.join(item.metadata.values())}".strip())
+    inferred = _geo_from_inference_hints(item)
     if inferred is not None:
         return inferred
 
     return GeoAssignment()
 
 
-def _geo_from_metadata(metadata: dict[str, str]) -> GeoAssignment | None:
-    for key in ("region", "country", "geo", "location"):
-        value = metadata.get(key, "").strip()
+def _geo_from_metadata(metadata: dict[str, object]) -> GeoAssignment | None:
+    for key in ("region", "country", "geo", "location", "locale"):
+        value = _metadata_text(metadata.get(key))
         if not value:
             continue
         assignment = _assignment_from_value(value, detection_mode="explicit", confidence=GEO_CONFIDENCE_EXPLICIT)
         if assignment is not None:
             return assignment
     return None
+
+
+def _geo_from_inference_hints(item: RawSourceItem) -> GeoAssignment | None:
+    metadata_text = " ".join(
+        value for value in (_metadata_text(metadata_value) for metadata_value in item.metadata.values()) if value
+    )
+    text_assignment = _geo_from_text(f"{item.title} {metadata_text}".strip())
+    url_assignment = _geo_from_url(item.url)
+    locale_assignment = _geo_from_metadata_locale(item.metadata)
+
+    reinforced = _combine_inferred_assignments(text_assignment, url_assignment, locale_assignment)
+    if reinforced is not None:
+        return reinforced
+    return text_assignment or locale_assignment or url_assignment
 
 
 def _geo_from_text(value: str) -> GeoAssignment | None:
@@ -96,6 +214,91 @@ def _geo_from_text(value: str) -> GeoAssignment | None:
     return None
 
 
+def _geo_from_url(url: str) -> GeoAssignment | None:
+    hostname = urlparse(url).hostname or ""
+    if not hostname:
+        return None
+    suffix = hostname.lower().rsplit(".", maxsplit=1)
+    if len(suffix) != 2:
+        return None
+    country_code = COUNTRY_TLDS.get(suffix[1])
+    if country_code is None:
+        return None
+    return _build_assignment(
+        country_code=country_code,
+        region=COUNTRY_CODE_REGIONS[country_code],
+        detection_mode="inferred",
+        confidence=GEO_CONFIDENCE_INFERRED_BROAD,
+    )
+
+
+def _geo_from_metadata_locale(metadata: dict[str, object]) -> GeoAssignment | None:
+    locale_values = [
+        _metadata_text(metadata.get("locale")),
+        _metadata_text(metadata.get("lang")),
+        _metadata_text(metadata.get("language")),
+    ]
+    for value in locale_values:
+        if not value:
+            continue
+        match = re.search(r"([a-z]{2})[-_ ]([A-Za-z]{2})", value)
+        if match is None:
+            continue
+        country_code = match.group(2).upper()
+        if country_code not in COUNTRY_CODE_REGIONS:
+            continue
+        return _build_assignment(
+            country_code=country_code,
+            region=COUNTRY_CODE_REGIONS[country_code],
+            detection_mode="inferred",
+            confidence=GEO_CONFIDENCE_INFERRED_BROAD,
+    )
+    return None
+
+
+def _metadata_text(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(part for part in (_metadata_text(item) for item in value) if part)
+    return str(value).strip()
+
+
+def _combine_inferred_assignments(*assignments: GeoAssignment | None) -> GeoAssignment | None:
+    valid_assignments = [assignment for assignment in assignments if assignment is not None]
+    if len(valid_assignments) < 2:
+        return None
+
+    country_counts: dict[str, int] = {}
+    for assignment in valid_assignments:
+        if assignment.country_code:
+            country_counts[assignment.country_code] = country_counts.get(assignment.country_code, 0) + 1
+
+    if not country_counts:
+        return None
+
+    country_code, count = max(country_counts.items(), key=lambda item: (item[1], item[0]))
+    if count < 2:
+        return None
+
+    region = next(
+        (
+            assignment.region
+            for assignment in valid_assignments
+            if assignment.country_code == country_code and assignment.region
+        ),
+        COUNTRY_CODE_REGIONS.get(country_code),
+    )
+    return _build_assignment(
+        country_code=country_code,
+        region=region,
+        detection_mode="inferred",
+        confidence=GEO_CONFIDENCE_REINFORCED,
+    )
+
+
 def _assignment_from_value(
     value: str,
     detection_mode: str,
@@ -105,10 +308,22 @@ def _assignment_from_value(
     if not normalized:
         return None
 
+    locale_match = re.search(r"([a-z]{2})[-_ ]([A-Za-z]{2})", normalized)
+    if locale_match is not None:
+        country_code = locale_match.group(2).upper()
+        if country_code in COUNTRY_CODE_REGIONS:
+            return _build_assignment(
+                country_code=country_code,
+                region=COUNTRY_CODE_REGIONS[country_code],
+                detection_mode=detection_mode,
+                confidence=confidence,
+            )
+
     if len(normalized) == 2 and normalized.isalpha():
+        country_code = normalized.upper()
         return _build_assignment(
-            country_code=normalized.upper(),
-            region=normalized.upper(),
+            country_code=country_code,
+            region=COUNTRY_CODE_REGIONS.get(country_code, country_code),
             detection_mode=detection_mode,
             confidence=confidence,
         )
@@ -123,12 +338,7 @@ def _assignment_from_value(
             confidence=confidence,
         )
 
-    return _build_assignment(
-        country_code=None,
-        region=normalized,
-        detection_mode=detection_mode,
-        confidence=confidence,
-    )
+    return None
 
 
 def _build_assignment(

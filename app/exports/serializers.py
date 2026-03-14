@@ -21,11 +21,13 @@ from app.exports.contracts import (
     DashboardOverviewTrendItemPayload,
     LatestTrendsPayload,
     SourceRunPayload,
+    SourceFamilySnapshotPayload,
     SourceSummaryPayload,
     SourceSummaryRecordPayload,
     SourceSummaryTrendPayload,
     OpportunityPayload,
     RelatedTrendPayload,
+    TrendDuplicateCandidatePayload,
     TrendCoveragePayload,
     TrendDetailIndexPayload,
     TrendDetailRecordPayload,
@@ -37,6 +39,7 @@ from app.exports.contracts import (
     TrendExplorerRecordPayload,
     TrendHistoryPointPayload,
     TrendHistoryPayload,
+    TrendMarketMetricPayload,
     TrendMomentumPayload,
     TrendPrimaryEvidencePayload,
     TrendRecord,
@@ -51,13 +54,18 @@ from app.models import (
     PipelineRun,
     RelatedTrend,
     SourceIngestionRun,
+    SourceFamilySnapshot,
     SourceSummaryRecord,
     SourceWatchRecord,
     SourceSummaryTrend,
     TrendDetailRecord,
+    TrendDuplicateCandidate,
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.sources.catalog import source_family_for_source
+from app.topics.categorize import categorize_topic
+from app.topics.display import build_display_name, fallback_display_name
 
 
 def build_latest_trends_payload(
@@ -117,6 +125,7 @@ def build_trend_detail_index_payload(
 def build_dashboard_overview_payload(
     generated_at: datetime,
     trends: list[TrendDetailRecord],
+    experimental_trends: list[TrendScoreResult],
     signals: list[NormalizedSignal],
     source_runs: list[SourceIngestionRun],
     pipeline_runs: list[PipelineRun],
@@ -157,7 +166,7 @@ def build_dashboard_overview_payload(
             newest_trend_name=newest_trend.name if newest_trend is not None else None,
         ),
         charts=build_dashboard_charts_payload(ordered_trends, source_summaries),
-        sections=build_dashboard_sections_payload(ordered_trends),
+        sections=build_dashboard_sections_payload(ordered_trends, experimental_trends),
         operations=build_dashboard_operations_payload(pipeline_runs),
         sources=source_summaries,
         source_watch=[
@@ -175,6 +184,7 @@ def build_dashboard_overview_payload(
 def build_source_summary_payload(
     generated_at: datetime,
     sources: list[SourceSummaryRecord],
+    family_history: list[SourceFamilySnapshot] | None = None,
 ) -> SourceSummaryPayload:
     """Create the source summary payload for Dashboard V2."""
 
@@ -183,6 +193,7 @@ def build_source_summary_payload(
         sources=[
             SourceSummaryRecordPayload(
                 source=source.source,
+                family=source.family,
                 status=source.status,
                 latest_fetch_at=to_optional_timestamp(source.latest_fetch_at),
                 latest_success_at=to_optional_timestamp(source.latest_success_at),
@@ -190,7 +201,12 @@ def build_source_summary_payload(
                 latest_item_count=source.latest_item_count,
                 kept_item_count=source.kept_item_count,
                 yield_rate_percent=source.yield_rate_percent,
+                signal_yield_ratio=source.signal_yield_ratio,
                 duration_ms=source.duration_ms,
+                raw_topic_count=source.raw_topic_count,
+                merged_topic_count=source.merged_topic_count,
+                duplicate_topic_count=source.duplicate_topic_count,
+                duplicate_topic_rate=source.duplicate_topic_rate,
                 used_fallback=source.used_fallback,
                 error_message=source.error_message,
                 signal_count=source.signal_count,
@@ -204,6 +220,10 @@ def build_source_summary_payload(
                         kept_item_count=run.kept_item_count,
                         yield_rate_percent=build_yield_rate_percent(run),
                         duration_ms=run.duration_ms,
+                        raw_topic_count=run.raw_topic_count,
+                        merged_topic_count=run.merged_topic_count,
+                        duplicate_topic_count=run.duplicate_topic_count,
+                        duplicate_topic_rate=run.duplicate_topic_rate,
                         used_fallback=run.used_fallback,
                         error_message=run.error_message,
                     )
@@ -221,7 +241,42 @@ def build_source_summary_payload(
             )
             for source in sources
         ],
+        family_history=[
+            SourceFamilySnapshotPayload(
+                family=snapshot.family,
+                label=format_source_family_label(snapshot.family),
+                captured_at=to_timestamp(snapshot.captured_at),
+                source_count=snapshot.source_count,
+                healthy_source_count=snapshot.healthy_source_count,
+                signal_count=snapshot.signal_count,
+                trend_count=snapshot.trend_count,
+                corroborated_trend_count=snapshot.corroborated_trend_count,
+                top_ranked_trend_count=snapshot.top_ranked_trend_count,
+                average_score=snapshot.average_score,
+                average_yield_rate_percent=snapshot.average_yield_rate_percent,
+                success_rate_percent=snapshot.success_rate_percent,
+            )
+            for snapshot in (family_history or [])
+        ],
     )
+
+
+def format_source_family_label(family: str) -> str:
+    """Return a readable label for a cross-source family bucket."""
+
+    labels = {
+        "community": "Community",
+        "developer": "Developer",
+        "distribution": "Distribution",
+        "editorial": "Editorial",
+        "knowledge": "Knowledge",
+        "market": "Market",
+        "research": "Research",
+        "search": "Search",
+        "social": "Social",
+        "other": "Other",
+    }
+    return labels.get(family, family.replace("_", " ").title())
 
 
 def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:
@@ -229,7 +284,7 @@ def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:
 
     return TrendRecord(
         id=slugify(score.topic),
-        name=format_trend_name(score.topic),
+        name=score.display_name or build_display_name(score.topic, score.evidence),
         rank=rank,
         score=TrendScoreComponents(
             total=round(score.total_score, 1),
@@ -252,6 +307,10 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
         id=trend.id,
         name=trend.name,
         category=trend.category,
+        meta_trend=trend.meta_trend,
+        stage=trend.stage,
+        confidence=round(trend.confidence, 3),
+        summary=trend.summary,
         status=trend.status,
         volatility=trend.volatility,
         rank=trend.rank,
@@ -328,6 +387,11 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         id=trend.id,
         name=trend.name,
         category=trend.category,
+        meta_trend=trend.meta_trend,
+        stage=trend.stage,
+        confidence=round(trend.confidence, 3),
+        summary=trend.summary,
+        why_now=trend.why_now,
         status=trend.status,
         volatility=trend.volatility,
         rank=trend.rank,
@@ -366,6 +430,8 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         ),
         opportunity=OpportunityPayload(
             composite=trend.opportunity.composite,
+            discovery=trend.opportunity.discovery,
+            seo=trend.opportunity.seo,
             content=trend.opportunity.content,
             product=trend.opportunity.product,
             investment=trend.opportunity.investment,
@@ -376,6 +442,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             signal_count=trend.signal_count,
         ),
         sources=trend.sources,
+        aliases=trend.aliases,
         history=[
             TrendHistoryPointPayload(
                 captured_at=to_timestamp(point.captured_at),
@@ -409,6 +476,22 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                 ),
             )
             for item in trend.source_contributions
+        ],
+        market_footprint=[
+            TrendMarketMetricPayload(
+                source=item.source,
+                metric_key=item.metric_key,
+                label=item.label,
+                value_numeric=round(item.value_numeric, 2),
+                value_display=item.value_display,
+                unit=item.unit,
+                period=item.period,
+                captured_at=to_timestamp(item.captured_at),
+                confidence=round(item.confidence, 2),
+                provenance_url=item.provenance_url,
+                is_estimated=item.is_estimated,
+            )
+            for item in trend.market_footprint
         ],
         geo_summary=[
             TrendGeoSummaryPayload(
@@ -461,6 +544,10 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             if trend.primary_evidence is not None
             else None
         ),
+        duplicate_candidates=[
+            serialize_duplicate_candidate(item)
+            for item in trend.duplicate_candidates
+        ],
         related_trends=[
             serialize_related_trend(item)
             for item in trend.related_trends
@@ -487,6 +574,18 @@ def serialize_related_trend(trend: RelatedTrend) -> RelatedTrendPayload:
         status=trend.status,
         rank=trend.rank,
         score_total=round(trend.score_total, 1),
+        relationship_strength=round(trend.relationship_strength, 2),
+    )
+
+
+def serialize_duplicate_candidate(trend: TrendDuplicateCandidate) -> TrendDuplicateCandidatePayload:
+    """Convert a duplicate-trend candidate into the public contract."""
+
+    return TrendDuplicateCandidatePayload(
+        id=trend.id,
+        name=trend.name,
+        similarity=round(trend.similarity, 2),
+        reason=trend.reason,
     )
 
 
@@ -510,12 +609,6 @@ def slugify(topic: str) -> str:
 
     normalized = re.sub(r"[^a-z0-9]+", "-", topic.lower()).strip("-")
     return normalized or "trend"
-
-
-def format_trend_name(topic: str) -> str:
-    """Return a display-friendly topic name."""
-
-    return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in topic.split())
 
 
 def build_source_summaries(
@@ -542,6 +635,7 @@ def build_source_summaries(
     return [
         DashboardOverviewSourcePayload(
             source=source,
+            family=source_family_for_source(source),
             signal_count=signal_counts.get(source, 0),
             trend_count=len(source_map.get(source, set())),
             status=build_source_status(latest_by_source.get(source)),
@@ -559,7 +653,15 @@ def build_source_summaries(
             latest_item_count=latest_by_source[source].item_count if source in latest_by_source else 0,
             kept_item_count=latest_by_source[source].kept_item_count if source in latest_by_source else 0,
             yield_rate_percent=build_yield_rate_percent(latest_by_source.get(source)),
+            signal_yield_ratio=build_signal_yield_ratio(
+                signal_counts.get(source, 0),
+                latest_by_source.get(source),
+            ),
             duration_ms=latest_by_source[source].duration_ms if source in latest_by_source else 0,
+            raw_topic_count=latest_by_source[source].raw_topic_count if source in latest_by_source else 0,
+            merged_topic_count=latest_by_source[source].merged_topic_count if source in latest_by_source else 0,
+            duplicate_topic_count=latest_by_source[source].duplicate_topic_count if source in latest_by_source else 0,
+            duplicate_topic_rate=latest_by_source[source].duplicate_topic_rate if source in latest_by_source else 0.0,
             used_fallback=latest_by_source[source].used_fallback if source in latest_by_source else False,
             error_message=latest_by_source[source].error_message if source in latest_by_source else None,
         )
@@ -585,12 +687,20 @@ def build_yield_rate_percent(run: SourceIngestionRun | None) -> float:
     return round((run.kept_item_count / run.raw_item_count) * 100, 1)
 
 
+def build_signal_yield_ratio(signal_count: int, run: SourceIngestionRun | None) -> float:
+    """Return how many normalized signals survive per kept source item."""
+
+    if run is None or run.kept_item_count <= 0:
+        return 0.0
+    return round(signal_count / run.kept_item_count, 2)
+
+
 def build_source_watch_records(sources: list[DashboardOverviewSourcePayload]) -> list[SourceWatchRecord]:
     """Derive compact operational warnings from source summaries."""
 
     watch_items: list[SourceWatchRecord] = []
     for source in sources:
-        title = format_trend_name(source.source.replace("_", " "))
+        title = fallback_display_name(source.source.replace("_", " "))
         if source.error_message:
             watch_items.append(
                 SourceWatchRecord(
@@ -684,7 +794,7 @@ def build_dashboard_charts_payload(
         ],
         status_breakdown=[
             DashboardOverviewChartDatumPayload(
-                label=format_trend_name(status),
+                    label=fallback_display_name(status),
                 value=float(count),
             )
             for status, count in sorted(status_counts.items(), key=lambda item: (-item[1], item[0]))
@@ -694,6 +804,7 @@ def build_dashboard_charts_payload(
 
 def build_dashboard_sections_payload(
     trends: list[TrendDetailRecord],
+    experimental_trends: list[TrendScoreResult],
 ) -> DashboardOverviewSectionsPayload:
     """Return curated overview sections similar to dedicated trend products."""
 
@@ -709,6 +820,10 @@ def build_dashboard_sections_payload(
             for trend in trends
             if trend.status == "rising"
         ][:5],
+        experimental_trends=[
+            serialize_overview_experimental_item(score, rank_offset)
+            for rank_offset, score in enumerate(experimental_trends, start=len(trends) + 1)
+        ][:6],
         meta_trends=build_meta_trend_payloads(trends),
     )
 
@@ -723,6 +838,22 @@ def serialize_overview_trend_item(trend: TrendDetailRecord) -> DashboardOverview
         status=trend.status,
         rank=trend.rank,
         score_total=round(trend.score.total_score, 1),
+    )
+
+
+def serialize_overview_experimental_item(
+    score: TrendScoreResult,
+    rank: int,
+) -> DashboardOverviewTrendItemPayload:
+    """Convert an experimental score candidate into a compact overview item."""
+
+    return DashboardOverviewTrendItemPayload(
+        id=slugify(score.topic),
+        name=score.display_name or build_display_name(score.topic, score.evidence),
+        category=categorize_topic(score.topic, score.source_counts),
+        status="experimental",
+        rank=rank,
+        score_total=round(score.total_score, 1),
     )
 
 
@@ -780,8 +911,14 @@ def build_dashboard_operations_payload(
                 ranked_trend_count=run.ranked_trend_count,
                 status="healthy" if run.failed_source_count == 0 else "degraded",
                 top_trend_id=slugify(run.top_topic) if run.top_topic else None,
-                top_trend_name=format_trend_name(run.top_topic) if run.top_topic else None,
+                top_trend_name=fallback_display_name(run.top_topic) if run.top_topic else None,
                 top_score=round(run.top_score, 1) if run.top_score is not None else None,
+                raw_topic_count=run.raw_topic_count,
+                merged_topic_count=run.merged_topic_count,
+                duplicate_topic_count=run.duplicate_topic_count,
+                duplicate_topic_rate=run.duplicate_topic_rate,
+                multi_source_trend_count=run.multi_source_trend_count,
+                low_evidence_trend_count=run.low_evidence_trend_count,
             )
             for run in pipeline_runs
         ],
@@ -823,6 +960,7 @@ def build_source_summary_records(
         summaries.append(
             SourceSummaryRecord(
                 source=source,
+                family=source_family_for_source(source),
                 status=build_source_status(latest_run),
                 latest_fetch_at=latest_run.fetched_at if latest_run is not None else None,
                 latest_success_at=successful_runs[0].fetched_at if successful_runs else None,
@@ -830,7 +968,12 @@ def build_source_summary_records(
                 latest_item_count=latest_run.item_count if latest_run is not None else 0,
                 kept_item_count=latest_run.kept_item_count if latest_run is not None else 0,
                 yield_rate_percent=build_yield_rate_percent(latest_run),
+                signal_yield_ratio=build_signal_yield_ratio(signal_counts.get(source, 0), latest_run),
                 duration_ms=latest_run.duration_ms if latest_run is not None else 0,
+                raw_topic_count=latest_run.raw_topic_count if latest_run is not None else 0,
+                merged_topic_count=latest_run.merged_topic_count if latest_run is not None else 0,
+                duplicate_topic_count=latest_run.duplicate_topic_count if latest_run is not None else 0,
+                duplicate_topic_rate=latest_run.duplicate_topic_rate if latest_run is not None else 0.0,
                 used_fallback=latest_run.used_fallback if latest_run is not None else False,
                 error_message=latest_run.error_message if latest_run is not None else None,
                 signal_count=signal_counts.get(source, 0),

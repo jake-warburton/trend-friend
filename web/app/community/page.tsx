@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { formatCategoryLabel } from "@/lib/category-labels";
 import type { PublicWatchlistSummary, PublicWatchlistsResponse } from "@/lib/types";
 import { getBaseUrl } from "@/app/shared/[token]/page";
 
@@ -739,21 +740,25 @@ function formatTimestamp(value: string) {
 
 function formatSourceLabel(source: string) {
   const labels: Record<string, string> = {
+    chrome_web_store: "Chrome Web Store",
+    curated_feeds: "Curated Feeds",
+    devto: "DEV Community",
     reddit: "Reddit",
     hacker_news: "Hacker News",
     github: "GitHub",
+    huggingface: "Hugging Face",
+    pypi: "PyPI",
+    stackoverflow: "Stack Overflow",
     wikipedia: "Wikipedia",
     google_trends: "Google Trends",
     twitter: "Twitter/X",
+    youtube: "YouTube",
   };
   return labels[source] ?? source;
 }
 
 function formatCategory(category: string) {
-  return category
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return formatCategoryLabel(category);
 }
 
 function formatSortLabel(sort: CommunitySort) {
@@ -796,7 +801,8 @@ function hasCommunityCardTags(watchlist: PublicWatchlistSummary) {
     (watchlist.statuses?.length ?? 0) > 0 ||
     (watchlist.sourceContributions?.length ?? 0) > 0 ||
     (watchlist.geoSummary?.length ?? 0) > 0 ||
-    (watchlist.audienceSummary?.length ?? 0) > 0
+    (watchlist.audienceSummary?.length ?? 0) > 0 ||
+    (watchlist.theses?.length ?? 0) > 0
   );
 }
 
@@ -860,6 +866,11 @@ function renderCommunityWatchlistCard(watchlist: PublicWatchlistSummary) {
               {formatAudienceLabel(segment.label)}
             </span>
           ))}
+          {watchlist.theses?.slice(0, 2).map((thesis) => (
+            <span className="trend-date-chip" key={`thesis-${thesis.id}`}>
+              {thesis.name}
+            </span>
+          ))}
         </div>
       ) : null}
       {watchlist.sourceContributions?.[0] ? (
@@ -869,6 +880,11 @@ function renderCommunityWatchlistCard(watchlist: PublicWatchlistSummary) {
       ) : null}
       {watchlist.audienceSummary?.length ? (
         <p className="source-summary-copy">{formatAudienceSummary(watchlist.audienceSummary)}</p>
+      ) : null}
+      {watchlist.theses?.length ? (
+        <p className="source-summary-copy">
+          Theses: {watchlist.theses.map((thesis) => `${thesis.name} (${formatLensLabel(thesis.lens)})`).join(", ")}
+        </p>
       ) : null}
       {watchlist.ownerDisplayName ? (
         <p className="source-summary-copy">Shared by {watchlist.ownerDisplayName}</p>
@@ -902,4 +918,16 @@ function formatAudienceLabel(label: string) {
     .split("-")
     .map((part) => (part.length <= 3 || /\d/.test(part) ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)))
     .join(" ");
+}
+
+function formatLensLabel(lens: string) {
+  const labels: Record<string, string> = {
+    all: "All lenses",
+    discovery: "Discovery",
+    seo: "SEO",
+    content: "Content",
+    product: "Product",
+    investment: "Investment",
+  };
+  return labels[lens] ?? lens;
 }

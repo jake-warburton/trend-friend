@@ -89,11 +89,13 @@ export type DashboardOverviewSections = {
   topTrends: DashboardOverviewTrendItem[];
   breakoutTrends: DashboardOverviewTrendItem[];
   risingTrends: DashboardOverviewTrendItem[];
+  experimentalTrends: DashboardOverviewTrendItem[];
   metaTrends: DashboardOverviewMetaTrend[];
 };
 
 export type DashboardOverviewSource = {
   source: string;
+  family: string;
   signalCount: number;
   trendCount: number;
   status: string;
@@ -103,7 +105,12 @@ export type DashboardOverviewSource = {
   latestItemCount: number;
   keptItemCount: number;
   yieldRatePercent: number;
+  signalYieldRatio?: number;
   durationMs: number;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
   usedFallback: boolean;
   errorMessage: string | null;
 };
@@ -127,6 +134,12 @@ export type DashboardOverviewRun = {
   topTrendId: string | null;
   topTrendName: string | null;
   topScore: number | null;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
+  multiSourceTrendCount: number;
+  lowEvidenceTrendCount: number;
 };
 
 export type DashboardOverviewOperations = {
@@ -176,6 +189,8 @@ export type SeasonalitySummary = {
 
 export type OpportunitySummary = {
   composite: number;
+  discovery: number;
+  seo: number;
   content: number;
   product: number;
   investment: number;
@@ -191,6 +206,10 @@ export type TrendExplorerRecord = {
   id: string;
   name: string;
   category: string;
+  metaTrend: string;
+  stage: string;
+  confidence: number;
+  summary: string;
   status: string;
   volatility: string;
   rank: number;
@@ -269,18 +288,45 @@ export type TrendSourceContribution = {
   score: TrendScore;
 };
 
+export type TrendMarketMetric = {
+  source: string;
+  metricKey: string;
+  label: string;
+  valueNumeric: number;
+  valueDisplay: string;
+  unit: string;
+  period: string;
+  capturedAt: string;
+  confidence: number;
+  provenanceUrl: string | null;
+  isEstimated: boolean;
+};
+
 export type RelatedTrend = {
   id: string;
   name: string;
   status: string;
   rank: number;
   scoreTotal: number;
+  relationshipStrength: number;
+};
+
+export type TrendDuplicateCandidate = {
+  id: string;
+  name: string;
+  similarity: number;
+  reason: string;
 };
 
 export type TrendDetailRecord = {
   id: string;
   name: string;
   category: string;
+  metaTrend: string;
+  stage: string;
+  confidence: number;
+  summary: string;
+  whyNow: string[];
   status: string;
   volatility: string;
   rank: number;
@@ -295,13 +341,16 @@ export type TrendDetailRecord = {
   opportunity: OpportunitySummary;
   coverage: TrendCoverage;
   sources: string[];
+  aliases: string[];
   history: TrendHistoryPoint[];
   sourceBreakdown: TrendSourceBreakdown[];
   sourceContributions: TrendSourceContribution[];
+  marketFootprint: TrendMarketMetric[];
   geoSummary: TrendGeoSummary[];
   audienceSummary: TrendAudienceSegment[];
   evidenceItems: TrendEvidenceItem[];
   primaryEvidence?: TrendEvidenceItem | null;
+  duplicateCandidates: TrendDuplicateCandidate[];
   relatedTrends: RelatedTrend[];
   seasonality?: SeasonalitySummary | null;
 };
@@ -319,6 +368,10 @@ export type SourceRun = {
   keptItemCount: number;
   yieldRatePercent: number;
   durationMs: number;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
   usedFallback: boolean;
   errorMessage: string | null;
 };
@@ -330,8 +383,24 @@ export type SourceSummaryTrend = {
   scoreTotal: number;
 };
 
+export type SourceFamilySnapshot = {
+  family: string;
+  label: string;
+  capturedAt: string;
+  sourceCount: number;
+  healthySourceCount: number;
+  signalCount: number;
+  trendCount: number;
+  corroboratedTrendCount: number;
+  topRankedTrendCount: number;
+  averageScore: number;
+  averageYieldRatePercent: number;
+  successRatePercent: number;
+};
+
 export type SourceSummaryRecord = {
   source: string;
+  family: string;
   status: string;
   latestFetchAt: string | null;
   latestSuccessAt: string | null;
@@ -339,7 +408,12 @@ export type SourceSummaryRecord = {
   latestItemCount: number;
   keptItemCount: number;
   yieldRatePercent: number;
+  signalYieldRatio?: number;
   durationMs: number;
+  rawTopicCount: number;
+  mergedTopicCount: number;
+  duplicateTopicCount: number;
+  duplicateTopicRate: number;
   usedFallback: boolean;
   errorMessage: string | null;
   signalCount: number;
@@ -351,6 +425,7 @@ export type SourceSummaryRecord = {
 export type SourceSummaryResponse = {
   generatedAt: string;
   sources: SourceSummaryRecord[];
+  familyHistory: SourceFamilySnapshot[];
 };
 
 export type WatchlistItem = {
@@ -418,6 +493,7 @@ export type Watchlist = {
 export type AlertRule = {
   id: number;
   watchlistId: number;
+  thesisId?: number | null;
   name: string;
   ruleType: string;
   threshold: number;
@@ -442,6 +518,52 @@ export type WatchlistResponse = {
   watchlists: Watchlist[];
   alerts: AlertRule[];
   matches: AlertMatch[];
+  theses?: TrendThesis[];
+  thesisMatches?: TrendThesisMatch[];
+};
+
+export type TrendThesis = {
+  id: number;
+  watchlistId: number;
+  name: string;
+  lens: string;
+  keywordQuery?: string | null;
+  source?: string | null;
+  category?: string | null;
+  stage?: string | null;
+  confidence?: string | null;
+  metaTrend?: string | null;
+  audience?: string | null;
+  market?: string | null;
+  language?: string | null;
+  geoCountry?: string | null;
+  minimumScore: number;
+  hideRecurring: boolean;
+  notifyOnMatch: boolean;
+  activeMatchCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TrendThesisMatch = {
+  thesisId: number;
+  trendId: string;
+  trendName: string;
+  active: boolean;
+  firstMatchedAt: string;
+  lastMatchedAt: string;
+  lensScore: number;
+  totalScore: number;
+  stage?: string | null;
+  metaTrend?: string | null;
+  confidence?: number | null;
+};
+
+export type PublicTrendThesis = {
+  id: number;
+  name: string;
+  lens: string;
+  notifyOnMatch: boolean;
 };
 
 export type SharedWatchlistResponse = {
@@ -480,6 +602,7 @@ export type PublicWatchlistSummary = {
   geoSummary?: TrendGeoSummary[];
   audienceSummary?: TrendAudienceSegment[];
   sourceContributions?: TrendSourceContribution[];
+  theses?: PublicTrendThesis[];
 };
 
 export type PublicWatchlistsResponse = {

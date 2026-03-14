@@ -122,6 +122,8 @@ class OpportunityPayload:
     """Opportunity scoring exposed on detail pages."""
 
     composite: float
+    discovery: float
+    seo: float
     content: float
     product: float
     investment: float
@@ -155,6 +157,10 @@ class TrendExplorerRecordPayload:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
     status: str
     volatility: str
     rank: int
@@ -221,6 +227,23 @@ class TrendSourceContributionPayload:
 
 
 @dataclass(frozen=True)
+class TrendMarketMetricPayload:
+    """Persisted market-footprint metric exposed on detail pages."""
+
+    source: str
+    metric_key: str
+    label: str
+    value_numeric: float
+    value_display: str
+    unit: str
+    period: str
+    captured_at: str
+    confidence: float
+    provenance_url: str | None
+    is_estimated: bool
+
+
+@dataclass(frozen=True)
 class TrendEvidenceItemPayload:
     """Evidence item exposed on the trend detail page."""
 
@@ -271,6 +294,17 @@ class RelatedTrendPayload:
     status: str
     rank: int
     score_total: float
+    relationship_strength: float
+
+
+@dataclass(frozen=True)
+class TrendDuplicateCandidatePayload:
+    """Potential duplicate trend entry for detail pages."""
+
+    id: str
+    name: str
+    similarity: float
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -280,6 +314,11 @@ class TrendDetailRecordPayload:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
+    why_now: list[str]
     status: str
     volatility: str
     rank: int
@@ -294,13 +333,16 @@ class TrendDetailRecordPayload:
     opportunity: OpportunityPayload
     coverage: TrendCoveragePayload
     sources: list[str]
+    aliases: list[str]
     history: list[TrendHistoryPointPayload]
     source_breakdown: list[TrendSourceBreakdownPayload]
     source_contributions: list[TrendSourceContributionPayload]
+    market_footprint: list[TrendMarketMetricPayload]
     geo_summary: list[TrendGeoSummaryPayload]
     audience_summary: list[TrendAudienceSegmentPayload]
     evidence_items: list[TrendEvidenceItemPayload]
     primary_evidence: TrendPrimaryEvidencePayload | None
+    duplicate_candidates: list[TrendDuplicateCandidatePayload]
     related_trends: list[RelatedTrendPayload]
     seasonality: SeasonalityPayload | None = None
 
@@ -390,6 +432,7 @@ class DashboardOverviewSectionsPayload:
     top_trends: list[DashboardOverviewTrendItemPayload]
     breakout_trends: list[DashboardOverviewTrendItemPayload]
     rising_trends: list[DashboardOverviewTrendItemPayload]
+    experimental_trends: list[DashboardOverviewTrendItemPayload]
     meta_trends: list[DashboardOverviewMetaTrendPayload]
 
 
@@ -398,6 +441,7 @@ class DashboardOverviewSourcePayload:
     """Source-level aggregate for overview and source health summary."""
 
     source: str
+    family: str
     signal_count: int
     trend_count: int
     status: str
@@ -407,7 +451,12 @@ class DashboardOverviewSourcePayload:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
 
@@ -437,6 +486,12 @@ class DashboardOverviewRunPayload:
     top_trend_id: str | None
     top_trend_name: str | None
     top_score: float | None
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
+    multi_source_trend_count: int
+    low_evidence_trend_count: int
 
 
 @dataclass(frozen=True)
@@ -483,8 +538,9 @@ class DashboardOverviewPayload:
         payload["sections"]["topTrends"] = payload["sections"].pop("top_trends")
         payload["sections"]["breakoutTrends"] = payload["sections"].pop("breakout_trends")
         payload["sections"]["risingTrends"] = payload["sections"].pop("rising_trends")
+        payload["sections"]["experimentalTrends"] = payload["sections"].pop("experimental_trends")
         payload["sections"]["metaTrends"] = payload["sections"].pop("meta_trends")
-        for section_name in ("topTrends", "breakoutTrends", "risingTrends"):
+        for section_name in ("topTrends", "breakoutTrends", "risingTrends", "experimentalTrends"):
             for trend in payload["sections"][section_name]:
                 trend["scoreTotal"] = trend.pop("score_total")
         for trend in payload["sections"]["metaTrends"]:
@@ -507,6 +563,12 @@ class DashboardOverviewPayload:
             run["topTrendId"] = run.pop("top_trend_id")
             run["topTrendName"] = run.pop("top_trend_name")
             run["topScore"] = run.pop("top_score")
+            run["rawTopicCount"] = run.pop("raw_topic_count")
+            run["mergedTopicCount"] = run.pop("merged_topic_count")
+            run["duplicateTopicCount"] = run.pop("duplicate_topic_count")
+            run["duplicateTopicRate"] = run.pop("duplicate_topic_rate")
+            run["multiSourceTrendCount"] = run.pop("multi_source_trend_count")
+            run["lowEvidenceTrendCount"] = run.pop("low_evidence_trend_count")
         for source in payload["sources"]:
             source["signalCount"] = source.pop("signal_count")
             source["trendCount"] = source.pop("trend_count")
@@ -516,7 +578,12 @@ class DashboardOverviewPayload:
             source["latestItemCount"] = source.pop("latest_item_count")
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
+            source["signalYieldRatio"] = source.pop("signal_yield_ratio")
             source["durationMs"] = source.pop("duration_ms")
+            source["rawTopicCount"] = source.pop("raw_topic_count")
+            source["mergedTopicCount"] = source.pop("merged_topic_count")
+            source["duplicateTopicCount"] = source.pop("duplicate_topic_count")
+            source["duplicateTopicRate"] = source.pop("duplicate_topic_rate")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
         payload["sourceWatch"] = payload.pop("source_watch")
@@ -534,6 +601,10 @@ class SourceRunPayload:
     kept_item_count: int
     yield_rate_percent: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
 
@@ -549,10 +620,29 @@ class SourceSummaryTrendPayload:
 
 
 @dataclass(frozen=True)
+class SourceFamilySnapshotPayload:
+    """Historical rollup for one source family."""
+
+    family: str
+    label: str
+    captured_at: str
+    source_count: int
+    healthy_source_count: int
+    signal_count: int
+    trend_count: int
+    corroborated_trend_count: int
+    top_ranked_trend_count: int
+    average_score: float
+    average_yield_rate_percent: float
+    success_rate_percent: float
+
+
+@dataclass(frozen=True)
 class SourceSummaryRecordPayload:
     """Detailed source summary for source health pages."""
 
     source: str
+    family: str
     status: str
     latest_fetch_at: str | None
     latest_success_at: str | None
@@ -560,7 +650,12 @@ class SourceSummaryRecordPayload:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
     signal_count: int
@@ -575,12 +670,14 @@ class SourceSummaryPayload:
 
     generated_at: str
     sources: list[SourceSummaryRecordPayload]
+    family_history: list[SourceFamilySnapshotPayload]
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serializable dictionary with API-style keys."""
 
         payload = asdict(self)
         payload["generatedAt"] = payload.pop("generated_at")
+        payload["familyHistory"] = payload.pop("family_history")
         for source in payload["sources"]:
             source["latestFetchAt"] = source.pop("latest_fetch_at")
             source["latestSuccessAt"] = source.pop("latest_success_at")
@@ -588,7 +685,12 @@ class SourceSummaryPayload:
             source["latestItemCount"] = source.pop("latest_item_count")
             source["keptItemCount"] = source.pop("kept_item_count")
             source["yieldRatePercent"] = source.pop("yield_rate_percent")
+            source["signalYieldRatio"] = source.pop("signal_yield_ratio")
             source["durationMs"] = source.pop("duration_ms")
+            source["rawTopicCount"] = source.pop("raw_topic_count")
+            source["mergedTopicCount"] = source.pop("merged_topic_count")
+            source["duplicateTopicCount"] = source.pop("duplicate_topic_count")
+            source["duplicateTopicRate"] = source.pop("duplicate_topic_rate")
             source["usedFallback"] = source.pop("used_fallback")
             source["errorMessage"] = source.pop("error_message")
             source["signalCount"] = source.pop("signal_count")
@@ -602,10 +704,25 @@ class SourceSummaryPayload:
                 run["keptItemCount"] = run.pop("kept_item_count")
                 run["yieldRatePercent"] = run.pop("yield_rate_percent")
                 run["durationMs"] = run.pop("duration_ms")
+                run["rawTopicCount"] = run.pop("raw_topic_count")
+                run["mergedTopicCount"] = run.pop("merged_topic_count")
+                run["duplicateTopicCount"] = run.pop("duplicate_topic_count")
+                run["duplicateTopicRate"] = run.pop("duplicate_topic_rate")
                 run["usedFallback"] = run.pop("used_fallback")
                 run["errorMessage"] = run.pop("error_message")
             for trend in source["topTrends"]:
                 trend["scoreTotal"] = trend.pop("score_total")
+        for family in payload["familyHistory"]:
+            family["capturedAt"] = family.pop("captured_at")
+            family["sourceCount"] = family.pop("source_count")
+            family["healthySourceCount"] = family.pop("healthy_source_count")
+            family["signalCount"] = family.pop("signal_count")
+            family["trendCount"] = family.pop("trend_count")
+            family["corroboratedTrendCount"] = family.pop("corroborated_trend_count")
+            family["topRankedTrendCount"] = family.pop("top_ranked_trend_count")
+            family["averageScore"] = family.pop("average_score")
+            family["averageYieldRatePercent"] = family.pop("average_yield_rate_percent")
+            family["successRatePercent"] = family.pop("success_rate_percent")
         return payload
 
 
@@ -621,6 +738,7 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     """Serialize an explorer record using API-style keys."""
 
     payload = asdict(trend)
+    payload["metaTrend"] = payload.pop("meta_trend")
     payload["previousRank"] = payload.pop("previous_rank")
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
@@ -655,6 +773,7 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     """Serialize a trend detail record using API-style keys."""
 
     payload = asdict(trend)
+    payload["metaTrend"] = payload.pop("meta_trend")
     payload["previousRank"] = payload.pop("previous_rank")
     payload["rankChange"] = payload.pop("rank_change")
     payload["firstSeenAt"] = payload.pop("first_seen_at")
@@ -674,11 +793,14 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["coverage"]["signalCount"] = payload["coverage"].pop("signal_count")
     payload["sourceBreakdown"] = payload.pop("source_breakdown")
     payload["sourceContributions"] = payload.pop("source_contributions")
+    payload["marketFootprint"] = payload.pop("market_footprint")
     payload["geoSummary"] = payload.pop("geo_summary")
     payload["audienceSummary"] = payload.pop("audience_summary")
     payload["evidenceItems"] = payload.pop("evidence_items")
     payload["primaryEvidence"] = payload.pop("primary_evidence")
+    payload["duplicateCandidates"] = payload.pop("duplicate_candidates")
     payload["relatedTrends"] = payload.pop("related_trends")
+    payload["whyNow"] = payload.pop("why_now")
     for point in payload["history"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")
@@ -690,6 +812,13 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         source["latestSignalAt"] = source.pop("latest_signal_at")
         source["estimatedScore"] = source.pop("estimated_score")
         source["scoreSharePercent"] = source.pop("score_share_percent")
+    for metric in payload["marketFootprint"]:
+        metric["metricKey"] = metric.pop("metric_key")
+        metric["valueNumeric"] = metric.pop("value_numeric")
+        metric["valueDisplay"] = metric.pop("value_display")
+        metric["capturedAt"] = metric.pop("captured_at")
+        metric["provenanceUrl"] = metric.pop("provenance_url")
+        metric["isEstimated"] = metric.pop("is_estimated")
     for geo in payload["geoSummary"]:
         geo["countryCode"] = geo.pop("country_code")
         geo["signalCount"] = geo.pop("signal_count")
@@ -715,4 +844,5 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
         payload["primaryEvidence"]["evidenceUrl"] = payload["primaryEvidence"].pop("evidence_url")
     for item in payload["relatedTrends"]:
         item["scoreTotal"] = item.pop("score_total")
+        item["relationshipStrength"] = item.pop("relationship_strength")
     return payload

@@ -1,66 +1,175 @@
-"""Reddit source adapter using the public JSON listing API."""
+"""Reddit source adapter using the public Atom/RSS feed.
+
+Reddit's JSON API now blocks unauthenticated bot requests (403).
+The Atom feed at /hot.rss remains publicly accessible and returns
+titles, permalinks, timestamps, and subreddit labels — enough for
+topic extraction.  Engagement scores are unavailable via RSS so
+posts that made it to "hot" receive a base engagement value that
+scales by position in the feed (higher-ranked = hotter).
+"""
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from app.models import RawSourceItem
 from app.sources.base import SourceAdapter
 
+ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
+BASE_ENGAGEMENT = 500
+"""Baseline engagement value for a post that made Reddit's hot feed."""
+
 
 class RedditSourceAdapter(SourceAdapter):
-    """Fetch hot Reddit posts via RSS and normalize them."""
+    """Fetch Reddit posts from multiple curated RSS feeds and normalize them."""
 
     source_name = "reddit"
     TREND_SUBREDDITS = [
         "technology",
+        "news",
+        "worldnews",
+        "politics",
+        "geopolitics",
+        "sports",
+        "nba",
+        "nfl",
+        "soccer",
+        "games",
+        "pcgaming",
+        "movies",
+        "television",
+        "popculturechat",
         "programming",
         "MachineLearning",
+        "artificial",
+        "LocalLLaMA",
         "opensource",
         "startups",
+        "entrepreneur",
+        "SaaS",
+        "singularity",
+        "sideproject",
+        "indiehackers",
     ]
+    FEED_SPECS = (
+        ("hot", None),
+        ("new", None),
+        ("top", "day"),
+        ("top", "week"),
+    )
+    SUBREDDITS_PER_FEED = 4
 
     def fetch(self) -> list[RawSourceItem]:
         try:
-            return self._fetch_listing()
+            return self._fetch_rss()
         except Exception as error:
             self.log_fallback(error)
             return self.normalize_items(self.sample_payload())
 
-    def _fetch_listing(self) -> list[RawSourceItem]:
-        """Fetch multiple bounded listing pages from Reddit's public JSON endpoint."""
+    def _fetch_rss(self) -> list[RawSourceItem]:
+        """Fetch multiple curated Reddit feeds for better topic coverage."""
 
-        subreddit_path = "+".join(self.TREND_SUBREDDITS)
-        url = f"https://www.reddit.com/r/{subreddit_path}/hot.json?raw_json=1&limit=100"
-        headers = {
-            "User-Agent": self.settings.reddit_user_agent,
-            "Accept": "application/json",
-        }
         items: list[RawSourceItem] = []
         seen_ids: set[str] = set()
-        after: str | None = None
-        seen_after_tokens: set[str] = set()
+        subreddit_groups = self._subreddit_groups()
+        feed_limit = max(4, min(self.settings.max_items_per_source // max(len(subreddit_groups), 1), 8))
+        feed_specs = self.FEED_SPECS[: max(1, min(self.settings.reddit_page_limit, len(self.FEED_SPECS)))]
 
-        for _ in range(max(1, self.settings.reddit_page_limit)):
-            page_url = url if after is None else f"{url}&after={after}"
-            payload = self.get_json(page_url, headers=headers)
-            page_items = self.normalize_items(payload, limit=self.settings.max_items_per_source)
-            self.raw_item_count += len(payload.get("data", {}).get("children", []))
-            for item in page_items:
-                if item.external_id in seen_ids:
-                    continue
-                seen_ids.add(item.external_id)
-                items.append(item)
-                self.kept_item_count += 1
-                if len(items) >= self.settings.max_items_per_source:
-                    return items
-            after_value = payload.get("data", {}).get("after")
-            after = str(after_value).strip() if after_value else None
-            if not after or after in seen_after_tokens:
-                break
-            seen_after_tokens.add(after)
+        for feed_name, time_window in feed_specs:
+            for subreddit_group in subreddit_groups:
+                subreddit_path = "+".join(subreddit_group)
+                url = self._build_feed_url(subreddit_path, feed_name, feed_limit, time_window)
+                headers = {
+                    "User-Agent": self.settings.reddit_user_agent,
+                    "Accept": "application/atom+xml",
+                }
+                raw = self.get_url(url, headers=headers)
+                root = ET.fromstring(raw.decode("utf-8"))
+                entries = root.findall("atom:entry", ATOM_NS)
+                self.raw_item_count += len(entries)
+
+                for position, entry in enumerate(entries):
+                    item = self._build_item_from_entry(entry, position, feed_name, time_window)
+                    if item is None or item.external_id in seen_ids:
+                        continue
+                    seen_ids.add(item.external_id)
+                    items.append(item)
+                    self.kept_item_count += 1
+                    if len(items) >= self.settings.max_items_per_source:
+                        return items
 
         return items
+
+    def _subreddit_groups(self) -> list[list[str]]:
+        """Split the subreddit list into small feed batches to widen coverage."""
+
+        group_size = max(1, self.SUBREDDITS_PER_FEED)
+        return [
+            self.TREND_SUBREDDITS[index : index + group_size]
+            for index in range(0, len(self.TREND_SUBREDDITS), group_size)
+        ]
+
+    @staticmethod
+    def _build_feed_url(subreddit_path: str, feed_name: str, limit: int, time_window: str | None) -> str:
+        """Return one Reddit RSS URL for a subreddit batch and feed type."""
+
+        url = f"https://www.reddit.com/r/{subreddit_path}/{feed_name}.rss?limit={limit}"
+        if time_window:
+            url = f"{url}&t={time_window}"
+        return url
+
+    def _build_item_from_entry(
+        self,
+        entry: ET.Element,
+        position: int,
+        feed_name: str,
+        time_window: str | None,
+    ) -> RawSourceItem | None:
+        """Normalize one Atom entry into a shared source item."""
+
+        title_el = entry.find("atom:title", ATOM_NS)
+        link_el = entry.find("atom:link", ATOM_NS)
+        updated_el = entry.find("atom:updated", ATOM_NS)
+        id_el = entry.find("atom:id", ATOM_NS)
+        cat_el = entry.find("atom:category", ATOM_NS)
+
+        title = (title_el.text or "").strip() if title_el is not None else ""
+        link = (link_el.get("href", "") if link_el is not None else "")
+        updated = (updated_el.text or "") if updated_el is not None else ""
+        external_id = (id_el.text or "").strip() if id_el is not None else ""
+        subreddit = (cat_el.get("term", "") if cat_el is not None else "")
+
+        if not title or not external_id:
+            return None
+
+        engagement = self._estimate_engagement(position, feed_name, time_window)
+        metadata = {"subreddit": subreddit, "feed": feed_name}
+        if time_window:
+            metadata["window"] = time_window
+
+        return RawSourceItem(
+            source=self.source_name,
+            external_id=external_id,
+            title=title,
+            url=link,
+            timestamp=self._parse_updated(updated),
+            engagement_score=float(engagement),
+            metadata=metadata,
+        )
+
+    @staticmethod
+    def _estimate_engagement(position: int, feed_name: str, time_window: str | None) -> float:
+        """Estimate feed engagement with a modest boost for harder-to-reach top feeds."""
+
+        feed_boost = 0
+        if feed_name == "top" and time_window == "week":
+            feed_boost = 90
+        elif feed_name == "top" and time_window == "day":
+            feed_boost = 60
+        elif feed_name == "new":
+            feed_boost = 20
+        return max(BASE_ENGAGEMENT + feed_boost - position * 10, 50)
 
     @staticmethod
     def _parse_updated(date_str: str) -> datetime:

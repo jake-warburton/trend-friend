@@ -14,6 +14,10 @@ import { buildGeoMapData, formatCountryLabel, lookupCountryCode } from "@/lib/ge
 import type { GeoMapDatum } from "@/lib/geo-map-data";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const MAP_EMPTY_FILL = "var(--map-fill-empty)";
+const MAP_STROKE = "var(--map-stroke)";
+const MAP_BACKGROUND = "var(--map-background)";
+const MAP_ACTIVE_RGB = "var(--map-fill-active-rgb)";
 
 type TooltipState = {
   datum: GeoMapDatum;
@@ -23,14 +27,19 @@ type TooltipState = {
 
 export function GeoMap({
   data,
+  mapData,
   height = 420,
+  selectedCountryCode,
+  onCountrySelect,
 }: {
-  data: TrendGeoSummary[];
+  data?: TrendGeoSummary[];
+  mapData?: GeoMapDatum[];
   height?: number;
+  selectedCountryCode?: string | null;
+  onCountrySelect?: (countryCode: string) => void;
 }) {
-  const mapData = buildGeoMapData(data);
-  const activeCountryCodes = new Set(mapData.map((d) => d.countryCode));
-  const dataByCode = new Map(mapData.map((d) => [d.countryCode, d]));
+  const resolvedMapData = mapData ?? buildGeoMapData(data ?? []);
+  const dataByCode = new Map(resolvedMapData.map((d) => [d.countryCode, d]));
 
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
@@ -46,19 +55,25 @@ export function GeoMap({
   }, []);
 
   function getCountryFill(code: string | undefined): string {
-    if (!code) return "#151b27";
+    if (!code) return MAP_EMPTY_FILL;
     const datum = dataByCode.get(code);
-    if (!datum) return "#151b27";
+    if (!datum) return MAP_EMPTY_FILL;
+    if (selectedCountryCode && selectedCountryCode === code) {
+      return `rgba(${MAP_ACTIVE_RGB}, 0.82)`;
+    }
     const alpha = 0.15 + datum.intensity * 0.55;
-    return `rgba(94, 107, 255, ${alpha.toFixed(2)})`;
+    return `rgba(${MAP_ACTIVE_RGB}, ${alpha.toFixed(2)})`;
   }
 
   function getCountryHoverFill(code: string | undefined): string {
-    if (!code) return "#1a2030";
+    if (!code) return MAP_EMPTY_FILL;
     const datum = dataByCode.get(code);
-    if (!datum) return "#1a2030";
+    if (!datum) return MAP_EMPTY_FILL;
+    if (selectedCountryCode && selectedCountryCode === code) {
+      return `rgba(${MAP_ACTIVE_RGB}, 0.88)`;
+    }
     const alpha = 0.25 + datum.intensity * 0.55;
-    return `rgba(94, 107, 255, ${alpha.toFixed(2)})`;
+    return `rgba(${MAP_ACTIVE_RGB}, ${alpha.toFixed(2)})`;
   }
 
   return (
@@ -68,17 +83,16 @@ export function GeoMap({
         projectionConfig={{ scale: 160 }}
         width={800}
         height={height}
-        style={{ width: "100%", height: "auto", background: "#0b0e14" }}
+        style={{ width: "100%", height: "auto", background: MAP_BACKGROUND }}
       >
         <ZoomableGroup>
-          <Graticule stroke="#1e2838" strokeWidth={0.4} />
+          <Graticule stroke={MAP_STROKE} strokeWidth={0.4} />
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
                 const numericId = String(geo.id).padStart(3, "0");
                 const geographyName = String(geo.properties?.name ?? numericId);
                 const alpha2 = lookupCountryCode(numericId, geographyName);
-                const isActive = alpha2 ? activeCountryCodes.has(alpha2) : false;
                 const datum = alpha2 ? dataByCode.get(alpha2) : undefined;
                 const hoverDatum = datum
                   ?? (alpha2
@@ -108,20 +122,25 @@ export function GeoMap({
                     key={geo.rsmKey}
                     geography={geo}
                     fill={getCountryFill(alpha2)}
-                    stroke="#1e2838"
-                    strokeWidth={0.5}
+                    stroke={MAP_STROKE}
+                    strokeWidth={selectedCountryCode && selectedCountryCode === alpha2 ? 0.9 : 0.5}
                     onMouseMove={
                       hoverDatum
                         ? (event: React.MouseEvent) => handleMouseMove(hoverDatum, event)
                         : undefined
                     }
                     onMouseLeave={hoverDatum ? handleMouseLeave : undefined}
+                    onClick={
+                      alpha2 && datum && onCountrySelect
+                        ? () => onCountrySelect(alpha2)
+                        : undefined
+                    }
                     style={{
                       default: { outline: "none" },
                       hover: {
                         fill: getCountryHoverFill(alpha2),
                         outline: "none",
-                        cursor: hoverDatum ? "pointer" : "default",
+                        cursor: datum && onCountrySelect ? "pointer" : hoverDatum ? "pointer" : "default",
                       },
                       pressed: { outline: "none" },
                     }}
@@ -158,6 +177,16 @@ export function GeoMap({
                 />
               </div>
               <small>{Math.round(tooltip.datum.averageConfidence * 100)}% avg confidence</small>
+              {tooltip.datum.contributingTrends && tooltip.datum.contributingTrends.length > 0 ? (
+                <div className="geo-map-trend-list">
+                  {tooltip.datum.contributingTrends.map((trend) => (
+                    <div className="geo-map-trend-row" key={`${tooltip.datum.countryCode}-${trend.id}`}>
+                      <span>{trend.name}</span>
+                      <small>{trend.signalCount}</small>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </>
           ) : (
             <small>No tagged signals</small>

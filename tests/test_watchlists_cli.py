@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from app.alerts.evaluate import RULE_TYPE_SCORE_ABOVE, AlertEvent
 from app.data.database import initialize_database
 from app.data.repositories import TrendScoreRepository, WatchlistRepository
+from app.models import TrendScoreResult
 
 
 def _insert_trend_score(connection: sqlite3.Connection, topic: str, total: float = 42.0) -> None:
@@ -175,6 +176,42 @@ class ShareWatchlistTests(unittest.TestCase):
 
         refreshed = build_payload(self.watchlist_repo, self.score_repo)
         self.assertEqual(refreshed["watchlists"][0]["defaultShareExpiryDays"], 30)
+
+    def test_create_thesis_updates_payload(self) -> None:
+        from scripts.watchlists_api import create_thesis_payload
+
+        self.score_repo.append_snapshot(
+            [
+                TrendScoreResult(
+                    topic="AI Agents",
+                    total_score=55.5,
+                    search_score=8.0,
+                    social_score=12.0,
+                    developer_score=10.0,
+                    knowledge_score=6.0,
+                    diversity_score=6.0,
+                    evidence=["ev1"],
+                    source_counts={"reddit": 3},
+                    latest_timestamp=datetime(2026, 3, 9, tzinfo=timezone.utc),
+                )
+            ],
+            captured_at=datetime(2026, 3, 9, tzinfo=timezone.utc),
+        )
+        watchlist = self.watchlist_repo.create_watchlist("Thesis List")
+        self.watchlist_repo.add_item(watchlist.id, "ai-agents", "AI Agents")
+
+        result = create_thesis_payload(
+            self.watchlist_repo,
+            self.score_repo,
+            watchlist_id=watchlist.id,
+            name="Builder thesis",
+            lens="product",
+            minimum_score=20.0,
+            notify_on_match=True,
+        )
+
+        self.assertEqual(result["theses"][0]["name"], "Builder thesis")
+        self.assertEqual(result["thesisMatches"][0]["trendId"], "ai-agents")
 
 
 class GetSharedWatchlistTests(unittest.TestCase):

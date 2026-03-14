@@ -8,7 +8,9 @@ import {
   buildSharedWatchlistExportHref,
   buildLanguageFilterOptions,
   buildMarketFilterOptions,
+  isThesisPresetApplied,
   listActiveExplorerFilters,
+  shouldClearActiveThesisPreset,
   trendMatchesAudience,
   trendMatchesLanguage,
   trendMatchesMarket,
@@ -174,7 +176,7 @@ test("buildAudienceFilterOptions returns readable audience labels for explorer f
       score: { total: 10, social: 2, developer: 6, knowledge: 1, search: 1, diversity: 0 },
       momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
       breakoutPrediction: { confidence: 0.7, predictedDirection: "up", signals: [] },
-      opportunity: { composite: 5, content: 4, product: 6, investment: 5, reasoning: [] },
+      opportunity: { composite: 5, discovery: 4, seo: 5, content: 4, product: 6, investment: 5, reasoning: [] },
       coverage: { sourceCount: 2, signalCount: 5 },
       sources: ["github"],
       history: [],
@@ -219,7 +221,7 @@ test("buildAudienceFilterOptions returns readable audience labels for explorer f
       score: { total: 8, social: 4, developer: 1, knowledge: 1, search: 2, diversity: 0 },
       momentum: { previousRank: 3, rankChange: 1, absoluteDelta: 2, percentDelta: 30 },
       breakoutPrediction: { confidence: 0.6, predictedDirection: "up", signals: [] },
-      opportunity: { composite: 4, content: 5, product: 4, investment: 3, reasoning: [] },
+      opportunity: { composite: 4, discovery: 5, seo: 4, content: 5, product: 4, investment: 3, reasoning: [] },
       coverage: { sourceCount: 2, signalCount: 4 },
       sources: ["reddit"],
       history: [],
@@ -280,7 +282,7 @@ test("trendMatchesAudience supports explorer audience filtering", () => {
     score: { total: 10, social: 2, developer: 6, knowledge: 1, search: 1, diversity: 0 },
     momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
     breakoutPrediction: { confidence: 0.7, predictedDirection: "up", signals: [] },
-    opportunity: { composite: 5, content: 4, product: 6, investment: 5, reasoning: [] },
+    opportunity: { composite: 5, discovery: 4, seo: 5, content: 4, product: 6, investment: 5, reasoning: [] },
     coverage: { sourceCount: 2, signalCount: 5 },
     sources: ["github"],
     history: [],
@@ -327,10 +329,15 @@ test("listActiveExplorerFilters returns readable chips for non-default explorer 
       keyword: "robotics",
       selectedSource: "github",
       selectedCategory: "developer-tools",
+      selectedLens: "seo",
       selectedAudience: "developer",
       selectedMarket: "b2b",
       selectedLanguage: "en",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+      selectedGeoCountry: "GB",
+>>>>>>> main
       sortBy: "score",
 =======
       selectedGeoCountry: "GB",
@@ -344,10 +351,15 @@ test("listActiveExplorerFilters returns readable chips for non-default explorer 
       { key: "keyword", label: "Keyword", value: "robotics" },
       { key: "source", label: "Source", value: "GitHub" },
       { key: "category", label: "Category", value: "Developer Tools" },
+      { key: "lens", label: "Lens", value: "SEO" },
       { key: "audience", label: "Audience", value: "Developer" },
       { key: "market", label: "Market", value: "B2B" },
       { key: "language", label: "Language", value: "English" },
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+      { key: "geo", label: "Geo", value: "GB - Great Britain" },
+>>>>>>> main
       { key: "sort", label: "Sort", value: "Score" },
 =======
       { key: "geo", label: "Geo", value: "GB - Great Britain" },
@@ -358,8 +370,11 @@ test("listActiveExplorerFilters returns readable chips for non-default explorer 
     ],
   );
 });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> main
 
 test("isThesisPresetApplied only stays active while the full preset remains applied", () => {
   const preset = {
@@ -386,8 +401,11 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
       selectedGeoCountry: "all",
       minimumScore: 18,
       sortBy: "rank",
+<<<<<<< HEAD
       sortDirection: "asc",
       selectedStatus: "all",
+=======
+>>>>>>> main
       hideRecurring: true,
     }),
     true,
@@ -408,8 +426,11 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
       selectedGeoCountry: "all",
       minimumScore: 18,
       sortBy: "rank",
+<<<<<<< HEAD
       sortDirection: "asc",
       selectedStatus: "all",
+=======
+>>>>>>> main
       hideRecurring: false,
     }),
     false,
@@ -430,8 +451,11 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
       selectedGeoCountry: "all",
       minimumScore: 12,
       sortBy: "rank",
+<<<<<<< HEAD
       sortDirection: "asc",
       selectedStatus: "all",
+=======
+>>>>>>> main
       hideRecurring: true,
     }),
     false,
@@ -453,4 +477,7 @@ test("shouldClearActiveThesisPreset only clears when clicking the active preset"
   assert.equal(shouldClearActiveThesisPreset("seo", preset), false);
   assert.equal(shouldClearActiveThesisPreset(null, preset), false);
 });
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main

@@ -15,8 +15,12 @@ _RSS_BASE = "https://trends.google.com/trending/rss?geo={geo}"
 _REGIONS = [
     ("US", "United States", "US"),
     ("GB", "United Kingdom", "GB"),
+    ("CA", "Canada", "CA"),
+    ("AU", "Australia", "AU"),
     ("DE", "Germany", "DE"),
+    ("FR", "France", "FR"),
     ("IN", "India", "IN"),
+    ("JP", "Japan", "JP"),
 ]
 
 

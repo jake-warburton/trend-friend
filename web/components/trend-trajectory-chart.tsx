@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   CartesianGrid,
   Legend,
@@ -21,12 +23,34 @@ type TrendTrajectoryChartProps = {
 
 const PALETTE = ["#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#9b8cff"];
 const HISTORY_BUCKET_MINUTES = 5;
+const CHART_AXIS_COLOR = "var(--chart-axis)";
+const CHART_GRID_COLOR = "var(--chart-grid)";
+const LEGEND_TEXT_COLOR = "#ffffff";
+const LEGEND_HEIGHT = 34;
+const MOBILE_BREAKPOINT_PX = 640;
+const MAX_HISTORY_POINTS_DESKTOP = 17;
+const MAX_HISTORY_POINTS_MOBILE = 8;
+
+type TrajectoryLegendEntry = {
+  value?: string;
+  color?: string;
+};
 
 type ChartTrend = TrendDetailRecord & {
   chartHistory: Array<{ capturedAt: string; scoreTotal: number }>;
 };
 
 export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajectoryChartProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX}px)`);
+    const handleChange = () => setIsMobile(mediaQuery.matches);
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   const historyByTrendId = new Map<string, Array<{ capturedAt: string; scoreTotal: number }>>();
 
   for (const snapshot of history.snapshots) {
@@ -67,7 +91,9 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     }
   }
   const timestamps = [...timestampSet].sort();
-  const sameDayHistory = new Set(timestamps.map((timestamp) => timestamp.slice(0, 10))).size === 1;
+  const maxHistoryPoints = isMobile ? MAX_HISTORY_POINTS_MOBILE : MAX_HISTORY_POINTS_DESKTOP;
+  const visibleTimestamps = timestamps.slice(-maxHistoryPoints);
+  const sameDayHistory = new Set(visibleTimestamps.map((timestamp) => timestamp.slice(0, 10))).size === 1;
 
   // Determine the maximum number of forecast points across all trends
   let maxForecastLen = 0;
@@ -78,7 +104,7 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
   }
 
   // Build chart data: one row per snapshot timestamp, one key per trend
-  const data: Record<string, string | number | undefined>[] = timestamps.map((timestamp) => {
+  const data: Record<string, string | number | undefined>[] = visibleTimestamps.map((timestamp) => {
     const row: Record<string, string | number | undefined> = {
       date: formatSnapshotLabel(timestamp, sameDayHistory),
     };
@@ -133,21 +159,24 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
     ),
     1,
   );
+  const tickInterval = isMobile ? Math.max(1, Math.floor(data.length / 4)) : "preserveStartEnd";
 
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={280}>
-        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e2838" />
+        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 12, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#7a8494", fontSize: 11 }}
-            axisLine={{ stroke: "#1e2838" }}
+            interval={tickInterval}
+            minTickGap={isMobile ? 28 : 12}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
+            axisLine={{ stroke: CHART_GRID_COLOR }}
             tickLine={false}
           />
           <YAxis
             domain={[0, Math.ceil(maxScore * 1.1)]}
-            tick={{ fill: "#7a8494", fontSize: 11 }}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
             width={40}
@@ -170,8 +199,9 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
             labelFormatter={(label) => String(label)}
           />
           <Legend
-            wrapperStyle={{ fontSize: 11, color: "#7a8494" }}
-            iconType="plainline"
+            verticalAlign="bottom"
+            height={LEGEND_HEIGHT}
+            content={<TrajectoryLegend />}
           />
           {topTrends.map((trend, i) => (
             <Line
@@ -205,6 +235,59 @@ export function TrendTrajectoryChart({ trends, history, limit = 5 }: TrendTrajec
           })}
         </LineChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+function TrajectoryLegend({ payload }: { payload?: TrajectoryLegendEntry[] }) {
+  if (!payload || payload.length === 0) {
+    return null;
+  }
+
+  const visibleEntries = payload.filter((entry) => {
+    const label = entry.value;
+    return typeof label === "string" && !label.endsWith(" forecast");
+  });
+
+  if (visibleEntries.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: "6px",
+        paddingTop: "2px",
+      }}
+    >
+      {visibleEntries.map((entry) => {
+        const label = entry.value;
+        if (!label) {
+          return null;
+        }
+
+        return (
+          <span
+            key={String(label)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "4px 8px",
+              borderRadius: "999px",
+              background: typeof entry.color === "string" ? entry.color : "var(--accent)",
+              color: LEGEND_TEXT_COLOR,
+              fontSize: "11px",
+              fontWeight: 600,
+              lineHeight: 1,
+            }}
+          >
+            {label}
+          </span>
+        );
+      })}
     </div>
   );
 }

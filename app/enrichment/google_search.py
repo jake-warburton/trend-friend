@@ -43,7 +43,7 @@ class GoogleSearchMetricsEnricher(MarketMetricEnricher):
                     value_numeric=monthly_searches,
                     value_display=f"{self.compact_number(monthly_searches)}/mo",
                     unit="searches",
-                    period="last 30 days",
+                    period="monthly",
                     captured_at=captured_at,
                     confidence=0.94,
                     provenance_url=str(source_url) if source_url else None,

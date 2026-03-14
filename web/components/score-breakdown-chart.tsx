@@ -23,6 +23,7 @@ const COMPONENT_COLORS: Record<string, string> = {
   Search: "#ffca6e",
   Diversity: "#9b8cff",
 };
+const CHART_AXIS_COLOR = "var(--chart-axis)";
 
 export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
   const data = [
@@ -41,11 +42,16 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, bottom: 4, left: 60 }}>
-          <XAxis type="number" tick={{ fill: "#7a8494", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <XAxis
+            type="number"
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
+            axisLine={false}
+            tickLine={false}
+          />
           <YAxis
             type="category"
             dataKey="label"
-            tick={{ fill: "#7a8494", fontSize: 12 }}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 12, fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
             width={70}
@@ -57,10 +63,16 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
               borderRadius: 8,
               color: "var(--copy)",
               fontSize: 12,
+              padding: "8px 12px",
+            }}
+            labelStyle={{
+              color: "var(--copy)",
+              fontSize: 12,
+              fontWeight: 600,
             }}
             formatter={(value) => [Number(value).toFixed(1), "Score"]}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} activeBar={{ opacity: 0.8 }}>
             {data.map((entry) => (
               <Cell key={entry.label} fill={COMPONENT_COLORS[entry.label] ?? "#5e6bff"} />
             ))}

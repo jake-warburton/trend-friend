@@ -38,11 +38,15 @@ def get_dashboard_overview(db: DatabaseConnection = Depends(get_db)) -> dict:
     pipeline_runs = pipeline_run_repository.list_recent_runs(limit=PIPELINE_RUN_LIMIT)
     source_runs = source_run_repository.list_latest_runs()
     latest_captured_at, _ = score_repository.list_latest_snapshot(limit=settings.ranking_limit)
+    _, experimental_scores = score_repository.list_latest_experimental_snapshot(
+        limit=settings.experimental_ranking_limit
+    )
     detail_records = score_repository.list_trend_detail_records(limit=settings.ranking_limit)
 
     payload = build_dashboard_overview_payload(
         generated_at=latest_captured_at or generated_at,
         trends=detail_records,
+        experimental_trends=experimental_scores,
         signals=signals,
         source_runs=source_runs,
         pipeline_runs=pipeline_runs,

@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.models import TrendMomentum, TrendScoreResult
+from app.topics.display import build_display_name
 
 
 @dataclass(frozen=True)
@@ -22,10 +23,22 @@ class OpportunityScore:
     trend_id: str
     trend_name: str
     composite: float  # 0.0 to 1.0
+    discovery: float  # early-detection / monitoring usefulness
+    seo: float  # search-led content opportunity
     content: float  # content creation opportunity
     product: float  # product/startup opportunity
     investment: float  # investment signal strength
     reasoning: list[str]
+
+
+HIGH_SOCIAL_SHARE = 0.45
+HIGH_DEVELOPER_SHARE = 0.4
+HIGH_SEARCH_SHARE = 0.2
+HIGH_EVIDENCE_COUNT = 5
+HIGH_SOURCE_DIVERSITY = 3
+STRONG_TOTAL_SCORE = 30.0
+INVESTMENT_GROWTH_PERCENT = 20.0
+INVESTMENT_RANK_CHANGE = 2
 
 
 def score_opportunities(
@@ -66,51 +79,117 @@ def _score_single(
     """Compute opportunity scores for a single trend."""
 
     reasoning: list[str] = []
-
-    # Content opportunity: social signal strength + evidence breadth
-    social_ratio = score.social_score / max(score.total_score, 1.0)
+    total_score = max(score.total_score, 1.0)
     evidence_count = len(score.evidence)
-    content_score = min(1.0, (social_ratio * 0.5) + (min(evidence_count, 8) / 8.0 * 0.3) + (0.2 if evidence_count >= 3 else 0.0))
-    if content_score >= 0.6:
-        reasoning.append(f"Strong content play (social {score.social_score:.0f}, {evidence_count} evidence items)")
+    source_diversity = len(score.source_counts)
+    social_share = score.social_score / total_score
+    developer_share = score.developer_score / total_score
+    search_share = score.search_score / total_score
+    knowledge_share = score.knowledge_score / total_score
+    evidence_breadth = min(evidence_count / 6.0, 1.0)
+    source_breadth = min(source_diversity / 4.0, 1.0)
+    total_score_factor = min(score.total_score / 45.0, 1.0)
+    rank_factor = max(0.0, 1.0 - (rank - 1) / 20.0)
+    momentum_factor = _momentum_factor(momentum)
+    search_authority = min((search_share + knowledge_share) / 0.45, 1.0)
+    early_status_factor = 1.0 if status in {"new", "breakout"} else 0.78 if status == "rising" else 0.4 if status == "steady" else 0.18
 
-    # Product opportunity: developer signal + absolute score + rank
-    dev_ratio = score.developer_score / max(score.total_score, 1.0)
-    rank_factor = max(0.0, 1.0 - (rank - 1) / 25.0)
-    product_score = min(1.0, dev_ratio * 0.4 + rank_factor * 0.3 + min(score.total_score / 50.0, 1.0) * 0.3)
-    if product_score >= 0.6:
-        reasoning.append(f"Product opportunity (dev {score.developer_score:.0f}, rank #{rank})")
+    content_score = min(
+        1.0,
+        social_share * 0.45
+        + search_share * 0.25
+        + evidence_breadth * 0.2
+        + source_breadth * 0.1,
+    )
+    if social_share >= HIGH_SOCIAL_SHARE and search_share >= HIGH_SEARCH_SHARE:
+        reasoning.append(
+            f"Strong content angle: social demand and search validation are both elevated ({score.social_score:.0f} social, {score.search_score:.0f} search)"
+        )
+    elif content_score >= 0.6:
+        reasoning.append(f"Strong content angle: broad public conversation across {evidence_count} evidence items")
 
-    # Investment signal: growth velocity + multi-source validation
-    growth_factor = 0.0
-    if momentum is not None:
-        if momentum.percent_delta is not None and momentum.percent_delta > 0:
-            growth_factor = min(momentum.percent_delta / 50.0, 1.0)
-        if momentum.rank_change is not None and momentum.rank_change > 0:
-            growth_factor = max(growth_factor, min(momentum.rank_change / 5.0, 1.0))
+    seo_score = min(
+        1.0,
+        search_share * 0.54
+        + knowledge_share * 0.14
+        + evidence_breadth * 0.16
+        + source_breadth * 0.12
+        + total_score_factor * 0.16,
+    )
+    if search_share >= HIGH_SEARCH_SHARE and evidence_count >= HIGH_EVIDENCE_COUNT:
+        reasoning.append(
+            f"SEO opportunity: search demand is corroborated by {evidence_count} evidence items and {source_diversity} sources"
+        )
+    elif seo_score >= 0.6:
+        reasoning.append("SEO opportunity: search-led demand is strong enough to support durable keyword capture")
 
-    source_diversity = min(len(score.source_counts) / 4.0, 1.0)
-    status_boost = 0.3 if status == "breakout" else (0.15 if status == "rising" else 0.0)
-    investment_score = min(1.0, growth_factor * 0.4 + source_diversity * 0.3 + status_boost + 0.0)
-    if investment_score >= 0.5:
-        reasoning.append(f"Investment signal ({len(score.source_counts)} sources, {status})")
+    product_score = min(
+        1.0,
+        developer_share * 0.6
+        + search_share * 0.08
+        + source_breadth * 0.15
+        + total_score_factor * 0.14
+        + rank_factor * 0.1,
+    )
+    if developer_share >= HIGH_DEVELOPER_SHARE and source_diversity >= HIGH_SOURCE_DIVERSITY:
+        reasoning.append(
+            f"Product opportunity: builder demand is leading this trend ({score.developer_score:.0f} developer score across {source_diversity} sources)"
+        )
+    elif product_score >= 0.6:
+        reasoning.append(f"Product opportunity: developer-heavy signal mix with rank #{rank} visibility")
 
-    # Composite: weighted average
-    composite = content_score * 0.3 + product_score * 0.35 + investment_score * 0.35
+    discovery_score = min(
+        1.0,
+        momentum_factor * 0.34
+        + source_breadth * 0.18
+        + evidence_breadth * 0.14
+        + early_status_factor * 0.20
+        + (1.0 - min(rank_factor, 0.85)) * 0.08
+        + search_authority * 0.06,
+    )
+    if status in {"new", "breakout"} and momentum_factor >= 0.45:
+        reasoning.append(
+            f"Discovery angle: early-stage movement is emerging with enough velocity to merit monitoring now ({status})"
+        )
+    elif discovery_score >= 0.6:
+        reasoning.append("Discovery angle: the trend is still early enough that the window to act may still be open")
+
+    status_factor = 1.0 if status == "breakout" else 0.7 if status == "rising" else 0.25 if status == "steady" else 0.1
+    investment_score = min(
+        1.0,
+        momentum_factor * 0.48
+        + source_breadth * 0.24
+        + total_score_factor * 0.14
+        + min(knowledge_share / 0.25, 1.0) * 0.04
+        + status_factor * 0.06,
+    )
+    if _has_investment_case(momentum, status, source_diversity, score.total_score):
+        reasoning.append(
+            f"Investment signal: multi-source validation with real momentum ({source_diversity} sources, {status})"
+        )
+    elif investment_score >= 0.6:
+        reasoning.append("Investment signal: durable cross-source attention with enough velocity to matter")
+
+    composite = (
+        discovery_score * 0.18
+        + seo_score * 0.18
+        + content_score * 0.22
+        + product_score * 0.24
+        + investment_score * 0.18
+    )
     composite = round(min(1.0, composite), 3)
 
     if not reasoning:
         reasoning.append("Limited actionability signals")
 
-    trend_name = " ".join(
-        part.upper() if len(part) <= 3 else part.capitalize()
-        for part in topic.split()
-    )
+    trend_name = score.display_name or build_display_name(topic, score.evidence)
 
     return OpportunityScore(
         trend_id=_slugify(topic),
         trend_name=trend_name,
         composite=composite,
+        discovery=round(discovery_score, 3),
+        seo=round(seo_score, 3),
         content=round(content_score, 3),
         product=round(product_score, 3),
         investment=round(investment_score, 3),
@@ -121,3 +200,35 @@ def _score_single(
 def _slugify(topic: str) -> str:
     normalized = "".join(c.lower() if c.isalnum() else "-" for c in topic)
     return "-".join(part for part in normalized.split("-") if part) or "trend"
+
+def _momentum_factor(momentum: TrendMomentum | None) -> float:
+    if momentum is None:
+        return 0.0
+
+    percent_factor = 0.0
+    if momentum.percent_delta is not None and momentum.percent_delta > 0:
+        percent_factor = min(momentum.percent_delta / 50.0, 1.0)
+
+    rank_factor = 0.0
+    if momentum.rank_change is not None and momentum.rank_change > 0:
+        rank_factor = min(momentum.rank_change / 5.0, 1.0)
+
+    return max(percent_factor, rank_factor)
+
+
+def _has_investment_case(
+    momentum: TrendMomentum | None,
+    status: str,
+    source_diversity: int,
+    total_score: float,
+) -> bool:
+    if source_diversity < HIGH_SOURCE_DIVERSITY or total_score < STRONG_TOTAL_SCORE:
+        return False
+    if status not in {"breakout", "rising"}:
+        return False
+    if momentum is None:
+        return False
+
+    percent_ok = (momentum.percent_delta or 0.0) >= INVESTMENT_GROWTH_PERCENT
+    rank_ok = (momentum.rank_change or 0) >= INVESTMENT_RANK_CHANGE
+    return percent_ok or rank_ok

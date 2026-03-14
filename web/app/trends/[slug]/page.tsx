@@ -1,11 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
+import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
-import { loadTrendDetail, loadTrendHistory } from "@/lib/trends";
+import { ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
+import { slugifyBrowseValue } from "@/lib/trend-browse";
+import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
+import {
+  buildSourceContributionInsights,
+  formatSourceLabel,
+  getSourceFreshnessBadge,
+  summarizeTopSourceDrivers,
+} from "@/lib/source-health";
 import { getWikipediaLinkFromDetail, loadWikipediaSummary } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
@@ -21,7 +31,18 @@ export const dynamic = "force-dynamic";
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
-  const [trend, history] = await Promise.all([loadTrendDetail(slug), loadTrendHistory()]);
+  let showEstimatedMetrics = true;
+  try {
+    const cookieStore = await cookies();
+    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
+  } catch {
+    showEstimatedMetrics = true;
+  }
+  const [trend, history, sourceSummary] = await Promise.all([
+    loadTrendDetail(slug),
+    loadTrendHistory(),
+    loadSourceSummaries(),
+  ]);
 
   if (trend === null) {
     const recentTrend = findRecentTrendSnapshot(history, slug);
@@ -39,7 +60,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 <span className="trend-date-chip">Recent snapshot</span>
                 <span className="trend-date-chip">No longer in the live ranking</span>
               </div>
-              <h1>{recentTrend.name}</h1>
+              <h1>{recentTrend.record.name}</h1>
               <p className="detail-copy">
                 Last seen at rank #{recentTrend.rank} on {formatTimestamp(recentTrend.capturedAt)} across{" "}
                 {recentTrend.record.sources.length} source{recentTrend.record.sources.length === 1 ? "" : "s"}.
@@ -47,19 +68,19 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
 
             <div className="detail-meta-grid">
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Total score</span>
                 <strong>{recentTrend.record.score.total.toFixed(1)}</strong>
               </div>
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Last rank</span>
                 <strong>#{recentTrend.rank}</strong>
               </div>
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Sources</span>
                 <strong>{recentTrend.record.sources.length}</strong>
               </div>
-              <div className="stat-card">
+              <div className="detail-stat-item">
                 <span>Last signal</span>
                 <strong>{formatDateOnly(recentTrend.record.latestSignalAt)}</strong>
               </div>
@@ -137,6 +158,10 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const primaryEvidenceLink = getPrimaryEvidenceLink(trend);
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
   const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
+  const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
+  const visibleMarketFootprint = showEstimatedMetrics
+    ? trend.marketFootprint
+    : trend.marketFootprint.filter((metric) => !metric.isEstimated);
 
   return (
     <main className="detail-page">
@@ -148,6 +173,9 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           <p className="eyebrow">Trend detail</p>
           <div className="detail-pill-row">
             <span className="trend-date-chip">{formatCategory(trend.category)}</span>
+            <span className="trend-date-chip">{trend.metaTrend}</span>
+            <span className="trend-date-chip">{formatLabel(trend.stage)}</span>
+            <span className="trend-date-chip">{Math.round(trend.confidence * 100)}% confidence</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
             <span className={volatilityClassName(trend.volatility)}>{formatVolatility(trend.volatility)}</span>
             {seasonalityBadge ? (
@@ -161,37 +189,48 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
-          {wikipediaLink ? (
-            <a className="detail-back-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
-              Open Wikipedia page for {wikipediaLink.title}
-            </a>
-          ) : null}
-          {primaryEvidenceLink?.evidenceUrl ? (
-            <a className="detail-back-link" href={primaryEvidenceLink.evidenceUrl} rel="noreferrer" target="_blank">
-              Open source item from {formatSourceLabel(primaryEvidenceLink.source)}
-            </a>
-          ) : null}
-          {trend.relatedTrends[0] ? (
-            <Link className="detail-back-link" href={`/compare?ids=${trend.id},${trend.relatedTrends[0].id}`}>
-              Compare with {trend.relatedTrends[0].name}
-            </Link>
+          {trend.summary ? <p className="detail-copy">{trend.summary}</p> : null}
+          {wikipediaLink || primaryEvidenceLink?.evidenceUrl || trend.relatedTrends[0] ? (
+            <div className="detail-action-links">
+              {wikipediaLink ? (
+                <a className="detail-back-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
+                  Open Wikipedia page for {wikipediaLink.title}
+                </a>
+              ) : null}
+              {primaryEvidenceLink?.evidenceUrl ? (
+                <a className="detail-back-link" href={primaryEvidenceLink.evidenceUrl} rel="noreferrer" target="_blank">
+                  Open source item from {formatSourceLabel(primaryEvidenceLink.source)}
+                </a>
+              ) : null}
+              {trend.relatedTrends[0] ? (
+                <Link className="detail-back-link" href={`/compare?ids=${trend.id},${trend.relatedTrends[0].id}`}>
+                  Compare with {trend.relatedTrends[0].name}
+                </Link>
+              ) : null}
+              <Link className="detail-back-link" href={`/meta-trends/${slugifyBrowseValue(trend.metaTrend)}`}>
+                Browse {trend.metaTrend}
+              </Link>
+              <Link className="detail-back-link" href={`/categories/${trend.category}`}>
+                Browse {formatCategory(trend.category)}
+              </Link>
+            </div>
           ) : null}
         </div>
 
         <div className="detail-meta-grid">
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>Total score</span>
             <strong>{trend.score.total.toFixed(1)}</strong>
           </div>
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>Movement</span>
             <strong>{formatRankChange(trend.rankChange)}</strong>
           </div>
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>Momentum</span>
             <strong>{formatMomentum(trend.momentum.percentDelta)}</strong>
           </div>
-          <div className="stat-card">
+          <div className="detail-stat-item">
             <span>First seen</span>
             <strong>{trend.firstSeenAt ? formatDateOnly(trend.firstSeenAt) : "This run"}</strong>
           </div>
@@ -221,6 +260,131 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           <ScoreBreakdownChart score={trend.score} />
         </section>
 
+        <section className="detail-panel detail-panel-wide">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Market footprint</p>
+              <h2>Platform signals</h2>
+            </div>
+          </div>
+          <div className="market-footprint-legend" aria-label="Metric source types">
+            <span className="market-footprint-legend-item">
+              <span className="market-footprint-legend-dot market-footprint-legend-dot-live" aria-hidden="true" />
+              Live provider metric
+            </span>
+            <span className="market-footprint-legend-item">
+              <span
+                className="market-footprint-legend-dot market-footprint-legend-dot-estimated"
+                aria-hidden="true"
+              />
+              Estimated fallback metric
+            </span>
+          </div>
+
+          {visibleMarketFootprint.length > 0 ? (
+            <div className="market-footprint-grid">
+              {visibleMarketFootprint.map((metric) => {
+                const freshness = formatDateOnly(metric.capturedAt);
+                return (
+                  <article className="market-footprint-card" key={`${metric.source}-${metric.metricKey}`}>
+                    <div className="market-footprint-card-header">
+                      <span>{formatSourceLabel(metric.source)}</span>
+                      {metric.isEstimated ? <small>Estimated</small> : null}
+                    </div>
+                    <strong>{metric.valueDisplay}</strong>
+                    <p>{metric.label}</p>
+                    <small>
+                      {metric.period} · {Math.round(metric.confidence * 100)}% confidence · Updated {freshness}
+                    </small>
+                    {metric.provenanceUrl ? (
+                      <a className="detail-back-link market-footprint-link" href={metric.provenanceUrl} rel="noreferrer" target="_blank">
+                        Open source
+                      </a>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : trend.marketFootprint.length > 0 && !showEstimatedMetrics ? (
+            <p className="detail-copy">
+              Estimated market metrics are currently hidden. Change this in <Link className="trend-link" href="/settings">Settings</Link>.
+            </p>
+          ) : (
+            <p className="detail-copy">
+              Market footprint enrichment is still sparse for this trend. Source-level metrics will appear here as
+              more platform evidence is captured.
+            </p>
+          )}
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Why now</p>
+              <h2>Current rationale</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {trend.whyNow.map((reason, index) => (
+              <article className="detail-list-item" key={`${trend.id}-why-now-${index}`}>
+                <div>
+                  <strong>Signal {index + 1}</strong>
+                  <span>{reason}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Canonicalization</p>
+              <h2>Tracked aliases</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {(trend.aliases.length > 0 ? trend.aliases : [trend.name]).map((alias) => (
+              <article className="detail-list-item" key={`${trend.id}-alias-${alias}`}>
+                <div>
+                  <strong>{alias}</strong>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="detail-panel">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Quality</p>
+              <h2>Potential duplicates</h2>
+            </div>
+          </div>
+
+          <div className="detail-list">
+            {(trend.duplicateCandidates.length > 0 ? trend.duplicateCandidates : []).map((candidate) => (
+              <article className="detail-list-item" key={`${trend.id}-duplicate-${candidate.id}`}>
+                <div>
+                  <strong>{candidate.name}</strong>
+                  <span>{candidate.reason}</span>
+                </div>
+                <small>{Math.round(candidate.similarity * 100)}% overlap</small>
+              </article>
+            ))}
+            {trend.duplicateCandidates.length === 0 ? (
+              <article className="detail-list-item">
+                <div>
+                  <strong>No close duplicates flagged</strong>
+                  <span>This trend currently looks distinct from the rest of the published set.</span>
+                </div>
+              </article>
+            ) : null}
+          </div>
+        </section>
+
         <section className="detail-panel">
           <div className="section-heading">
             <div>
@@ -234,7 +398,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
               <div>
                 <strong>Composite {formatOpportunityScore(trend.opportunity.composite)}</strong>
                 <span>
-                  Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
+                  Discovery {formatOpportunityScore(trend.opportunity.discovery)} · SEO{" "}
+                  {formatOpportunityScore(trend.opportunity.seo)} · Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
                   {formatOpportunityScore(trend.opportunity.product)} · Investment{" "}
                   {formatOpportunityScore(trend.opportunity.investment)}
                 </span>
@@ -307,18 +472,33 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
           </div>
 
+          <p className="source-summary-copy detail-source-summary">
+            {summarizeTopSourceDrivers(trend.sourceContributions)}
+          </p>
           <div className="detail-list">
-            {trend.sourceContributions.map((source) => (
-              <article className="detail-list-item" key={source.source}>
+            {sourceInsights.map((source) => (
+              <article className="detail-list-item detail-list-item-source" key={source.source}>
                 <div>
-                  <strong>{formatSourceLabel(source.source)}</strong>
+                  <strong>{source.title}</strong>
                   <span>
                     {source.signalCount} signals · {source.scoreSharePercent.toFixed(1)}% est. score share
                   </span>
-                  <span>{formatContributionMix(source)}</span>
+                  <span>{source.mixSummary}</span>
+                  <span>{source.fetchSummary}</span>
+                  {source.warning ? <span className="source-warning-copy">{source.warning}</span> : null}
                 </div>
                 <small>
-                  {source.estimatedScore.toFixed(1)} pts · {formatTimestamp(source.latestSignalAt)}
+                  <span className={contributionHealthClassName(source.status)}>{source.statusLabel}</span>
+                  {(() => {
+                    const freshness = getSourceFreshnessBadge(source.fetchedAt);
+                    return freshness ? (
+                      <span className={`source-freshness-badge source-freshness-badge-${freshness.tone}`}>
+                        {freshness.label}
+                      </span>
+                    ) : null;
+                  })()}
+                  {source.fetchedAt ? ` · ${formatTimestamp(source.fetchedAt)}` : ""}
+                  {` · ${source.estimatedScore.toFixed(1)} pts · ${formatTimestamp(source.latestSignalAt)}`}
                 </small>
               </article>
             ))}
@@ -399,7 +579,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                       {item.name}
                     </Link>
                   </strong>
-                  <span>{formatTrendStatus(item.status)}</span>
+                  <span>{formatTrendStatus(item.status)} · {Math.round(item.relationshipStrength * 100)}% related</span>
                 </div>
                 <small>
                   <Link className="trend-link" href={`/compare?ids=${trend.id},${item.id}`}>
@@ -529,17 +709,14 @@ function formatDateOnly(value: string) {
   }).format(new Date(value));
 }
 
-function formatSourceLabel(source: string) {
-  return source
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+function formatCategory(category: string) {
+  return formatCategoryLabel(category);
 }
 
-function formatCategory(category: string) {
-  return category
+function formatLabel(value: string) {
+  return value
     .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
     .join(" ");
 }
 
@@ -552,28 +729,10 @@ function formatOpportunityScore(value: number) {
 }
 
 function formatPredictionDirection(direction: string) {
-  return direction.charAt(0).toUpperCase() + direction.slice(1);
-}
-
-function formatContributionMix(source: TrendDetailRecord["sourceContributions"][number]) {
-  const componentScores: Array<[string, number]> = [
-    ["Social", source.score.social],
-    ["Developer", source.score.developer],
-    ["Knowledge", source.score.knowledge],
-    ["Search", source.score.search],
-    ["Diversity", source.score.diversity],
-  ];
-
-  const components = componentScores
-    .filter(([, value]) => value > 0)
-    .sort((left, right) => right[1] - left[1])
-    .slice(0, 2)
-    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
-
-  if (components.length === 0) {
-    return "No attributed score contribution";
+  if (direction === "experimental") {
+    return "Experimental";
   }
-  return components.join(" · ");
+  return direction.charAt(0).toUpperCase() + direction.slice(1);
 }
 
 function formatGeoLabel(item: {
@@ -646,6 +805,9 @@ function formatMomentum(value: number | null) {
 }
 
 function formatTrendStatus(status: string) {
+  if (status === "experimental") {
+    return "Experimental";
+  }
   if (status === "breakout") {
     return "Breakout";
   }
@@ -662,6 +824,9 @@ function formatTrendStatus(status: string) {
 }
 
 function trendStatusClassName(status: string) {
+  if (status === "experimental") {
+    return "trend-status-pill";
+  }
   if (status === "breakout") {
     return "trend-status-pill trend-status-pill-breakout";
   }
@@ -701,4 +866,17 @@ function volatilityClassName(volatility: string) {
     return "volatility-pill volatility-pill-emerging";
   }
   return "volatility-pill";
+}
+
+function contributionHealthClassName(status: string | null) {
+  if (status === "healthy") {
+    return "source-health-pill source-health-pill-healthy";
+  }
+  if (status === "degraded") {
+    return "source-health-pill source-health-pill-degraded";
+  }
+  if (status === "stale") {
+    return "source-health-pill source-health-pill-stale";
+  }
+  return "source-health-pill";
 }

@@ -231,7 +231,7 @@ test("community helpers derive category, status, source, location, and audience 
   ];
 
   assert.deepEqual(listCommunityCategoryOptions(watchlists), [
-    { value: "ai-machine-learning", label: "Ai Machine Learning (1)" },
+    { value: "ai-machine-learning", label: "AI Machine Learning (1)" },
     { value: "hardware-robotics", label: "Hardware Robotics (2)" },
   ]);
   assert.deepEqual(listCommunityStatusOptions(watchlists), [

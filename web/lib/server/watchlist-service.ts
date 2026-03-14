@@ -6,6 +6,26 @@ const execFileAsync = promisify(execFile);
 
 export type WatchlistMutationBody =
   | { action: "create-watchlist"; name: string }
+  | {
+      action: "create-thesis";
+      watchlistId: number;
+      name: string;
+      lens: string;
+      keywordQuery?: string | null;
+      source?: string | null;
+      category?: string | null;
+      stage?: string | null;
+      confidence?: string | null;
+      metaTrend?: string | null;
+      audience?: string | null;
+      market?: string | null;
+      language?: string | null;
+      geoCountry?: string | null;
+      minimumScore?: number;
+      hideRecurring?: boolean;
+      notifyOnMatch?: boolean;
+    }
+  | { action: "delete-thesis"; thesisId: number }
   | { action: "add-item"; watchlistId: number; trendId: string; trendName: string }
   | { action: "remove-item"; watchlistId: number; trendId: string }
   | { action: "revoke-share"; watchlistId: number; shareId: number }
@@ -72,6 +92,9 @@ export async function mutateWatchlists(
     if (body.action === "create-watchlist") {
       return apiPost("/watchlists", { name: body.name }, { headers: dependencies.apiHeaders });
     }
+    if (body.action === "create-thesis" || body.action === "delete-thesis") {
+      return apiPost("/watchlists", body, { headers: dependencies.apiHeaders });
+    }
     if (body.action === "add-item") {
       return apiPost("/watchlists/items", {
         action: "add",
@@ -132,6 +155,33 @@ export async function mutateWatchlists(
   const runScript = dependencies.runScript ?? runWatchlistScript;
   if (body.action === "create-watchlist") {
     return runScript("create-watchlist", "--name", body.name);
+  }
+  if (body.action === "create-thesis") {
+    return runScript(
+      "create-thesis",
+      "--watchlist-id",
+      String(body.watchlistId),
+      "--name",
+      body.name,
+      "--lens",
+      body.lens,
+      ...(body.keywordQuery ? ["--keyword-query", body.keywordQuery] : []),
+      ...(body.source ? ["--source", body.source] : []),
+      ...(body.category ? ["--category", body.category] : []),
+      ...(body.stage ? ["--stage", body.stage] : []),
+      ...(body.confidence ? ["--confidence", body.confidence] : []),
+      ...(body.metaTrend ? ["--meta-trend", body.metaTrend] : []),
+      ...(body.audience ? ["--audience", body.audience] : []),
+      ...(body.market ? ["--market", body.market] : []),
+      ...(body.language ? ["--language", body.language] : []),
+      ...(body.geoCountry ? ["--geo-country", body.geoCountry] : []),
+      ...((body.minimumScore ?? 0) > 0 ? ["--minimum-score", String(body.minimumScore)] : []),
+      ...(body.hideRecurring ? ["--hide-recurring"] : []),
+      ...(body.notifyOnMatch ? ["--notify-on-match"] : []),
+    );
+  }
+  if (body.action === "delete-thesis") {
+    return ensureSuccessPayload(await runScript("delete-thesis", "--thesis-id", String(body.thesisId)));
   }
   if (body.action === "add-item") {
     return runScript(

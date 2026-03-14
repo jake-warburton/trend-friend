@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from app.models import NormalizedSignal, TopicAggregate
+from app.topics.display import build_display_name
 from app.topics.normalize import normalize_topic_name
 
 
@@ -49,7 +50,28 @@ def find_matching_cluster_topic(
         existing_evidence = {signal.evidence for signal in existing_signals}
         if topic_evidence & existing_evidence:
             return existing_topic
+        if topics_likely_match(topic_name, existing_topic, topic_tokens, existing_tokens):
+            return existing_topic
     return None
+
+
+def topics_likely_match(
+    topic_name: str,
+    existing_topic: str,
+    topic_tokens: set[str],
+    existing_tokens: set[str],
+) -> bool:
+    """Return True when two topic labels are close enough to be clustered together."""
+
+    if topic_name == existing_topic:
+        return True
+    if topic_tokens <= existing_tokens or existing_tokens <= topic_tokens:
+        return True
+    smaller = min(len(topic_tokens), len(existing_tokens))
+    if smaller == 0:
+        return False
+    overlap_ratio = len(topic_tokens & existing_tokens) / smaller
+    return overlap_ratio >= 0.75
 
 
 def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggregate]:
@@ -79,6 +101,7 @@ def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggreg
                 average_signal_value=total_signal_value / len(topic_signals),
                 latest_timestamp=latest_timestamp,
                 evidence=evidence[:3],
+                display_name=build_display_name(topic_name, [signal.evidence for signal in topic_signals]),
             )
         )
     return aggregates

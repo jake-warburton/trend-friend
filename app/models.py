@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class RawSourceItem:
     url: str
     timestamp: datetime
     engagement_score: float
-    metadata: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     geo_flags: tuple[str, ...] = ()
     geo_country_code: str | None = None
     geo_region: str | None = None
@@ -56,6 +57,10 @@ class SourceIngestionRun:
     item_count: int
     kept_item_count: int
     duration_ms: int
+    raw_topic_count: int = 0
+    merged_topic_count: int = 0
+    duplicate_topic_count: int = 0
+    duplicate_topic_rate: float = 0.0
     used_fallback: bool = False
     error_message: str | None = None
 
@@ -71,6 +76,7 @@ class TopicAggregate:
     average_signal_value: float
     latest_timestamp: datetime
     evidence: list[str]
+    display_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +93,7 @@ class TrendScoreResult:
     evidence: list[str]
     source_counts: dict[str, int]
     latest_timestamp: datetime
+    display_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -142,10 +149,29 @@ class OpportunitySummary:
     """Actionability scoring for a trend."""
 
     composite: float
+    discovery: float
+    seo: float
     content: float
     product: float
     investment: float
     reasoning: list[str]
+
+
+@dataclass(frozen=True)
+class TrendEntity:
+    """Canonical persisted metadata for one tracked trend."""
+
+    topic_key: str
+    canonical_name: str
+    category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
+    why_now: list[str]
+    aliases: list[str]
+    first_seen_at: datetime | None
+    last_seen_at: datetime
 
 
 @dataclass(frozen=True)
@@ -155,6 +181,10 @@ class TrendExplorerRecord:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
     status: str
     volatility: str
     rank: int
@@ -196,6 +226,23 @@ class TrendSourceContribution:
     knowledge_score: float
     search_score: float
     diversity_score: float
+
+
+@dataclass(frozen=True)
+class TrendMetricSnapshot:
+    """Persisted market-footprint metric for one trend and source."""
+
+    source: str
+    metric_key: str
+    label: str
+    value_numeric: float
+    value_display: str
+    unit: str
+    period: str
+    captured_at: datetime
+    confidence: float
+    provenance_url: str | None = None
+    is_estimated: bool = False
 
 
 @dataclass(frozen=True)
@@ -261,6 +308,30 @@ class RelatedTrend:
     status: str
     rank: int
     score_total: float
+    relationship_strength: float
+
+
+@dataclass(frozen=True)
+class TrendDuplicateCandidate:
+    """Potential duplicate trend surfaced for review or curation."""
+
+    id: str
+    name: str
+    similarity: float
+    reason: str
+
+
+@dataclass(frozen=True)
+class TrendCurationOverride:
+    """Manual correction metadata applied on top of inferred trend entities."""
+
+    topic_key: str
+    suppress: bool
+    canonical_topic_key: str | None
+    preferred_name: str | None
+    preferred_meta_trend: str | None
+    preferred_stage: str | None
+    preferred_summary: str | None
 
 
 @dataclass(frozen=True)
@@ -270,6 +341,11 @@ class TrendDetailRecord:
     id: str
     name: str
     category: str
+    meta_trend: str
+    stage: str
+    confidence: float
+    summary: str
+    why_now: list[str]
     status: str
     volatility: str
     rank: int
@@ -285,6 +361,7 @@ class TrendDetailRecord:
     source_count: int
     signal_count: int
     sources: list[str]
+    aliases: list[str]
     history: list[TrendHistoryPoint]
     source_breakdown: list[TrendSourceBreakdown]
     source_contributions: list[TrendSourceContribution]
@@ -292,7 +369,9 @@ class TrendDetailRecord:
     audience_summary: list[TrendAudienceSegment]
     evidence_items: list[TrendEvidenceItem]
     primary_evidence: TrendPrimaryEvidence | None
+    duplicate_candidates: list[TrendDuplicateCandidate]
     related_trends: list[RelatedTrend]
+    market_footprint: list[TrendMetricSnapshot] = field(default_factory=list)
     seasonality: SeasonalityResult | None = None
 
 
@@ -311,6 +390,7 @@ class SourceSummaryRecord:
     """Detailed source health and contribution summary."""
 
     source: str
+    family: str
     status: str
     latest_fetch_at: datetime | None
     latest_success_at: datetime | None
@@ -318,13 +398,35 @@ class SourceSummaryRecord:
     latest_item_count: int
     kept_item_count: int
     yield_rate_percent: float
+    signal_yield_ratio: float
     duration_ms: int
+    raw_topic_count: int
+    merged_topic_count: int
+    duplicate_topic_count: int
+    duplicate_topic_rate: float
     used_fallback: bool
     error_message: str | None
     signal_count: int
     trend_count: int
     run_history: list[SourceIngestionRun]
     top_trends: list[SourceSummaryTrend]
+
+
+@dataclass(frozen=True)
+class SourceFamilySnapshot:
+    """Historical impact summary for one source family during a scoring run."""
+
+    family: str
+    captured_at: datetime
+    source_count: int
+    healthy_source_count: int
+    signal_count: int
+    trend_count: int
+    corroborated_trend_count: int
+    top_ranked_trend_count: int
+    average_score: float
+    average_yield_rate_percent: float
+    success_rate_percent: float
 
 
 @dataclass(frozen=True)
@@ -350,6 +452,12 @@ class PipelineRun:
     ranked_trend_count: int
     top_topic: str | None
     top_score: float | None
+    raw_topic_count: int = 0
+    merged_topic_count: int = 0
+    duplicate_topic_count: int = 0
+    duplicate_topic_rate: float = 0.0
+    multi_source_trend_count: int = 0
+    low_evidence_trend_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -417,6 +525,7 @@ class AlertRule:
 
     id: int
     watchlist_id: int
+    thesis_id: int | None
     name: str
     rule_type: str
     threshold: float
@@ -439,6 +548,45 @@ class AlertEventRecord:
     message: str
     triggered_at: datetime
     read: bool
+
+
+@dataclass(frozen=True)
+class TrendThesis:
+    """Saved thesis definition attached to one watchlist."""
+
+    id: int
+    watchlist_id: int
+    name: str
+    lens: str
+    keyword_query: str | None
+    source: str | None
+    category: str | None
+    stage: str | None
+    confidence: str | None
+    meta_trend: str | None
+    audience: str | None
+    market: str | None
+    language: str | None
+    geo_country: str | None
+    minimum_score: float
+    hide_recurring: bool
+    notify_on_match: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class TrendThesisMatch:
+    """Persisted active or historical match for a saved thesis."""
+
+    thesis_id: int
+    trend_id: str
+    trend_name: str
+    active: bool
+    first_matched_at: datetime
+    last_matched_at: datetime
+    lens_score: float
+    total_score: float
 
 
 @dataclass(frozen=True)

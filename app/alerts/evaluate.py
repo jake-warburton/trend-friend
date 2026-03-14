@@ -12,12 +12,14 @@ RULE_TYPE_SCORE_ABOVE = "score_above"
 RULE_TYPE_RANK_CHANGE = "rank_change"
 RULE_TYPE_NEW_BREAKOUT = "new_breakout"
 RULE_TYPE_NEW_TREND = "new_trend"
+RULE_TYPE_THESIS_MATCH = "thesis_match"
 
 SUPPORTED_RULE_TYPES = {
     RULE_TYPE_SCORE_ABOVE,
     RULE_TYPE_RANK_CHANGE,
     RULE_TYPE_NEW_BREAKOUT,
     RULE_TYPE_NEW_TREND,
+    RULE_TYPE_THESIS_MATCH,
 }
 
 
@@ -45,6 +47,7 @@ def evaluate_alerts(
     previous_ranks: dict[str, int],
     statuses: dict[str, str],
     previous_trend_ids: set[str],
+    new_thesis_match_ids: dict[int, set[str]] | None = None,
 ) -> list[AlertEvent]:
     """Evaluate all enabled alert rules and return triggered events."""
 
@@ -57,7 +60,13 @@ def evaluate_alerts(
             continue
 
         watched_ids = watchlist_trend_ids.get(rule.watchlist_id, set())
-        if not watched_ids:
+        thesis_match_ids = set()
+        if rule.rule_type == RULE_TYPE_THESIS_MATCH and rule.thesis_id is not None:
+            thesis_match_ids = (new_thesis_match_ids or {}).get(rule.thesis_id, set())
+            if not thesis_match_ids:
+                continue
+            watched_ids = watched_ids.union(thesis_match_ids)
+        elif not watched_ids:
             continue
 
         for trend_id in watched_ids:
@@ -152,5 +161,17 @@ def _evaluate_rule(
                 message=f"{trend_name} appeared for the first time",
                 triggered_at=now,
             )
+    elif rule.rule_type == RULE_TYPE_THESIS_MATCH:
+        return AlertEvent(
+            rule_id=rule.id,
+            watchlist_id=rule.watchlist_id,
+            trend_id=trend_id,
+            trend_name=trend_name,
+            rule_type=rule.rule_type,
+            threshold=rule.threshold,
+            current_value=score.total_score,
+            message=f"{trend_name} matched thesis {rule.name}",
+            triggered_at=now,
+        )
 
     return None

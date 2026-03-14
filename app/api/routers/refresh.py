@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import threading
+from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException
 
@@ -19,7 +20,7 @@ _refresh_lock = threading.Lock()
 
 @router.post("/refresh")
 def trigger_refresh(
-    x_trend_friend_refresh_secret: str | None = Header(default=None, alias="X-Trend-Friend-Refresh-Secret"),
+    x_trend_friend_refresh_secret: Optional[str] = Header(default=None, alias="X-Trend-Friend-Refresh-Secret"),
 ) -> dict:
     """Run the ingestion and scoring pipeline.
 
@@ -61,7 +62,7 @@ def release_refresh_lock() -> None:
         _refresh_lock.release()
 
 
-def _verify_refresh_secret(settings: Settings, provided_secret: str | None) -> None:
+def _verify_refresh_secret(settings: Settings, provided_secret: Optional[str]) -> None:
     """Require the configured refresh secret when present."""
 
     if not settings.refresh_secret:

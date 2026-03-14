@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { getPrimaryEvidenceLink, summarizeEvidencePreview } from "@/lib/evidence-links";
 
 test("getPrimaryEvidenceLink returns the first evidence item with a source URL", () => {
   const item = getPrimaryEvidenceLink({
@@ -147,4 +147,30 @@ test("getPrimaryEvidenceLink prefers backend-provided primary evidence when pres
 
   assert.equal(item?.source, "github");
   assert.equal(item?.evidenceUrl, "https://github.com/example/repo");
+});
+
+test("summarizeEvidencePreview removes common headline wrappers", () => {
+  assert.equal(
+    summarizeEvidencePreview("Show HN: Remotely use my guitar tuner"),
+    "Remotely use my guitar tuner",
+  );
+});
+
+test("summarizeEvidencePreview rewrites github repo titles into cleaner previews", () => {
+  assert.equal(
+    summarizeEvidencePreview(
+      "vercel/turborepo Build system optimized for JavaScript and TypeScript, written in Rust",
+      "github",
+    ),
+    "vercel/turborepo: Build system optimized for JavaScript and TypeScript, written in Rust",
+  );
+});
+
+test("summarizeEvidencePreview truncates very long evidence at a word boundary", () => {
+  assert.equal(
+    summarizeEvidencePreview(
+      "This is a deliberately long evidence line that should be trimmed before it overwhelms the explorer card with too much copy for a single row",
+    ),
+    "This is a deliberately long evidence line that should be trimmed before it overwhelms the explorer card with too much…",
+  );
 });

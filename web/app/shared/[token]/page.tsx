@@ -144,12 +144,19 @@ function formatTimestamp(value: string) {
 
 function formatSourceLabel(source: string) {
   const labels: Record<string, string> = {
+    chrome_web_store: "Chrome Web Store",
+    curated_feeds: "Curated Feeds",
+    devto: "DEV Community",
     reddit: "Reddit",
     hacker_news: "Hacker News",
     github: "GitHub",
+    huggingface: "Hugging Face",
+    pypi: "PyPI",
+    stackoverflow: "Stack Overflow",
     wikipedia: "Wikipedia",
     google_trends: "Google Trends",
     twitter: "Twitter/X",
+    youtube: "YouTube",
   };
   return labels[source] ?? source;
 }

@@ -8,11 +8,24 @@ from time import perf_counter
 
 from app.config import Settings
 from app.models import RawSourceItem, SourceIngestionRun
+from app.sources.arxiv import ArxivSourceAdapter
+from app.sources.chrome_web_store import ChromeWebStoreSourceAdapter
+from app.sources.curated_rss import CuratedRssSourceAdapter
+from app.sources.devto import DevToSourceAdapter
 from app.sources.github import GitHubSourceAdapter
+from app.sources.google_news import GoogleNewsSourceAdapter
+from app.sources.producthunt import ProductHuntSourceAdapter
+from app.sources.huggingface import HuggingFaceSourceAdapter
+from app.sources.lobsters import LobstersSourceAdapter
+from app.sources.npm import NpmSourceAdapter
+from app.sources.pypi import PyPISourceAdapter
+from app.sources.stackoverflow import StackOverflowSourceAdapter
 from app.sources.google_trends import GoogleTrendsSourceAdapter
 from app.sources.hacker_news import HackerNewsSourceAdapter
+from app.sources.polymarket import PolymarketSourceAdapter
 from app.sources.reddit import RedditSourceAdapter
 from app.sources.twitter import TwitterSourceAdapter
+from app.sources.youtube import YouTubeSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
 
 LOGGER = logging.getLogger(__name__)
@@ -27,8 +40,23 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         GitHubSourceAdapter(settings),
         WikipediaSourceAdapter(settings),
         GoogleTrendsSourceAdapter(settings),
-        TwitterSourceAdapter(settings),
+        GoogleNewsSourceAdapter(settings),
+        CuratedRssSourceAdapter(settings),
+        ArxivSourceAdapter(settings),
+        ChromeWebStoreSourceAdapter(settings),
+        StackOverflowSourceAdapter(settings),
+        ProductHuntSourceAdapter(settings),
+        DevToSourceAdapter(settings),
+        HuggingFaceSourceAdapter(settings),
+        NpmSourceAdapter(settings),
+        PyPISourceAdapter(settings),
+        YouTubeSourceAdapter(settings),
+        LobstersSourceAdapter(settings),
     ]
+    if settings.enable_experimental_sources:
+        adapters.append(PolymarketSourceAdapter(settings))
+    if settings.enable_experimental_sources and settings.enable_twitter_source:
+        adapters.append(TwitterSourceAdapter(settings))
     all_items: list[RawSourceItem] = []
     source_runs: list[SourceIngestionRun] = []
     for adapter in adapters:

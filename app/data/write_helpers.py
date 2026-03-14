@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 from app.data.connection import DatabaseConnection
+from app.data.sql_dialect import SQLITE_DIALECT
 
 
 def execute_insert_and_return_id(
@@ -14,7 +15,9 @@ def execute_insert_and_return_id(
 ) -> int:
     """Execute one insert and return the inserted row id across SQL dialects."""
 
-    if connection.dialect.supports_returning:
+    dialect = getattr(connection, "dialect", SQLITE_DIALECT)
+
+    if dialect.supports_returning:
         cursor = connection.execute(_append_returning_id(sql), parameters)
         row = cursor.fetchone()
         if row is None:

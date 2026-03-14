@@ -9,14 +9,18 @@ from app.data.repositories import TrendScoreRepository, WatchlistRepository
 from app.models import (
     TrendAudienceSegment,
     AlertRule,
+    TrendDetailRecord,
     TrendGeoSummary,
     TrendScoreResult,
     TrendSourceContribution,
+    TrendThesis,
+    TrendThesisMatch,
     Watchlist,
     WatchlistItem,
     WatchlistShareEvent,
     WatchlistShare,
 )
+from app.theses.matching import match_trends_to_theses
 from app.topics.categorize import categorize_topic
 
 WATCHLIST_SCORE_LOOKUP_LIMIT = 1000
@@ -44,6 +48,8 @@ def build_watchlist_payload(
 
     latest_scores = score_repo.list_scores(limit=WATCHLIST_SCORE_LOOKUP_LIMIT)
     score_by_slug = {_slugify(score.topic): score for score in latest_scores}
+    detail_records = score_repo.list_trend_detail_records(limit=WATCHLIST_SCORE_LOOKUP_LIMIT)
+    detail_by_slug = {detail.id: detail for detail in detail_records}
 
     watchlists = watchlist_repo.list_watchlists(
         owner_user_id=current_user["id"] if current_user is not None else None,
@@ -51,6 +57,25 @@ def build_watchlist_payload(
     alerts = watchlist_repo.list_alert_rules(
         owner_user_id=current_user["id"] if current_user is not None else None,
     )
+    theses = watchlist_repo.list_trend_theses(
+        owner_user_id=current_user["id"] if current_user is not None else None,
+    )
+    thesis_matches = watchlist_repo.list_trend_thesis_matches(
+        owner_user_id=current_user["id"] if current_user is not None else None,
+    )
+    if theses:
+        existing_thesis_ids = {match.thesis_id for match in thesis_matches}
+        theses_needing_seed = [thesis for thesis in theses if thesis.id not in existing_thesis_ids]
+        if theses_needing_seed:
+            matched_now = match_trends_to_theses(theses_needing_seed, detail_records)
+            watchlist_repo.replace_trend_thesis_matches(
+                theses_needing_seed,
+                matched_now,
+                matched_at=datetime.now(tz=timezone.utc),
+            )
+            thesis_matches = watchlist_repo.list_trend_thesis_matches(
+                owner_user_id=current_user["id"] if current_user is not None else None,
+            )
 
     return {
         "authEnabled": auth_enabled,
@@ -72,6 +97,18 @@ def build_watchlist_payload(
         ],
         "alerts": [_serialize_alert_rule(alert) for alert in alerts],
         "matches": _build_alert_matches(watchlists, alerts, score_by_slug),
+        "theses": [
+            _serialize_trend_thesis(
+                thesis,
+                active_matches=[match for match in thesis_matches if match.thesis_id == thesis.id and match.active],
+            )
+            for thesis in theses
+        ],
+        "thesisMatches": [
+            _serialize_trend_thesis_match(match, detail_by_slug.get(match.trend_id))
+            for match in thesis_matches
+            if match.active
+        ],
     }
 
 
@@ -100,6 +137,7 @@ def build_shared_watchlist_payload(
                 )
                 for item in watchlist.items
             ],
+            "theses": [],
         },
         "shareToken": share.share_token,
         "public": share.is_public,
@@ -115,6 +153,7 @@ def build_public_watchlists_payload(
     score_repo: TrendScoreRepository | None = None,
     owner_display_names: dict[int, str] | None = None,
     recent_open_counts: dict[int, int] | None = None,
+    thesis_map: dict[int, list[TrendThesis]] | None = None,
 ) -> dict[str, object]:
     """Build the public community directory payload."""
 
@@ -129,6 +168,7 @@ def build_public_watchlists_payload(
             score_by_slug,
             owner_display_name=(owner_display_names or {}).get(share.id),
             recent_open_count=(recent_open_counts or {}).get(share.id, 0),
+            theses=(thesis_map or {}).get(watchlist.id, []),
         )
         for watchlist, share in public_watchlists
     ]
@@ -153,6 +193,7 @@ def _serialize_public_watchlist_summary(
     score_by_slug: dict[str, object],
     owner_display_name: str | None,
     recent_open_count: int,
+    theses: list[TrendThesis],
 ) -> dict[str, object]:
     geo = _aggregate_watchlist_geo(watchlist, score_repo, score_by_slug)
     source_contributions = _aggregate_watchlist_source_contributions(watchlist, score_repo, score_by_slug)
@@ -178,6 +219,7 @@ def _serialize_public_watchlist_summary(
         "geoSummary": [_serialize_geo_summary(g) for g in geo],
         "audienceSummary": [_serialize_audience_segment(item) for item in audience_summary],
         "sourceContributions": [_serialize_source_contribution(item) for item in source_contributions],
+        "theses": [_serialize_public_thesis(thesis) for thesis in theses[:3]],
     }
 
 
@@ -573,11 +615,65 @@ def _serialize_alert_rule(alert: AlertRule) -> dict[str, object]:
     return {
         "id": alert.id,
         "watchlistId": alert.watchlist_id,
+        "thesisId": alert.thesis_id,
         "name": alert.name,
         "ruleType": alert.rule_type,
         "threshold": alert.threshold,
         "enabled": alert.enabled,
         "createdAt": _to_utc_iso(alert.created_at),
+    }
+
+
+def _serialize_trend_thesis(thesis: TrendThesis, active_matches: list[TrendThesisMatch]) -> dict[str, object]:
+    return {
+        "id": thesis.id,
+        "watchlistId": thesis.watchlist_id,
+        "name": thesis.name,
+        "lens": thesis.lens,
+        "keywordQuery": thesis.keyword_query,
+        "source": thesis.source,
+        "category": thesis.category,
+        "stage": thesis.stage,
+        "confidence": thesis.confidence,
+        "metaTrend": thesis.meta_trend,
+        "audience": thesis.audience,
+        "market": thesis.market,
+        "language": thesis.language,
+        "geoCountry": thesis.geo_country,
+        "minimumScore": thesis.minimum_score,
+        "hideRecurring": thesis.hide_recurring,
+        "notifyOnMatch": thesis.notify_on_match,
+        "activeMatchCount": len(active_matches),
+        "createdAt": _to_utc_iso(thesis.created_at),
+        "updatedAt": _to_utc_iso(thesis.updated_at),
+    }
+
+
+def _serialize_trend_thesis_match(
+    match: TrendThesisMatch,
+    detail: TrendDetailRecord | None,
+) -> dict[str, object]:
+    return {
+        "thesisId": match.thesis_id,
+        "trendId": match.trend_id,
+        "trendName": match.trend_name,
+        "active": match.active,
+        "firstMatchedAt": _to_utc_iso(match.first_matched_at),
+        "lastMatchedAt": _to_utc_iso(match.last_matched_at),
+        "lensScore": match.lens_score,
+        "totalScore": match.total_score,
+        "stage": detail.stage if detail is not None else None,
+        "metaTrend": detail.meta_trend if detail is not None else None,
+        "confidence": detail.confidence if detail is not None else None,
+    }
+
+
+def _serialize_public_thesis(thesis: TrendThesis) -> dict[str, object]:
+    return {
+        "id": thesis.id,
+        "name": thesis.name,
+        "lens": thesis.lens,
+        "notifyOnMatch": thesis.notify_on_match,
     }
 
 

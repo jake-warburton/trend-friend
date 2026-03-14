@@ -14,6 +14,9 @@ import {
 import type { TrendForecast, TrendHistoryPoint } from "@/lib/types";
 import { formatForecastConfidence } from "@/lib/forecast-ui";
 
+const CHART_AXIS_COLOR = "var(--chart-axis)";
+const CHART_GRID_COLOR = "var(--chart-grid)";
+
 type TrendScoreChartProps = {
   history: TrendHistoryPoint[];
   currentScore: number;
@@ -25,6 +28,7 @@ type TrendScoreChartDatum = {
   score: number | null;
   forecast: number | null;
   rank: number | null;
+  isProjected: boolean;
 };
 
 export function buildTrendScoreChartData(
@@ -34,20 +38,13 @@ export function buildTrendScoreChartData(
   const data: TrendScoreChartDatum[] = history.map((point) => ({
     date: formatShortDate(point.capturedAt),
     score: point.scoreTotal,
-    forecast: null,
+    forecast: point.scoreTotal,
     rank: point.rank,
+    isProjected: false,
   }));
 
   if (!forecast || forecast.predictedScores.length === 0 || data.length === 0) {
     return data;
-  }
-
-  // Include the last two actual points in the forecast series so the
-  // monotone spline has enough slope context to smoothly continue
-  // the trajectory of the real line into the forecast.
-  const tailCount = Math.min(3, data.length);
-  for (let i = data.length - tailCount; i < data.length; i++) {
-    data[i].forecast = data[i].score;
   }
 
   forecast.predictedScores.forEach((score, index) => {
@@ -56,6 +53,7 @@ export function buildTrendScoreChartData(
       score: null,
       forecast: score,
       rank: null,
+      isProjected: true,
     });
   });
 
@@ -83,16 +81,16 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               <stop offset="95%" stopColor="#5e6bff" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e2838" />
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#7a8494", fontSize: 11 }}
-            axisLine={{ stroke: "#1e2838" }}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
+            axisLine={{ stroke: CHART_GRID_COLOR }}
             tickLine={false}
           />
           <YAxis
             domain={[0, Math.ceil(maxScore * 1.1)]}
-            tick={{ fill: "#7a8494", fontSize: 11 }}
+            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
             width={40}
@@ -105,9 +103,14 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               color: "var(--copy)",
               fontSize: 12,
             }}
-            formatter={(value, name) => {
+            formatter={(value, name, item) => {
               if (name === "score") return [Number(value).toFixed(1), "Score"];
-              if (name === "forecast") return [Number(value).toFixed(1), "Forecast (projected)"];
+              if (name === "forecast") {
+                if (!item.payload.isProjected) {
+                  return null;
+                }
+                return [Number(value).toFixed(1), "Forecast (projected)"];
+              }
               return [String(value), String(name)];
             }}
           />

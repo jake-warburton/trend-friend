@@ -38,6 +38,64 @@ test("mutateWatchlists maps add-item requests to CLI arguments", async () => {
   });
 });
 
+test("mutateWatchlists maps create-thesis requests to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "create-thesis",
+      watchlistId: 7,
+      name: "SEO thesis",
+      lens: "seo",
+      keywordQuery: "agents",
+      stage: "nascent",
+      minimumScore: 20,
+      hideRecurring: true,
+      notifyOnMatch: true,
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    args: [
+      "create-thesis",
+      "--watchlist-id",
+      "7",
+      "--name",
+      "SEO thesis",
+      "--lens",
+      "seo",
+      "--keyword-query",
+      "agents",
+      "--stage",
+      "nascent",
+      "--minimum-score",
+      "20",
+      "--hide-recurring",
+      "--notify-on-match",
+    ],
+  });
+});
+
+test("mutateWatchlists maps delete-thesis requests to CLI arguments", async () => {
+  const payload = await mutateWatchlists(
+    {
+      action: "delete-thesis",
+      thesisId: 12,
+    },
+    {
+      apiEnabled: false,
+      runScript: async (...args) => ({ ok: true, args }),
+    },
+  );
+
+  assert.deepEqual(payload, {
+    ok: true,
+    args: ["delete-thesis", "--thesis-id", "12"],
+  });
+});
+
 test("mutateWatchlists maps revoke-share requests to CLI arguments", async () => {
   const payload = await mutateWatchlists(
     {

@@ -74,25 +74,49 @@ Current workflow behavior:
 
 1. runs `python3 scripts/check_supabase.py`
 2. runs the ingestion pipeline with `SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME=true`
-3. exports `web/data/*.json` from Supabase-backed state
-4. commits only the refreshed `web/data` payloads
+3. exports published payloads into Supabase for the web app to read
 
 That means:
 
 - SQLite is no longer needed for the scheduled free-hosting path
-- Vercel can stay in static snapshot mode
+- Vercel reads live published payloads from Supabase and does not need a redeploy per refresh
+
+### More reliable scheduling
+
+GitHub's native `schedule` trigger is best-effort. If you need something closer to a true 15-minute cadence, keep the same workflow and trigger its existing `workflow_dispatch` event from an external scheduler instead.
+
+Helper script:
+
+- [dispatch_refresh_workflow.sh](/Users/jakewarburton/Documents/repos/trend-friend/scripts/dispatch_refresh_workflow.sh)
+
+Example:
+
+```bash
+GITHUB_WORKFLOW_TOKEN=github_pat_xxx ./scripts/dispatch_refresh_workflow.sh
+```
+
+Required token scope:
+
+- fine-grained PAT with `Actions: Read and write` on this repo
+
+Useful overrides:
+
+```bash
+GITHUB_REPOSITORY_OWNER=jake-warburton \
+GITHUB_REPOSITORY_NAME=trend-friend \
+GITHUB_WORKFLOW_FILE=refresh-data.yml \
+GITHUB_WORKFLOW_REF=main \
+GITHUB_WORKFLOW_TOKEN=github_pat_xxx \
+./scripts/dispatch_refresh_workflow.sh
+```
 
 ## Phase 4: Frontend read model
 
-Short term:
+Current production path:
 
 - keep `SIGNAL_EYE_API_URL` unset
-- let the site read exported snapshots
-
-Later:
-
-- either add a lightweight hosted API backed by Supabase
-- or expose carefully scoped read endpoints/functions
+- set `NEXT_PUBLIC_SUPABASE_URL` and `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY` in Vercel
+- let the site read published payloads directly from Supabase
 
 ## Rollout order
 

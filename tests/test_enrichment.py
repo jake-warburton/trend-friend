@@ -52,7 +52,6 @@ class EnrichmentTests(unittest.TestCase):
             google_search_metrics_token=None,
             tiktok_metrics_url=None,
             tiktok_metrics_token=None,
-            youtube_search_days=30,
             reddit_user_agent="signal-eye-tests/1.0",
             poll_interval_minutes=30,
             health_file_path=Path("data/last_run.json"),

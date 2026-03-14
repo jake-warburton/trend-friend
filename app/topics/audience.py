@@ -24,12 +24,21 @@ _MARKET_KEYWORDS: dict[str, tuple[str, ...]] = {
 }
 
 _SOURCE_AUDIENCE_FLAGS: dict[str, tuple[str, ...]] = {
+    "chrome_web_store": ("consumer", "founder"),
+    "curated_feeds": ("founder", "research"),
+    "devto": ("developer", "founder"),
     "github": ("developer",),
     "hacker_news": ("developer", "founder"),
+    "huggingface": ("developer", "research"),
+    "lobsters": ("developer",),
+    "npm": ("developer",),
+    "pypi": ("developer",),
     "reddit": (),
     "google_trends": ("consumer",),
     "wikipedia": ("research",),
+    "polymarket": ("founder", "consumer"),
     "twitter": ("consumer", "founder"),
+    "youtube": ("consumer", "developer"),
 }
 
 _LANGUAGE_KEYS = ("lang", "language_code", "content_language")
@@ -48,7 +57,10 @@ class AudienceAssignment:
 def assign_audience_flags(item: RawSourceItem, geo: GeoAssignment) -> AudienceAssignment:
     """Return conservative audience and market metadata for a source item."""
 
-    text = f" {item.title.lower()} {' '.join(item.metadata.values()).lower()} "
+    metadata_text = " ".join(
+        value for value in (_metadata_text(metadata_value) for metadata_value in item.metadata.values()) if value
+    )
+    text = f" {item.title.lower()} {metadata_text.lower()} "
     audience_flags = set(_SOURCE_AUDIENCE_FLAGS.get(item.source, ()))
     for flag, keywords in _AUDIENCE_KEYWORDS.items():
         if any(keyword in text for keyword in keywords):
@@ -68,7 +80,7 @@ def assign_audience_flags(item: RawSourceItem, geo: GeoAssignment) -> AudienceAs
 
     if "enterprise" in audience_flags or item.source == "github":
         market_flags.add("b2b")
-    if "consumer" in audience_flags or item.source == "google_trends":
+    if "consumer" in audience_flags or item.source in {"google_trends", "polymarket"}:
         market_flags.add("b2c")
 
     language_code = _detect_language_code(item, text)
@@ -81,7 +93,7 @@ def assign_audience_flags(item: RawSourceItem, geo: GeoAssignment) -> AudienceAs
 
 def _detect_language_code(item: RawSourceItem, text: str) -> str | None:
     for key in _LANGUAGE_KEYS:
-        value = item.metadata.get(key, "").strip().lower()
+        value = _metadata_text(item.metadata.get(key)).lower()
         if value in {"en", "english"}:
             return "en"
         if len(value) == 2 and value.isalpha():
@@ -89,3 +101,13 @@ def _detect_language_code(item: RawSourceItem, text: str) -> str | None:
     if all(ord(character) < 128 for character in item.title) and any(marker in text for marker in _ENGLISH_MARKERS):
         return "en"
     return None
+
+
+def _metadata_text(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, (list, tuple, set)):
+        return " ".join(part for part in (_metadata_text(item) for item in value) if part)
+    return str(value).strip()

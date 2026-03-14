@@ -25,12 +25,15 @@ STOP_WORDS = {
     "from",
     "gains",
     "how",
+    "idea",
+    "ideas",
     "if",
     "internal",
     "in",
     "into",
     "interview",
     "list",
+    "lists",
     "milestone",
     "new",
     "office",
@@ -41,6 +44,7 @@ STOP_WORDS = {
     "or",
     "open",
     "process",
+    "playlist",
     "repetitive",
     "replace",
     "replacing",
@@ -48,22 +52,27 @@ STOP_WORDS = {
     "software",
     "sdk",
     "source",
-    "startup",
-    "startups",
     "the",
     "their",
     "them",
+    "this",
     "to",
     "tool",
     "tooling",
     "tools",
+    "tutorial",
     "used",
     "using",
+    "use",
     "momentum",
+    "know",
     "walk",
     "workflows",
     "with",
+    "videos",
     "you",
+    "your",
+    "teams",
 }
 
 ALIASES = {
@@ -71,14 +80,98 @@ ALIASES = {
     "agents": "ai agents",
     "ai": "ai agents",
     "artificial intelligence": "ai agents",
+    "llm": "large language models",
+    "llms": "large language models",
+    "large language model": "large language models",
+    "rag": "retrieval augmented generation",
+    "mcp": "model context protocol",
+    "hf": "hugging face",
+    "chatgpt": "chat gpt",
 }
 SHORT_MEANINGFUL_TOKENS = {"ai"}
+NOISE_LEAD_TOKENS = {
+    "best",
+    "breaking",
+    "launch",
+    "show",
+    "top",
+    "why",
+}
+NOISE_TAIL_TOKENS = {
+    "guide",
+    "launch",
+    "news",
+    "podcast",
+    "today",
+    "update",
+    "updates",
+}
+GENERIC_MULTIWORD_TOPICS = {
+    "breaking news",
+    "developer platform",
+    "developer tools",
+    "fans react",
+    "finally dead",
+    "latest on",
+    "live updates",
+    "machine learning",
+    "new model",
+    "open source",
+    "python package",
+    "repeatable instructions",
+    "score updates",
+    "top stories",
+    "video tutorial",
+    "watch live",
+    "what know",
+    "wanna collaborate",
+}
+GENERIC_PHRASE_FRAGMENTS = {
+    "alone journey",
+    "after comments",
+    "amid concerns",
+    "also awful",
+    "capabilities repeatable",
+    "down again",
+    "feel really alone",
+    "latest on",
+    "not promote",
+    "really alone",
+    "says about",
+    "trailer released",
+    "transfer rumors",
+    "watch live",
+    "what know",
+    "wins again",
+}
+GENERIC_SINGLE_TOKEN_TOPICS = {
+    "automation",
+    "browsers",
+    "core",
+    "editors",
+    "privacy",
+    "programming",
+    "startup",
+    "static",
+    "struct",
+    "workflow",
+}
+GENERIC_PREFIXES = (
+    "breaking ",
+    "latest on ",
+    "live updates ",
+    "top stories ",
+    "watch live ",
+    "what know ",
+)
 
 
 def clean_text(text: str) -> str:
     """Return lowercase ASCII-friendly text without punctuation noise."""
 
     lowered = text.lower()
+    lowered = re.sub(r"\b([a-z0-9]+)['’]s\b", r"\1", lowered)
+    lowered = re.sub(r"['’]", "", lowered)
     cleaned = re.sub(r"[^a-z0-9\s/-]", " ", lowered)
     return re.sub(r"\s+", " ", cleaned).strip()
 
@@ -109,6 +202,10 @@ def normalize_topic_name(topic_name: str) -> str:
     for token in tokens:
         if token not in deduplicated_tokens:
             deduplicated_tokens.append(token)
+    while deduplicated_tokens and deduplicated_tokens[0] in NOISE_LEAD_TOKENS:
+        deduplicated_tokens.pop(0)
+    while deduplicated_tokens and deduplicated_tokens[-1] in NOISE_TAIL_TOKENS:
+        deduplicated_tokens.pop()
     normalized = " ".join(deduplicated_tokens)
     return ALIASES.get(normalized, normalized)
 
@@ -120,5 +217,21 @@ def is_meaningful_topic(topic_name: str) -> bool:
         return False
     tokens = topic_name.split()
     if len(tokens) == 1:
-        return len(tokens[0]) >= 4 and tokens[0] not in STOP_WORDS
-    return all(token not in STOP_WORDS for token in tokens)
+        return (
+            len(tokens[0]) >= 4
+            and tokens[0] not in STOP_WORDS
+            and tokens[0] not in GENERIC_SINGLE_TOKEN_TOPICS
+        )
+    if any(topic_name.startswith(prefix) for prefix in GENERIC_PREFIXES):
+        return False
+    if topic_name in GENERIC_MULTIWORD_TOPICS:
+        return False
+    if topic_name in GENERIC_PHRASE_FRAGMENTS:
+        return False
+    if tokens[0] in NOISE_LEAD_TOKENS or tokens[-1] in NOISE_TAIL_TOKENS:
+        return False
+    if all(token not in STOP_WORDS for token in tokens) is False:
+        return False
+    if all(len(token) <= 3 and token not in SHORT_MEANINGFUL_TOKENS for token in tokens):
+        return False
+    return True

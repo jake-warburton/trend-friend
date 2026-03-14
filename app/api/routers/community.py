@@ -244,11 +244,13 @@ def list_public_watchlists(db: DatabaseConnection = Depends(get_db)) -> dict:
         share.id: sum(point.access_count for point in repo.list_share_access_history(share.id, days=7))
         for _, share in public
     }
+    thesis_map = repo.list_trend_theses_for_watchlists([watchlist.id for watchlist, _ in public])
     return build_public_watchlists_payload(
         public,
         score_repo=score_repo,
         owner_display_names=_resolve_owner_display_names(db, [share for _, share in public]),
         recent_open_counts=recent_open_counts,
+        thesis_map=thesis_map,
     )
 
 

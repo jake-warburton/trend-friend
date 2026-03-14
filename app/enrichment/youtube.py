@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from app.enrichment.base import EnrichmentTarget, MarketMetricEnricher
 from app.models import TrendMetricSnapshot
@@ -23,8 +23,6 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
 
     def _enrich_from_api(self, target: EnrichmentTarget, captured_at: datetime) -> list[TrendMetricSnapshot]:
         query = target.name or target.topic
-        days = self.settings.youtube_search_days
-        published_after = (captured_at - timedelta(days=days)).isoformat() + "Z"
         search_payload = self.get_json(
             self.build_query_url(
                 "https://www.googleapis.com/youtube/v3/search",
@@ -33,7 +31,6 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
                     "type": "video",
                     "q": query,
                     "maxResults": "10",
-                    "publishedAfter": published_after,
                     "key": self.settings.youtube_api_key or "",
                 },
             )
@@ -63,7 +60,7 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
                 value_numeric=total_views,
                 value_display=self.compact_number(total_views),
                 unit="views",
-                period=f"last {days} days \u00b7 top 10",
+                period="top videos",
                 captured_at=captured_at,
                 confidence=0.9,
                 provenance_url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",
@@ -76,7 +73,7 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
                 value_numeric=video_count,
                 value_display=self.compact_number(video_count),
                 unit="videos",
-                period=f"last {days} days \u00b7 top 10",
+                period="top videos",
                 captured_at=captured_at,
                 confidence=0.9,
                 provenance_url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",
@@ -97,7 +94,7 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
                 value_numeric=total_views,
                 value_display=self.compact_number(total_views),
                 unit="views",
-                period="estimated",
+                period="sampled videos",
                 captured_at=captured_at,
                 confidence=0.35,
                 provenance_url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",
@@ -110,7 +107,7 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
                 value_numeric=video_count,
                 value_display=self.compact_number(video_count),
                 unit="videos",
-                period="estimated",
+                period="sampled videos",
                 captured_at=captured_at,
                 confidence=0.35,
                 provenance_url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",

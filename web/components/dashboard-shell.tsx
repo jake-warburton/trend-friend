@@ -4,22 +4,38 @@ import { Button } from "@base-ui/react/button";
 import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { GeoMapClient } from "@/components/geo-map-client";
 import { Sparkline } from "@/components/sparkline";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
-import { hasOverviewChanged } from "@/lib/auto-refresh";
+import { detectChangedTrendIds, hasOverviewChanged } from "@/lib/auto-refresh";
+import { formatCategoryLabel } from "@/lib/category-labels";
+import type { OverviewRefreshMeta } from "@/lib/auto-refresh";
+import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
 import { formatForecastConfidence, getExplorerForecastBadge } from "@/lib/forecast-ui";
-import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
-import { buildSourceWatchlist } from "@/lib/source-health";
+import { getPrimaryEvidenceLink, summarizeEvidencePreview } from "@/lib/evidence-links";
+import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
+import { buildSourceImpactRows } from "@/lib/source-impact";
+import {
+  buildSourceContributionInsights,
+  buildSourceFamilyHistoryInsightsFromSnapshots,
+  buildSourceFamilyHistoryInsights,
+  buildSourceFamilyInsights,
+  formatSourceFamilyLabel,
+  buildSourceWatchlist,
+  formatSourceLabel,
+  getSourceFreshnessBadge,
+  summarizeTopSourceDrivers,
+} from "@/lib/source-health";
 import { maskWebhookDestination, summarizeNotificationDelivery } from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
 import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
-import { GeoMapCompact } from "@/components/geo-map-compact";
 
 import type {
   AlertEvent,
@@ -31,28 +47,81 @@ import type {
   PublicWatchlistSummary,
   PublicWatchlistsResponse,
   TrendDetailRecord,
+  TrendExplorerRecord,
+  TrendThesis,
+  TrendThesisMatch,
   Watchlist,
   WatchlistResponse,
 } from "@/lib/types";
 
 type DashboardShellProps = {
   initialData: DashboardData;
+  canManualRefresh: boolean;
 };
+
+const LazyGeoMapCompact = dynamic(
+  () => import("@/components/geo-map-compact").then((mod) => mod.GeoMapCompact),
+  { ssr: false, loading: () => null },
+);
+
+const OVERVIEW_POLL_INTERVAL_MS = 60_000;
+const UPDATED_TRENDS_FLASH_MS = 5_000;
 
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
+  { label: "arXiv", value: "arxiv" },
+  { label: "Chrome Web Store", value: "chrome_web_store" },
+  { label: "Curated Feeds", value: "curated_feeds" },
+  { label: "DEV Community", value: "devto" },
+  { label: "Hugging Face", value: "huggingface" },
+  { label: "Lobsters", value: "lobsters" },
+  { label: "npm", value: "npm" },
+  { label: "Product Hunt", value: "producthunt" },
+  { label: "PyPI", value: "pypi" },
+  { label: "Stack Overflow", value: "stackoverflow" },
   { label: "Reddit", value: "reddit" },
   { label: "Hacker News", value: "hacker_news" },
   { label: "GitHub", value: "github" },
   { label: "Wikipedia", value: "wikipedia" },
   { label: "Google Trends", value: "google_trends" },
+  { label: "Polymarket", value: "polymarket" },
   { label: "Twitter/X", value: "twitter" },
+  { label: "YouTube", value: "youtube" },
 ] as const;
 
 const DEFAULT_CATEGORY_OPTION = { label: "All categories", value: "all" } as const;
 const DEFAULT_AUDIENCE_OPTION = { label: "All audiences", value: "all" } as const;
 const DEFAULT_MARKET_OPTION = { label: "All markets", value: "all" } as const;
 const DEFAULT_LANGUAGE_OPTION = { label: "All languages", value: "all" } as const;
+const DEFAULT_STAGE_OPTION = { label: "All stages", value: "all" } as const;
+const DEFAULT_CONFIDENCE_OPTION = { label: "All confidence", value: "all" } as const;
+const DEFAULT_META_TREND_OPTION = { label: "All meta trends", value: "all" } as const;
+
+const STAGE_OPTIONS = [
+  DEFAULT_STAGE_OPTION,
+  { label: "Nascent", value: "nascent" },
+  { label: "Rising", value: "rising" },
+  { label: "Breakout", value: "breakout" },
+  { label: "Validated", value: "validated" },
+  { label: "Cooling", value: "cooling" },
+  { label: "Steady", value: "steady" },
+] as const;
+
+const CONFIDENCE_OPTIONS = [
+  DEFAULT_CONFIDENCE_OPTION,
+  { label: "High confidence", value: "high" },
+  { label: "Medium confidence", value: "medium" },
+  { label: "Low confidence", value: "low" },
+] as const;
+
+const LENS_OPTIONS = [
+  { label: "All lenses", value: "all" },
+  { label: "Discovery", value: "discovery" },
+  { label: "SEO", value: "seo" },
+  { label: "Content", value: "content" },
+  { label: "Product", value: "product" },
+  { label: "Investment", value: "investment" },
+] as const;
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
@@ -84,6 +153,7 @@ const STATUS_OPTIONS = [
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 type ExplorerActiveFilter = {
   key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "sort" | "seasonality";
@@ -149,6 +219,58 @@ const THESIS_PRESETS: readonly ThesisPreset[] = [
 ] as const;
 
 type ExplorerActiveFilter = {
+=======
+type ThesisPreset = {
+  key: string;
+  label: string;
+  description: string;
+  lens: string;
+  source?: string;
+  stage?: string;
+  audience?: string;
+  hideRecurring?: boolean;
+  minimumScore?: number;
+};
+
+const THESIS_PRESETS: readonly ThesisPreset[] = [
+  {
+    key: "discover",
+    label: "Early discovery",
+    description: "Bias toward early, fast-moving topics before they validate everywhere.",
+    lens: "discovery",
+    stage: "nascent",
+    hideRecurring: true,
+    minimumScore: 12,
+  },
+  {
+    key: "seo",
+    label: "SEO opportunities",
+    description: "Surface search-backed demand with enough evidence breadth to publish into.",
+    lens: "seo",
+    hideRecurring: true,
+    minimumScore: 18,
+  },
+  {
+    key: "content",
+    label: "Social content",
+    description: "Prioritize trends with public conversation and clear creator angles.",
+    lens: "content",
+    source: "reddit",
+    minimumScore: 16,
+  },
+  {
+    key: "product",
+    label: "Build ideas",
+    description: "Tilt toward builder demand, product fit, and non-recurring opportunity.",
+    lens: "product",
+    audience: "developer",
+    hideRecurring: true,
+    minimumScore: 16,
+  },
+] as const;
+
+type ExplorerActiveFilter = {
+>>>>>>> main
   key:
     | "keyword"
     | "source"
@@ -162,16 +284,23 @@ type ExplorerActiveFilter = {
     | "language"
     | "geo"
     | "sort"
+<<<<<<< HEAD
     | "status"
     | "seasonality";
 >>>>>>> Stashed changes
+=======
+    | "seasonality";
+>>>>>>> main
   label: string;
   value: string;
 };
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 export function DashboardShell({ initialData }: DashboardShellProps) {
 =======
+=======
+>>>>>>> main
 type ThesisPresetFilterState = {
   keyword: string;
   selectedSource: string;
@@ -186,21 +315,32 @@ type ThesisPresetFilterState = {
   selectedGeoCountry: string;
   minimumScore: number | null;
   sortBy: string;
+<<<<<<< HEAD
   sortDirection: "asc" | "desc";
   selectedStatus: string;
+=======
+>>>>>>> main
   hideRecurring: boolean;
 };
 
 export function DashboardShell({ initialData, canManualRefresh }: DashboardShellProps) {
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [keyword, setKeyword] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStage, setSelectedStage] = useState<string>("all");
+  const [selectedConfidence, setSelectedConfidence] = useState<string>("all");
+  const [selectedLens, setSelectedLens] = useState<string>("all");
+  const [selectedMetaTrend, setSelectedMetaTrend] = useState<string>("all");
   const [selectedAudience, setSelectedAudience] = useState<string>("all");
   const [selectedMarket, setSelectedMarket] = useState<string>("all");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
+  const [selectedGeoCountry, setSelectedGeoCountry] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -219,6 +359,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const [authPending, setAuthPending] = useState(false);
   const [shareExpiryPreset, setShareExpiryPreset] = useState<string>("none");
   const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
+  const [thesisName, setThesisName] = useState("");
+  const [notifyOnMatch, setNotifyOnMatch] = useState(true);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [alertCount, setAlertCount] = useState(0);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
@@ -236,8 +378,25 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     generatedAt: initialData.overview.generatedAt,
     lastRunAt: initialData.overview.operations.lastRunAt,
   });
+  const [liveUpdateState, setLiveUpdateState] = useState<"idle" | "checking" | "updating" | "updated">("idle");
+  const [changedTrendIds, setChangedTrendIds] = useState<string[]>([]);
   const [expandedTrendId, setExpandedTrendId] = useState<string | null>(null);
+  const [, startAutoRefresh] = useTransition();
+  const overviewMetaRef = useRef<OverviewRefreshMeta>({
+    generatedAt: initialData.overview.generatedAt,
+    operations: { lastRunAt: initialData.overview.operations.lastRunAt },
+  });
+  const explorerTrendRef = useRef(
+    initialData.explorer.trends.map((trend) => ({ id: trend.id, rank: trend.rank, score: { total: trend.score.total } })),
+  );
+  const initialRenderRef = useRef(true);
+  const updatedBadgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const alertsDetailsRef = useRef<HTMLDetailsElement>(null);
+  const runsDetailsRef = useRef<HTMLDetailsElement>(null);
+  const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
+  const savedTheses = watchlistData?.theses ?? [];
+  const savedThesisMatches = watchlistData?.thesisMatches ?? [];
   const watchlistsRequireAuth = authStatus.authEnabled && authStatus.user == null;
   const shareActivityById = buildShareActivityMap(defaultWatchlist);
   const deferredKeyword = useDeferredValue(keyword);
@@ -257,6 +416,16 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         : buildSourceWatchlist(initialData.overview.sources),
     [initialData.overview.sourceWatch, initialData.overview.sources],
   );
+  const latestPipelineRun = initialData.overview.operations.recentRuns[0] ?? null;
+  const thesisMatchesById = useMemo(() => {
+    const map = new Map<number, TrendThesisMatch[]>();
+    for (const match of savedThesisMatches) {
+      const matches = map.get(match.thesisId) ?? [];
+      matches.push(match);
+      map.set(match.thesisId, matches);
+    }
+    return map;
+  }, [savedThesisMatches]);
 
   function showActionNotice(message: string) {
     setActionNotice(message);
@@ -276,6 +445,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     () => buildAudienceFilterOptions(initialData.details.trends),
     [initialData.details.trends],
   );
+  const metaTrendOptions = useMemo(() => {
+    const metaTrends = Array.from(new Set(initialData.explorer.trends.map((trend) => trend.metaTrend))).sort();
+    return [
+      DEFAULT_META_TREND_OPTION,
+      ...metaTrends.map((metaTrend) => ({ label: metaTrend, value: metaTrend })),
+    ];
+  }, [initialData.explorer.trends]);
   const marketOptions = useMemo(
     () => buildMarketFilterOptions(initialData.details.trends),
     [initialData.details.trends],
@@ -292,6 +468,21 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     }
     return map;
   }, [initialData.details.trends]);
+  const sourceImpactRows = useMemo(
+    () => buildSourceImpactRows(initialData.overview.sources, initialData.explorer.trends, detailsByTrendId),
+    [detailsByTrendId, initialData.explorer.trends, initialData.overview.sources],
+  );
+  const sourceFamilyInsights = useMemo(
+    () => buildSourceFamilyInsights(initialData.overview.sources),
+    [initialData.overview.sources],
+  );
+  const sourceFamilyHistoryInsights = useMemo(
+    () =>
+      initialData.sourceSummary.familyHistory.length > 0
+        ? buildSourceFamilyHistoryInsightsFromSnapshots(initialData.sourceSummary.familyHistory)
+        : buildSourceFamilyHistoryInsights(initialData.sourceSummary.sources),
+    [initialData.sourceSummary.familyHistory, initialData.sourceSummary.sources],
+  );
 
   const activeExplorerFilters = useMemo(
     () =>
@@ -299,17 +490,25 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         keyword,
         selectedSource,
         selectedCategory,
+        selectedStage,
+        selectedConfidence,
+        selectedLens,
+        selectedMetaTrend,
         selectedAudience,
         selectedMarket,
         selectedLanguage,
+        selectedGeoCountry,
         sortBy,
         sortDirection,
         selectedStatus,
         hideRecurring,
       }),
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     [hideRecurring, keyword, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy],
 =======
+=======
+>>>>>>> main
     [
       hideRecurring,
       keyword,
@@ -323,9 +522,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       selectedMetaTrend,
       selectedSource,
       selectedStage,
+<<<<<<< HEAD
       selectedStatus,
       sortBy,
       sortDirection,
+=======
+      sortBy,
+>>>>>>> main
     ],
   );
   const selectedSourceLabel = getOptionLabel(SOURCE_FILTER_OPTIONS, selectedSource, "All sources");
@@ -338,7 +541,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
   const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
   const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
+<<<<<<< HEAD
   const selectedStatusLabel = getOptionLabel(STATUS_OPTIONS, selectedStatus, "All statuses");
+=======
+>>>>>>> main
   const activeThesisPresetKey = useMemo(
     () =>
       THESIS_PRESETS.find((preset) =>
@@ -356,8 +562,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           selectedGeoCountry,
           minimumScore,
           sortBy,
+<<<<<<< HEAD
           sortDirection,
           selectedStatus,
+=======
+>>>>>>> main
           hideRecurring,
         }),
       )?.key ?? null,
@@ -375,14 +584,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       selectedMetaTrend,
       selectedSource,
       selectedStage,
+<<<<<<< HEAD
       selectedStatus,
       sortBy,
       sortDirection,
     ],
 >>>>>>> Stashed changes
+=======
+      sortBy,
+    ],
+>>>>>>> main
   );
 
-  const filteredTrends = useMemo(() => {
+  const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
     const minimum = minimumScore ?? 0;
     const trends = initialData.explorer.trends.filter((trend) => {
@@ -391,9 +605,16 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         selectedSource === "all" || trend.sources.includes(selectedSource);
       const matchesCategory =
         selectedCategory === "all" || trend.category === selectedCategory;
+      const matchesStage =
+        selectedStage === "all" || trend.stage === selectedStage;
+      const matchesConfidence =
+        selectedConfidence === "all" || confidenceBucketForTrend(trend.confidence) === selectedConfidence;
+      const matchesMetaTrend =
+        selectedMetaTrend === "all" || trend.metaTrend === selectedMetaTrend;
       const matchesAudience = trendMatchesAudience(detail, selectedAudience);
       const matchesMarket = trendMatchesMarket(detail, selectedMarket);
       const matchesLanguage = trendMatchesLanguage(detail, selectedLanguage);
+      const matchesGeo = trendMatchesGeo(detail, selectedGeoCountry);
       const matchesKeyword =
         normalizedKeyword.length === 0 ||
         trend.name.toLowerCase().includes(normalizedKeyword) ||
@@ -404,9 +625,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       return (
         matchesSource &&
         matchesCategory &&
+        matchesStage &&
+        matchesConfidence &&
+        matchesMetaTrend &&
         matchesAudience &&
         matchesMarket &&
         matchesLanguage &&
+        matchesGeo &&
         matchesKeyword &&
         matchesScore &&
         matchesSeasonality &&
@@ -416,7 +641,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 
     const dir = sortDirection === "asc" ? 1 : -1;
     return [...trends].sort((left, right) => {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+      const leftDetail = detailsByTrendId.get(left.id);
+      const rightDetail = detailsByTrendId.get(right.id);
+      if (selectedLens !== "all") {
+        const lensDelta =
+          getOpportunityScoreForLens(rightDetail, selectedLens) - getOpportunityScoreForLens(leftDetail, selectedLens);
+        if (lensDelta !== 0) {
+          return lensDelta;
+        }
+      }
+>>>>>>> main
       if (sortBy === "score") {
         return right.score.total - left.score.total || left.rank - right.rank;
 =======
@@ -447,9 +684,12 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       }
       return dir * (left.rank - right.rank);
     });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
   }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy]);
 =======
+=======
+>>>>>>> main
   }, [
     deferredKeyword,
     detailsByTrendId,
@@ -466,9 +706,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     selectedMetaTrend,
     selectedSource,
     selectedStage,
+<<<<<<< HEAD
     selectedStatus,
     sortBy,
     sortDirection,
+=======
+    sortBy,
+>>>>>>> main
   ]);
 
   const explorerGeoMapData = useMemo(
@@ -493,9 +737,13 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     if (keyword) params.set("q", keyword);
     if (minimumScore && minimumScore > 0) params.set("min", String(minimumScore));
     if (hideRecurring) params.set("hideRecurring", "1");
+<<<<<<< HEAD
     if (selectedStatus !== "all") params.set("status", selectedStatus);
     params.set("sort", sortBy);
     params.set("sortDir", sortDirection);
+=======
+    params.set("sort", sortBy);
+>>>>>>> main
     return `/api/export?${params.toString()}`;
   }, [
     selectedSource,
@@ -511,6 +759,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     keyword,
     minimumScore,
     hideRecurring,
+<<<<<<< HEAD
     selectedStatus,
     sortBy,
     sortDirection,
@@ -521,6 +770,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setSortBy(value);
     setSortDirection(DEFAULT_SORT_DIRECTIONS[value] ?? "desc");
   }
+=======
+    sortBy,
+  ]);
+>>>>>>> main
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -539,6 +792,22 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       setSelectedCategory("all");
       return;
     }
+    if (filterKey === "stage") {
+      setSelectedStage("all");
+      return;
+    }
+    if (filterKey === "confidence") {
+      setSelectedConfidence("all");
+      return;
+    }
+    if (filterKey === "lens") {
+      setSelectedLens("all");
+      return;
+    }
+    if (filterKey === "metaTrend") {
+      setSelectedMetaTrend("all");
+      return;
+    }
     if (filterKey === "audience") {
       setSelectedAudience("all");
       return;
@@ -549,6 +818,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     }
     if (filterKey === "language") {
       setSelectedLanguage("all");
+      return;
+    }
+    if (filterKey === "geo") {
+      setSelectedGeoCountry("all");
       return;
     }
     if (filterKey === "sort") {
@@ -567,9 +840,14 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setKeyword("");
     setSelectedSource("all");
     setSelectedCategory("all");
+    setSelectedStage("all");
+    setSelectedConfidence("all");
+    setSelectedLens("all");
+    setSelectedMetaTrend("all");
     setSelectedAudience("all");
     setSelectedMarket("all");
     setSelectedLanguage("all");
+    setSelectedGeoCountry("all");
     setSortBy("rank");
     setSortDirection("asc");
     setSelectedStatus("all");
@@ -577,8 +855,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setHideRecurring(false);
   }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> main
   function applyThesisPreset(preset: ThesisPreset) {
     if (shouldClearActiveThesisPreset(activeThesisPresetKey, preset)) {
       clearAllExplorerFilters();
@@ -589,21 +870,32 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     setSelectedCategory("all");
     setSelectedStage(preset.stage ?? "all");
     setSelectedConfidence("all");
+<<<<<<< HEAD
     setSelectedLens(preset.lens ?? "all");
+=======
+    setSelectedLens(preset.lens);
+>>>>>>> main
     setSelectedMetaTrend("all");
     setSelectedAudience(preset.audience ?? "all");
     setSelectedMarket("all");
     setSelectedLanguage("all");
     setSelectedGeoCountry("all");
+<<<<<<< HEAD
     const presetSort = preset.sortBy ?? "rank";
     setSortBy(presetSort);
     setSortDirection(preset.sortDirection ?? DEFAULT_SORT_DIRECTIONS[presetSort] ?? "asc");
     setSelectedStatus(preset.status ?? "all");
+=======
+    setSortBy("rank");
+>>>>>>> main
     setMinimumScore(preset.minimumScore ?? 0);
     setHideRecurring(preset.hideRecurring ?? false);
   }
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
   function handleRefresh() {
     setRefreshError(null);
     startTransition(async () => {
@@ -636,11 +928,74 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
   }, [filteredTrends, expandedTrendId]);
 
   useEffect(() => {
-    setOverviewMeta({
+    const nextOverviewMeta = {
       generatedAt: initialData.overview.generatedAt,
-      lastRunAt: initialData.overview.operations.lastRunAt,
+      operations: { lastRunAt: initialData.overview.operations.lastRunAt },
+    };
+    const nextExplorerTrends = initialData.explorer.trends.map((trend) => ({
+      id: trend.id,
+      rank: trend.rank,
+      score: { total: trend.score.total },
+    }));
+
+    const overviewChanged = hasOverviewChanged(overviewMetaRef.current, nextOverviewMeta);
+    const changedIds = detectChangedTrendIds(explorerTrendRef.current, nextExplorerTrends);
+
+    overviewMetaRef.current = nextOverviewMeta;
+    explorerTrendRef.current = nextExplorerTrends;
+    setOverviewMeta({
+      generatedAt: nextOverviewMeta.generatedAt,
+      lastRunAt: nextOverviewMeta.operations.lastRunAt,
     });
-  }, [initialData.overview]);
+
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
+
+    if (overviewChanged) {
+      setLiveUpdateState("updated");
+      setChangedTrendIds(changedIds);
+      if (updatedBadgeTimeoutRef.current) {
+        clearTimeout(updatedBadgeTimeoutRef.current);
+      }
+      updatedBadgeTimeoutRef.current = setTimeout(() => {
+        setLiveUpdateState("idle");
+        setChangedTrendIds([]);
+      }, UPDATED_TRENDS_FLASH_MS);
+    }
+  }, [initialData.overview, initialData.explorer.trends]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(async () => {
+      setLiveUpdateState((current) => (current === "updating" ? current : "checking"));
+      try {
+        const response = await fetch("/api/dashboard/overview", { cache: "no-store" });
+        if (!response.ok) {
+          setLiveUpdateState("idle");
+          return;
+        }
+        const nextOverview = (await response.json()) as OverviewRefreshMeta;
+        if (!hasOverviewChanged(overviewMetaRef.current, nextOverview)) {
+          setLiveUpdateState("idle");
+          return;
+        }
+        setLiveUpdateState("updating");
+        startAutoRefresh(() => {
+          router.refresh();
+        });
+      } catch {
+        setLiveUpdateState("idle");
+      }
+    }, OVERVIEW_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+      if (updatedBadgeTimeoutRef.current) {
+        clearTimeout(updatedBadgeTimeoutRef.current);
+      }
+    };
+  }, [router, startAutoRefresh]);
 
   useEffect(() => {
     setShareExpiryPreset(defaultShareExpiryPreset(defaultWatchlist));
@@ -803,6 +1158,68 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
         return;
       }
       setWatchlistError("Could not create alert");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleSaveThesis() {
+    if (defaultWatchlist == null || thesisName.trim().length === 0) {
+      return;
+    }
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create-thesis",
+          watchlistId: defaultWatchlist.id,
+          name: thesisName.trim(),
+          lens: selectedLens,
+          keywordQuery: keyword || null,
+          source: selectedSource === "all" ? null : selectedSource,
+          category: selectedCategory === "all" ? null : selectedCategory,
+          stage: selectedStage === "all" ? null : selectedStage,
+          confidence: selectedConfidence === "all" ? null : selectedConfidence,
+          metaTrend: selectedMetaTrend === "all" ? null : selectedMetaTrend,
+          audience: selectedAudience === "all" ? null : selectedAudience,
+          market: selectedMarket === "all" ? null : selectedMarket,
+          language: selectedLanguage === "all" ? null : selectedLanguage,
+          geoCountry: selectedGeoCountry === "all" ? null : selectedGeoCountry,
+          minimumScore: minimumScore ?? 0,
+          hideRecurring,
+          notifyOnMatch,
+        }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not save thesis");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      setThesisName("");
+      showActionNotice("Thesis saved");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  async function handleDeleteThesis(thesisId: number) {
+    setActionPending(true);
+    setWatchlistError(null);
+    try {
+      const response = await fetch("/api/watchlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete-thesis", thesisId }),
+      });
+      if (!response.ok) {
+        setWatchlistError("Could not remove thesis");
+        return;
+      }
+      setWatchlistData((await response.json()) as WatchlistResponse);
+      showActionNotice("Thesis removed");
     } finally {
       setActionPending(false);
     }
@@ -1122,6 +1539,52 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
     <main className="dashboard-page">
       <section className="hero-panel">
         <div className="hero-rail">
+          <article className="hero-summary-card hero-summary-card-status">
+            <span>Terminal status</span>
+            <strong>{overviewMeta.lastRunAt ? formatCompactTimestamp(overviewMeta.lastRunAt) : "Awaiting run"}</strong>
+            <small>
+              {latestPipelineRun
+                ? `${latestPipelineRun.successfulSourceCount}/${latestPipelineRun.sourceCount} sources healthy`
+                : "No recent pipeline run"}
+            </small>
+            {isDataStale(overviewMeta.lastRunAt) ? (
+              <span className="stale-warning">Data may be stale</span>
+            ) : liveUpdateState === "checking" ? (
+              <span className="live-update-note">Checking for updates…</span>
+            ) : liveUpdateState === "updating" ? (
+              <span className="live-update-note pulse-text">Applying live update…</span>
+            ) : liveUpdateState === "updated" ? (
+              <span className="live-update-note live-update-note-success">
+                {changedTrendIds.length > 0 ? `${changedTrendIds.length} trends updated` : "Updated just now"}
+              </span>
+            ) : null}
+            {canManualRefresh ? (
+              <Button
+                className="refresh-button refresh-button-wide"
+                disabled={isPending}
+                onClick={handleRefresh}
+                aria-label={isPending ? "Refreshing" : "Refresh data"}
+              >
+                <svg
+                  className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"}
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 2v6h-6" />
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                  <path d="M3 22v-6h6" />
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                </svg>
+                <span>{isPending ? "Refreshing" : "Refresh data"}</span>
+              </Button>
+            ) : null}
+          </article>
           <article className="hero-summary-card">
             <span>Top</span>
             <strong>{initialData.overview.highlights.topTrendName ?? "No data"}</strong>
@@ -1131,37 +1594,23 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             <strong>{initialData.overview.highlights.newestTrendName ?? "No data"}</strong>
           </article>
           <article className="hero-summary-card">
-            <span>Last run</span>
-            <strong>
-              {overviewMeta.lastRunAt
-                ? formatCompactTimestamp(overviewMeta.lastRunAt)
-                : "No data"}
-            </strong>
-            {isDataStale(overviewMeta.lastRunAt) && (
-              <span className="stale-warning">Data may be stale</span>
-            )}
+            <span>Coverage</span>
+            <strong>{initialData.overview.summary.trackedTrends} tracked</strong>
+            <small>
+              {initialData.overview.summary.totalSignals} signals · avg {initialData.overview.summary.averageScore.toFixed(1)}
+            </small>
           </article>
-          <div className="stat-card">
-            <span>Tracked</span>
-            <strong>{initialData.overview.summary.trackedTrends}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Signals</span>
-            <strong>{initialData.overview.summary.totalSignals}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Health</span>
-            <strong>{initialData.overview.operations.successRate.toFixed(1)}%</strong>
-          </div>
-          <div className="stat-card">
-            <span>Avg score</span>
-            <strong>{initialData.overview.summary.averageScore.toFixed(1)}</strong>
-          </div>
-          <Button className="refresh-button" disabled={isPending} onClick={handleRefresh} aria-label={isPending ? "Refreshing" : "Refresh data"}>
-            <svg className={isPending ? "refresh-icon refresh-icon-spin" : "refresh-icon"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-            </svg>
-          </Button>
+          <article className="hero-summary-card">
+            <span>Quality</span>
+            <strong>
+              {latestPipelineRun ? `${latestPipelineRun.duplicateTopicRate.toFixed(1)}% dupes` : "No data"}
+            </strong>
+            {latestPipelineRun ? (
+              <small>
+                {initialData.overview.operations.successRate.toFixed(1)}% health · {latestPipelineRun.multiSourceTrendCount} corroborated
+              </small>
+            ) : null}
+          </article>
         </div>
       </section>
 
@@ -1241,20 +1690,19 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
       <section className="curated-strip">
         <article className="analytics-card">
           <div className="section-heading">
-            <h2>Meta trends</h2>
+            <h2>Categories</h2>
           </div>
           <div className="curated-list">
             {initialData.overview.sections.metaTrends.slice(0, 6).map((trend) => (
-              <button
-                className="curated-item curated-item-button"
-                key={trend.category}
-                onClick={() => setSelectedCategory(trend.category)}
-                type="button"
-              >
+              <Link className="curated-item" href={`/categories/${trend.category}`} key={trend.category}>
                 <span>{formatCategory(trend.category)}</span>
                 <small>{trend.trendCount} trends · avg {trend.averageScore.toFixed(1)}</small>
-              </button>
+              </Link>
             ))}
+            <Link className="curated-item" href="/meta-trends">
+              <span>Browse meta trends</span>
+              <small>Open the cross-category trend directory</small>
+            </Link>
           </div>
         </article>
 
@@ -1286,28 +1734,129 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
           </div>
         </article>
 
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Experimental</h2>
+          </div>
+          <div className="curated-list">
+            {initialData.overview.sections.experimentalTrends.slice(0, 4).map((trend) => (
+              <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                <span>{trend.name}</span>
+                <strong>{trend.scoreTotal.toFixed(1)}</strong>
+              </Link>
+            ))}
+          </div>
+        </article>
+
       </section>
+
+      {explorerGeoMapData.length > 0 ? (
+        <section className="explorer-geo-strip">
+          <div className="explorer-geo-panel">
+            <div className="explorer-geo-panel-head">
+              <div>
+                <strong>Geographic footprint</strong>
+                <p className="source-summary-copy">
+                  {explorerGeoMapData.length} countr{explorerGeoMapData.length === 1 ? "y" : "ies"} across{" "}
+                  {filteredTrends.length} visible trend{filteredTrends.length === 1 ? "" : "s"}
+                </p>
+              </div>
+              {selectedGeoCountry !== "all" ? (
+                <button
+                  className="mini-action-button"
+                  onClick={() => setSelectedGeoCountry("all")}
+                  type="button"
+                >
+                  Clear geo filter
+                </button>
+              ) : (
+                <span className="section-heading-meta">Click a country to filter</span>
+              )}
+            </div>
+            <GeoMapClient
+              height={320}
+              mapData={explorerGeoMapData}
+              onCountrySelect={(countryCode) =>
+                setSelectedGeoCountry((current) => (current === countryCode ? "all" : countryCode))
+              }
+              selectedCountryCode={selectedGeoCountry !== "all" ? selectedGeoCountry : null}
+            />
+          </div>
+        </section>
+      ) : null}
 
       <section className="content-grid">
         <div className="ranking-panel">
           <div className="section-heading">
             <h2>Explorer</h2>
             <div className="section-heading-actions">
-              <a className="mini-action-button export-button" href="/api/export" download>
+              <a className="mini-action-button export-button" href={exportHref} download>
                 Export CSV
               </a>
               <span className="section-heading-meta">{filteredTrends.length} live</span>
             </div>
           </div>
 
-          {filteredTrends.length === 0 ? (
-            <div className="empty-state">
-              <h3>No trends match these filters.</h3>
-              <p>Lower the minimum score or broaden the keyword and source filters.</p>
-            </div>
-          ) : (
-            <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
-              <section className="filters-panel filters-panel-wide">
+          <div className={isPending ? "explorer-list explorer-list-pending" : "explorer-list"} aria-busy={isPending}>
+            <section className="thesis-filters-panel">
+              <div className="filter-field filter-field-wide thesis-filter-block">
+                <span>Thesis presets</span>
+                <div className="thesis-presets-grid">
+                  {THESIS_PRESETS.map((preset) => (
+                    <button
+                      aria-pressed={activeThesisPresetKey === preset.key}
+                      className={activeThesisPresetKey === preset.key ? "thesis-preset-card thesis-preset-card-active" : "thesis-preset-card"}
+                      key={preset.key}
+                      onClick={() => applyThesisPreset(preset)}
+                      type="button"
+                    >
+                      <strong>{preset.label}</strong>
+                      <small>{preset.description}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {!watchlistsRequireAuth && defaultWatchlist != null ? (
+                <div className="filter-field filter-field-wide thesis-filter-block">
+                  <span>Save current thesis</span>
+                  <div className="thesis-save-panel">
+                    <Input
+                      className="text-input"
+                      placeholder="Name this thesis"
+                      value={thesisName}
+                      onChange={(event) => setThesisName(event.target.value)}
+                    />
+                    <div className="thesis-save-actions">
+                      <button
+                        className={notifyOnMatch ? "toggle-chip toggle-chip-active" : "toggle-chip"}
+                        onClick={() => setNotifyOnMatch((current) => !current)}
+                        type="button"
+                      >
+                        {notifyOnMatch ? "Notify on new matches" : "No notifications"}
+                      </button>
+                      <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleSaveThesis()}>
+                        Save thesis
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </section>
+
+            <details className="advanced-filters-panel">
+              <summary>
+                <span>Advanced filters</span>
+                <small>
+                  {activeExplorerFilters.length > 0
+                    ? `${activeExplorerFilters.length} active`
+                    : "Keyword, source, scoring, and audience controls"}
+                </small>
+                <span aria-hidden="true" className="advanced-filters-chevron">
+                  ▾
+                </span>
+              </summary>
+              <section className="advanced-filters-grid filters-panel-wide">
                 <label className="filter-field">
                   <span>Keyword</span>
                   <Input
@@ -1322,8 +1871,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Source</span>
                   <Select.Root value={selectedSource} onValueChange={(value) => setSelectedSource(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <span>{selectedSourceLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1345,8 +1894,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Category</span>
                   <Select.Root value={selectedCategory} onValueChange={(value) => setSelectedCategory(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <span>{selectedCategoryLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1365,8 +1914,11 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> main
                   <span>Stage</span>
                   <Select.Root value={selectedStage} onValueChange={(value) => setSelectedStage(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1390,6 +1942,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+<<<<<<< HEAD
                   <span>Status</span>
                   <Select.Root value={selectedStatus} onValueChange={(value) => setSelectedStatus(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1413,6 +1966,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+=======
+>>>>>>> main
                   <span>Confidence</span>
                   <Select.Root value={selectedConfidence} onValueChange={(value) => setSelectedConfidence(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1482,12 +2037,15 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </label>
 
                 <label className="filter-field">
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
                   <span>Audience</span>
                   <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <span>{selectedAudienceLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1509,8 +2067,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Market</span>
                   <Select.Root value={selectedMarket} onValueChange={(value) => setSelectedMarket(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <span>{selectedMarketLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1532,8 +2090,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <span>Language</span>
                   <Select.Root value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <span>{selectedLanguageLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1556,8 +2114,8 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
 <<<<<<< Updated upstream
                   <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
                     <Select.Trigger className="select-trigger">
-                      <Select.Value />
-                      <Select.Icon className="select-icon">+</Select.Icon>
+                      <span>{selectedSortLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
                       <Select.Positioner className="select-positioner" sideOffset={8}>
@@ -1634,6 +2192,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   </button>
                 </label>
               </section>
+            </details>
 
               {activeExplorerFilters.length > 0 ? (
                 <section className="explorer-active-filters" aria-label="Active explorer filters">
@@ -1659,85 +2218,107 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 <span>Trend</span>
                 <span>Metrics</span>
               </div>
-              {filteredTrends.map((trend) => {
-                const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
-                const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
-                const detail = detailsByTrendId.get(trend.id);
-                const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
-                const wikipediaLink = getWikipediaLinkFromDetail(detail);
-                const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
-                const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
-                const evidenceMeta = [
-                  primaryEvidenceLink ? `Source: ${formatSourceLabel(primaryEvidenceLink.source)}` : null,
-                  audienceSummary,
-                ]
-                  .filter((item): item is string => Boolean(item))
-                  .join(" · ");
-                const compactSummaryParts = [
-                  formatTrendStatus(trend.status),
-                  formatVolatility(trend.volatility),
-                  forecastBadge?.label ?? null,
-                  seasonalityBadge?.label ?? null,
-                  audienceBadge ?? null,
-                  formatCategory(trend.category),
-                ].filter((item): item is string => Boolean(item));
-                return (
-                <article className="explorer-card" data-status={trend.status} key={trend.id}>
+              {filteredTrends.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No trends match these filters.</h3>
+                  <p>Lower the minimum score or broaden the keyword and source filters.</p>
+                </div>
+              ) : (
+                filteredTrends.map((trend) => {
+                  const forecastBadge = getExplorerForecastBadge(trend.forecastDirection);
+                  const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
+                  const detail = detailsByTrendId.get(trend.id);
+                  const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
+                  const wikipediaLink = getWikipediaLinkFromDetail(detail);
+                  const audienceBadge = buildTrendAudienceBadge(detail?.audienceSummary ?? []);
+                  const audienceSummary = summarizeTrendAudience(detail?.audienceSummary ?? []);
+                  const evidencePreviewText = primaryEvidenceLink
+                    ? summarizeEvidencePreview(primaryEvidenceLink.evidence, primaryEvidenceLink.source)
+                    : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
+                  const evidenceMeta = [
+                    primaryEvidenceLink ? formatSourceLabel(primaryEvidenceLink.source) : null,
+                    audienceSummary,
+                  ]
+                    .filter((item): item is string => Boolean(item))
+                    .join(" · ");
+                  const compactSummaryParts = [
+                    formatStageLabel(trend.stage),
+                    formatConfidenceLabel(trend.confidence),
+                    formatTrendStatus(trend.status),
+                    formatVolatility(trend.volatility),
+                    forecastBadge?.label ?? null,
+                    seasonalityBadge?.label ?? null,
+                    audienceBadge ?? null,
+                    trend.metaTrend,
+                  ].filter((item): item is string => Boolean(item));
+                  const collapsedSourceInsights = detail
+                    ? buildSourceContributionInsights(detail.sourceContributions, initialData.overview.sources).slice(0, 2)
+                    : [];
+                  const collapsedDriverSummary = formatCollapsedSourceDriverSummary(collapsedSourceInsights);
+                  const collapsedCorroborationSummary = formatCollapsedCorroborationSummary(detail, trend);
+                  return (
+                <article
+                  className={changedTrendIds.includes(trend.id) ? "explorer-card explorer-card-updated" : "explorer-card"}
+                  data-status={trend.status}
+                  key={trend.id}
+                >
                   <div className="explorer-card-top">
                     <div className="trend-cell explorer-card-head">
-                      <div className="explorer-card-kicker">
+                      <div className="explorer-card-title-line">
                         <span className="explorer-rank-chip">#{trend.rank}</span>
-                        <span className={movementClassName(trend.rankChange)}>
-                          {formatRankChange(trend.rankChange)} rank
-                        </span>
-                        <span className="trend-date-chip">
-                          {trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}
-                        </span>
+                        <div className="trend-title-row">
+                          <strong>
+                            <Link className="trend-link" href={`/trends/${trend.id}`}>
+                              {trend.name}
+                            </Link>
+                          </strong>
+                        </div>
                       </div>
-                      <div className="trend-title-row">
-                        <strong>
-                          <Link className="trend-link" href={`/trends/${trend.id}`}>
-                            {trend.name}
-                          </Link>
-                        </strong>
-                        <span className="trend-date-chip">Sources: {trend.sources.length}</span>
+                      <div className="explorer-card-meta">
+                        <span>{trend.firstSeenAt ? `Since ${formatDateOnly(trend.firstSeenAt)}` : "This run"}</span>
+                        <span>Sources: {trend.sources.length}</span>
+                        <span>{formatCategory(trend.category)}</span>
                       </div>
-                      <div className="explorer-badge-row">
-                        <span className="trend-summary-chip">{compactSummaryParts.join(" / ")}</span>
+                      <div className="explorer-card-summary">
+                        <span>{compactSummaryParts.join(" / ")}</span>
                       </div>
+                      {trend.summary ? <p className="source-summary-copy">{trend.summary}</p> : null}
+                      {collapsedDriverSummary ? (
+                        <div className="explorer-card-driver-line">
+                          <span>{collapsedDriverSummary}</span>
+                        </div>
+                      ) : null}
+                      {collapsedCorroborationSummary ? (
+                        <div className="explorer-card-support-line">
+                          <span>{collapsedCorroborationSummary}</span>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="explorer-metrics-row">
                       <div className="explorer-metrics-panel">
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
-                          <span>Position</span>
-                          <strong>#{trend.rank}</strong>
+                        <div className="explorer-metric-card">
+                          <span className="explorer-metric-label">Trend strength</span>
+                          <strong className="explorer-metric-value">{trend.score.total.toFixed(1)}</strong>
+                          <small className="explorer-metric-copy">{formatScoreMix(trend.score)}</small>
                         </div>
 
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
-                          <span>Momentum</span>
-                          <div className="movement-inline">
-                            <strong className={movementClassName(trend.rankChange)}>
-                              {formatRankChange(trend.rankChange)}
-                            </strong>
-                            <small>{formatMomentum(trend.momentum.percentDelta)}</small>
-                          </div>
+                        <div className="explorer-metric-card">
+                          <span className="explorer-metric-label">Change vs last run</span>
+                          <strong className={`explorer-metric-value ${movementClassName(trend.rankChange)}`}>
+                            {formatMomentumHeadline(trend)}
+                          </strong>
+                          <small className="explorer-metric-copy">{formatMomentumDetail(trend)}</small>
                         </div>
 
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-score">
-                          <span>Total score</span>
-                          <div className="score-inline">
-                            <strong>{trend.score.total.toFixed(1)}</strong>
-                            <small>
-                              S {trend.score.social.toFixed(1)} / D {trend.score.developer.toFixed(1)} / K{" "}
-                              {trend.score.knowledge.toFixed(1)}
-                            </small>
-                          </div>
-                        </div>
-
-                        <div className="explorer-metric explorer-metric-panel-item explorer-metric-compact">
-                          <span>Signals</span>
-                          <strong>{trend.coverage.signalCount}</strong>
+                        <div className="explorer-metric-card">
+                          <span className="explorer-metric-label">Evidence base</span>
+                          <strong className="explorer-metric-value">
+                            {trend.coverage.signalCount} signal{trend.coverage.signalCount === 1 ? "" : "s"}
+                          </strong>
+                          <small className="explorer-metric-copy">
+                            Backed by {trend.coverage.sourceCount} source{trend.coverage.sourceCount === 1 ? "" : "s"}
+                          </small>
                         </div>
                       </div>
 
@@ -1760,7 +2341,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   <div className="explorer-card-bottom">
                     <div className="evidence-preview evidence-preview-inline">
                       <div className="evidence-main-row">
-                        <span className="explorer-evidence-label">Signal brief</span>
+                        <span className="explorer-evidence-label">Latest signal</span>
                         {primaryEvidenceLink?.evidenceUrl ? (
                           <a
                             className="trend-link"
@@ -1768,10 +2349,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                             rel="noreferrer"
                             target="_blank"
                           >
-                            {primaryEvidenceLink.evidence}
+                            {evidencePreviewText}
                           </a>
                         ) : (
-                          <span>{trend.evidencePreview[0] ?? "No evidence available."}</span>
+                          <span>{evidencePreviewText}</span>
                         )}
                       </div>
                       {(evidenceMeta || wikipediaLink) ? (
@@ -1784,7 +2365,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                               rel="noreferrer"
                               target="_blank"
                             >
-                              Wikipedia: {wikipediaLink.title}
+                              Background: {wikipediaLink.title}
                             </a>
                           ) : null}
                         </div>
@@ -1800,7 +2381,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     }
                   >
                     <div className="explorer-expand-panel">
-                      {(() => {
+                      {expandedTrendId === trend.id && (() => {
                         if (!detail) return null;
                         const maxScore = Math.max(
                           detail.score.social,
@@ -1810,7 +2391,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                           detail.score.diversity,
                           1,
                         );
-                        const topContribs = detail.sourceContributions.slice(0, 5);
+                        const topContribs = buildSourceContributionInsights(
+                          detail.sourceContributions,
+                          initialData.overview.sources,
+                        ).slice(0, 5);
                         const maxContrib = Math.max(...topContribs.map((c) => c.scoreSharePercent), 1);
                         const firstRelated = detail.relatedTrends[0] ?? null;
                         return (
@@ -1843,7 +2427,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                               </div>
 
                               <div className="explorer-expand-section">
-                                <strong>Sources</strong>
+                                <strong>Why this ranks here</strong>
+                                <p className="explorer-expand-reason">
+                                  {summarizeTopSourceDrivers(detail.sourceContributions)}
+                                </p>
                                 <div className="source-row explorer-expand-source-row">
                                   {trend.sources.map((source) => (
                                     <span className="source-badge" key={source}>
@@ -1853,15 +2440,39 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 </div>
                                 <div className="mini-bar-list">
                                   {topContribs.map((contrib) => (
-                                    <div className="mini-bar-row" key={contrib.source}>
-                                      <span>{formatSourceLabel(contrib.source)}</span>
-                                      <div className="mini-bar-track">
-                                        <div
-                                          className="mini-bar-fill mini-bar-fill-muted"
-                                          style={{ width: `${(contrib.scoreSharePercent / maxContrib) * 100}%` }}
-                                        />
+                                    <div className="source-contribution-item" key={contrib.source}>
+                                      <div className="mini-bar-row">
+                                        <span>{contrib.title}</span>
+                                        <div className="mini-bar-track">
+                                          <div
+                                            className="mini-bar-fill mini-bar-fill-muted"
+                                            style={{ width: `${(contrib.scoreSharePercent / maxContrib) * 100}%` }}
+                                          />
+                                        </div>
+                                        <strong>{contrib.scoreSharePercent.toFixed(1)}%</strong>
                                       </div>
-                                      <strong>{contrib.scoreSharePercent.toFixed(1)}%</strong>
+                                      <div className="source-contribution-meta">
+                                        <span>{contrib.signalCount} signals</span>
+                                        <span>{contrib.mixSummary}</span>
+                                      </div>
+                                      <div className="source-contribution-meta">
+                                        <span className={contributionHealthClassName(contrib.status)}>
+                                          {contrib.statusLabel}
+                                        </span>
+                                        {(() => {
+                                          const freshness = getSourceFreshnessBadge(contrib.fetchedAt);
+                                          return freshness ? (
+                                            <span className={`source-freshness-badge source-freshness-badge-${freshness.tone}`}>
+                                              {freshness.label}
+                                            </span>
+                                          ) : null;
+                                        })()}
+                                        <span>{contrib.fetchSummary}</span>
+                                        {contrib.fetchedAt ? <span>{formatCompactTimestamp(contrib.fetchedAt)}</span> : null}
+                                      </div>
+                                      {contrib.warning ? (
+                                        <p className="source-warning-copy source-contribution-warning">{contrib.warning}</p>
+                                      ) : null}
                                     </div>
                                   ))}
                                 </div>
@@ -1871,13 +2482,18 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 <strong>Outlook</strong>
                                 <div className="explorer-expand-outlook">
                                   <div>
+                                    <small>Stage</small>
+                                    <strong>{formatStageLabel(trend.stage)}</strong>
+                                    <small>{formatConfidenceLabel(trend.confidence)}</small>
+                                  </div>
+                                  <div>
                                     <small>Breakout</small>
                                     <strong>{detail.breakoutPrediction.predictedDirection}</strong>
                                     <small>{(detail.breakoutPrediction.confidence * 100).toFixed(0)}% confidence</small>
                                   </div>
                                   <div>
-                                    <small>Opportunity</small>
-                                    <strong>{detail.opportunity.composite.toFixed(1)}</strong>
+                                    <small>{selectedLens === "all" ? "Opportunity" : `${formatLensLabel(selectedLens)} lens`}</small>
+                                    <strong>{getOpportunityScoreForLens(detail, selectedLens).toFixed(1)}</strong>
                                   </div>
                                   {detail.forecast && detail.forecast.predictedScores.length > 0 && (
                                     <div>
@@ -1895,6 +2511,9 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                                 {detail.opportunity.reasoning[0] && (
                                   <p className="explorer-expand-reason">{detail.opportunity.reasoning[0]}</p>
                                 )}
+                                {detail.whyNow[0] ? (
+                                  <p className="explorer-expand-reason">{detail.whyNow[0]}</p>
+                                ) : null}
                                 {wikipediaLink ? (
                                   <p className="explorer-expand-reason">
                                     Wikipedia pageviews are concentrated on{" "}
@@ -1916,7 +2535,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                             {detail.geoSummary.length > 0 && (
                               <div className="explorer-expand-geo-wrap">
                                 <div className="explorer-expand-geo">
-                                  <GeoMapCompact data={detail.geoSummary} />
+                                  <LazyGeoMapCompact data={detail.geoSummary} />
                                 </div>
                               </div>
                             )}
@@ -1957,10 +2576,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     </div>
                   </div>
                 </article>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
-          )}
         </div>
 
         <aside className="history-panel">
@@ -2019,7 +2638,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                 </section>
               </div>
 
-              <details className="sidebar-section" open={alertCount > 0 ? true : undefined}>
+              <details className="sidebar-section" ref={alertsDetailsRef} open={alertCount > 0 ? true : undefined}>
                 <summary>
                   <div className="section-heading section-heading-spaced">
                     <h2>
@@ -2059,10 +2678,56 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                   )}
                 </div>
               </details>
+
+              <details className="sidebar-section" open={savedTheses.length > 0 ? true : undefined}>
+                <summary>
+                  <div className="section-heading section-heading-spaced">
+                    <h2>Saved theses</h2>
+                  </div>
+                </summary>
+
+                <div className="snapshot-list">
+                  {savedTheses.length === 0 ? (
+                    <p className="empty-state-hint">Save a thesis from the current explorer filters to track matching trends over time.</p>
+                  ) : (
+                    savedTheses.map((thesis) => {
+                      const matches = thesisMatchesById.get(thesis.id) ?? [];
+                      return (
+                        <section className="snapshot-card" key={thesis.id}>
+                          <header>
+                            <strong>{thesis.name}</strong>
+                            <span>{thesis.activeMatchCount} matches</span>
+                          </header>
+                          <p className="source-summary-copy">{summarizeThesisFilters(thesis)}</p>
+                          {matches.length > 0 ? (
+                            <div className="community-chip-group">
+                              {matches.slice(0, 3).map((match) => (
+                                <Link className="community-filter-chip" href={`/trends/${match.trendId}`} key={`${thesis.id}-${match.trendId}`}>
+                                  {match.trendName} · {match.lensScore.toFixed(1)}
+                                </Link>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="empty-state-hint">No active matches in the current ranking.</p>
+                          )}
+                          <div className="watchlist-form">
+                            <small className="source-summary-copy">
+                              {thesis.notifyOnMatch ? "Notifications on" : "Notifications off"}
+                            </small>
+                            <Button className="mini-action-button" disabled={actionPending} onClick={() => void handleDeleteThesis(thesis.id)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </section>
+                      );
+                    })
+                  )}
+                </div>
+              </details>
             </>
           ) : null}
 
-          <details className="sidebar-section">
+          <details className="sidebar-section" ref={runsDetailsRef}>
             <summary>
               <div className="section-heading section-heading-spaced">
                 <h2>Runs</h2>
@@ -2083,7 +2748,10 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     {run.sourceCount} healthy
                   </p>
                   <p className="source-summary-copy">
-                    {formatDuration(run.durationMs)} ·{" "}
+                    {run.rawTopicCount} raw → {run.mergedTopicCount} merged · {run.duplicateTopicRate.toFixed(1)}% dupes
+                  </p>
+                  <p className="source-summary-copy">
+                    {run.multiSourceTrendCount} corroborated · {run.lowEvidenceTrendCount} thin · {formatDuration(run.durationMs)} ·{" "}
                     {run.topTrendId && run.topTrendName ? (
                       <>
                         <Link className="trend-link" href={`/trends/${run.topTrendId}`}>
@@ -2100,7 +2768,7 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </div>
           </details>
 
-          <details className="sidebar-section">
+          <details className="sidebar-section" ref={sourcesDetailsRef}>
             <summary>
               <div className="section-heading section-heading-spaced">
                 <h2>Sources</h2>
@@ -2108,6 +2776,84 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
             </summary>
 
             <div className="snapshot-list">
+              {sourceImpactRows.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source impact</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Published ranking</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceImpactRows.slice(0, 6).map((source) => (
+                      <article className="detail-list-item" key={source.source}>
+                        <div>
+                          <strong>{formatSourceLabel(source.source)}</strong>
+                          <span>
+                            {source.materialTrendCount} material · {source.totalTrendCount} total ·{" "}
+                            {source.materialTrendCount > 0
+                              ? `${source.averageMaterialSharePercent.toFixed(1)}% avg share`
+                              : "No material share yet"}
+                          </span>
+                          {source.exampleTrendNames.length > 0 ? (
+                            <span>{source.exampleTrendNames.join(" · ")}</span>
+                          ) : null}
+                        </div>
+                        <small>{source.materialTrendCount}</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              {sourceFamilyInsights.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source families</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Cross-source mix</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceFamilyInsights.slice(0, 6).map((family) => (
+                      <article className="detail-list-item" key={family.family}>
+                        <div>
+                          <strong>{formatSourceFamilyLabel(family.family)}</strong>
+                          <span>
+                            {family.sourceCount} sources · {family.trendCount} trends · {family.signalCount} sig
+                          </span>
+                        </div>
+                        <small>{family.averageYieldRatePercent.toFixed(0)}%</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              {sourceFamilyHistoryInsights.length > 0 ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Family pulse</strong>
+                    <span className="source-health-pill source-health-pill-healthy">Recent runs</span>
+                  </header>
+                  <div className="detail-list">
+                    {sourceFamilyHistoryInsights.slice(0, 6).map((family) => (
+                      <article className="detail-list-item" key={`${family.family}-pulse`}>
+                        <div>
+                          <strong>{family.label}</strong>
+                          <span>
+                            {family.healthySourceCount}/{family.sourceCount} healthy · {family.trendCount} ranked ·{" "}
+                            {family.corroboratedTrendCount} corroborated
+                          </span>
+                          <span>
+                            {family.topRankedTrendCount} top ranked · {family.recentAverageYieldRatePercent.toFixed(0)}% avg yield ·{" "}
+                            {family.averageScore.toFixed(1)} avg score
+                          </span>
+                          <span>
+                            {family.capturedAt ? formatCompactTimestamp(family.capturedAt) : "No recent snapshot"} ·{" "}
+                            {family.recentSuccessRatePercent.toFixed(0)}% live success
+                          </span>
+                        </div>
+                        <small>{family.topRankedTrendCount}</small>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
               {sourceWatchlist.length > 0 ? (
                 <section className="snapshot-card">
                   <header>
@@ -2144,11 +2890,17 @@ export function DashboardShell({ initialData, canManualRefresh }: DashboardShell
                     </span>
                   </header>
                   <p className="source-summary-copy">
+                    {formatSourceFamilyLabel(source.family)} family
+                  </p>
+                  <p className="source-summary-copy">
                     {source.signalCount} sig · {source.trendCount} trends
                   </p>
                   <p className="source-summary-copy">
                     {source.latestFetchAt ? formatCompactTimestamp(source.latestFetchAt) : "No fetch"} ·{" "}
                     {source.latestItemCount} items · {formatDuration(source.durationMs)}
+                  </p>
+                  <p className="source-summary-copy">
+                    {source.rawTopicCount} raw topics · {source.mergedTopicCount} merged · {source.duplicateTopicRate.toFixed(1)}% dupes
                   </p>
                   <p className="source-summary-copy">{summarizeSourceYield(source)}</p>
                   {source.usedFallback ? (
@@ -2212,21 +2964,6 @@ function buildShareActivityMap(watchlist: Watchlist | null) {
   return shareActivityById;
 }
 
-function formatSourceLabel(source: string) {
-  const labels: Record<string, string> = {
-    reddit: "Reddit",
-    hacker_news: "Hacker News",
-    github: "GitHub",
-    wikipedia: "Wikipedia",
-    google_trends: "Google Trends",
-    twitter: "Twitter/X",
-  };
-  return labels[source] ?? source
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 function formatRankChange(value: number | null | undefined) {
   if (value == null) {
     return "New";
@@ -2245,6 +2982,79 @@ function formatMomentum(value: number | null | undefined) {
     return "No prior run";
   }
   return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function formatMomentumHeadline(trend: TrendExplorerRecord) {
+  if (trend.rankChange == null) {
+    return "New signal";
+  }
+  const percentDelta = trend.momentum.percentDelta;
+  if (percentDelta == null) {
+    if (trend.rankChange === 0) {
+      return "Flat";
+    }
+    return `${trend.rankChange > 0 ? "Up" : "Down"} ${Math.abs(trend.rankChange)}`;
+  }
+  return `${percentDelta > 0 ? "+" : ""}${percentDelta.toFixed(1)}%`;
+}
+
+function formatMomentumDetail(trend: TrendExplorerRecord) {
+  if (trend.rankChange == null) {
+    return "First appearance in the current ranking";
+  }
+  if (trend.rankChange === 0) {
+    return "Holding the same rank as the previous run";
+  }
+  const direction = trend.rankChange > 0 ? "up" : "down";
+  const magnitude = Math.abs(trend.rankChange);
+  return `Rank ${direction} ${magnitude} place${magnitude === 1 ? "" : "s"} vs previous run`;
+}
+
+function formatScoreMix(score: TrendExplorerRecord["score"]) {
+  const mix = ([
+    ["Social", score.social],
+    ["Developer", score.developer],
+    ["Knowledge", score.knowledge],
+    ["Search", score.search],
+  ] as Array<[string, number]>)
+    .filter(([, value]) => value > 0)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 2)
+    .map(([label, value]) => `${label} ${value.toFixed(1)}`);
+
+  if (mix.length === 0) {
+    return `Driven by cross-source diversity ${score.diversity.toFixed(1)}`;
+  }
+  return `Led by ${mix.join(" · ")}`;
+}
+
+function formatCollapsedSourceDriverSummary(
+  insights: Array<{ title: string; scoreSharePercent: number }>,
+) {
+  if (insights.length === 0) {
+    return null;
+  }
+  return `Source drivers: ${insights
+    .map((insight) => `${insight.title} ${insight.scoreSharePercent.toFixed(0)}%`)
+    .join(" · ")}`;
+}
+
+function formatCollapsedCorroborationSummary(
+  detail: TrendDetailRecord | undefined,
+  trend: TrendExplorerRecord,
+) {
+  if (!detail) {
+    return `Corroborated by ${trend.coverage.sourceCount} source${trend.coverage.sourceCount === 1 ? "" : "s"}`;
+  }
+
+  const supportingSources = detail.sourceContributions.filter((contribution) => contribution.scoreSharePercent >= 5).length;
+  if (supportingSources >= 2) {
+    return `Corroborated by ${supportingSources} contributing sources`;
+  }
+  if (detail.sourceContributions.length === 1) {
+    return `Driven mainly by ${formatSourceLabel(detail.sourceContributions[0].source)}`;
+  }
+  return `Backed by ${trend.coverage.signalCount} signal${trend.coverage.signalCount === 1 ? "" : "s"} across ${trend.coverage.sourceCount} sources`;
 }
 
 function movementClassName(rankChange: number | null | undefined) {
@@ -2284,10 +3094,7 @@ function formatSourceStatus(status: string) {
 }
 
 function formatCategory(category: string) {
-  return category
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return formatCategoryLabel(category);
 }
 
 function sourceHealthClassName(status: string) {
@@ -2298,6 +3105,19 @@ function sourceHealthClassName(status: string) {
     return "source-health-pill source-health-pill-degraded";
   }
   return "source-health-pill source-health-pill-stale";
+}
+
+function contributionHealthClassName(status: string | null) {
+  if (status === "healthy") {
+    return "source-health-pill source-health-pill-healthy";
+  }
+  if (status === "degraded") {
+    return "source-health-pill source-health-pill-degraded";
+  }
+  if (status === "stale") {
+    return "source-health-pill source-health-pill-stale";
+  }
+  return "source-health-pill";
 }
 
 function formatWatchSeverity(severity: "critical" | "warning" | "info") {
@@ -2576,9 +3396,14 @@ export function listActiveExplorerFilters(filters: {
   keyword: string;
   selectedSource: string;
   selectedCategory: string;
+  selectedStage?: string;
+  selectedConfidence?: string;
+  selectedLens?: string;
+  selectedMetaTrend?: string;
   selectedAudience: string;
   selectedMarket: string;
   selectedLanguage: string;
+  selectedGeoCountry: string;
   sortBy: string;
   sortDirection: "asc" | "desc";
   selectedStatus: string;
@@ -2594,6 +3419,18 @@ export function listActiveExplorerFilters(filters: {
   if (filters.selectedCategory !== "all") {
     result.push({ key: "category", label: "Category", value: formatCategory(filters.selectedCategory) });
   }
+  if ((filters.selectedStage ?? "all") !== "all") {
+    result.push({ key: "stage", label: "Stage", value: formatStageLabel(filters.selectedStage) });
+  }
+  if ((filters.selectedConfidence ?? "all") !== "all") {
+    result.push({ key: "confidence", label: "Confidence", value: formatConfidenceBucketLabel(filters.selectedConfidence) });
+  }
+  if ((filters.selectedLens ?? "all") !== "all") {
+    result.push({ key: "lens", label: "Lens", value: formatLensLabel(filters.selectedLens ?? "all") });
+  }
+  if ((filters.selectedMetaTrend ?? "all") !== "all") {
+    result.push({ key: "metaTrend", label: "Meta trend", value: filters.selectedMetaTrend ?? "General" });
+  }
   if (filters.selectedAudience !== "all") {
     result.push({ key: "audience", label: "Audience", value: formatAudienceLabel(filters.selectedAudience) });
   }
@@ -2603,7 +3440,13 @@ export function listActiveExplorerFilters(filters: {
   if (filters.selectedLanguage !== "all") {
     result.push({ key: "language", label: "Language", value: formatLanguageLabel(filters.selectedLanguage) });
   }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+  if (filters.selectedGeoCountry !== "all") {
+    result.push({ key: "geo", label: "Geo", value: formatGeoCountryLabel(filters.selectedGeoCountry) });
+  }
+>>>>>>> main
   if (filters.sortBy !== "rank") {
     result.push({ key: "sort", label: "Sort", value: formatExplorerSortLabel(filters.sortBy) });
 =======
@@ -2624,27 +3467,39 @@ export function listActiveExplorerFilters(filters: {
   return result;
 }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
 export function isThesisPresetApplied(preset: ThesisPreset, state: ThesisPresetFilterState) {
   const expectedSort = preset.sortBy ?? "rank";
   const expectedDirection = preset.sortDirection ?? DEFAULT_SORT_DIRECTIONS[expectedSort] ?? "asc";
+=======
+export function isThesisPresetApplied(preset: ThesisPreset, state: ThesisPresetFilterState) {
+>>>>>>> main
   return (
     state.keyword.trim().length === 0 &&
     state.selectedSource === (preset.source ?? "all") &&
     state.selectedCategory === "all" &&
     state.selectedStage === (preset.stage ?? "all") &&
     state.selectedConfidence === "all" &&
+<<<<<<< HEAD
     state.selectedLens === (preset.lens ?? "all") &&
+=======
+    state.selectedLens === preset.lens &&
+>>>>>>> main
     state.selectedMetaTrend === "all" &&
     state.selectedAudience === (preset.audience ?? "all") &&
     state.selectedMarket === "all" &&
     state.selectedLanguage === "all" &&
     state.selectedGeoCountry === "all" &&
     (state.minimumScore ?? 0) === (preset.minimumScore ?? 0) &&
+<<<<<<< HEAD
     state.sortBy === expectedSort &&
     state.sortDirection === expectedDirection &&
     state.selectedStatus === (preset.status ?? "all") &&
+=======
+    state.sortBy === "rank" &&
+>>>>>>> main
     state.hideRecurring === (preset.hideRecurring ?? false)
   );
 }
@@ -2653,7 +3508,10 @@ export function shouldClearActiveThesisPreset(activePresetKey: string | null, pr
   return activePresetKey === preset.key;
 }
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
 function buildSegmentFilterOptions(
   details: TrendDetailRecord[],
   segmentType: string,
@@ -2674,6 +3532,37 @@ function buildSegmentFilterOptions(
       .sort()
       .map((label) => ({ label: formatAudienceLabel(label), value: label })),
   ];
+}
+
+export function confidenceBucketForTrend(confidence: number) {
+  if (confidence >= 0.75) {
+    return "high";
+  }
+  if (confidence >= 0.5) {
+    return "medium";
+  }
+  return "low";
+}
+
+function formatConfidenceLabel(confidence: number) {
+  return `${formatConfidenceBucketLabel(confidenceBucketForTrend(confidence))} confidence`;
+}
+
+function formatConfidenceBucketLabel(confidence: string | undefined) {
+  if (confidence === "high") {
+    return "High";
+  }
+  if (confidence === "medium") {
+    return "Medium";
+  }
+  return "Low";
+}
+
+function formatStageLabel(stage: string | undefined) {
+  return (stage ?? "steady")
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(" ");
 }
 
 function trendMatchesSegment(detail: TrendDetailRecord | undefined, selectedValue: string, segmentType: string) {
@@ -2735,6 +3624,7 @@ function formatExplorerSortLabel(sortBy: string) {
   return labels[sortBy] ?? sortBy;
 }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
 function formatStatusLabel(status: string | undefined) {
@@ -2742,6 +3632,8 @@ function formatStatusLabel(status: string | undefined) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+=======
+>>>>>>> main
 function getOpportunityScoreForLens(detail: TrendDetailRecord | undefined, lens: string) {
   if (!detail) {
     return 0;
@@ -2806,7 +3698,10 @@ function formatGeoCountryLabel(countryCode: string) {
   return formatCountryLabel(countryCode, getRegionName(countryCode) ?? countryCode);
 }
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
 function buildShareExpiryIso(preset: string) {
   const now = new Date();
   const next = new Date(now);

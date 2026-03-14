@@ -12,15 +12,22 @@ from app.data.primary import connect_primary_database
 from app.data.repositories import (
     PipelineRunRepository,
     SignalRepository,
+    SourceFamilySnapshotRepository,
     SourceIngestionRunRepository,
     TrendScoreRepository,
     WatchlistRepository,
 )
-from app.models import PipelineRun, TrendScoreResult
+from app.models import PipelineRun, SourceIngestionRun, TrendScoreResult
 from app.notifications.deliver import deliver_post_run_notifications
 from app.notifications.digest import build_run_digest
+from app.enrichment.service import refresh_external_market_metrics
 from app.scoring.calculator import calculate_trend_scores
-from app.scoring.ranking import rank_topics_by_score
+from app.scoring.quality import (
+    calculate_pipeline_quality_metrics,
+    calculate_source_family_snapshots,
+    calculate_source_quality_metrics,
+)
+from app.scoring.ranking import rank_experimental_topics, rank_topics_by_score
 from app.topics.cluster import aggregate_topic_signals
 from app.topics.extract import build_signals_from_items
 
@@ -38,19 +45,64 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     aggregates = aggregate_topic_signals(normalized_signals)
     scores = calculate_trend_scores(aggregates)
     ranked_scores = rank_topics_by_score(scores, limit=settings.ranking_limit)
+    experimental_scores = rank_experimental_topics(
+        scores,
+        published_scores=ranked_scores,
+        limit=settings.experimental_ranking_limit,
+    )
+    stored_scores = ranked_scores + experimental_scores
+    published_topics = {score.topic for score in ranked_scores}
+    quality_metrics = calculate_pipeline_quality_metrics(
+        normalized_signals,
+        aggregates,
+        ranked_scores,
+    )
+    source_quality_metrics = calculate_source_quality_metrics(normalized_signals, aggregates)
     captured_at = datetime.now(tz=timezone.utc)
     successful_source_count = sum(1 for run in source_runs if run.success)
+    enriched_source_runs = [
+        SourceIngestionRun(
+            source=run.source,
+            fetched_at=run.fetched_at,
+            success=run.success,
+            raw_item_count=run.raw_item_count,
+            item_count=run.item_count,
+            kept_item_count=run.kept_item_count,
+            duration_ms=run.duration_ms,
+            raw_topic_count=source_quality_metrics.get(run.source).raw_topic_count if run.source in source_quality_metrics else 0,
+            merged_topic_count=source_quality_metrics.get(run.source).merged_topic_count if run.source in source_quality_metrics else 0,
+            duplicate_topic_count=source_quality_metrics.get(run.source).duplicate_topic_count if run.source in source_quality_metrics else 0,
+            duplicate_topic_rate=source_quality_metrics.get(run.source).duplicate_topic_rate if run.source in source_quality_metrics else 0.0,
+            used_fallback=run.used_fallback,
+            error_message=run.error_message,
+        )
+        for run in source_runs
+    ]
 
     connection = connect_primary_database(settings)
-    SourceIngestionRunRepository(connection).append_runs(source_runs)
+    SourceIngestionRunRepository(connection).append_runs(enriched_source_runs)
     SignalRepository(connection).replace_signals(normalized_signals)
+    SourceFamilySnapshotRepository(connection).append_snapshots(
+        calculate_source_family_snapshots(
+            captured_at=captured_at,
+            signals=normalized_signals,
+            source_runs=enriched_source_runs,
+            ranked_scores=ranked_scores,
+        )
+    )
     repository = TrendScoreRepository(connection)
 
     # Capture previous snapshot state before overwriting
     previous_snapshot = _build_previous_state(repository, settings.ranking_limit)
 
-    repository.replace_scores(ranked_scores)
-    repository.append_snapshot(ranked_scores, captured_at=captured_at)
+    repository.replace_scores(stored_scores, published_topics=published_topics)
+    repository.append_snapshot(stored_scores, captured_at=captured_at, published_topics=published_topics)
+    refresh_external_market_metrics(
+        settings,
+        repository,
+        ranked_scores,
+        captured_at=captured_at,
+    )
     PipelineRunRepository(connection).append_run(
         PipelineRun(
             captured_at=captured_at,
@@ -62,6 +114,12 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
             ranked_trend_count=len(ranked_scores),
             top_topic=ranked_scores[0].topic if ranked_scores else None,
             top_score=ranked_scores[0].total_score if ranked_scores else None,
+            raw_topic_count=quality_metrics.raw_topic_count,
+            merged_topic_count=quality_metrics.merged_topic_count,
+            duplicate_topic_count=quality_metrics.duplicate_topic_count,
+            duplicate_topic_rate=quality_metrics.duplicate_topic_rate,
+            multi_source_trend_count=quality_metrics.multi_source_trend_count,
+            low_evidence_trend_count=quality_metrics.low_evidence_trend_count,
         )
     )
 
@@ -121,18 +179,33 @@ def _run_alert_evaluation(
     """Evaluate alert rules against the just-computed scores and persist events."""
 
     from app.alerts.evaluate import evaluate_alerts
+    from app.theses.matching import match_trends_to_theses
 
     watchlist_repo = WatchlistRepository(connection)
     rules = watchlist_repo.list_all_alert_rules()
-    if not rules:
-        return []
-
     watchlist_trend_ids = watchlist_repo.get_watchlist_trend_ids()
     current_ranks = {score.topic: rank for rank, score in enumerate(ranked_scores, start=1)}
 
     # Build statuses from explorer records
     explorer_records = repository.list_trend_explorer_records(limit=ranking_limit)
     statuses = {record.score.topic: record.status for record in explorer_records}
+    theses = watchlist_repo.list_trend_theses_for_watchlists(list(watchlist_trend_ids))
+    flattened_theses = [thesis for thesis_list in theses.values() for thesis in thesis_list]
+    new_thesis_match_ids: dict[int, set[str]] = {}
+    if flattened_theses:
+        detail_records = repository.list_trend_detail_records(limit=ranking_limit)
+        matched_candidates = match_trends_to_theses(flattened_theses, detail_records)
+        new_matches = watchlist_repo.replace_trend_thesis_matches(
+            flattened_theses,
+            matched_candidates,
+            matched_at=datetime.now(tz=timezone.utc),
+        )
+        new_thesis_match_ids = {
+            thesis_id: {match.trend_id for match in matches}
+            for thesis_id, matches in new_matches.items()
+        }
+    if not rules:
+        return []
 
     events = evaluate_alerts(
         rules=rules,
@@ -143,6 +216,7 @@ def _run_alert_evaluation(
         previous_ranks=previous_state["ranks"],
         statuses=statuses,
         previous_trend_ids=previous_state["trend_ids"],
+        new_thesis_match_ids=new_thesis_match_ids,
     )
 
     if events:

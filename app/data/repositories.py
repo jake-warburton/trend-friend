@@ -7,8 +7,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
 from app.data.connection import DatabaseConnection
+from app.data.sql_dialect import SQLITE_DIALECT
 from app.data.write_helpers import execute_insert_and_return_id
 from app.topics.categorize import categorize_topic
+from app.topics.display import build_display_name
 from app.models import (
     AlertEventRecord,
     AlertRule,
@@ -22,27 +24,36 @@ from app.models import (
     RelatedTrend,
     RunDigest,
     SeasonalityResult,
+    SourceFamilySnapshot,
     SourceIngestionRun,
+    TrendCurationOverride,
     TrendDetailRecord,
+    TrendDuplicateCandidate,
+    TrendEntity,
     DigestMover,
     TrendEvidenceItem,
     TrendForecast,
     TrendExplorerRecord,
     TrendGeoSummary,
     TrendHistoryPoint,
+    TrendMetricSnapshot,
     TrendMomentum,
     TrendPrimaryEvidence,
     TrendSourceContribution,
     TrendSourceBreakdown,
     TrendScoreResult,
+    TrendThesis,
+    TrendThesisMatch,
     Watchlist,
     WatchlistShareAccessPoint,
     WatchlistItem,
     WatchlistShareEvent,
     WatchlistShare,
 )
+from app.theses.matching import ThesisMatchCandidate
 
 RowMapping = Mapping[str, Any]
+UPPERCASE_CATEGORY_TOKENS = frozenset({"ai", "api", "ml", "llm", "vr", "ar", "ev", "b2b", "b2c"})
 
 
 def sql_placeholders(connection: DatabaseConnection, count: int) -> str:
@@ -52,7 +63,25 @@ def sql_placeholders(connection: DatabaseConnection, count: int) -> str:
     database engine.
     """
 
-    return connection.dialect.placeholders(count)
+    return get_connection_dialect(connection).placeholders(count)
+
+
+def get_connection_dialect(connection: DatabaseConnection):
+    """Return the configured SQL dialect, defaulting to SQLite semantics."""
+
+    return getattr(connection, "dialect", SQLITE_DIALECT)
+
+
+def format_category_label(category: str) -> str:
+    """Return a display label for a slug-like category value."""
+
+    parts = []
+    for part in category.split("-"):
+        if part.lower() in UPPERCASE_CATEGORY_TOKENS:
+            parts.append(part.upper())
+        else:
+            parts.append(part[:1].upper() + part[1:])
+    return " ".join(parts)
 
 
 class SignalRepository:
@@ -130,6 +159,30 @@ class SignalRepository:
         ]
 
 
+class PublishedPayloadRepository:
+    """Persist prebuilt web payloads for frontend reads."""
+
+    def __init__(self, connection: DatabaseConnection) -> None:
+        self.connection = connection
+
+    def replace_payloads(self, payloads: list[tuple[str, str, str]]) -> None:
+        """Upsert one JSON payload row per payload key."""
+
+        self.connection.executemany(
+            """
+            INSERT INTO published_payloads (payload_key, generated_at, payload_json)
+            VALUES (?, ?, ?)
+            ON CONFLICT(payload_key)
+            DO UPDATE SET
+                generated_at = excluded.generated_at,
+                payload_json = excluded.payload_json,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            payloads,
+        )
+        self.connection.commit()
+
+
 class SourceIngestionRunRepository:
     """Persist and retrieve source ingestion outcomes."""
 
@@ -142,9 +195,11 @@ class SourceIngestionRunRepository:
         self.connection.executemany(
             """
             INSERT INTO source_ingestion_runs (
-                source, fetched_at, success, raw_item_count, item_count, kept_item_count, duration_ms, used_fallback, error_message
+                source, fetched_at, success, raw_item_count, item_count, kept_item_count, duration_ms,
+                raw_topic_count, merged_topic_count, duplicate_topic_count, duplicate_topic_rate,
+                used_fallback, error_message
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -155,6 +210,10 @@ class SourceIngestionRunRepository:
                     run.item_count,
                     run.kept_item_count,
                     run.duration_ms,
+                    run.raw_topic_count,
+                    run.merged_topic_count,
+                    run.duplicate_topic_count,
+                    run.duplicate_topic_rate,
                     int(run.used_fallback),
                     run.error_message,
                 )
@@ -169,7 +228,8 @@ class SourceIngestionRunRepository:
         rows = self.connection.execute(
             """
             SELECT current.source, current.fetched_at, current.success, current.raw_item_count, current.item_count,
-                   current.kept_item_count, current.duration_ms, current.used_fallback, current.error_message
+                   current.kept_item_count, current.duration_ms, current.raw_topic_count, current.merged_topic_count,
+                   current.duplicate_topic_count, current.duplicate_topic_rate, current.used_fallback, current.error_message
             FROM source_ingestion_runs AS current
             INNER JOIN (
                 SELECT source, MAX(fetched_at) AS fetched_at
@@ -190,6 +250,10 @@ class SourceIngestionRunRepository:
                 item_count=row["item_count"],
                 kept_item_count=row["kept_item_count"],
                 duration_ms=row["duration_ms"],
+                raw_topic_count=row["raw_topic_count"],
+                merged_topic_count=row["merged_topic_count"],
+                duplicate_topic_count=row["duplicate_topic_count"],
+                duplicate_topic_rate=row["duplicate_topic_rate"],
                 used_fallback=bool(row["used_fallback"]),
                 error_message=row["error_message"],
             )
@@ -201,7 +265,9 @@ class SourceIngestionRunRepository:
 
         rows = self.connection.execute(
             """
-            SELECT source, fetched_at, success, raw_item_count, item_count, kept_item_count, duration_ms, used_fallback, error_message
+            SELECT source, fetched_at, success, raw_item_count, item_count, kept_item_count, duration_ms,
+                   raw_topic_count, merged_topic_count, duplicate_topic_count, duplicate_topic_rate,
+                   used_fallback, error_message
             FROM source_ingestion_runs
             ORDER BY fetched_at DESC, id DESC
             """
@@ -221,8 +287,95 @@ class SourceIngestionRunRepository:
                     item_count=row["item_count"],
                     kept_item_count=row["kept_item_count"],
                     duration_ms=row["duration_ms"],
+                    raw_topic_count=row["raw_topic_count"],
+                    merged_topic_count=row["merged_topic_count"],
+                    duplicate_topic_count=row["duplicate_topic_count"],
+                    duplicate_topic_rate=row["duplicate_topic_rate"],
                     used_fallback=bool(row["used_fallback"]),
                     error_message=row["error_message"],
+                )
+            )
+        return grouped
+
+
+class SourceFamilySnapshotRepository:
+    """Persist and retrieve family-level source impact history."""
+
+    def __init__(self, connection: DatabaseConnection) -> None:
+        self.connection = connection
+
+    def append_snapshots(self, snapshots: list[SourceFamilySnapshot]) -> None:
+        """Persist family analytics for one scoring run."""
+
+        if not snapshots:
+            return
+        self.connection.executemany(
+            """
+            INSERT INTO source_family_snapshots (
+                family,
+                captured_at,
+                source_count,
+                healthy_source_count,
+                signal_count,
+                trend_count,
+                corroborated_trend_count,
+                top_ranked_trend_count,
+                average_score,
+                average_yield_rate_percent,
+                success_rate_percent
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    snapshot.family,
+                    snapshot.captured_at.isoformat(),
+                    snapshot.source_count,
+                    snapshot.healthy_source_count,
+                    snapshot.signal_count,
+                    snapshot.trend_count,
+                    snapshot.corroborated_trend_count,
+                    snapshot.top_ranked_trend_count,
+                    snapshot.average_score,
+                    snapshot.average_yield_rate_percent,
+                    snapshot.success_rate_percent,
+                )
+                for snapshot in snapshots
+            ],
+        )
+        self.connection.commit()
+
+    def list_recent_snapshots(self, limit_per_family: int) -> dict[str, list[SourceFamilySnapshot]]:
+        """Return recent family analytics ordered newest first for each family."""
+
+        rows = self.connection.execute(
+            """
+            SELECT family, captured_at, source_count, healthy_source_count, signal_count,
+                   trend_count, corroborated_trend_count, top_ranked_trend_count,
+                   average_score, average_yield_rate_percent, success_rate_percent
+            FROM source_family_snapshots
+            ORDER BY captured_at DESC, id DESC
+            """
+        ).fetchall()
+        grouped: dict[str, list[SourceFamilySnapshot]] = {}
+        for row in rows:
+            family = row["family"]
+            snapshots = grouped.setdefault(family, [])
+            if len(snapshots) >= limit_per_family:
+                continue
+            snapshots.append(
+                SourceFamilySnapshot(
+                    family=family,
+                    captured_at=datetime.fromisoformat(row["captured_at"]),
+                    source_count=row["source_count"],
+                    healthy_source_count=row["healthy_source_count"],
+                    signal_count=row["signal_count"],
+                    trend_count=row["trend_count"],
+                    corroborated_trend_count=row["corroborated_trend_count"],
+                    top_ranked_trend_count=row["top_ranked_trend_count"],
+                    average_score=row["average_score"],
+                    average_yield_rate_percent=row["average_yield_rate_percent"],
+                    success_rate_percent=row["success_rate_percent"],
                 )
             )
         return grouped
@@ -248,9 +401,15 @@ class PipelineRunRepository:
                 signal_count,
                 ranked_trend_count,
                 top_topic,
-                top_score
+                top_score,
+                raw_topic_count,
+                merged_topic_count,
+                duplicate_topic_count,
+                duplicate_topic_rate,
+                multi_source_trend_count,
+                low_evidence_trend_count
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run.captured_at.isoformat(),
@@ -262,6 +421,12 @@ class PipelineRunRepository:
                 run.ranked_trend_count,
                 run.top_topic,
                 run.top_score,
+                run.raw_topic_count,
+                run.merged_topic_count,
+                run.duplicate_topic_count,
+                run.duplicate_topic_rate,
+                run.multi_source_trend_count,
+                run.low_evidence_trend_count,
             ),
         )
         self.connection.commit()
@@ -272,7 +437,9 @@ class PipelineRunRepository:
         rows = self.connection.execute(
             """
             SELECT captured_at, duration_ms, source_count, successful_source_count,
-                   failed_source_count, signal_count, ranked_trend_count, top_topic, top_score
+                   failed_source_count, signal_count, ranked_trend_count, top_topic, top_score,
+                   raw_topic_count, merged_topic_count, duplicate_topic_count, duplicate_topic_rate,
+                   multi_source_trend_count, low_evidence_trend_count
             FROM pipeline_runs
             ORDER BY captured_at DESC, id DESC
             LIMIT ?
@@ -290,6 +457,12 @@ class PipelineRunRepository:
                 ranked_trend_count=row["ranked_trend_count"],
                 top_topic=row["top_topic"],
                 top_score=row["top_score"],
+                raw_topic_count=row["raw_topic_count"],
+                merged_topic_count=row["merged_topic_count"],
+                duplicate_topic_count=row["duplicate_topic_count"],
+                duplicate_topic_rate=row["duplicate_topic_rate"],
+                multi_source_trend_count=row["multi_source_trend_count"],
+                low_evidence_trend_count=row["low_evidence_trend_count"],
             )
             for row in rows
         ]
@@ -644,7 +817,7 @@ class WatchlistRepository:
         if owner_user_id is None:
             rows = self.connection.execute(
                 """
-                SELECT ar.id, ar.watchlist_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
+                SELECT ar.id, ar.watchlist_id, ar.thesis_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
                 FROM alert_rules ar
                 INNER JOIN watchlists w ON w.id = ar.watchlist_id
                 WHERE w.owner_user_id IS NULL
@@ -654,7 +827,7 @@ class WatchlistRepository:
         else:
             rows = self.connection.execute(
                 """
-                SELECT ar.id, ar.watchlist_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
+                SELECT ar.id, ar.watchlist_id, ar.thesis_id, ar.name, ar.rule_type, ar.threshold, ar.enabled, ar.created_at
                 FROM alert_rules ar
                 INNER JOIN watchlists w ON w.id = ar.watchlist_id
                 WHERE w.owner_user_id = ?
@@ -666,6 +839,7 @@ class WatchlistRepository:
             AlertRule(
                 id=row["id"],
                 watchlist_id=row["watchlist_id"],
+                thesis_id=row["thesis_id"],
                 name=row["name"],
                 rule_type=row["rule_type"],
                 threshold=row["threshold"],
@@ -680,7 +854,7 @@ class WatchlistRepository:
 
         rows = self.connection.execute(
             """
-            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            SELECT id, watchlist_id, thesis_id, name, rule_type, threshold, enabled, created_at
             FROM alert_rules
             ORDER BY created_at DESC, id DESC
             """
@@ -689,6 +863,7 @@ class WatchlistRepository:
             AlertRule(
                 id=row["id"],
                 watchlist_id=row["watchlist_id"],
+                thesis_id=row["thesis_id"],
                 name=row["name"],
                 rule_type=row["rule_type"],
                 threshold=row["threshold"],
@@ -705,21 +880,22 @@ class WatchlistRepository:
         rule_type: str,
         threshold: float,
         enabled: bool = True,
+        thesis_id: int | None = None,
     ) -> AlertRule:
         """Create and return an alert rule."""
 
         alert_rule_id = execute_insert_and_return_id(
             self.connection,
             """
-            INSERT INTO alert_rules (watchlist_id, name, rule_type, threshold, enabled)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO alert_rules (watchlist_id, thesis_id, name, rule_type, threshold, enabled)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (watchlist_id, name, rule_type, threshold, int(enabled)),
+            (watchlist_id, thesis_id, name, rule_type, threshold, int(enabled)),
         )
         self.connection.commit()
         row = self.connection.execute(
             """
-            SELECT id, watchlist_id, name, rule_type, threshold, enabled, created_at
+            SELECT id, watchlist_id, thesis_id, name, rule_type, threshold, enabled, created_at
             FROM alert_rules
             WHERE id = ?
             """,
@@ -728,6 +904,7 @@ class WatchlistRepository:
         return AlertRule(
             id=row["id"],
             watchlist_id=row["watchlist_id"],
+            thesis_id=row["thesis_id"],
             name=row["name"],
             rule_type=row["rule_type"],
             threshold=row["threshold"],
@@ -849,6 +1026,302 @@ class WatchlistRepository:
             )
         self.connection.commit()
         return cursor.rowcount
+
+    def list_trend_theses(self, owner_user_id: int | None = None) -> list[TrendThesis]:
+        """Return saved theses for the given owner."""
+
+        if owner_user_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT tt.id, tt.watchlist_id, tt.name, tt.lens, tt.keyword_query, tt.source, tt.category,
+                       tt.stage, tt.confidence, tt.meta_trend, tt.audience, tt.market, tt.language,
+                       tt.geo_country, tt.minimum_score, tt.hide_recurring, tt.notify_on_match,
+                       tt.created_at, tt.updated_at
+                FROM trend_theses tt
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id IS NULL
+                ORDER BY tt.updated_at DESC, tt.id DESC
+                """
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT tt.id, tt.watchlist_id, tt.name, tt.lens, tt.keyword_query, tt.source, tt.category,
+                       tt.stage, tt.confidence, tt.meta_trend, tt.audience, tt.market, tt.language,
+                       tt.geo_country, tt.minimum_score, tt.hide_recurring, tt.notify_on_match,
+                       tt.created_at, tt.updated_at
+                FROM trend_theses tt
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id = ?
+                ORDER BY tt.updated_at DESC, tt.id DESC
+                """,
+                (owner_user_id,),
+            ).fetchall()
+        return [self._trend_thesis_from_row(row) for row in rows]
+
+    def list_trend_theses_for_watchlists(self, watchlist_ids: list[int]) -> dict[int, list[TrendThesis]]:
+        """Return theses grouped by watchlist id."""
+
+        if not watchlist_ids:
+            return {}
+        placeholders = sql_placeholders(self.connection, len(watchlist_ids))
+        rows = self.connection.execute(
+            f"""
+            SELECT id, watchlist_id, name, lens, keyword_query, source, category, stage, confidence,
+                   meta_trend, audience, market, language, geo_country, minimum_score, hide_recurring,
+                   notify_on_match, created_at, updated_at
+            FROM trend_theses
+            WHERE watchlist_id IN ({placeholders})
+            ORDER BY updated_at DESC, id DESC
+            """,
+            tuple(watchlist_ids),
+        ).fetchall()
+        grouped: dict[int, list[TrendThesis]] = {}
+        for row in rows:
+            thesis = self._trend_thesis_from_row(row)
+            grouped.setdefault(thesis.watchlist_id, []).append(thesis)
+        return grouped
+
+    def create_trend_thesis(
+        self,
+        *,
+        watchlist_id: int,
+        name: str,
+        lens: str,
+        keyword_query: str | None = None,
+        source: str | None = None,
+        category: str | None = None,
+        stage: str | None = None,
+        confidence: str | None = None,
+        meta_trend: str | None = None,
+        audience: str | None = None,
+        market: str | None = None,
+        language: str | None = None,
+        geo_country: str | None = None,
+        minimum_score: float = 0.0,
+        hide_recurring: bool = False,
+        notify_on_match: bool = False,
+    ) -> TrendThesis:
+        """Create one saved thesis and optionally attach a thesis-match alert."""
+
+        thesis_id = execute_insert_and_return_id(
+            self.connection,
+            """
+            INSERT INTO trend_theses (
+                watchlist_id, name, lens, keyword_query, source, category, stage, confidence, meta_trend,
+                audience, market, language, geo_country, minimum_score, hide_recurring, notify_on_match
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                watchlist_id,
+                name,
+                lens,
+                keyword_query,
+                source,
+                category,
+                stage,
+                confidence,
+                meta_trend,
+                audience,
+                market,
+                language,
+                geo_country,
+                minimum_score,
+                int(hide_recurring),
+                int(notify_on_match),
+            ),
+        )
+        if notify_on_match:
+            self.create_alert_rule(
+                watchlist_id=watchlist_id,
+                name=name,
+                rule_type="thesis_match",
+                threshold=0.0,
+                thesis_id=thesis_id,
+            )
+        self.connection.commit()
+        row = self.connection.execute(
+            """
+            SELECT id, watchlist_id, name, lens, keyword_query, source, category, stage, confidence,
+                   meta_trend, audience, market, language, geo_country, minimum_score, hide_recurring,
+                   notify_on_match, created_at, updated_at
+            FROM trend_theses
+            WHERE id = ?
+            """,
+            (thesis_id,),
+        ).fetchone()
+        return self._trend_thesis_from_row(row)
+
+    def delete_trend_thesis(self, thesis_id: int, owner_user_id: int | None = None) -> bool:
+        """Delete one thesis owned by the given user."""
+
+        if owner_user_id is None:
+            cursor = self.connection.execute(
+                """
+                DELETE FROM trend_theses
+                WHERE id IN (
+                    SELECT tt.id
+                    FROM trend_theses tt
+                    INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                    WHERE tt.id = ? AND w.owner_user_id IS NULL
+                )
+                """,
+                (thesis_id,),
+            )
+        else:
+            cursor = self.connection.execute(
+                """
+                DELETE FROM trend_theses
+                WHERE id IN (
+                    SELECT tt.id
+                    FROM trend_theses tt
+                    INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                    WHERE tt.id = ? AND w.owner_user_id = ?
+                )
+                """,
+                (thesis_id, owner_user_id),
+            )
+        self.connection.commit()
+        return cursor.rowcount > 0
+
+    def list_trend_thesis_matches(self, owner_user_id: int | None = None) -> list[TrendThesisMatch]:
+        """Return persisted thesis matches scoped to one owner."""
+
+        if owner_user_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT tm.thesis_id, tm.trend_id, tm.trend_name, tm.active, tm.first_matched_at, tm.last_matched_at,
+                       tm.lens_score, tm.total_score
+                FROM trend_thesis_matches tm
+                INNER JOIN trend_theses tt ON tt.id = tm.thesis_id
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id IS NULL
+                ORDER BY tm.active DESC, tm.last_matched_at DESC, tm.lens_score DESC, tm.trend_name ASC
+                """
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT tm.thesis_id, tm.trend_id, tm.trend_name, tm.active, tm.first_matched_at, tm.last_matched_at,
+                       tm.lens_score, tm.total_score
+                FROM trend_thesis_matches tm
+                INNER JOIN trend_theses tt ON tt.id = tm.thesis_id
+                INNER JOIN watchlists w ON w.id = tt.watchlist_id
+                WHERE w.owner_user_id = ?
+                ORDER BY tm.active DESC, tm.last_matched_at DESC, tm.lens_score DESC, tm.trend_name ASC
+                """,
+                (owner_user_id,),
+            ).fetchall()
+        return [self._trend_thesis_match_from_row(row) for row in rows]
+
+    def replace_trend_thesis_matches(
+        self,
+        theses: list[TrendThesis],
+        matches_by_thesis_id: dict[int, list[ThesisMatchCandidate]],
+        *,
+        matched_at: datetime,
+    ) -> dict[int, list[TrendThesisMatch]]:
+        """Upsert current thesis matches, deactivate stale ones, and return newly activated matches."""
+
+        new_matches: dict[int, list[TrendThesisMatch]] = {}
+        for thesis in theses:
+            current_match_ids = {match.trend_id for match in matches_by_thesis_id.get(thesis.id, [])}
+            existing_rows = self.connection.execute(
+                """
+                SELECT thesis_id, trend_id, trend_name, active, first_matched_at, last_matched_at, lens_score, total_score
+                FROM trend_thesis_matches
+                WHERE thesis_id = ?
+                """,
+                (thesis.id,),
+            ).fetchall()
+            existing_by_trend_id = {str(row["trend_id"]): row for row in existing_rows}
+
+            for match in matches_by_thesis_id.get(thesis.id, []):
+                existing_row = existing_by_trend_id.get(match.trend_id)
+                if existing_row is None:
+                    self.connection.execute(
+                        """
+                        INSERT INTO trend_thesis_matches (
+                            thesis_id, trend_id, trend_name, active, first_matched_at, last_matched_at,
+                            lens_score, total_score
+                        )
+                        VALUES (?, ?, ?, 1, ?, ?, ?, ?)
+                        """,
+                        (
+                            thesis.id,
+                            match.trend_id,
+                            match.trend_name,
+                            matched_at.isoformat(),
+                            matched_at.isoformat(),
+                            match.lens_score,
+                            match.total_score,
+                        ),
+                    )
+                    new_matches.setdefault(thesis.id, []).append(
+                        TrendThesisMatch(
+                            thesis_id=thesis.id,
+                            trend_id=match.trend_id,
+                            trend_name=match.trend_name,
+                            active=True,
+                            first_matched_at=matched_at,
+                            last_matched_at=matched_at,
+                            lens_score=match.lens_score,
+                            total_score=match.total_score,
+                        )
+                    )
+                    continue
+
+                self.connection.execute(
+                    """
+                    UPDATE trend_thesis_matches
+                    SET trend_name = ?, active = 1, last_matched_at = ?, lens_score = ?, total_score = ?
+                    WHERE thesis_id = ? AND trend_id = ?
+                    """,
+                    (
+                        match.trend_name,
+                        matched_at.isoformat(),
+                        match.lens_score,
+                        match.total_score,
+                        thesis.id,
+                        match.trend_id,
+                    ),
+                )
+                if not bool(existing_row["active"]):
+                    new_matches.setdefault(thesis.id, []).append(
+                        TrendThesisMatch(
+                            thesis_id=thesis.id,
+                            trend_id=match.trend_id,
+                            trend_name=match.trend_name,
+                            active=True,
+                            first_matched_at=datetime.fromisoformat(existing_row["first_matched_at"]),
+                            last_matched_at=matched_at,
+                            lens_score=match.lens_score,
+                            total_score=match.total_score,
+                        )
+                    )
+
+            if current_match_ids:
+                placeholders = sql_placeholders(self.connection, len(current_match_ids))
+                self.connection.execute(
+                    f"""
+                    UPDATE trend_thesis_matches
+                    SET active = 0
+                    WHERE thesis_id = ? AND trend_id NOT IN ({placeholders})
+                    """,
+                    [thesis.id, *current_match_ids],
+                )
+            else:
+                self.connection.execute(
+                    """
+                    UPDATE trend_thesis_matches
+                    SET active = 0
+                    WHERE thesis_id = ?
+                    """,
+                    (thesis.id,),
+                )
+        self.connection.commit()
+        return new_matches
 
     def create_share(
         self,
@@ -1346,6 +1819,43 @@ class WatchlistRepository:
         ).fetchall()
         return {row["id"]: row["owner_user_id"] for row in rows}
 
+    @staticmethod
+    def _trend_thesis_from_row(row: RowMapping) -> TrendThesis:
+        return TrendThesis(
+            id=row["id"],
+            watchlist_id=row["watchlist_id"],
+            name=row["name"],
+            lens=row["lens"],
+            keyword_query=row["keyword_query"],
+            source=row["source"],
+            category=row["category"],
+            stage=row["stage"],
+            confidence=row["confidence"],
+            meta_trend=row["meta_trend"],
+            audience=row["audience"],
+            market=row["market"],
+            language=row["language"],
+            geo_country=row["geo_country"],
+            minimum_score=float(row["minimum_score"] or 0.0),
+            hide_recurring=bool(row["hide_recurring"]),
+            notify_on_match=bool(row["notify_on_match"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    @staticmethod
+    def _trend_thesis_match_from_row(row: RowMapping) -> TrendThesisMatch:
+        return TrendThesisMatch(
+            thesis_id=row["thesis_id"],
+            trend_id=row["trend_id"],
+            trend_name=row["trend_name"],
+            active=bool(row["active"]),
+            first_matched_at=datetime.fromisoformat(row["first_matched_at"]),
+            last_matched_at=datetime.fromisoformat(row["last_matched_at"]),
+            lens_score=round(float(row["lens_score"] or 0.0), 1),
+            total_score=round(float(row["total_score"] or 0.0), 1),
+        )
+
     def _watchlist_from_row(self, row: RowMapping) -> Watchlist:
         """Build a watchlist model with nested items."""
 
@@ -1385,7 +1895,7 @@ class WatchlistRepository:
         """Insert one watchlist item if it does not already exist."""
 
         self.connection.execute(
-            self.connection.dialect.insert_or_ignore_statement(
+            get_connection_dialect(self.connection).insert_or_ignore_statement(
                 "watchlist_items",
                 ("watchlist_id", "trend_id", "trend_name"),
             ),
@@ -1396,7 +1906,7 @@ class WatchlistRepository:
         """Upsert the per-day share access row."""
 
         self.connection.execute(
-            self.connection.dialect.incrementing_upsert_statement(
+            get_connection_dialect(self.connection).incrementing_upsert_statement(
                 "watchlist_share_daily_access",
                 ("share_id", "access_date"),
                 "access_count",
@@ -1412,25 +1922,145 @@ class TrendScoreRepository:
         "hacker_news": 6,
         "reddit": 5,
         "github": 4,
+        "polymarket": 4,
         "twitter": 4,
         "google_trends": 3,
         "wikipedia": 1,
+    }
+    MARKET_FOOTPRINT_CONFIG = {
+        "google_trends": {
+            "metric_key": "search_traffic",
+            "label": "Google search traffic",
+            "unit": "searches",
+            "period": "current run",
+            "aggregation": "max",
+            "confidence": 0.88,
+            "is_estimated": False,
+            "priority": 1,
+        },
+        "wikipedia": {
+            "metric_key": "page_views",
+            "label": "Wikipedia views",
+            "unit": "views",
+            "period": "daily",
+            "aggregation": "max",
+            "confidence": 0.92,
+            "is_estimated": False,
+            "priority": 2,
+        },
+        "github": {
+            "metric_key": "stars_forks",
+            "label": "GitHub stars + forks",
+            "unit": "stars/forks",
+            "period": "current snapshot",
+            "aggregation": "max",
+            "confidence": 0.76,
+            "is_estimated": False,
+            "priority": 3,
+        },
+        "hacker_news": {
+            "metric_key": "engagement",
+            "label": "Hacker News engagement",
+            "unit": "points/comments",
+            "period": "captured stories",
+            "aggregation": "sum",
+            "confidence": 0.7,
+            "is_estimated": False,
+            "priority": 4,
+        },
+        "twitter": {
+            "metric_key": "engagement",
+            "label": "X engagement",
+            "unit": "engagement",
+            "period": "captured posts",
+            "aggregation": "sum",
+            "confidence": 0.68,
+            "is_estimated": False,
+            "priority": 5,
+        },
+        "reddit": {
+            "metric_key": "engagement",
+            "label": "Reddit engagement",
+            "unit": "engagement",
+            "period": "captured posts",
+            "aggregation": "sum",
+            "confidence": 0.46,
+            "is_estimated": True,
+            "priority": 6,
+        },
+        "polymarket": {
+            "metric_key": "activity",
+            "label": "Prediction market activity",
+            "unit": "activity",
+            "period": "current markets",
+            "aggregation": "max",
+            "confidence": 0.52,
+            "is_estimated": True,
+            "priority": 7,
+        },
+        "producthunt": {
+            "metric_key": "launch_score",
+            "label": "Product Hunt launch score",
+            "unit": "score",
+            "period": "featured launches",
+            "aggregation": "max",
+            "confidence": 0.4,
+            "is_estimated": True,
+            "priority": 8,
+        },
+        "google_search": {
+            "metric_key": "monthly_searches",
+            "label": "Monthly Google searches",
+            "unit": "searches",
+            "period": "monthly",
+            "aggregation": "max",
+            "confidence": 0.9,
+            "is_estimated": False,
+            "priority": 1,
+        },
+        "youtube": {
+            "metric_key": "video_views",
+            "label": "YouTube views",
+            "unit": "views",
+            "period": "search footprint",
+            "aggregation": "max",
+            "confidence": 0.9,
+            "is_estimated": False,
+            "priority": 2,
+        },
+        "tiktok": {
+            "metric_key": "video_views",
+            "label": "TikTok views",
+            "unit": "views",
+            "period": "search footprint",
+            "aggregation": "max",
+            "confidence": 0.9,
+            "is_estimated": False,
+            "priority": 3,
+        },
     }
 
     def __init__(self, connection: DatabaseConnection) -> None:
         self.connection = connection
 
-    def replace_scores(self, scores: list[TrendScoreResult]) -> None:
+    def replace_scores(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        published_topics: set[str] | None = None,
+    ) -> None:
         """Replace stored scores with the latest ranking run."""
 
         self.connection.execute("DELETE FROM trend_scores")
+        published_topics = published_topics or {score.topic for score in scores}
         self.connection.executemany(
             """
             INSERT INTO trend_scores (
                 topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
+                is_published
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -1444,13 +2074,22 @@ class TrendScoreRepository:
                     json.dumps(score.source_counts, sort_keys=True),
                     json.dumps(score.evidence),
                     score.latest_timestamp.isoformat(),
+                    score.display_name,
+                    int(score.topic in published_topics),
                 )
                 for score in scores
             ],
         )
+        self._upsert_trend_entities(scores, published_topics=published_topics)
         self.connection.commit()
 
-    def append_snapshot(self, scores: list[TrendScoreResult], captured_at: datetime) -> int:
+    def append_snapshot(
+        self,
+        scores: list[TrendScoreResult],
+        captured_at: datetime,
+        *,
+        published_topics: set[str] | None = None,
+    ) -> int:
         """Persist a timestamped ranked snapshot for historical views."""
 
         run_id = execute_insert_and_return_id(
@@ -1458,13 +2097,15 @@ class TrendScoreRepository:
             "INSERT INTO trend_runs (captured_at) VALUES (?)",
             (captured_at.isoformat(),),
         )
+        published_topics = published_topics or {score.topic for score in scores}
         self.connection.executemany(
             """
             INSERT INTO trend_score_snapshots (
                 run_id, rank_position, topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
+                is_published
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -1480,10 +2121,15 @@ class TrendScoreRepository:
                     json.dumps(score.source_counts, sort_keys=True),
                     json.dumps(score.evidence),
                     score.latest_timestamp.isoformat(),
+                    score.display_name,
+                    int(score.topic in published_topics),
                 )
                 for rank_position, score in enumerate(scores, start=1)
             ],
         )
+        self._upsert_trend_entities(scores, published_topics=published_topics)
+        published_scores = [score for score in scores if score.topic in published_topics]
+        self.refresh_trend_metric_snapshots(published_scores, captured_at=captured_at)
         self.connection.commit()
         return run_id
 
@@ -1493,8 +2139,9 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_scores
+            WHERE is_published = 1
             ORDER BY total_score DESC, topic ASC, latest_timestamp ASC
             LIMIT ?
             """,
@@ -1503,6 +2150,109 @@ class TrendScoreRepository:
         return [
             self._score_from_row(row) for row in rows
         ]
+
+    def get_trend_entity(self, topic: str) -> TrendEntity | None:
+        """Return persisted canonical metadata for one topic when available."""
+
+        row = self.connection.execute(
+            """
+            SELECT topic_key, canonical_name, category, meta_trend, stage, confidence, summary, why_now_json,
+                   first_seen_at, last_seen_at
+            FROM trend_entities
+            WHERE topic_key = ?
+            """,
+            (topic,),
+        ).fetchone()
+        if row is None:
+            return None
+        entity = self._trend_entity_from_row(row)
+        hydrated = TrendEntity(
+            topic_key=entity.topic_key,
+            canonical_name=entity.canonical_name,
+            category=entity.category,
+            meta_trend=entity.meta_trend,
+            stage=entity.stage,
+            confidence=entity.confidence,
+            summary=entity.summary,
+            why_now=entity.why_now,
+            aliases=self.list_trend_aliases(self._slugify_topic(topic)),
+            first_seen_at=entity.first_seen_at,
+            last_seen_at=entity.last_seen_at,
+        )
+        override = self.get_trend_curation_override(self._slugify_topic(topic))
+        return self._apply_curation_override(hydrated, override)
+
+    def list_trend_aliases(self, trend_id: str) -> list[str]:
+        """Return persisted aliases for one trend id."""
+
+        rows = self.connection.execute(
+            """
+            SELECT alias
+            FROM trend_aliases
+            WHERE topic_key = ?
+            ORDER BY alias ASC
+            """,
+            (trend_id,),
+        ).fetchall()
+        return [row["alias"] for row in rows]
+
+    def get_trend_curation_override(self, topic_key: str) -> TrendCurationOverride | None:
+        """Return one persisted manual curation override when present."""
+
+        row = self.connection.execute(
+            """
+            SELECT topic_key, suppress, canonical_topic_key, preferred_name, preferred_meta_trend,
+                   preferred_stage, preferred_summary
+            FROM trend_curation_overrides
+            WHERE topic_key = ?
+            """,
+            (topic_key,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._curation_override_from_row(row)
+
+    def upsert_trend_curation_override(
+        self,
+        topic_key: str,
+        *,
+        suppress: bool = False,
+        canonical_topic_key: str | None = None,
+        preferred_name: str | None = None,
+        preferred_meta_trend: str | None = None,
+        preferred_stage: str | None = None,
+        preferred_summary: str | None = None,
+    ) -> None:
+        """Persist a manual curation override for one trend."""
+
+        self.connection.execute(
+            """
+            INSERT INTO trend_curation_overrides (
+                topic_key, suppress, canonical_topic_key, preferred_name, preferred_meta_trend,
+                preferred_stage, preferred_summary
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key)
+            DO UPDATE SET
+                suppress = excluded.suppress,
+                canonical_topic_key = excluded.canonical_topic_key,
+                preferred_name = excluded.preferred_name,
+                preferred_meta_trend = excluded.preferred_meta_trend,
+                preferred_stage = excluded.preferred_stage,
+                preferred_summary = excluded.preferred_summary,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (
+                topic_key,
+                int(suppress),
+                canonical_topic_key,
+                preferred_name,
+                preferred_meta_trend,
+                preferred_stage,
+                preferred_summary,
+            ),
+        )
+        self.connection.commit()
 
     def list_latest_snapshot(self, limit: int) -> tuple[datetime | None, list[TrendScoreResult]]:
         """Return the most recent stored snapshot and its capture time."""
@@ -1515,9 +2265,30 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_score_snapshots
-            WHERE run_id = ?
+            WHERE run_id = ? AND is_published = 1
+            ORDER BY rank_position ASC
+            LIMIT ?
+            """,
+            (run_row["id"], limit),
+        ).fetchall()
+        return datetime.fromisoformat(run_row["captured_at"]), [self._score_from_row(row) for row in rows]
+
+    def list_latest_experimental_snapshot(self, limit: int) -> tuple[datetime | None, list[TrendScoreResult]]:
+        """Return the latest stored experimental candidates from the newest snapshot."""
+
+        run_row = self.connection.execute(
+            "SELECT id, captured_at FROM trend_runs ORDER BY captured_at DESC, id DESC LIMIT 1"
+        ).fetchone()
+        if run_row is None:
+            return None, []
+        rows = self.connection.execute(
+            """
+            SELECT topic, total_score, search_score, social_score, developer_score,
+                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+            FROM trend_score_snapshots
+            WHERE run_id = ? AND is_published = 0
             ORDER BY rank_position ASC
             LIMIT ?
             """,
@@ -1541,9 +2312,9 @@ class TrendScoreRepository:
             score_rows = self.connection.execute(
                 """
                 SELECT topic, total_score, search_score, social_score, developer_score,
-                       knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp
+                       knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
                 FROM trend_score_snapshots
-                WHERE run_id = ?
+                WHERE run_id = ? AND is_published = 1
                 ORDER BY rank_position ASC
                 LIMIT ?
                 """,
@@ -1565,7 +2336,7 @@ class TrendScoreRepository:
             SELECT trend_runs.captured_at, trend_score_snapshots.rank_position, trend_score_snapshots.total_score
             FROM trend_score_snapshots
             INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ?
+            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
             ORDER BY trend_runs.captured_at DESC, trend_runs.id DESC
             LIMIT ?
             """,
@@ -1588,7 +2359,7 @@ class TrendScoreRepository:
             SELECT trend_runs.captured_at
             FROM trend_score_snapshots
             INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ?
+            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
             ORDER BY trend_runs.captured_at ASC, trend_runs.id ASC
             LIMIT 1
             """,
@@ -1606,7 +2377,7 @@ class TrendScoreRepository:
             SELECT trend_runs.id AS run_id
             FROM trend_score_snapshots
             INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ?
+            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
             ORDER BY trend_runs.id ASC
             """,
             (topic,),
@@ -1622,7 +2393,7 @@ class TrendScoreRepository:
         from app.scoring.seasonality import classify_seasonality
 
         appearance_count = self.connection.execute(
-            "SELECT COUNT(*) AS count FROM trend_score_snapshots WHERE topic = ?",
+            "SELECT COUNT(*) AS count FROM trend_score_snapshots WHERE topic = ? AND is_published = 1",
             (topic,),
         ).fetchone()["count"]
         total_runs = self.connection.execute(
@@ -1640,6 +2411,7 @@ class TrendScoreRepository:
         latest_captured_at, latest_scores = self.list_latest_snapshot(limit=limit)
         if latest_captured_at is None:
             return []
+        latest_scores = self._filter_suppressed_scores(latest_scores)
 
         from app.scoring.forecast import describe_forecast_direction, forecast_trend
 
@@ -1650,11 +2422,16 @@ class TrendScoreRepository:
             momentum = self._build_momentum(score.total_score, recent_history)
             forecast = forecast_trend(full_history)
             seasonality = self.get_topic_seasonality(score.topic)
+            entity = self._get_or_create_trend_entity(score, recent_history)
             records.append(
                 TrendExplorerRecord(
                     id=self._slugify_topic(score.topic),
-                    name=self._format_trend_name(score.topic),
-                    category=self._build_category(score.topic, score.source_counts),
+                    name=entity.canonical_name,
+                    category=entity.category,
+                    meta_trend=entity.meta_trend,
+                    stage=entity.stage,
+                    confidence=entity.confidence,
+                    summary=entity.summary,
                     status=self._build_trend_status(momentum),
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -1686,6 +2463,7 @@ class TrendScoreRepository:
         latest_captured_at, latest_scores = self.list_latest_snapshot(limit=limit)
         if latest_captured_at is None:
             return []
+        latest_scores = self._filter_suppressed_scores(latest_scores)
 
         from app.scoring.forecast import forecast_trend
         from app.scoring.opportunity import score_opportunities
@@ -1739,11 +2517,17 @@ class TrendScoreRepository:
             slug = self._slugify_topic(score.topic)
             opportunity = opportunities.get(slug)
             prediction = predictions.get(slug)
+            entity = self._get_or_create_trend_entity(score, list(reversed(history)))
             records.append(
                 TrendDetailRecord(
                     id=slug,
-                    name=self._format_trend_name(score.topic),
-                    category=self._build_category(score.topic, score.source_counts),
+                    name=entity.canonical_name,
+                    category=entity.category,
+                    meta_trend=entity.meta_trend,
+                    stage=entity.stage,
+                    confidence=entity.confidence,
+                    summary=entity.summary,
+                    why_now=entity.why_now,
                     status=status_by_topic[score.topic],
                     volatility=self._build_volatility_label(momentum),
                     rank=rank,
@@ -1763,6 +2547,8 @@ class TrendScoreRepository:
                     forecast=forecast_by_topic[score.topic],
                     opportunity=OpportunitySummary(
                         composite=opportunity.composite if opportunity is not None else 0.0,
+                        discovery=opportunity.discovery if opportunity is not None else 0.0,
+                        seo=opportunity.seo if opportunity is not None else 0.0,
                         content=opportunity.content if opportunity is not None else 0.0,
                         product=opportunity.product if opportunity is not None else 0.0,
                         investment=opportunity.investment if opportunity is not None else 0.0,
@@ -1771,18 +2557,163 @@ class TrendScoreRepository:
                     source_count=len(score.source_counts),
                     signal_count=sum(score.source_counts.values()),
                     sources=sorted(score.source_counts),
+                    aliases=entity.aliases,
                     history=history,
                     source_breakdown=self.get_topic_source_breakdown(score.topic),
                     source_contributions=self.get_topic_source_contributions(score.topic, score),
+                    market_footprint=self.get_topic_market_footprint(score.topic),
                     geo_summary=self.get_topic_geo_summary(score.topic),
                     audience_summary=self.get_topic_audience_summary(score.topic),
                     evidence_items=self.get_topic_evidence(score.topic, limit=evidence_limit),
                     primary_evidence=self.get_primary_evidence(score.topic),
+                    duplicate_candidates=[],
                     related_trends=[],
                     seasonality=seasonality_by_topic[score.topic],
                 )
             )
         return self._attach_related_trends(records)
+
+    def refresh_trend_metric_snapshots(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        captured_at: datetime,
+    ) -> None:
+        """Replace persisted market-footprint snapshots for the current score set."""
+
+        topics = [score.topic for score in scores]
+        if not topics:
+            return
+        self.connection.executemany(
+            "DELETE FROM trend_metric_snapshots WHERE topic_key = ?",
+            [(topic,) for topic in topics],
+        )
+        rows: list[tuple[object, ...]] = []
+        for score in scores:
+            for snapshot in self._build_topic_market_footprint(score.topic, captured_at):
+                rows.append(
+                    (
+                        score.topic,
+                        snapshot.source,
+                        snapshot.metric_key,
+                        snapshot.label,
+                        snapshot.value_numeric,
+                        snapshot.value_display,
+                        snapshot.unit,
+                        snapshot.period,
+                        snapshot.captured_at.isoformat(),
+                        snapshot.confidence,
+                        snapshot.provenance_url,
+                        int(snapshot.is_estimated),
+                    )
+                )
+        if rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_metric_snapshots (
+                    topic_key, source, metric_key, label, value_numeric, value_display,
+                    unit, period, captured_at, confidence, provenance_url, is_estimated
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(topic_key, source, metric_key)
+                DO UPDATE SET
+                    label = excluded.label,
+                    value_numeric = excluded.value_numeric,
+                    value_display = excluded.value_display,
+                    unit = excluded.unit,
+                    period = excluded.period,
+                    captured_at = excluded.captured_at,
+                    confidence = excluded.confidence,
+                    provenance_url = excluded.provenance_url,
+                    is_estimated = excluded.is_estimated
+                """,
+                rows,
+            )
+
+    def get_topic_market_footprint(self, topic: str) -> list[TrendMetricSnapshot]:
+        """Return persisted market-footprint metrics for one topic."""
+
+        rows = self.connection.execute(
+            """
+            SELECT source, metric_key, label, value_numeric, value_display, unit, period,
+                   captured_at, confidence, provenance_url, is_estimated
+            FROM trend_metric_snapshots
+            WHERE topic_key = ?
+            ORDER BY value_numeric DESC, source ASC
+            """,
+            (topic,),
+        ).fetchall()
+        metrics = [
+            TrendMetricSnapshot(
+                source=row["source"],
+                metric_key=row["metric_key"],
+                label=row["label"],
+                value_numeric=float(row["value_numeric"] or 0.0),
+                value_display=row["value_display"] or "0",
+                unit=row["unit"] or "",
+                period=row["period"] or "",
+                captured_at=self._coerce_datetime_value(row["captured_at"]),
+                confidence=round(float(row["confidence"] or 0.0), 2),
+                provenance_url=row["provenance_url"],
+                is_estimated=bool(row["is_estimated"]),
+            )
+            for row in rows
+        ]
+        return sorted(
+            metrics,
+            key=lambda item: (
+                self.MARKET_FOOTPRINT_CONFIG.get(item.source, {}).get("priority", 999),
+                -item.value_numeric,
+                item.source,
+            ),
+        )
+
+    def upsert_topic_market_footprint(
+        self,
+        topic: str,
+        snapshots: list[TrendMetricSnapshot],
+    ) -> None:
+        """Upsert additional market-footprint snapshots for one topic."""
+
+        if not snapshots:
+            return
+        self.connection.executemany(
+            """
+            INSERT INTO trend_metric_snapshots (
+                topic_key, source, metric_key, label, value_numeric, value_display,
+                unit, period, captured_at, confidence, provenance_url, is_estimated
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key, source, metric_key)
+            DO UPDATE SET
+                label = excluded.label,
+                value_numeric = excluded.value_numeric,
+                value_display = excluded.value_display,
+                unit = excluded.unit,
+                period = excluded.period,
+                captured_at = excluded.captured_at,
+                confidence = excluded.confidence,
+                provenance_url = excluded.provenance_url,
+                is_estimated = excluded.is_estimated
+            """,
+            [
+                (
+                    topic,
+                    snapshot.source,
+                    snapshot.metric_key,
+                    snapshot.label,
+                    snapshot.value_numeric,
+                    snapshot.value_display,
+                    snapshot.unit,
+                    snapshot.period,
+                    snapshot.captured_at.isoformat(),
+                    snapshot.confidence,
+                    snapshot.provenance_url,
+                    int(snapshot.is_estimated),
+                )
+                for snapshot in snapshots
+            ],
+        )
 
     def get_topic_source_breakdown(self, topic: str) -> list[TrendSourceBreakdown]:
         """Return source-level signal coverage for a topic."""
@@ -2005,10 +2936,275 @@ class TrendScoreRepository:
         segments.sort(key=lambda item: (-item.signal_count, item.segment_type, item.label))
         return segments[:limit]
 
+    def _upsert_trend_entities(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        published_topics: set[str],
+    ) -> None:
+        """Persist canonical metadata for currently published trends."""
+
+        published_scores = [score for score in scores if score.topic in published_topics]
+        overrides = self._list_trend_curation_overrides()
+        duplicate_rows, duplicate_penalties = self._build_duplicate_candidates(published_scores, overrides)
+        rows = [
+            self._build_trend_entity_row(
+                score,
+                self.get_topic_history(score.topic, limit_runs=6),
+                duplicate_penalty=duplicate_penalties.get(self._slugify_topic(score.topic), 0.0),
+                override=overrides.get(self._slugify_topic(score.topic)),
+            )
+            for score in scores
+            if score.topic in published_topics
+        ]
+        if not rows:
+            return
+
+        self.connection.executemany(
+            """
+            INSERT INTO trend_entities (
+                topic_key, canonical_name, category, meta_trend, stage, confidence, summary, why_now_json,
+                first_seen_at, last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key)
+            DO UPDATE SET
+                canonical_name = excluded.canonical_name,
+                category = excluded.category,
+                meta_trend = excluded.meta_trend,
+                stage = excluded.stage,
+                confidence = excluded.confidence,
+                summary = excluded.summary,
+                why_now_json = excluded.why_now_json,
+                first_seen_at = COALESCE(trend_entities.first_seen_at, excluded.first_seen_at),
+                last_seen_at = excluded.last_seen_at,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            rows,
+        )
+        self._replace_trend_aliases(scores, published_topics=published_topics)
+        self._replace_duplicate_candidates(published_scores, duplicate_rows)
+
+    def _get_or_create_trend_entity(
+        self,
+        score: TrendScoreResult,
+        history: list[TrendHistoryPoint],
+    ) -> TrendEntity:
+        """Return canonical trend metadata, creating a fallback row when needed."""
+
+        entity = self.get_trend_entity(score.topic)
+        if entity is not None:
+            return entity
+
+        row = self._build_trend_entity_row(
+            score,
+            history,
+            override=self.get_trend_curation_override(self._slugify_topic(score.topic)),
+        )
+        self.connection.execute(
+            """
+            INSERT INTO trend_entities (
+                topic_key, canonical_name, category, meta_trend, stage, confidence, summary, why_now_json,
+                first_seen_at, last_seen_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(topic_key)
+            DO UPDATE SET
+                canonical_name = excluded.canonical_name,
+                category = excluded.category,
+                meta_trend = excluded.meta_trend,
+                stage = excluded.stage,
+                confidence = excluded.confidence,
+                summary = excluded.summary,
+                why_now_json = excluded.why_now_json,
+                first_seen_at = COALESCE(trend_entities.first_seen_at, excluded.first_seen_at),
+                last_seen_at = excluded.last_seen_at,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            row,
+        )
+        self.connection.commit()
+        return self.get_trend_entity(score.topic) or self._trend_entity_from_tuple(row)
+
+    def _replace_trend_aliases(
+        self,
+        scores: list[TrendScoreResult],
+        *,
+        published_topics: set[str],
+    ) -> None:
+        """Replace persisted aliases for the current published trend set."""
+
+        published_scores = [score for score in scores if score.topic in published_topics]
+        if not published_scores:
+            return
+
+        self.connection.executemany(
+            "DELETE FROM trend_aliases WHERE topic_key = ?",
+            [(self._slugify_topic(score.topic),) for score in published_scores],
+        )
+        alias_rows = [
+            (self._slugify_topic(score.topic), alias)
+            for score in published_scores
+            for alias in self._build_trend_aliases(score)
+        ]
+        if alias_rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_aliases (topic_key, alias)
+                VALUES (?, ?)
+                ON CONFLICT(topic_key, alias) DO NOTHING
+                """,
+                alias_rows,
+            )
+
+    def _build_trend_entity_row(
+        self,
+        score: TrendScoreResult,
+        history: list[TrendHistoryPoint],
+        *,
+        duplicate_penalty: float = 0.0,
+        override: TrendCurationOverride | None = None,
+    ) -> tuple[object, ...]:
+        """Build one persisted trend-entity row from the current trend state."""
+
+        ordered_history = sorted(history, key=lambda point: point.captured_at, reverse=True)
+        momentum = self._build_momentum(score.total_score, ordered_history)
+        category = self._build_category(score.topic, score.source_counts)
+        first_seen_at = self.get_first_seen_at(score.topic)
+        canonical_name = override.preferred_name if override and override.preferred_name else (
+            score.display_name or build_display_name(score.topic, score.evidence)
+        )
+        meta_trend = override.preferred_meta_trend if override and override.preferred_meta_trend else self._build_meta_trend(category)
+        stage = override.preferred_stage if override and override.preferred_stage else self._build_trend_stage(
+            momentum,
+            len(ordered_history),
+            score.total_score,
+        )
+        summary = override.preferred_summary if override and override.preferred_summary else self._build_trend_summary(
+            score,
+            category,
+            momentum,
+            len(ordered_history),
+        )
+        return (
+            score.topic,
+            canonical_name,
+            category,
+            meta_trend,
+            stage,
+            self._build_trend_confidence(score, ordered_history, duplicate_penalty=duplicate_penalty),
+            summary,
+            json.dumps(self._build_why_now(score, momentum, len(ordered_history))),
+            first_seen_at.isoformat() if first_seen_at is not None else None,
+            score.latest_timestamp.isoformat(),
+        )
+
+    @staticmethod
+    def _trend_entity_from_row(row: RowMapping) -> TrendEntity:
+        """Build a trend entity from a stored row."""
+
+        return TrendEntity(
+            topic_key=row["topic_key"],
+            canonical_name=row["canonical_name"],
+            category=row["category"],
+            meta_trend=row["meta_trend"],
+            stage=row["stage"],
+            confidence=round(float(row["confidence"] or 0.0), 3),
+            summary=row["summary"] or "",
+            why_now=list(json.loads(row["why_now_json"] or "[]")),
+            aliases=[],
+            first_seen_at=datetime.fromisoformat(row["first_seen_at"]) if row["first_seen_at"] else None,
+            last_seen_at=datetime.fromisoformat(row["last_seen_at"]),
+        )
+
+    @staticmethod
+    def _trend_entity_from_tuple(row: tuple[object, ...]) -> TrendEntity:
+        """Build a trend entity from an upsert tuple."""
+
+        first_seen_at = row[8]
+        return TrendEntity(
+            topic_key=str(row[0]),
+            canonical_name=str(row[1]),
+            category=str(row[2]),
+            meta_trend=str(row[3]),
+            stage=str(row[4]),
+            confidence=round(float(row[5]), 3),
+            summary=str(row[6]),
+            why_now=list(json.loads(str(row[7]))),
+            aliases=[],
+            first_seen_at=datetime.fromisoformat(str(first_seen_at)) if first_seen_at else None,
+            last_seen_at=datetime.fromisoformat(str(row[9])),
+        )
+
+    @staticmethod
+    def _coerce_datetime_value(value: object) -> datetime:
+        """Return a datetime from either a native adapter value or an ISO string."""
+
+        if isinstance(value, datetime):
+            return value
+        return datetime.fromisoformat(str(value))
+
+    @staticmethod
+    def _curation_override_from_row(row: RowMapping) -> TrendCurationOverride:
+        """Build a curation override model from one database row."""
+
+        return TrendCurationOverride(
+            topic_key=row["topic_key"],
+            suppress=bool(row["suppress"]),
+            canonical_topic_key=row["canonical_topic_key"],
+            preferred_name=row["preferred_name"],
+            preferred_meta_trend=row["preferred_meta_trend"],
+            preferred_stage=row["preferred_stage"],
+            preferred_summary=row["preferred_summary"],
+        )
+
+    def _list_trend_curation_overrides(self) -> dict[str, TrendCurationOverride]:
+        """Return all persisted curation overrides keyed by topic id."""
+
+        rows = self.connection.execute(
+            """
+            SELECT topic_key, suppress, canonical_topic_key, preferred_name, preferred_meta_trend,
+                   preferred_stage, preferred_summary
+            FROM trend_curation_overrides
+            """
+        ).fetchall()
+        return {
+            row["topic_key"]: self._curation_override_from_row(row)
+            for row in rows
+        }
+
+    @staticmethod
+    def _apply_curation_override(
+        entity: TrendEntity,
+        override: TrendCurationOverride | None,
+    ) -> TrendEntity:
+        """Apply manual curation fields on top of a persisted entity."""
+
+        if override is None:
+            return entity
+        return TrendEntity(
+            topic_key=entity.topic_key,
+            canonical_name=override.preferred_name or entity.canonical_name,
+            category=entity.category,
+            meta_trend=override.preferred_meta_trend or entity.meta_trend,
+            stage=override.preferred_stage or entity.stage,
+            confidence=entity.confidence,
+            summary=override.preferred_summary or entity.summary,
+            why_now=entity.why_now,
+            aliases=entity.aliases,
+            first_seen_at=entity.first_seen_at,
+            last_seen_at=entity.last_seen_at,
+        )
+
     @staticmethod
     def _score_from_row(row: RowMapping) -> TrendScoreResult:
         """Build a score model from one database row."""
 
+        evidence = json.loads(row["evidence_json"])
+        display_name = build_display_name(
+            row["topic"],
+            ([row["display_name"]] if row["display_name"] else []) + evidence,
+        )
         return TrendScoreResult(
             topic=row["topic"],
             total_score=row["total_score"],
@@ -2018,8 +3214,9 @@ class TrendScoreRepository:
             knowledge_score=row["knowledge_score"],
             diversity_score=row["diversity_score"],
             source_counts=json.loads(row["source_counts_json"]),
-            evidence=json.loads(row["evidence_json"]),
+            evidence=evidence,
             latest_timestamp=datetime.fromisoformat(row["latest_timestamp"]),
+            display_name=display_name,
         )
 
     @staticmethod
@@ -2085,6 +3282,126 @@ class TrendScoreRepository:
         return categorize_topic(topic, source_counts)
 
     @staticmethod
+    def _build_meta_trend(category: str) -> str:
+        """Map explorer categories into broader trend database buckets."""
+
+        meta_trend_map = {
+            "ai-machine-learning": "AI and automation",
+            "developer-tools": "Developer workflows",
+            "consumer-products": "Consumer behavior",
+            "fintech-crypto": "Financial technology",
+            "health-biotech": "Health and biotech",
+            "climate-energy": "Climate and energy",
+            "enterprise-software": "Business software",
+        }
+        return meta_trend_map.get(category, category.replace("-", " ").title())
+
+    @staticmethod
+    def _build_trend_stage(momentum: TrendMomentum, history_length: int, total_score: float) -> str:
+        """Return a coarse lifecycle stage for a trend."""
+
+        if momentum.previous_rank is None or history_length <= 2:
+            return "nascent"
+        if (momentum.rank_change or 0) < 0 or (momentum.percent_delta or 0) < 0:
+            return "cooling"
+        if (momentum.rank_change or 0) >= 3 or (momentum.percent_delta or 0) >= 25:
+            return "breakout"
+        if history_length >= 5 and total_score >= 30:
+            return "validated"
+        if (momentum.rank_change or 0) > 0 or (momentum.percent_delta or 0) > 0:
+            return "rising"
+        return "steady"
+
+    @staticmethod
+    def _build_trend_confidence(
+        score: TrendScoreResult,
+        history: list[TrendHistoryPoint],
+        *,
+        duplicate_penalty: float = 0.0,
+    ) -> float:
+        """Estimate how trustworthy a trend is from breadth and continuity."""
+
+        source_factor = min(len(score.source_counts) / 4.0, 1.0)
+        signal_factor = min(sum(score.source_counts.values()) / 6.0, 1.0)
+        history_factor = min(len(history) / 5.0, 1.0)
+        evidence_factor = min(len(score.evidence) / 5.0, 1.0)
+        confidence = (
+            source_factor * 0.35
+            + signal_factor * 0.2
+            + history_factor * 0.3
+            + evidence_factor * 0.15
+        )
+        return round(max(0.0, min(1.0, confidence - duplicate_penalty)), 3)
+
+    @staticmethod
+    def _build_trend_summary(
+        score: TrendScoreResult,
+        category: str,
+        momentum: TrendMomentum,
+        history_length: int,
+    ) -> str:
+        """Return a compact reusable database summary for a trend."""
+
+        category_label = format_category_label(category)
+        source_count = len(score.source_counts)
+        signal_count = sum(score.source_counts.values())
+        stage = TrendScoreRepository._build_trend_stage(momentum, history_length, score.total_score)
+        category_descriptor = "trend" if category == "general-tech" else f"{category_label} trend"
+        return (
+            f"{build_display_name(score.topic, score.evidence)} is a {stage} {category_descriptor} "
+            f"validated by {signal_count} signals across {source_count} sources."
+        )
+
+    @staticmethod
+    def _build_why_now(
+        score: TrendScoreResult,
+        momentum: TrendMomentum,
+        history_length: int,
+    ) -> list[str]:
+        """Return concise rationale bullets explaining why the trend currently matters."""
+
+        reasons: list[str] = []
+        dominant_component = max(
+            (
+                ("social", score.social_score),
+                ("developer", score.developer_score),
+                ("knowledge", score.knowledge_score),
+                ("search", score.search_score),
+            ),
+            key=lambda item: item[1],
+        )
+        if dominant_component[1] > 0:
+            reasons.append(
+                f"{dominant_component[0].title()} signals are leading the move ({dominant_component[1]:.1f} score)."
+            )
+        if len(score.source_counts) >= 2:
+            reasons.append(f"Cross-source confirmation is present across {len(score.source_counts)} sources.")
+        if (momentum.rank_change or 0) > 0:
+            reasons.append(f"The trend improved by {momentum.rank_change} ranking positions since the previous run.")
+        elif (momentum.percent_delta or 0) > 0:
+            reasons.append(f"Total score is up {momentum.percent_delta:.1f}% versus the previous run.")
+        if history_length <= 2:
+            reasons.append("The trend is still early in its lifecycle, so competition may still be thin.")
+        return reasons[:3] or ["The trend is active, but the current run has limited explanatory evidence."]
+
+    @staticmethod
+    def _build_trend_aliases(score: TrendScoreResult) -> list[str]:
+        """Return simple persisted aliases for a trend."""
+
+        canonical_name = score.display_name or build_display_name(score.topic, score.evidence)
+        candidates = {
+            canonical_name,
+            score.topic,
+            canonical_name.lower(),
+            score.topic.replace("-", " "),
+        }
+        for token in canonical_name.split():
+            if len(token) >= 2 and token.upper() == token:
+                candidates.add(token)
+        normalized = sorted({candidate.strip() for candidate in candidates if candidate and candidate.strip()})
+        return normalized[:6]
+
+    @staticmethod
     def _slugify_topic(topic: str) -> str:
         """Convert a topic to a stable slug identifier."""
 
@@ -2103,11 +3420,360 @@ class TrendScoreRepository:
             len(item.evidence),
         )
 
-    @staticmethod
-    def _format_trend_name(topic: str) -> str:
-        """Return a display-friendly topic name."""
+    def _build_topic_market_footprint(
+        self,
+        topic: str,
+        captured_at: datetime,
+    ) -> list[TrendMetricSnapshot]:
+        """Build market-footprint metrics from current source signals for one topic."""
 
-        return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in topic.split())
+        rows = self.connection.execute(
+            """
+            SELECT source, value, timestamp, evidence_url
+            FROM signals
+            WHERE topic = ?
+            ORDER BY timestamp DESC, id DESC
+            """,
+            (topic,),
+        ).fetchall()
+        grouped: dict[str, list[RowMapping]] = {}
+        for row in rows:
+            if row["source"] not in self.MARKET_FOOTPRINT_CONFIG:
+                continue
+            grouped.setdefault(row["source"], []).append(row)
+
+        metrics: list[TrendMetricSnapshot] = []
+        for source, source_rows in grouped.items():
+            config = self.MARKET_FOOTPRINT_CONFIG[source]
+            values = [float(row["value"] or 0.0) for row in source_rows]
+            if not values:
+                continue
+            aggregation = str(config["aggregation"])
+            value_numeric = max(values) if aggregation == "max" else sum(values)
+            if value_numeric <= 0:
+                continue
+            provenance_url = next((row["evidence_url"] for row in source_rows if row["evidence_url"]), None)
+            metrics.append(
+                TrendMetricSnapshot(
+                    source=source,
+                    metric_key=str(config["metric_key"]),
+                    label=str(config["label"]),
+                    value_numeric=round(value_numeric, 2),
+                    value_display=self._format_metric_value(value_numeric, str(config["unit"])),
+                    unit=str(config["unit"]),
+                    period=str(config["period"]),
+                    captured_at=captured_at,
+                    confidence=float(config["confidence"]),
+                    provenance_url=provenance_url,
+                    is_estimated=bool(config["is_estimated"]),
+                )
+            )
+        return sorted(
+            metrics,
+            key=lambda item: (
+                self.MARKET_FOOTPRINT_CONFIG.get(item.source, {}).get("priority", 999),
+                -item.value_numeric,
+                item.source,
+            ),
+        )[:6]
+
+    @staticmethod
+    def _format_metric_value(value: float, unit: str) -> str:
+        """Render a compact, human-readable value for market-footprint cards."""
+
+        compact = TrendScoreRepository._format_compact_number(value)
+        if unit == "searches":
+            return compact
+        if unit == "views":
+            return compact
+        return compact
+
+    @staticmethod
+    def _format_compact_number(value: float) -> str:
+        """Format large values using compact suffixes."""
+
+        absolute = abs(value)
+        if absolute >= 1_000_000_000:
+            return f"{value / 1_000_000_000:.1f}B"
+        if absolute >= 1_000_000:
+            return f"{value / 1_000_000:.1f}M"
+        if absolute >= 1_000:
+            return f"{value / 1_000:.1f}K"
+        if value.is_integer():
+            return str(int(value))
+        return f"{value:.1f}"
+
+    def _filter_suppressed_scores(self, scores: list[TrendScoreResult]) -> list[TrendScoreResult]:
+        """Drop trends that have been manually suppressed from ranked read paths."""
+
+        overrides = self._list_trend_curation_overrides()
+        filtered: list[TrendScoreResult] = []
+        for score in scores:
+            override = overrides.get(self._slugify_topic(score.topic))
+            if override is not None and override.suppress:
+                continue
+            filtered.append(score)
+        return filtered
+
+    def _replace_duplicate_candidates(
+        self,
+        scores: list[TrendScoreResult],
+        duplicate_rows: list[tuple[str, str, float, str]],
+    ) -> None:
+        """Replace persisted duplicate candidates for the current published trend set."""
+
+        if not scores:
+            return
+        self.connection.executemany(
+            "DELETE FROM trend_duplicate_candidates WHERE topic_key = ?",
+            [(self._slugify_topic(score.topic),) for score in scores],
+        )
+        if duplicate_rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_duplicate_candidates (topic_key, duplicate_topic_key, similarity, reason)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(topic_key, duplicate_topic_key)
+                DO UPDATE SET similarity = excluded.similarity, reason = excluded.reason
+                """,
+                duplicate_rows,
+            )
+
+    def _load_persisted_duplicate_candidates(
+        self,
+        records: list[TrendDetailRecord],
+    ) -> dict[str, list[TrendDuplicateCandidate]]:
+        """Load duplicate candidate rows for the current detail record set."""
+
+        by_id = {record.id: record for record in records}
+        duplicate_map: dict[str, list[TrendDuplicateCandidate]] = {record.id: [] for record in records}
+        for record in records:
+            rows = self.connection.execute(
+                """
+                SELECT duplicate_topic_key, similarity, reason
+                FROM trend_duplicate_candidates
+                WHERE topic_key = ?
+                ORDER BY similarity DESC, duplicate_topic_key ASC
+                LIMIT 3
+                """,
+                (record.id,),
+            ).fetchall()
+            duplicate_map[record.id] = [
+                TrendDuplicateCandidate(
+                    id=by_id[row["duplicate_topic_key"]].id,
+                    name=by_id[row["duplicate_topic_key"]].name,
+                    similarity=round(float(row["similarity"] or 0.0), 2),
+                    reason=row["reason"] or "",
+                )
+                for row in rows
+                if row["duplicate_topic_key"] in by_id
+            ]
+        return duplicate_map
+
+    def _build_duplicate_candidates(
+        self,
+        scores: list[TrendScoreResult],
+        overrides: dict[str, TrendCurationOverride],
+    ) -> tuple[list[tuple[str, str, float, str]], dict[str, float]]:
+        """Infer near-duplicate trends and compute confidence penalties."""
+
+        rows: list[tuple[str, str, float, str]] = []
+        penalties: dict[str, float] = {}
+        for index, current in enumerate(scores):
+            current_id = self._slugify_topic(current.topic)
+            current_override = overrides.get(current_id)
+            if current_override is not None and current_override.suppress:
+                continue
+            for candidate in scores[index + 1 :]:
+                candidate_id = self._slugify_topic(candidate.topic)
+                candidate_override = overrides.get(candidate_id)
+                if candidate_override is not None and candidate_override.suppress:
+                    continue
+                similarity, reason = self._measure_duplicate_similarity(
+                    current,
+                    candidate,
+                    current_override=current_override,
+                    candidate_override=candidate_override,
+                )
+                if similarity < 0.55:
+                    continue
+                rounded_similarity = round(similarity, 2)
+                rows.append((current_id, candidate_id, rounded_similarity, reason))
+                rows.append((candidate_id, current_id, rounded_similarity, reason))
+                duplicate_id = self._choose_duplicate_penalty_target(
+                    current,
+                    candidate,
+                    current_override=current_override,
+                    candidate_override=candidate_override,
+                )
+                penalties[duplicate_id] = max(
+                    penalties.get(duplicate_id, 0.0),
+                    round(min(0.3, rounded_similarity * 0.25), 3),
+                )
+        return rows, penalties
+
+    def _measure_duplicate_similarity(
+        self,
+        current: TrendScoreResult,
+        candidate: TrendScoreResult,
+        *,
+        current_override: TrendCurationOverride | None,
+        candidate_override: TrendCurationOverride | None,
+    ) -> tuple[float, str]:
+        """Return a duplicate similarity score and the dominant explanation."""
+
+        current_id = self._slugify_topic(current.topic)
+        candidate_id = self._slugify_topic(candidate.topic)
+        if current_override is not None and current_override.canonical_topic_key == candidate_id:
+            return 1.0, "Curated into the same canonical trend group."
+        if candidate_override is not None and candidate_override.canonical_topic_key == current_id:
+            return 1.0, "Curated into the same canonical trend group."
+
+        current_tokens = self._comparison_tokens(current.topic, current.evidence, current.display_name)
+        candidate_tokens = self._comparison_tokens(candidate.topic, candidate.evidence, candidate.display_name)
+        current_aliases = self._comparison_aliases(current)
+        candidate_aliases = self._comparison_aliases(candidate)
+        current_sources = set(current.source_counts)
+        candidate_sources = set(candidate.source_counts)
+
+        token_overlap = self._jaccard_similarity(current_tokens, candidate_tokens)
+        alias_overlap = self._jaccard_similarity(current_aliases, candidate_aliases)
+        source_overlap = self._jaccard_similarity(current_sources, candidate_sources)
+        similarity = token_overlap * 0.65 + alias_overlap * 0.25 + source_overlap * 0.10
+
+        if alias_overlap >= token_overlap and alias_overlap >= 0.5:
+            reason = "Tracked aliases strongly overlap."
+        elif token_overlap >= 0.5:
+            reason = "Core topic naming overlaps across the same concept."
+        else:
+            reason = "Signals and source mix suggest the same underlying topic."
+        return similarity, reason
+
+    def _choose_duplicate_penalty_target(
+        self,
+        current: TrendScoreResult,
+        candidate: TrendScoreResult,
+        *,
+        current_override: TrendCurationOverride | None,
+        candidate_override: TrendCurationOverride | None,
+    ) -> str:
+        """Choose which topic should absorb the duplicate confidence penalty."""
+
+        current_id = self._slugify_topic(current.topic)
+        candidate_id = self._slugify_topic(candidate.topic)
+        if current_override is not None and current_override.canonical_topic_key == candidate_id:
+            return current_id
+        if candidate_override is not None and candidate_override.canonical_topic_key == current_id:
+            return candidate_id
+        if current.total_score == candidate.total_score:
+            return max(current_id, candidate_id)
+        return current_id if current.total_score < candidate.total_score else candidate_id
+
+    def _comparison_tokens(
+        self,
+        topic: str,
+        evidence: list[str],
+        display_name: str | None,
+    ) -> set[str]:
+        """Build normalized comparison tokens that tolerate small plural variants."""
+
+        values = [topic]
+        if display_name:
+            values.append(display_name)
+        values.extend(evidence[:2])
+        tokens: set[str] = set()
+        for value in values:
+            for token in self._topic_tokens(value):
+                tokens.add(self._normalize_comparison_token(token))
+        return tokens
+
+    def _comparison_aliases(self, score: TrendScoreResult) -> set[str]:
+        """Build a normalized alias set for duplicate matching."""
+
+        return {
+            self._normalize_alias(alias)
+            for alias in self._build_trend_aliases(score)
+            if self._normalize_alias(alias)
+        }
+
+    @staticmethod
+    def _normalize_alias(value: str) -> str:
+        """Normalize alias casing and punctuation for duplicate matching."""
+
+        return " ".join(
+            "".join(character.lower() if character.isalnum() else " " for character in value).split()
+        )
+
+    @staticmethod
+    def _normalize_comparison_token(token: str) -> str:
+        """Reduce trivial singular/plural variations during duplicate matching."""
+
+        if len(token) > 4 and token.endswith("s"):
+            return token[:-1]
+        return token
+
+    @staticmethod
+    def _jaccard_similarity(left: set[str], right: set[str]) -> float:
+        """Return the Jaccard similarity between two token sets."""
+
+        if not left or not right:
+            return 0.0
+        union = left.union(right)
+        if not union:
+            return 0.0
+        return len(left.intersection(right)) / len(union)
+
+    def _replace_trend_relationships(
+        self,
+        records: list[TrendDetailRecord],
+        relationship_rows: list[tuple[str, str, float]],
+    ) -> None:
+        """Replace persisted related-trend relationships for the current record set."""
+
+        self.connection.executemany(
+            "DELETE FROM trend_relationships WHERE topic_key = ?",
+            [(record.id,) for record in records],
+        )
+        if relationship_rows:
+            self.connection.executemany(
+                """
+                INSERT INTO trend_relationships (topic_key, related_topic_key, strength)
+                VALUES (?, ?, ?)
+                ON CONFLICT(topic_key, related_topic_key)
+                DO UPDATE SET strength = excluded.strength
+                """,
+                relationship_rows,
+            )
+
+    def _load_persisted_related_trends(self, records: list[TrendDetailRecord]) -> dict[str, list[RelatedTrend]]:
+        """Load related trends from persisted relationship rows for the current record set."""
+
+        by_id = {record.id: record for record in records}
+        related_map: dict[str, list[RelatedTrend]] = {record.id: [] for record in records}
+        for record in records:
+            rows = self.connection.execute(
+                """
+                SELECT related_topic_key, strength
+                FROM trend_relationships
+                WHERE topic_key = ?
+                ORDER BY strength DESC, related_topic_key ASC
+                LIMIT 4
+                """,
+                (record.id,),
+            ).fetchall()
+            related_map[record.id] = [
+                RelatedTrend(
+                    id=by_id[row["related_topic_key"]].id,
+                    name=by_id[row["related_topic_key"]].name,
+                    status=by_id[row["related_topic_key"]].status,
+                    rank=by_id[row["related_topic_key"]].rank,
+                    score_total=by_id[row["related_topic_key"]].score.total_score,
+                    relationship_strength=row["strength"],
+                )
+                for row in rows
+                if row["related_topic_key"] in by_id
+            ]
+        return related_map
 
     def _attach_related_trends(self, records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
         """Attach compact related-trend recommendations to each detail record."""
@@ -2115,41 +3781,44 @@ class TrendScoreRepository:
         if not records:
             return []
 
-        related_map: dict[str, list[RelatedTrend]] = {}
+        relationship_rows: list[tuple[str, str, float]] = []
         for current in records:
-            candidates: list[tuple[int, TrendDetailRecord]] = []
+            candidates: list[tuple[float, TrendDetailRecord]] = []
             current_tokens = self._topic_tokens(current.name)
             current_sources = set(current.sources)
             for candidate in records:
                 if candidate.id == current.id:
                     continue
-                score = 0
+                score = 0.0
                 if current_sources.intersection(candidate.sources):
-                    score += 2
+                    score += 0.4
                 if current.status == candidate.status:
-                    score += 1
+                    score += 0.2
                 if current_tokens.intersection(self._topic_tokens(candidate.name)):
-                    score += 2
+                    score += 0.4
                 if score > 0:
                     candidates.append((score, candidate))
 
             candidates.sort(key=lambda item: (-item[0], item[1].rank, -item[1].score.total_score, item[1].name))
-            related_map[current.id] = [
-                RelatedTrend(
-                    id=item.id,
-                    name=item.name,
-                    status=item.status,
-                    rank=item.rank,
-                    score_total=item.score.total_score,
-                )
-                for _, item in candidates[:4]
-            ]
+            relationship_rows.extend(
+                (current.id, item.id, round(strength, 2))
+                for strength, item in candidates[:4]
+            )
+
+        self._replace_trend_relationships(records, relationship_rows)
+        duplicate_map = self._load_persisted_duplicate_candidates(records)
+        related_map = self._load_persisted_related_trends(records)
 
         return [
             TrendDetailRecord(
                 id=record.id,
                 name=record.name,
                 category=record.category,
+                meta_trend=record.meta_trend,
+                stage=record.stage,
+                confidence=record.confidence,
+                summary=record.summary,
+                why_now=record.why_now,
                 status=record.status,
                 volatility=record.volatility,
                 rank=record.rank,
@@ -2165,13 +3834,16 @@ class TrendScoreRepository:
                 source_count=record.source_count,
                 signal_count=record.signal_count,
                 sources=record.sources,
+                aliases=record.aliases,
                 history=record.history,
                 source_breakdown=record.source_breakdown,
                 source_contributions=record.source_contributions,
+                market_footprint=record.market_footprint,
                 geo_summary=record.geo_summary,
                 audience_summary=record.audience_summary,
                 evidence_items=record.evidence_items,
                 primary_evidence=record.primary_evidence,
+                duplicate_candidates=duplicate_map.get(record.id, []),
                 related_trends=related_map.get(record.id, []),
                 seasonality=record.seasonality,
             )

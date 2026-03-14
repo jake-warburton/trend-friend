@@ -1,41 +1,52 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  RefreshConflictError,
-  getRefreshErrorStatus,
-  refreshData,
-} from "@/lib/server/refresh-service";
+import { getRefreshErrorStatus, hasRefreshApi, refreshData } from "@/lib/server/refresh-service";
 
-test("refreshData runs ingestion and export through the local fallback when API mode is disabled", async () => {
-  const calls: string[] = [];
-
+test("refreshData returns a local revalidation payload when no backend API is configured", async () => {
   const payload = await refreshData({
     apiEnabled: false,
-    acquireLock: () => true,
-    releaseLock: () => calls.push("release"),
-    runIngestion: async () => {
-      calls.push("ingest");
-    },
-    runExport: async () => {
-      calls.push("export");
+  });
+
+  assert.deepEqual(payload, { ok: true, revalidated: true });
+});
+
+test("refreshData delegates to the backend API when API mode is enabled", async () => {
+  let calledPath = "";
+  let calledBody: unknown = null;
+
+  const payload = await refreshData({
+    apiEnabled: true,
+    apiPost: async (apiPath, body) => {
+      calledPath = apiPath;
+      calledBody = body;
+      return { ok: true, upstream: true };
     },
   });
 
-  assert.deepEqual(payload, { ok: true });
-  assert.deepEqual(calls, ["ingest", "export", "release"]);
+  assert.equal(calledPath, "/refresh");
+  assert.deepEqual(calledBody, {});
+  assert.deepEqual(payload, { ok: true, upstream: true });
 });
 
-test("refreshData returns a conflict when a local refresh is already in progress", async () => {
-  await assert.rejects(
-    refreshData({
-      apiEnabled: false,
-      acquireLock: () => false,
-    }),
-    RefreshConflictError,
-  );
+test("getRefreshErrorStatus maps API errors and defaults to 500", () => {
+  assert.equal(getRefreshErrorStatus({}), 500);
 });
 
-test("getRefreshErrorStatus maps refresh conflicts to HTTP 409", () => {
-  assert.equal(getRefreshErrorStatus(new RefreshConflictError()), 409);
+test("hasRefreshApi reflects the configured backend url", () => {
+  const original = process.env.SIGNAL_EYE_API_URL;
+
+  try {
+    delete process.env.SIGNAL_EYE_API_URL;
+    assert.equal(hasRefreshApi(), false);
+
+    process.env.SIGNAL_EYE_API_URL = "https://example.com";
+    assert.equal(hasRefreshApi(), true);
+  } finally {
+    if (original == null) {
+      delete process.env.SIGNAL_EYE_API_URL;
+    } else {
+      process.env.SIGNAL_EYE_API_URL = original;
+    }
+  }
 });

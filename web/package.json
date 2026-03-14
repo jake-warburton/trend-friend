@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
     "@stripe/stripe-js": "^8.9.0",
@@ -18,6 +19,9 @@
     "@supabase/supabase-js": "^2.99.1",
     "@vercel/analytics": "^2.0.1",
 >>>>>>> Stashed changes
+=======
+    "@vercel/analytics": "^2.0.1",
+>>>>>>> main
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

@@ -36,15 +36,51 @@ def create_watchlist(
     user: User = Depends(require_auth),
     db: DatabaseConnection = Depends(get_db),
 ) -> dict:
-    """Create a new watchlist."""
+    """Create a new watchlist or mutate saved thesis definitions."""
 
-    name = body.get("name")
-    if not name:
-        raise HTTPException(status_code=422, detail="name is required")
     watchlist_repo = WatchlistRepository(db)
     score_repo = TrendScoreRepository(db)
     owner_user_id = user.id if auth_enabled() else None
-    watchlist_repo.create_watchlist(name, owner_user_id=owner_user_id)
+    action = body.get("action")
+
+    if action == "create-thesis":
+        watchlist_id = body.get("watchlistId")
+        name = body.get("name")
+        if not watchlist_id or not name:
+            raise HTTPException(status_code=422, detail="watchlistId and name are required")
+        watchlist = watchlist_repo.get_watchlist_for_owner(watchlist_id, owner_user_id)
+        if watchlist is None:
+            raise HTTPException(status_code=404, detail="Watchlist not found")
+        watchlist_repo.create_trend_thesis(
+            watchlist_id=watchlist_id,
+            name=name,
+            lens=body.get("lens", "all"),
+            keyword_query=body.get("keywordQuery"),
+            source=body.get("source"),
+            category=body.get("category"),
+            stage=body.get("stage"),
+            confidence=body.get("confidence"),
+            meta_trend=body.get("metaTrend"),
+            audience=body.get("audience"),
+            market=body.get("market"),
+            language=body.get("language"),
+            geo_country=body.get("geoCountry"),
+            minimum_score=float(body.get("minimumScore") or 0.0),
+            hide_recurring=body.get("hideRecurring") is True,
+            notify_on_match=body.get("notifyOnMatch") is True,
+        )
+    elif action == "delete-thesis":
+        thesis_id = body.get("thesisId")
+        if not thesis_id:
+            raise HTTPException(status_code=422, detail="thesisId is required")
+        deleted = watchlist_repo.delete_trend_thesis(thesis_id, owner_user_id=owner_user_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Thesis not found")
+    else:
+        name = body.get("name")
+        if not name:
+            raise HTTPException(status_code=422, detail="name is required")
+        watchlist_repo.create_watchlist(name, owner_user_id=owner_user_id)
     return build_watchlist_payload(
         watchlist_repo,
         score_repo,

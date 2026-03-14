@@ -1,0 +1,17 @@
+ALTER TABLE pipeline_runs
+ADD COLUMN IF NOT EXISTS raw_topic_count INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE pipeline_runs
+ADD COLUMN IF NOT EXISTS merged_topic_count INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE pipeline_runs
+ADD COLUMN IF NOT EXISTS duplicate_topic_count INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE pipeline_runs
+ADD COLUMN IF NOT EXISTS duplicate_topic_rate DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+ALTER TABLE pipeline_runs
+ADD COLUMN IF NOT EXISTS multi_source_trend_count INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE pipeline_runs
+ADD COLUMN IF NOT EXISTS low_evidence_trend_count INTEGER NOT NULL DEFAULT 0;
