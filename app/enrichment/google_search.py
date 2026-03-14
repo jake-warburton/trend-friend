@@ -69,34 +69,4 @@ class GoogleSearchMetricsEnricher(MarketMetricEnricher):
         return metrics
 
     def _fallback_metrics(self, target: EnrichmentTarget, captured_at: datetime) -> list[TrendMetricSnapshot]:
-        seed = self.hashed_seed(target.topic)
-        monthly_searches = float(20_000 + (seed % 480_000))
-        interest = float(25 + seed % 70)
-        return [
-            TrendMetricSnapshot(
-                source=self.source_name,
-                metric_key="monthly_searches",
-                label="Monthly Google searches",
-                value_numeric=monthly_searches,
-                value_display=f"{self.compact_number(monthly_searches)}/mo",
-                unit="searches",
-                period="monthly",
-                captured_at=captured_at,
-                confidence=0.35,
-                provenance_url=None,
-                is_estimated=True,
-            ),
-            TrendMetricSnapshot(
-                source=self.source_name,
-                metric_key="search_interest",
-                label="Google search interest",
-                value_numeric=interest,
-                value_display=f"{round(interest):.0f}/100",
-                unit="index",
-                period="12 months",
-                captured_at=captured_at,
-                confidence=0.35,
-                provenance_url=None,
-                is_estimated=True,
-            ),
-        ]
+        return []

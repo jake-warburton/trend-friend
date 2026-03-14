@@ -43,6 +43,7 @@ class Settings:
     poll_interval_minutes: int
     health_file_path: Path
     refresh_secret: Optional[str]
+    serpapi_key: str
 
 
 def load_settings() -> Settings:
@@ -68,7 +69,7 @@ def load_settings() -> Settings:
         experimental_ranking_limit=int(os.getenv("SIGNAL_EYE_EXPERIMENTAL_RANKING_LIMIT", "12")),
         history_run_limit=int(os.getenv("SIGNAL_EYE_HISTORY_RUN_LIMIT", "72")),
         market_enrichment_enabled=os.getenv("SIGNAL_EYE_MARKET_ENRICHMENT_ENABLED", "true").lower() == "true",
-        market_enrichment_limit=int(os.getenv("SIGNAL_EYE_MARKET_ENRICHMENT_LIMIT", "25")),
+        market_enrichment_limit=int(os.getenv("SIGNAL_EYE_MARKET_ENRICHMENT_LIMIT", "50")),
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
         youtube_api_key=os.getenv("YOUTUBE_API_KEY"),
@@ -81,6 +82,7 @@ def load_settings() -> Settings:
         poll_interval_minutes=int(os.getenv("SIGNAL_EYE_POLL_INTERVAL_MINUTES", "30")),
         health_file_path=Path(os.getenv("SIGNAL_EYE_HEALTH_FILE_PATH", "data/last_run.json")),
         refresh_secret=os.getenv("SIGNAL_EYE_REFRESH_SECRET"),
+        serpapi_key=os.environ.get("SERPAPI_KEY", ""),
     )
 
 

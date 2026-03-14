@@ -52,10 +52,12 @@ class EnrichmentTests(unittest.TestCase):
             google_search_metrics_token=None,
             tiktok_metrics_url=None,
             tiktok_metrics_token=None,
+            youtube_search_days=30,
             reddit_user_agent="signal-eye-tests/1.0",
             poll_interval_minutes=30,
             health_file_path=Path("data/last_run.json"),
             refresh_secret=None,
+            serpapi_key="",
         )
 
     def tearDown(self) -> None:
@@ -63,19 +65,16 @@ class EnrichmentTests(unittest.TestCase):
         if self.database_path.exists():
             self.database_path.unlink()
 
-    def test_google_search_enricher_fallback_is_deterministic(self) -> None:
+    def test_google_search_enricher_fallback_returns_no_fake_data(self) -> None:
         enricher = GoogleSearchMetricsEnricher(self.settings)
         target = EnrichmentTarget(topic="chat gpt", name="ChatGPT", aliases=["chat gpt", "chatgpt"])
         captured_at = datetime(2026, 3, 13, tzinfo=timezone.utc)
 
         metrics = enricher.enrich(target, captured_at)
 
-        self.assertEqual([metric.metric_key for metric in metrics], ["monthly_searches", "search_interest"])
-        self.assertTrue(all(metric.is_estimated for metric in metrics))
-        self.assertEqual(metrics[0].captured_at, captured_at)
-        self.assertEqual(metrics[0].value_display.endswith("/mo"), True)
+        self.assertEqual(metrics, [])
 
-    def test_refresh_external_market_metrics_upserts_google_youtube_and_tiktok_metrics(self) -> None:
+    def test_refresh_external_market_metrics_skips_fake_data_without_apis(self) -> None:
         captured_at = datetime(2026, 3, 13, tzinfo=timezone.utc)
         score = TrendScoreResult(
             topic="chat gpt",
@@ -95,14 +94,11 @@ class EnrichmentTests(unittest.TestCase):
         refresh_external_market_metrics(self.settings, self.repository, [score], captured_at=captured_at)
 
         metrics = self.repository.get_topic_market_footprint("chat gpt")
-        metric_sources = {metric.source for metric in metrics}
 
-        self.assertIn("google_search", metric_sources)
-        self.assertIn("youtube", metric_sources)
-        self.assertIn("tiktok", metric_sources)
-        self.assertTrue(any(metric.metric_key == "monthly_searches" for metric in metrics))
-        self.assertTrue(any(metric.metric_key == "video_views" and metric.source == "youtube" for metric in metrics))
-        self.assertTrue(any(metric.metric_key == "video_count" and metric.source == "tiktok" for metric in metrics))
+        # Without API keys configured, no fake metrics should be generated
+        # Only score_history growth metrics may be present (from actual snapshot data)
+        for metric in metrics:
+            self.assertFalse(metric.is_estimated, f"Metric {metric.metric_key} should not be estimated")
 
 
 if __name__ == "__main__":

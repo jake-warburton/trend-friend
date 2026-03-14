@@ -2569,6 +2569,7 @@ input {
 
 .forecast-note {
   margin: 10px 0 0;
+  padding: 0 4px;
   font-size: 0.78rem;
   color: var(--muted);
 }
@@ -2938,6 +2939,7 @@ input {
   border-top: 1px solid var(--border);
   background: transparent;
   box-shadow: none;
+  transition: border-color 200ms ease;
 }
 
 .detail-hero {
@@ -2964,6 +2966,11 @@ input {
   font-size: 0.74rem;
   font-weight: 500;
   text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.detail-back-link:hover {
+  color: var(--copy);
 }
 
 .detail-back-link::before {
@@ -2973,8 +2980,22 @@ input {
 .detail-action-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 20px;
-  margin-top: 12px;
+  gap: 6px 8px;
+  margin-top: 14px;
+}
+
+.detail-action-links .detail-back-link {
+  margin-bottom: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.detail-action-links .detail-back-link:hover {
+  border-color: var(--accent-badge-border);
+  background: var(--accent-soft);
 }
 
 .detail-copy {
@@ -3022,6 +3043,7 @@ input {
   background: var(--surface-panel);
   padding: 28px 28px 24px;
   margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.03);
 }
 
 .about-panel .eyebrow {
@@ -3085,11 +3107,17 @@ input {
   font-size: 0.78rem;
   font-weight: 500;
   text-decoration: none;
-  transition: color 120ms ease;
+  padding: 5px 12px;
+  border: 1px solid var(--accent-badge-border);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
 }
 
 .about-panel-wiki-link:hover {
   color: var(--copy);
+  background: var(--accent-badge-bg);
+  border-color: var(--accent-strong);
 }
 
 .about-panel-wiki-link::after {
@@ -3119,15 +3147,15 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
-  background: var(--surface-panel-soft);
+  background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 0.68rem;
   font-weight: 700;
   line-height: 1;
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent-badge-border);
 }
 
 .why-trending-item div {
@@ -3191,6 +3219,13 @@ input {
   padding: 14px 16px 16px;
   background: var(--surface-panel-soft);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.market-footprint-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .market-footprint-card:first-child {
@@ -3253,11 +3288,23 @@ input {
   display: grid;
   gap: 4px;
   align-content: center;
-  padding: 14px 20px;
+  padding: 16px 22px;
   background: var(--surface-panel-soft);
   border-radius: var(--radius-sm);
-  min-width: 90px;
+  border: 1px solid var(--border);
+  min-width: 96px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.opportunity-composite::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 60%);
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .opportunity-composite span {
@@ -3289,6 +3336,13 @@ input {
   padding: 10px 4px;
   background: var(--surface-panel-soft);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.opportunity-score-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .opportunity-score-item span {
@@ -3467,6 +3521,13 @@ input {
   padding: 14px 16px;
   background: var(--surface-panel-soft);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.detail-stat-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .detail-stat-item:last-child strong {
@@ -3686,6 +3747,12 @@ input {
   align-items: start;
   padding: 16px 0;
   border-top: 1px solid var(--inset-divider);
+  border-radius: 0;
+  transition: background 150ms ease;
+}
+
+.detail-list-item:hover {
+  background: var(--surface-subtle);
 }
 
 .detail-list-item strong,
@@ -4532,7 +4599,10 @@ input {
 .chart-container {
   width: 100%;
   min-height: 200px;
-  padding: 0;
+  padding: 12px 4px 4px;
+  background: var(--surface-panel-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .chart-empty {
@@ -4658,7 +4728,13 @@ input {
   padding: 8px 12px;
   background: var(--surface-panel-soft);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
   font-size: 0.78rem;
+  transition: border-color 200ms ease;
+}
+
+.geo-legend-item:hover {
+  border-color: var(--border-strong);
 }
 
 .geo-legend-item strong {

@@ -96,10 +96,23 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
             width={40}
           />
           <Tooltip
+            cursor={{ stroke: "var(--accent)", strokeWidth: 1, strokeOpacity: 0.3 }}
             contentStyle={{
               background: "var(--surface-tooltip)",
               border: "1px solid var(--border-strong)",
               borderRadius: 8,
+              color: "var(--copy)",
+              fontSize: 12,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+              padding: "8px 12px",
+            }}
+            labelStyle={{
+              color: "var(--copy)",
+              fontSize: 12,
+              fontWeight: 600,
+              marginBottom: 2,
+            }}
+            itemStyle={{
               color: "var(--copy)",
               fontSize: 12,
             }}

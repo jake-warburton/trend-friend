@@ -57,6 +57,7 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
             width={70}
           />
           <Tooltip
+            cursor={{ fill: "var(--surface-panel-soft)", opacity: 0.6 }}
             contentStyle={{
               background: "var(--surface-tooltip)",
               border: "1px solid var(--border-strong)",
@@ -64,15 +65,26 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
               color: "var(--copy)",
               fontSize: 12,
               padding: "8px 12px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
             }}
             labelStyle={{
               color: "var(--copy)",
               fontSize: 12,
               fontWeight: 600,
+              marginBottom: 2,
+            }}
+            itemStyle={{
+              color: "var(--copy)",
+              fontSize: 12,
             }}
             formatter={(value) => [Number(value).toFixed(1), "Score"]}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} activeBar={{ opacity: 0.8 }}>
+          <Bar
+            dataKey="value"
+            radius={[0, 6, 6, 0]}
+            barSize={22}
+            activeBar={{ opacity: 0.85, filter: "brightness(1.15)" }}
+          >
             {data.map((entry) => (
               <Cell key={entry.label} fill={COMPONENT_COLORS[entry.label] ?? "#5e6bff"} />
             ))}

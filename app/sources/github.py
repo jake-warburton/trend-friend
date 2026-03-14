@@ -19,6 +19,12 @@ class GitHubSourceAdapter(SourceAdapter):
         ("ml", "topic:machine-learning stars:>30 archived:false"),
         ("developer-tools", "topic:developer-tools stars:>20 archived:false"),
         ("robotics", "topic:robotics stars:>20 archived:false"),
+        ("web", "topic:web stars:>30 archived:false"),
+        ("blockchain", "topic:blockchain stars:>20 archived:false"),
+        ("security", "topic:security stars:>20 archived:false"),
+        ("data-science", "topic:data-science stars:>20 archived:false"),
+        ("devops", "topic:devops stars:>20 archived:false"),
+        ("llm", "topic:llm stars:>20 archived:false"),
     )
 
     def fetch(self) -> list[RawSourceItem]:
@@ -74,7 +80,11 @@ class GitHubSourceAdapter(SourceAdapter):
                 continue
             description_value = repository.get("description") or ""
             description = str(description_value).strip()
+            topics = repository.get("topics", []) or []
             title = full_name if not description else f"{full_name} {description}"
+            stars = float(repository.get("stargazers_count", 0))
+            forks = float(repository.get("forks_count", 0))
+            watchers = float(repository.get("watchers_count", 0))
             items.append(
                 RawSourceItem(
                     source=self.source_name,
@@ -82,11 +92,15 @@ class GitHubSourceAdapter(SourceAdapter):
                     title=title,
                     url=str(repository.get("html_url", "")),
                     timestamp=self.parse_iso_timestamp(pushed_at),
-                    engagement_score=float(repository.get("stargazers_count", 0))
-                    + float(repository.get("forks_count", 0)),
+                    engagement_score=stars + forks,
                     metadata={
                         "language": str(repository.get("language", "")),
                         "query_family": query_name or "default",
+                        "stars": stars,
+                        "forks": forks,
+                        "watchers": watchers,
+                        "topics": topics[:10],
+                        "open_issues": float(repository.get("open_issues_count", 0)),
                     },
                 )
             )

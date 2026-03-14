@@ -30,6 +30,9 @@ SOURCE_TOPIC_LIMITS = {
     "producthunt": 1,
     "twitter": 2,
     "youtube": 2,
+    "mastodon": 2,
+    "coingecko": 2,
+    "apple_charts": 1,
 }
 SOURCE_BIGRAM_LIMITS = {
     "chrome_web_store": 1,
@@ -40,6 +43,9 @@ SOURCE_BIGRAM_LIMITS = {
     "polymarket": 1,
     "twitter": 1,
     "youtube": 1,
+    "mastodon": 1,
+    "coingecko": 1,
+    "apple_charts": 0,
 }
 SOURCE_LOW_SIGNAL_TOKENS = {
     "chrome_web_store": {"assistant", "browser", "chrome", "extension", "extensions", "sidebar", "tool"},
@@ -48,6 +54,9 @@ SOURCE_LOW_SIGNAL_TOKENS = {
     "hacker_news": {"watching", "people", "report", "reports", "footage"},
     "twitter": {"watching", "people", "report", "reports", "footage"},
     "youtube": {"build", "building", "demo", "explained", "how", "review", "tutorial", "using", "video"},
+    "mastodon": {"boost", "fediverse", "mastodon", "toot", "instance"},
+    "coingecko": {"coin", "coingecko", "trending", "market", "category"},
+    "apple_charts": {"top", "free", "chart", "charts"},
 }
 BIGRAM_HEAD_TOKENS = {
     "analytics",
@@ -475,6 +484,10 @@ def infer_source_specific_topics(title: str, tokens: list[str], source_name: str
         return infer_huggingface_topics(tokens)
     if source_name == "youtube":
         return infer_youtube_topics(tokens)
+    if source_name == "coingecko":
+        return infer_coingecko_topics(title, tokens)
+    if source_name == "mastodon":
+        return infer_mastodon_topics(title, tokens)
     return []
 
 
@@ -796,6 +809,37 @@ def infer_youtube_topics(tokens: list[str]) -> list[str]:
     if ("agent" in token_set or "agents" in token_set) and ("workflow" in token_set or "automation" in token_set):
         inferred_topics.append("ai agents")
     return inferred_topics
+
+
+def infer_coingecko_topics(title: str, tokens: list[str]) -> list[str]:
+    """Extract coin or category names from CoinGecko titles."""
+
+    # Titles like "Bitcoin (BTC) trending on CoinGecko" or "DeFi category trending"
+    # Extract the name before the parenthetical or dash
+    inferred: list[str] = []
+    for separator in (" (", " —", " trending"):
+        if separator in title:
+            prefix = title.split(separator, 1)[0].strip()
+            normalized = normalize_topic_name(prefix)
+            if normalized and is_meaningful_topic(normalized) and normalized not in {"nft"}:
+                inferred.append(normalized)
+            break
+    return inferred
+
+
+def infer_mastodon_topics(title: str, tokens: list[str]) -> list[str]:
+    """Extract topics from Mastodon hashtags and statuses."""
+
+    inferred: list[str] = []
+    # Hashtag titles like "#ai" → "ai"
+    if title.startswith("#"):
+        tag_name = title.lstrip("#").strip().lower()
+        # Split camelCase hashtags (e.g., "MachineLearning" → "machine learning")
+        parts = re.sub(r"([a-z])([A-Z])", r"\1 \2", tag_name).lower()
+        normalized = normalize_topic_name(parts)
+        if normalized and is_meaningful_topic(normalized):
+            inferred.append(normalized)
+    return inferred
 
 
 def infer_product_hunt_topics(title: str) -> list[str]:

@@ -27,6 +27,9 @@ from app.sources.reddit import RedditSourceAdapter
 from app.sources.twitter import TwitterSourceAdapter
 from app.sources.youtube import YouTubeSourceAdapter
 from app.sources.wikipedia import WikipediaSourceAdapter
+from app.sources.mastodon import MastodonSourceAdapter
+from app.sources.coingecko import CoinGeckoSourceAdapter
+from app.sources.apple_charts import AppleChartsSourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +55,9 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         PyPISourceAdapter(settings),
         YouTubeSourceAdapter(settings),
         LobstersSourceAdapter(settings),
+        MastodonSourceAdapter(settings),
+        CoinGeckoSourceAdapter(settings),
+        AppleChartsSourceAdapter(settings),
     ]
     if settings.enable_experimental_sources:
         adapters.append(PolymarketSourceAdapter(settings))

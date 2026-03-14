@@ -99,4 +99,7 @@ class GoogleTrendsAdapterTests(unittest.TestCase):
         adapter._fetch_all_regions()
 
         self.assertEqual(adapter.requested_regions, [region[0] for region in _REGIONS])
-        self.assertEqual(adapter.requested_regions, ["US", "GB", "CA", "AU", "DE", "FR", "IN", "JP"])
+        self.assertGreater(len(adapter.requested_regions), 8)
+        self.assertIn("US", adapter.requested_regions)
+        self.assertIn("BR", adapter.requested_regions)
+        self.assertIn("KR", adapter.requested_regions)

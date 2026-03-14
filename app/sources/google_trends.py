@@ -21,6 +21,17 @@ _REGIONS = [
     ("FR", "France", "FR"),
     ("IN", "India", "IN"),
     ("JP", "Japan", "JP"),
+    ("BR", "Brazil", "BR"),
+    ("MX", "Mexico", "MX"),
+    ("ES", "Spain", "ES"),
+    ("IT", "Italy", "IT"),
+    ("NL", "Netherlands", "NL"),
+    ("KR", "South Korea", "KR"),
+    ("ID", "Indonesia", "ID"),
+    ("NG", "Nigeria", "NG"),
+    ("SE", "Sweden", "SE"),
+    ("PL", "Poland", "PL"),
+    ("AR", "Argentina", "AR"),
 ]
 
 
@@ -82,15 +93,31 @@ class GoogleTrendsSourceAdapter(SourceAdapter):
             timestamp = self._parse_pub_date(pub_date)
             traffic = self._parse_traffic(traffic_text)
 
+            # Extract related news headlines from ht:news_item elements
+            news_titles = []
+            for news_item in item.findall("ht:news_item", namespaces=ns):
+                news_title = (news_item.findtext("ht:news_item_title", namespaces=ns) or "").strip()
+                if news_title:
+                    news_titles.append(news_title)
+
+            # Build a richer title that includes the trending query and related context
+            enriched_title = title
+            if news_titles:
+                enriched_title = f"{title} — {news_titles[0]}"
+
             items.append(
                 RawSourceItem(
                     source=self.source_name,
                     external_id=f"gt-{geo.lower()}-{hash(title) & 0xFFFFFFFF:08x}",
-                    title=title,
+                    title=enriched_title,
                     url=link or f"https://trends.google.com/trending?geo={geo}&q={title.replace(' ', '+')}",
                     timestamp=timestamp,
                     engagement_score=traffic,
-                    metadata={"region": geo},
+                    metadata={
+                        "region": geo,
+                        "traffic": traffic,
+                        "related_news": news_titles[:3],
+                    },
                     geo_country_code=country_code,
                     geo_region=None,
                     geo_detection_mode="explicit",

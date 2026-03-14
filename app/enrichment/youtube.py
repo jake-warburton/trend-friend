@@ -82,35 +82,4 @@ class YouTubeMetricsEnricher(MarketMetricEnricher):
         ]
 
     def _fallback_metrics(self, target: EnrichmentTarget, captured_at: datetime) -> list[TrendMetricSnapshot]:
-        seed = self.hashed_seed(target.topic)
-        total_views = float(60_000 + (seed % 9_400_000))
-        video_count = float(40 + (seed % 1_600))
-        query = target.name or target.topic
-        return [
-            TrendMetricSnapshot(
-                source=self.source_name,
-                metric_key="video_views",
-                label="YouTube views",
-                value_numeric=total_views,
-                value_display=self.compact_number(total_views),
-                unit="views",
-                period="sampled videos",
-                captured_at=captured_at,
-                confidence=0.35,
-                provenance_url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",
-                is_estimated=True,
-            ),
-            TrendMetricSnapshot(
-                source=self.source_name,
-                metric_key="video_count",
-                label="YouTube videos",
-                value_numeric=video_count,
-                value_display=self.compact_number(video_count),
-                unit="videos",
-                period="sampled videos",
-                captured_at=captured_at,
-                confidence=0.35,
-                provenance_url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",
-                is_estimated=True,
-            ),
-        ]
+        return []

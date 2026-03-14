@@ -69,36 +69,4 @@ class TikTokMetricsEnricher(MarketMetricEnricher):
         return metrics
 
     def _fallback_metrics(self, target: EnrichmentTarget, captured_at: datetime) -> list[TrendMetricSnapshot]:
-        seed = self.hashed_seed(target.topic)
-        views = float(500_000 + (seed % 900_000_000))
-        videos = float(120 + (seed % 85_000))
-        query = target.name or target.topic
-        url = f"https://www.tiktok.com/search?q={query.replace(' ', '%20')}"
-        return [
-            TrendMetricSnapshot(
-                source=self.source_name,
-                metric_key="video_views",
-                label="TikTok views",
-                value_numeric=views,
-                value_display=self.compact_number(views),
-                unit="views",
-                period="search footprint",
-                captured_at=captured_at,
-                confidence=0.3,
-                provenance_url=url,
-                is_estimated=True,
-            ),
-            TrendMetricSnapshot(
-                source=self.source_name,
-                metric_key="video_count",
-                label="TikTok videos",
-                value_numeric=videos,
-                value_display=self.compact_number(videos),
-                unit="videos",
-                period="search footprint",
-                captured_at=captured_at,
-                confidence=0.3,
-                provenance_url=url,
-                is_estimated=True,
-            ),
-        ]
+        return []

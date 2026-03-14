@@ -38,36 +38,14 @@ class SourceNormalizationTests(unittest.TestCase):
 
     def test_reddit_adapter_default_subreddit_scope_is_broader_but_curated(self) -> None:
         adapter = RedditSourceAdapter(self.settings)
-        self.assertEqual(
-            adapter.TREND_SUBREDDITS,
-            [
-                "technology",
-                "news",
-                "worldnews",
-                "politics",
-                "geopolitics",
-                "sports",
-                "nba",
-                "nfl",
-                "soccer",
-                "games",
-                "pcgaming",
-                "movies",
-                "television",
-                "popculturechat",
-                "programming",
-                "MachineLearning",
-                "artificial",
-                "LocalLLaMA",
-                "opensource",
-                "startups",
-                "entrepreneur",
-                "SaaS",
-                "singularity",
-                "sideproject",
-                "indiehackers",
-            ],
-        )
+        self.assertGreater(len(adapter.TREND_SUBREDDITS), 40)
+        self.assertIn("technology", adapter.TREND_SUBREDDITS)
+        self.assertIn("MachineLearning", adapter.TREND_SUBREDDITS)
+        self.assertIn("startups", adapter.TREND_SUBREDDITS)
+        self.assertIn("news", adapter.TREND_SUBREDDITS)
+        self.assertIn("fitness", adapter.TREND_SUBREDDITS)
+        self.assertIn("SkincareAddiction", adapter.TREND_SUBREDDITS)
+        self.assertIn("electricvehicles", adapter.TREND_SUBREDDITS)
         self.assertEqual(adapter.FEED_SPECS, (("hot", None), ("new", None), ("top", "day"), ("top", "week")))
 
     def test_github_adapter_handles_missing_description(self) -> None:

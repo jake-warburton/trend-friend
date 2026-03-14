@@ -26,11 +26,33 @@ class RedditSourceAdapter(SourceAdapter):
 
     source_name = "reddit"
     TREND_SUBREDDITS = [
+        # Tech & development
         "technology",
+        "programming",
+        "MachineLearning",
+        "artificial",
+        "LocalLLaMA",
+        "opensource",
+        "webdev",
+        "devops",
+        "datascience",
+        "cybersecurity",
+        # Startups & business
+        "startups",
+        "entrepreneur",
+        "SaaS",
+        "sideproject",
+        "indiehackers",
+        "smallbusiness",
+        "ecommerce",
+        # News & world
         "news",
         "worldnews",
         "politics",
         "geopolitics",
+        "economics",
+        "finance",
+        # Consumer & culture
         "sports",
         "nba",
         "nfl",
@@ -40,17 +62,59 @@ class RedditSourceAdapter(SourceAdapter):
         "movies",
         "television",
         "popculturechat",
-        "programming",
-        "MachineLearning",
-        "artificial",
-        "LocalLLaMA",
-        "opensource",
-        "startups",
-        "entrepreneur",
-        "SaaS",
         "singularity",
-        "sideproject",
-        "indiehackers",
+        # Science & health
+        "science",
+        "Futurology",
+        "biotech",
+        "space",
+        # Product & design
+        "ProductManagement",
+        "userexperience",
+        # Crypto & fintech
+        "CryptoCurrency",
+        "defi",
+        # Health & fitness
+        "fitness",
+        "nutrition",
+        "loseit",
+        "running",
+        "yoga",
+        # Beauty & fashion
+        "SkincareAddiction",
+        "MakeupAddiction",
+        "femalefashionadvice",
+        "malefashionadvice",
+        "streetwear",
+        # Food & cooking
+        "Cooking",
+        "food",
+        "MealPrepSunday",
+        "EatCheapAndHealthy",
+        # Home & lifestyle
+        "HomeImprovement",
+        "InteriorDesign",
+        "DIY",
+        "gardening",
+        "BuyItForLife",
+        # Pets
+        "dogs",
+        "cats",
+        "pets",
+        # Travel
+        "travel",
+        "solotravel",
+        "digitalnomad",
+        # Parenting & education
+        "Parenting",
+        "Teachers",
+        # Environment & sustainability
+        "sustainability",
+        "ZeroWaste",
+        "RenewableEnergy",
+        # Cars & auto
+        "cars",
+        "electricvehicles",
     ]
     FEED_SPECS = (
         ("hot", None),
