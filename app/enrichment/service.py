@@ -9,6 +9,7 @@ from app.config import Settings
 from app.data.repositories import TrendScoreRepository
 from app.enrichment.base import EnrichmentTarget, MarketMetricEnricher
 from app.enrichment.github import GitHubMetricsEnricher
+from app.enrichment.huggingface import HuggingFaceEnricher
 from app.enrichment.google_search import GoogleSearchMetricsEnricher
 from app.enrichment.google_trends import GoogleTrendsEnricher
 from app.enrichment.growth import compute_growth_metrics
@@ -21,6 +22,51 @@ from app.enrichment.youtube import YouTubeMetricsEnricher
 from app.models import TrendScoreResult
 
 LOGGER = logging.getLogger(__name__)
+
+# Sources that indicate a trend is developer/tech-oriented
+_DEV_SOURCES = {"github", "npm", "pypi", "stackoverflow", "huggingface", "lobsters", "devto"}
+
+# Sources that indicate a trend has broad consumer appeal
+_CONSUMER_SOURCES = {"reddit", "youtube", "google_trends", "google_news", "curated_feeds", "tiktok", "apple_charts"}
+
+
+def _select_enrichers_for_trend(
+    settings: Settings,
+    source_counts: dict[str, int],
+) -> list[MarketMetricEnricher]:
+    """Select relevant enrichers based on the trend's source composition.
+
+    Universal enrichers (Google, YouTube, Wikipedia, TikTok) run for all trends.
+    Developer-specific enrichers (npm, PyPI, GitHub, SO, HuggingFace) only run
+    when the trend has signals from developer sources.
+    """
+
+    # Universal enrichers — always relevant
+    enrichers: list[MarketMetricEnricher] = [
+        GoogleSearchMetricsEnricher(settings),
+        GoogleTrendsEnricher(settings),
+        YouTubeMetricsEnricher(settings),
+        WikipediaPageviewsEnricher(settings),
+    ]
+
+    # Consumer-facing enricher
+    has_consumer_signal = bool(set(source_counts) & _CONSUMER_SOURCES)
+    if has_consumer_signal:
+        enrichers.append(TikTokMetricsEnricher(settings))
+
+    # Developer-specific enrichers
+    has_dev_signal = bool(set(source_counts) & _DEV_SOURCES)
+    if has_dev_signal:
+        enrichers.append(NpmDownloadsEnricher(settings))
+        enrichers.append(PyPIDownloadsEnricher(settings))
+        enrichers.append(GitHubMetricsEnricher(settings))
+        enrichers.append(StackOverflowEnricher(settings))
+
+    # AI/ML-specific enricher
+    if "huggingface" in source_counts or "arxiv" in source_counts:
+        enrichers.append(HuggingFaceEnricher(settings))
+
+    return enrichers
 
 
 def refresh_external_market_metrics(
@@ -35,17 +81,6 @@ def refresh_external_market_metrics(
     if not settings.market_enrichment_enabled:
         return
 
-    enrichers: list[MarketMetricEnricher] = [
-        GoogleSearchMetricsEnricher(settings),
-        GoogleTrendsEnricher(settings),
-        YouTubeMetricsEnricher(settings),
-        TikTokMetricsEnricher(settings),
-        NpmDownloadsEnricher(settings),
-        PyPIDownloadsEnricher(settings),
-        GitHubMetricsEnricher(settings),
-        WikipediaPageviewsEnricher(settings),
-        StackOverflowEnricher(settings),
-    ]
     for score in scores[: settings.market_enrichment_limit]:
         entity = repository.get_trend_entity(score.topic)
         target = EnrichmentTarget(
@@ -53,6 +88,7 @@ def refresh_external_market_metrics(
             name=entity.canonical_name if entity is not None else score.display_name or score.topic.title(),
             aliases=entity.aliases if entity is not None else [],
         )
+        enrichers = _select_enrichers_for_trend(settings, score.source_counts)
         snapshots = []
         for enricher in enrichers:
             try:

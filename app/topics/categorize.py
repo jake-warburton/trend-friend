@@ -130,6 +130,63 @@ CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "health-fitness",
+        (
+            "fitness", "workout", "exercise", "gym", "running", "yoga",
+            "weight loss", "nutrition", "protein", "supplement", "diet",
+            "intermittent fasting", "keto", "meal prep", "calorie",
+            "ozempic", "semaglutide", "glp-1", "cold plunge",
+            "gut health", "sleep", "wellness",
+        ),
+    ),
+    (
+        "beauty-fashion",
+        (
+            "skincare", "retinol", "sunscreen", "moisturizer", "serum",
+            "makeup", "cosmetic", "beauty", "fashion", "streetwear",
+            "clothing", "sneaker", "style", "fragrance", "perfume",
+        ),
+    ),
+    (
+        "food-beverage",
+        (
+            "recipe", "cooking", "restaurant", "food", "beverage",
+            "coffee", "matcha", "sourdough", "ferment", "plant based",
+            "vegan", "organic", "snack", "meal kit",
+        ),
+    ),
+    (
+        "home-lifestyle",
+        (
+            "home improvement", "interior design", "furniture", "decor",
+            "gardening", "smart home", "home automation", "diy",
+            "real estate", "mortgage", "renovation", "appliance",
+        ),
+    ),
+    (
+        "travel-mobility",
+        (
+            "travel", "hotel", "airline", "tourism", "digital nomad",
+            "remote work", "coworking", "backpacking",
+            "electric vehicle", "ebike", "scooter", "ride share",
+        ),
+    ),
+    (
+        "education-career",
+        (
+            "online course", "bootcamp", "certification", "tutoring",
+            "edtech", "scholarship", "career", "job market",
+            "side hustle", "freelance", "passive income", "dropshipping",
+        ),
+    ),
+    (
+        "pets-animals",
+        (
+            "dog", "cat", "pet", "puppy", "kitten", "veterinary",
+            "pet food", "pet insurance", "animal",
+        ),
+    ),
+    (
         "enterprise-saas",
         (
             "calendar", "meeting", "workflow", "project", "automation",

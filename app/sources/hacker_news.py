@@ -13,28 +13,38 @@ class HackerNewsSourceAdapter(SourceAdapter):
 
     source_name = "hacker_news"
 
+    FEED_ENDPOINTS = (
+        "https://hacker-news.firebaseio.com/v0/topstories.json",
+        "https://hacker-news.firebaseio.com/v0/beststories.json",
+        "https://hacker-news.firebaseio.com/v0/newstories.json",
+    )
+
     def fetch(self) -> list[RawSourceItem]:
         try:
-            story_ids = self.get_json("https://hacker-news.firebaseio.com/v0/topstories.json")
             items: list[RawSourceItem] = []
             seen_ids: set[str] = set()
             stories_per_page = self._stories_per_page()
-            max_story_ids = min(
-                len(story_ids),
-                stories_per_page * max(1, self.settings.hacker_news_page_limit),
+            per_feed_limit = max(
+                10,
+                stories_per_page * max(1, self.settings.hacker_news_page_limit) // len(self.FEED_ENDPOINTS),
             )
-            self.raw_item_count = max_story_ids
-            for story_id in story_ids[:max_story_ids]:
-                payload = self.get_json(
-                    f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
-                )
-                normalized = self.normalize_item(payload)
-                if normalized is not None and normalized.external_id not in seen_ids:
-                    seen_ids.add(normalized.external_id)
-                    items.append(normalized)
-                    self.kept_item_count += 1
-                if len(items) >= self.settings.max_items_per_source:
-                    break
+            for endpoint in self.FEED_ENDPOINTS:
+                try:
+                    story_ids = self.get_json(endpoint)
+                    self.raw_item_count += min(len(story_ids), per_feed_limit)
+                    for story_id in story_ids[:per_feed_limit]:
+                        payload = self.get_json(
+                            f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
+                        )
+                        normalized = self.normalize_item(payload)
+                        if normalized is not None and normalized.external_id not in seen_ids:
+                            seen_ids.add(normalized.external_id)
+                            items.append(normalized)
+                            self.kept_item_count += 1
+                        if len(items) >= self.settings.max_items_per_source:
+                            return items
+                except Exception:
+                    continue
             return items
         except Exception as error:
             self.log_fallback(error)

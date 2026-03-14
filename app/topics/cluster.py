@@ -100,7 +100,7 @@ def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggreg
                 total_signal_value=total_signal_value,
                 average_signal_value=total_signal_value / len(topic_signals),
                 latest_timestamp=latest_timestamp,
-                evidence=evidence[:3],
+                evidence=evidence[:5],
                 display_name=build_display_name(topic_name, [signal.evidence for signal in topic_signals]),
             )
         )

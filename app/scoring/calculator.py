@@ -39,6 +39,11 @@ BROAD_INTEREST_CATEGORIES = {
     "general-news",
     "geopolitics-world",
     "sports",
+    "health-fitness",
+    "beauty-fashion",
+    "food-beverage",
+    "home-lifestyle",
+    "travel-mobility",
 }
 
 

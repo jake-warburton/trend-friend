@@ -112,7 +112,90 @@ def compute_growth_metrics(
                     )
                 )
 
+    # Compute a growth classification label (matches Treendly/ExplodingTopics style)
+    growth_label, growth_confidence = _classify_growth(metrics, history)
+    if growth_label:
+        metrics.append(
+            TrendMetricSnapshot(
+                source="score_history",
+                metric_key="growth_label",
+                label=f"Growth pace: {growth_label}",
+                value_numeric=growth_confidence,
+                value_display=growth_label,
+                unit="classification",
+                period="overall",
+                captured_at=captured_at,
+                confidence=growth_confidence,
+                provenance_url=None,
+                is_estimated=False,
+            )
+        )
+
     return metrics
+
+
+def _classify_growth(
+    metrics: list[TrendMetricSnapshot],
+    history: list[TrendHistoryPoint],
+) -> tuple[str, float]:
+    """Classify the growth pace based on computed metrics.
+
+    Returns a label and confidence score.
+    Classifications: Exploding, Rapid growth, Steady growth, Peaking, Declining, Stable
+    """
+
+    growth_7d = next((m.value_numeric for m in metrics if m.metric_key == "score_growth_7d"), None)
+    growth_30d = next((m.value_numeric for m in metrics if m.metric_key == "score_growth_30d"), None)
+    velocity = next((m.value_numeric for m in metrics if m.metric_key == "score_velocity"), None)
+    acceleration = next((m.value_numeric for m in metrics if m.metric_key == "growth_acceleration"), None)
+
+    # Need at least one growth metric to classify
+    if growth_7d is None and growth_30d is None:
+        if len(history) < 3:
+            return "New", 0.6
+        return "", 0.0
+
+    g7 = growth_7d or 0
+    g30 = growth_30d or 0
+    vel = velocity or 0
+    acc = acceleration or 0
+
+    # Exploding: very strong short-term growth with positive acceleration
+    if g7 > 50 and vel > 2 and acc > 20:
+        return "Exploding", 0.85
+    if g7 > 80:
+        return "Exploding", 0.8
+
+    # Rapid growth: strong growth across both time periods
+    if g7 > 25 and g30 > 30:
+        return "Rapid growth", 0.8
+    if g30 > 50:
+        return "Rapid growth", 0.75
+
+    # Steady growth: consistent positive growth
+    if g7 > 5 and g30 > 10:
+        return "Steady growth", 0.75
+    if g30 > 15:
+        return "Steady growth", 0.7
+
+    # Peaking: high absolute score but declining growth
+    if g7 < -5 and g30 > 0:
+        return "Peaking", 0.7
+
+    # Declining: negative growth across periods
+    if g7 < -10 and g30 < -10:
+        return "Declining", 0.75
+    if g7 < -15:
+        return "Declining", 0.7
+
+    # Stable: minimal change
+    if abs(g7) < 5 and abs(g30) < 10:
+        return "Stable", 0.7
+
+    # Default based on direction
+    if g7 > 0 or g30 > 0:
+        return "Growing", 0.6
+    return "Cooling", 0.6
 
 
 def _find_closest_score(history: list[TrendHistoryPoint], target_time: datetime) -> float | None:

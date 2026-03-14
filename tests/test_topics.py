@@ -23,10 +23,10 @@ class TopicNormalizationTests(unittest.TestCase):
     """Topic pipeline behavior should remain deterministic."""
 
     def test_normalize_topic_name_merges_ai_aliases(self) -> None:
-        self.assertEqual(normalize_topic_name("AI"), "ai agents")
-        self.assertEqual(normalize_topic_name("artificial intelligence"), "ai agents")
         self.assertEqual(normalize_topic_name("LLMs"), "large language models")
         self.assertEqual(normalize_topic_name("MCP"), "model context protocol")
+        self.assertEqual(normalize_topic_name("artificial intelligence"), "artificial intelligence")
+        self.assertEqual(normalize_topic_name("agents"), "ai agents")
 
     def test_extract_candidate_topics_filters_noise(self) -> None:
         topics = extract_candidate_topics("AI agents are replacing repetitive office workflows")
@@ -431,8 +431,8 @@ class TopicNormalizationTests(unittest.TestCase):
     def test_merge_similar_topics_groups_aliases(self) -> None:
         timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
         signals = [
-            NormalizedSignal("AI", "reddit", "social", 10.0, timestamp, "AI"),
-            NormalizedSignal("artificial intelligence", "github", "developer", 20.0, timestamp, "AI"),
+            NormalizedSignal("agents", "reddit", "social", 10.0, timestamp, "AI agents"),
+            NormalizedSignal("agent", "github", "developer", 20.0, timestamp, "AI agents"),
         ]
         clusters = merge_similar_topics(signals)
         self.assertEqual(list(clusters), ["ai agents"])

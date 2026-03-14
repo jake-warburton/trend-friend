@@ -122,7 +122,7 @@ class RedditSourceAdapter(SourceAdapter):
         ("top", "day"),
         ("top", "week"),
     )
-    SUBREDDITS_PER_FEED = 4
+    SUBREDDITS_PER_FEED = 8
 
     def fetch(self) -> list[RawSourceItem]:
         try:

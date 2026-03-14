@@ -488,6 +488,8 @@ def infer_source_specific_topics(title: str, tokens: list[str], source_name: str
         return infer_coingecko_topics(title, tokens)
     if source_name == "mastodon":
         return infer_mastodon_topics(title, tokens)
+    if source_name == "stackoverflow":
+        return infer_stackoverflow_topics(title, tokens)
     return []
 
 
@@ -751,6 +753,54 @@ def infer_canonical_topics(tokens: list[str]) -> list[str]:
         inferred_topics.append("retrieval augmented generation")
     if {"large", "language", "models"} <= token_set:
         inferred_topics.append("large language models")
+    # Consumer / health / fitness
+    if {"intermittent", "fasting"} <= token_set:
+        inferred_topics.append("intermittent fasting")
+    if {"cold", "plunge"} <= token_set or {"ice", "bath"} <= token_set:
+        inferred_topics.append("cold plunge")
+    if {"meal", "prep"} <= token_set:
+        inferred_topics.append("meal prep")
+    if {"weight", "loss"} <= token_set:
+        inferred_topics.append("weight loss")
+    if {"plant", "based"} <= token_set:
+        inferred_topics.append("plant based diet")
+    if {"gut", "health"} <= token_set:
+        inferred_topics.append("gut health")
+    if "ozempic" in token_set or "semaglutide" in token_set:
+        inferred_topics.append("glp-1 drugs")
+    if {"retinol"} <= token_set or {"skincare", "routine"} <= token_set:
+        inferred_topics.append("skincare")
+    if {"electric", "vehicle"} <= token_set or {"electric", "vehicles"} <= token_set:
+        inferred_topics.append("electric vehicles")
+    if {"solar", "panel"} <= token_set or {"solar", "panels"} <= token_set or {"solar", "energy"} <= token_set:
+        inferred_topics.append("solar energy")
+    if {"heat", "pump"} <= token_set:
+        inferred_topics.append("heat pump")
+    if {"smart", "home"} <= token_set:
+        inferred_topics.append("smart home")
+    if {"home", "automation"} <= token_set:
+        inferred_topics.append("home automation")
+    if {"digital", "nomad"} <= token_set:
+        inferred_topics.append("digital nomad")
+    if {"remote", "work"} <= token_set:
+        inferred_topics.append("remote work")
+    if {"side", "hustle"} <= token_set:
+        inferred_topics.append("side hustle")
+    if {"passive", "income"} <= token_set:
+        inferred_topics.append("passive income")
+    if {"dropshipping"} <= token_set:
+        inferred_topics.append("dropshipping")
+    if {"print", "demand"} <= token_set:
+        inferred_topics.append("print on demand")
+    # Finance & crypto
+    if {"interest", "rate"} <= token_set or {"interest", "rates"} <= token_set:
+        inferred_topics.append("interest rates")
+    if {"stock", "market"} <= token_set:
+        inferred_topics.append("stock market")
+    if {"real", "estate"} <= token_set:
+        inferred_topics.append("real estate")
+    if {"supply", "chain"} <= token_set:
+        inferred_topics.append("supply chain")
     return inferred_topics
 
 
@@ -839,6 +889,32 @@ def infer_mastodon_topics(title: str, tokens: list[str]) -> list[str]:
         normalized = normalize_topic_name(parts)
         if normalized and is_meaningful_topic(normalized):
             inferred.append(normalized)
+    return inferred
+
+
+def infer_stackoverflow_topics(title: str, tokens: list[str]) -> list[str]:
+    """Extract technology topics from Stack Overflow question titles and tags."""
+
+    inferred: list[str] = []
+    token_set = set(tokens)
+
+    # Well-known tech compound phrases that appear in SO questions
+    so_phrases: tuple[tuple[set[str], str], ...] = (
+        ({"react", "native"}, "react native"),
+        ({"next", "js"}, "next.js"),
+        ({"node", "js"}, "node.js"),
+        ({"vue", "js"}, "vue.js"),
+        ({"type", "script"}, "typescript"),
+        ({"machine", "learning"}, "machine learning"),
+        ({"deep", "learning"}, "deep learning"),
+        ({"web", "assembly"}, "webassembly"),
+        ({"docker", "compose"}, "docker compose"),
+        ({"spring", "boot"}, "spring boot"),
+    )
+    for phrase_tokens, phrase in so_phrases:
+        if phrase_tokens <= token_set:
+            inferred.append(phrase)
+
     return inferred
 
 

@@ -9,10 +9,21 @@ from app.models import RawSourceItem
 from app.sources.base import SourceAdapter
 
 QUERY_FAMILIES = (
+    # Tech & AI
     ("agents", "ai agents"),
     ("mcp", "model context protocol"),
     ("builders", "open source ai tools"),
     ("robotics", "ai robotics"),
+    ("coding", "vibe coding ai"),
+    # Consumer & lifestyle
+    ("fitness", "fitness trend 2026"),
+    ("skincare", "skincare routine trending"),
+    ("food", "food trend 2026"),
+    ("home", "smart home automation"),
+    # Business & finance
+    ("startup", "startup idea trending"),
+    ("investing", "investing trend 2026"),
+    ("sidehustle", "side hustle passive income"),
 )
 
 
