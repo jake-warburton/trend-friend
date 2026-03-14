@@ -28,7 +28,7 @@ export async function handleShareAttributionPost(
         showCreator: body.showCreator === true,
       },
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
     );
     return NextResponse.json(payload);

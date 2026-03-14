@@ -15,7 +15,7 @@ export async function handleWatchlistsGet(
 ) {
   try {
     const payload = await dependencies.listWatchlists({
-      apiHeaders: request ? buildForwardedAuthHeaders(request) : undefined,
+      apiHeaders: request ? await buildForwardedAuthHeaders(request) : undefined,
     });
     return NextResponse.json(payload);
   } catch (error) {
@@ -37,7 +37,7 @@ export async function handleWatchlistsPost(
   try {
     const body = (await request.json()) as WatchlistMutationBody;
     const payload = await dependencies.mutateWatchlists(body, {
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     });
     return NextResponse.json(payload);
   } catch (error) {

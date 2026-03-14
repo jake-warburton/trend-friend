@@ -26,6 +26,15 @@ class Settings:
     history_run_limit: int
     github_token: Optional[str]
     twitter_bearer_token: Optional[str]
+<<<<<<< Updated upstream
+=======
+    youtube_api_key: Optional[str]
+    google_search_metrics_url: Optional[str]
+    google_search_metrics_token: Optional[str]
+    tiktok_metrics_url: Optional[str]
+    tiktok_metrics_token: Optional[str]
+    youtube_search_days: int
+>>>>>>> Stashed changes
     reddit_user_agent: str
     poll_interval_minutes: int
     health_file_path: Path
@@ -51,6 +60,15 @@ def load_settings() -> Settings:
         history_run_limit=int(os.getenv("SIGNAL_EYE_HISTORY_RUN_LIMIT", "72")),
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
+<<<<<<< Updated upstream
+=======
+        youtube_api_key=os.getenv("YOUTUBE_API_KEY"),
+        google_search_metrics_url=os.getenv("SIGNAL_EYE_GOOGLE_SEARCH_METRICS_URL"),
+        google_search_metrics_token=os.getenv("SIGNAL_EYE_GOOGLE_SEARCH_METRICS_TOKEN"),
+        tiktok_metrics_url=os.getenv("SIGNAL_EYE_TIKTOK_METRICS_URL"),
+        tiktok_metrics_token=os.getenv("SIGNAL_EYE_TIKTOK_METRICS_TOKEN"),
+        youtube_search_days=int(os.getenv("SIGNAL_EYE_YOUTUBE_SEARCH_DAYS", "30")),
+>>>>>>> Stashed changes
         reddit_user_agent=os.getenv("SIGNAL_EYE_REDDIT_USER_AGENT", "signal-eye-mvp/1.0"),
         poll_interval_minutes=int(os.getenv("SIGNAL_EYE_POLL_INTERVAL_MINUTES", "30")),
         health_file_path=Path(os.getenv("SIGNAL_EYE_HEALTH_FILE_PATH", "data/last_run.json")),

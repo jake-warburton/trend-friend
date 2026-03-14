@@ -2622,3 +2622,226 @@ input {
   color: var(--muted);
   font-size: 0.68rem;
 }
+<<<<<<< Updated upstream
+=======
+
+/* ─── Auth pages ─── */
+
+.auth-error {
+  background: var(--danger-soft);
+  color: var(--danger-text, #ff9b9b);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--type-size-md);
+  margin-bottom: 1rem;
+}
+
+.auth-oauth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-input);
+  color: var(--copy);
+  font-size: var(--type-size-md);
+  font-weight: var(--type-weight-medium);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.auth-oauth-button:hover {
+  background: var(--surface-strong);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.25rem 0;
+  color: var(--muted);
+  font-size: var(--type-size-sm);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: var(--type-size-md);
+  font-weight: var(--type-weight-medium);
+  color: var(--copy);
+}
+
+.auth-input {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-input);
+  color: var(--copy);
+  font-size: var(--type-size-md);
+  font-family: var(--font-sans);
+}
+
+.auth-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.auth-submit-button {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: var(--type-size-md);
+  font-weight: var(--type-weight-strong);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.auth-submit-button:hover {
+  opacity: 0.9;
+}
+
+.auth-submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: var(--type-size-md);
+  color: var(--muted);
+  margin-top: 1rem;
+}
+
+.auth-switch a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* ─── Nav bar user menu ─── */
+
+.nav-bar-user {
+  position: relative;
+}
+
+.nav-bar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--type-size-sm);
+  font-weight: var(--type-weight-strong);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+}
+
+.nav-bar-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  background: var(--surface-menu);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.nav-bar-dropdown-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.nav-bar-dropdown-header strong {
+  font-size: var(--type-size-md);
+  color: var(--copy);
+}
+
+.nav-bar-dropdown-email {
+  font-size: var(--type-size-sm);
+  color: var(--muted);
+}
+
+.nav-bar-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  font-size: var(--type-size-md);
+  color: var(--copy);
+  text-decoration: none;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.nav-bar-dropdown-item:hover {
+  background: var(--surface-soft);
+}
+
+.nav-bar-dropdown-signout {
+  border-top: 1px solid var(--border);
+  color: var(--danger-text, #ff9b9b);
+}
+
+/* ─── Billing page ─── */
+
+.billing-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.billing-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: var(--type-size-md);
+  color: var(--copy);
+}
+
+.billing-feature-check {
+  font-weight: var(--type-weight-strong);
+  color: var(--accent);
+  width: 1.25rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+>>>>>>> Stashed changes

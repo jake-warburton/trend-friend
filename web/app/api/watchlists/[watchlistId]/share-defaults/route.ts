@@ -27,7 +27,7 @@ export async function handleShareDefaultsPost(
         defaultExpiryDays: body.defaultExpiryDays ?? null,
       },
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
     );
     return NextResponse.json(payload);

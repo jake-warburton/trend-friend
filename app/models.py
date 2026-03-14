@@ -486,6 +486,23 @@ class RunDigest:
 
 
 @dataclass(frozen=True)
+class UserProfile:
+    """Supabase-authenticated user profile."""
+
+    id: str
+    display_name: str
+    username: str | None
+    is_admin: bool
+    account_tier: str
+    stripe_customer_id: str | None
+    stripe_subscription_id: str | None
+    subscription_status: str
+    current_period_end: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
 class User:
     """Registered user account."""
 

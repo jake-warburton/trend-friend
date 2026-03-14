@@ -26,7 +26,7 @@ export async function handleRevokeSharePost(
         shareId: Number(shareId),
       },
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
     );
     return NextResponse.json(payload);

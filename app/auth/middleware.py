@@ -5,13 +5,15 @@ from __future__ import annotations
 import os
 from typing import Optional
 
+import jwt
 from fastapi import Depends, HTTPException, Request
 
 from app.api.dependencies import get_db
 from app.data.connection import DatabaseConnection
+from app.auth.profile_repository import ProfileRepository
 from app.auth.repository import UserRepository
 from app.auth.tokens import hash_api_key, hash_session_token
-from app.models import User
+from app.models import User, UserProfile
 
 SESSION_COOKIE_NAME = "tf_session"
 
@@ -22,15 +24,20 @@ def auth_enabled() -> bool:
     return os.getenv("SIGNAL_EYE_AUTH_ENABLED", "false").lower() == "true"
 
 
+def _get_supabase_jwt_secret() -> str | None:
+    return os.getenv("SUPABASE_JWT_SECRET")
+
+
 def get_current_user(
     request: Request,
     db: DatabaseConnection = Depends(get_db),
 ) -> Optional[User]:
     """Extract and validate the current user from the request.
 
-    Supports two auth methods:
-    - Bearer token (API key): Authorization: Bearer tf_...
-    - Session token via cookie (future extension)
+    Supports auth methods in priority order:
+    1. Supabase JWT (Bearer token decoded with SUPABASE_JWT_SECRET)
+    2. API key (Bearer token starting with tf_)
+    3. Legacy session cookie (tf_session) — kept for backward compatibility
 
     When auth is disabled, returns None (all routes are public).
     """
@@ -42,11 +49,54 @@ def get_current_user(
     if auth_header.startswith("Bearer "):
         token = auth_header[7:].strip()
         if token:
+            # Try Supabase JWT first
+            jwt_secret = _get_supabase_jwt_secret()
+            if jwt_secret and not token.startswith("tf_"):
+                profile = _authenticate_supabase_jwt(token, jwt_secret, db)
+                if profile is not None:
+                    # Return a User-compatible object for backward compatibility
+                    return User(
+                        id=0,
+                        username=profile.username or profile.display_name or profile.id,
+                        password_hash="",
+                        display_name=profile.display_name,
+                        is_admin=profile.is_admin,
+                        created_at=profile.created_at,
+                    )
+
+            # Fall back to API key auth
             return _authenticate_api_key(token, db)
 
+    # Legacy session cookie fallback
     session_token = request.cookies.get(SESSION_COOKIE_NAME)
     if session_token:
         return _authenticate_session(session_token, db)
+
+    raise HTTPException(status_code=401, detail="Authentication required")
+
+
+def get_current_profile(
+    request: Request,
+    db: DatabaseConnection = Depends(get_db),
+) -> Optional[UserProfile]:
+    """Extract the Supabase user profile from the request.
+
+    Returns the full UserProfile for routes that need subscription info.
+    Returns None when auth is disabled.
+    """
+
+    if not auth_enabled():
+        return None
+
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:].strip()
+        if token:
+            jwt_secret = _get_supabase_jwt_secret()
+            if jwt_secret and not token.startswith("tf_"):
+                profile = _authenticate_supabase_jwt(token, jwt_secret, db)
+                if profile is not None:
+                    return profile
 
     raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -77,6 +127,57 @@ def require_admin(user: User = Depends(require_auth)) -> User:
     return user
 
 
+def require_pro(profile: Optional[UserProfile] = Depends(get_current_profile)) -> UserProfile:
+    """Dependency that requires an active Pro subscription."""
+
+    if not auth_enabled():
+        # When auth is disabled, return a synthetic pro profile
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        return UserProfile(
+            id="anonymous",
+            display_name="Anonymous",
+            username=None,
+            is_admin=True,
+            account_tier="pro",
+            stripe_customer_id=None,
+            stripe_subscription_id=None,
+            subscription_status="active",
+            current_period_end=None,
+            created_at=now,
+            updated_at=now,
+        )
+    if profile is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if profile.account_tier != "pro" or profile.subscription_status not in ("active", "trialing"):
+        raise HTTPException(status_code=403, detail="Pro subscription required")
+    return profile
+
+
+def _authenticate_supabase_jwt(
+    token: str,
+    jwt_secret: str,
+    db: DatabaseConnection,
+) -> UserProfile | None:
+    """Validate a Supabase JWT and return the associated profile."""
+
+    try:
+        payload = jwt.decode(
+            token,
+            jwt_secret,
+            algorithms=["HS256"],
+            audience="authenticated",
+        )
+    except jwt.PyJWTError:
+        return None
+
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+
+    repo = ProfileRepository(db)
+    return repo.get_profile_by_id(user_id)
+
+
 def _authenticate_api_key(token: str, db: DatabaseConnection) -> User:
     """Validate an API key and return its associated user."""
 
@@ -95,7 +196,7 @@ def _authenticate_api_key(token: str, db: DatabaseConnection) -> User:
 
 
 def _authenticate_session(token: str, db: DatabaseConnection) -> User:
-    """Validate a session cookie and return its associated user."""
+    """Validate a legacy session cookie and return its associated user."""
 
     token_hash = hash_session_token(token)
     user_repo = UserRepository(db)

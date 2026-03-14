@@ -28,7 +28,7 @@ export async function handleShareVisibilityPost(
         public: body.public === true,
       },
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
     );
     return NextResponse.json(payload);

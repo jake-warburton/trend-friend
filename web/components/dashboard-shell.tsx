@@ -56,19 +56,143 @@ const DEFAULT_LANGUAGE_OPTION = { label: "All languages", value: "all" } as cons
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
-  { label: "Score", value: "score" },
-  { label: "Biggest mover", value: "mover" },
-  { label: "Newest", value: "newest" },
+  { label: "Strength", value: "strength" },
+  { label: "Date added", value: "dateAdded" },
+  { label: "Latest activity", value: "latestActivity" },
+  { label: "Sources", value: "sources" },
+  { label: "Momentum", value: "momentum" },
+] as const;
+
+const DEFAULT_SORT_DIRECTIONS: Record<string, "asc" | "desc"> = {
+  rank: "asc",
+  strength: "desc",
+  dateAdded: "desc",
+  latestActivity: "desc",
+  sources: "desc",
+  momentum: "desc",
+};
+
+const DEFAULT_STATUS_OPTION = { label: "All statuses", value: "all" } as const;
+
+const STATUS_OPTIONS = [
+  DEFAULT_STATUS_OPTION,
+  { label: "New", value: "new" },
+  { label: "Breakout", value: "breakout" },
+  { label: "Rising", value: "rising" },
+  { label: "Cooling", value: "cooling" },
+  { label: "Steady", value: "steady" },
 ] as const;
 const WATCHLISTS_ENABLED = false;
 
+<<<<<<< Updated upstream
 type ExplorerActiveFilter = {
   key: "keyword" | "source" | "category" | "audience" | "market" | "language" | "sort" | "seasonality";
+=======
+type ThesisPreset = {
+  key: string;
+  label: string;
+  description: string;
+  lens?: string;
+  source?: string;
+  stage?: string;
+  audience?: string;
+  hideRecurring?: boolean;
+  minimumScore?: number;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+  status?: string;
+};
+
+const THESIS_PRESETS: readonly ThesisPreset[] = [
+  {
+    key: "discover",
+    label: "Early discovery",
+    description: "Bias toward early, fast-moving topics before they validate everywhere.",
+    lens: "discovery",
+    stage: "nascent",
+    hideRecurring: true,
+    minimumScore: 12,
+  },
+  {
+    key: "seo",
+    label: "SEO opportunities",
+    description: "Surface search-backed demand with enough evidence breadth to publish into.",
+    lens: "seo",
+    hideRecurring: true,
+    minimumScore: 18,
+  },
+  {
+    key: "content",
+    label: "Social content",
+    description: "Prioritize trends with public conversation and clear creator angles.",
+    lens: "content",
+    source: "reddit",
+    minimumScore: 16,
+  },
+  {
+    key: "product",
+    label: "Build ideas",
+    description: "Tilt toward builder demand, product fit, and non-recurring opportunity.",
+    lens: "product",
+    audience: "developer",
+    hideRecurring: true,
+    minimumScore: 16,
+  },
+  {
+    key: "new",
+    label: "New this run",
+    description: "Trends appearing for the first time in the latest snapshot.",
+    status: "new",
+    sortBy: "dateAdded",
+    sortDirection: "desc",
+  },
+] as const;
+
+type ExplorerActiveFilter = {
+  key:
+    | "keyword"
+    | "source"
+    | "category"
+    | "stage"
+    | "confidence"
+    | "lens"
+    | "metaTrend"
+    | "audience"
+    | "market"
+    | "language"
+    | "geo"
+    | "sort"
+    | "status"
+    | "seasonality";
+>>>>>>> Stashed changes
   label: string;
   value: string;
 };
 
+<<<<<<< Updated upstream
 export function DashboardShell({ initialData }: DashboardShellProps) {
+=======
+type ThesisPresetFilterState = {
+  keyword: string;
+  selectedSource: string;
+  selectedCategory: string;
+  selectedStage: string;
+  selectedConfidence: string;
+  selectedLens: string;
+  selectedMetaTrend: string;
+  selectedAudience: string;
+  selectedMarket: string;
+  selectedLanguage: string;
+  selectedGeoCountry: string;
+  minimumScore: number | null;
+  sortBy: string;
+  sortDirection: "asc" | "desc";
+  selectedStatus: string;
+  hideRecurring: boolean;
+};
+
+export function DashboardShell({ initialData, canManualRefresh }: DashboardShellProps) {
+>>>>>>> Stashed changes
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [keyword, setKeyword] = useState("");
@@ -79,6 +203,8 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [hideRecurring, setHideRecurring] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(null);
@@ -177,9 +303,83 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         selectedMarket,
         selectedLanguage,
         sortBy,
+        sortDirection,
+        selectedStatus,
         hideRecurring,
       }),
+<<<<<<< Updated upstream
     [hideRecurring, keyword, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy],
+=======
+    [
+      hideRecurring,
+      keyword,
+      selectedAudience,
+      selectedCategory,
+      selectedConfidence,
+      selectedGeoCountry,
+      selectedLens,
+      selectedLanguage,
+      selectedMarket,
+      selectedMetaTrend,
+      selectedSource,
+      selectedStage,
+      selectedStatus,
+      sortBy,
+      sortDirection,
+    ],
+  );
+  const selectedSourceLabel = getOptionLabel(SOURCE_FILTER_OPTIONS, selectedSource, "All sources");
+  const selectedCategoryLabel = getOptionLabel(categoryOptions, selectedCategory, "All categories");
+  const selectedStageLabel = getOptionLabel(STAGE_OPTIONS, selectedStage, "All stages");
+  const selectedConfidenceLabel = getOptionLabel(CONFIDENCE_OPTIONS, selectedConfidence, "All confidence");
+  const selectedLensLabel = getOptionLabel(LENS_OPTIONS, selectedLens, "All lenses");
+  const selectedMetaTrendLabel = getOptionLabel(metaTrendOptions, selectedMetaTrend, "All meta trends");
+  const selectedAudienceLabel = getOptionLabel(audienceOptions, selectedAudience, "All audiences");
+  const selectedMarketLabel = getOptionLabel(marketOptions, selectedMarket, "All markets");
+  const selectedLanguageLabel = getOptionLabel(languageOptions, selectedLanguage, "All languages");
+  const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
+  const selectedStatusLabel = getOptionLabel(STATUS_OPTIONS, selectedStatus, "All statuses");
+  const activeThesisPresetKey = useMemo(
+    () =>
+      THESIS_PRESETS.find((preset) =>
+        isThesisPresetApplied(preset, {
+          keyword,
+          selectedSource,
+          selectedCategory,
+          selectedStage,
+          selectedConfidence,
+          selectedLens,
+          selectedMetaTrend,
+          selectedAudience,
+          selectedMarket,
+          selectedLanguage,
+          selectedGeoCountry,
+          minimumScore,
+          sortBy,
+          sortDirection,
+          selectedStatus,
+          hideRecurring,
+        }),
+      )?.key ?? null,
+    [
+      hideRecurring,
+      keyword,
+      minimumScore,
+      selectedAudience,
+      selectedCategory,
+      selectedConfidence,
+      selectedGeoCountry,
+      selectedLanguage,
+      selectedLens,
+      selectedMarket,
+      selectedMetaTrend,
+      selectedSource,
+      selectedStage,
+      selectedStatus,
+      sortBy,
+      sortDirection,
+    ],
+>>>>>>> Stashed changes
   );
 
   const filteredTrends = useMemo(() => {
@@ -200,6 +400,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         trend.evidencePreview.some((item) => item.toLowerCase().includes(normalizedKeyword));
       const matchesScore = trend.score.total >= minimum;
       const matchesSeasonality = !hideRecurring || !isRecurringTrend(trend.seasonality);
+      const matchesStatus = selectedStatus === "all" || trend.status === selectedStatus;
       return (
         matchesSource &&
         matchesCategory &&
@@ -208,23 +409,118 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
         matchesLanguage &&
         matchesKeyword &&
         matchesScore &&
-        matchesSeasonality
+        matchesSeasonality &&
+        matchesStatus
       );
     });
 
+    const dir = sortDirection === "asc" ? 1 : -1;
     return [...trends].sort((left, right) => {
+<<<<<<< Updated upstream
       if (sortBy === "score") {
         return right.score.total - left.score.total || left.rank - right.rank;
+=======
+      const leftDetail = detailsByTrendId.get(left.id);
+      const rightDetail = detailsByTrendId.get(right.id);
+      if (selectedLens !== "all") {
+        const lensDelta =
+          getOpportunityScoreForLens(rightDetail, selectedLens) - getOpportunityScoreForLens(leftDetail, selectedLens);
+        if (lensDelta !== 0) {
+          return lensDelta;
+        }
       }
-      if (sortBy === "mover") {
-        return (right.rankChange ?? Number.NEGATIVE_INFINITY) - (left.rankChange ?? Number.NEGATIVE_INFINITY) || left.rank - right.rank;
+      if (sortBy === "strength") {
+        return dir * (left.score.total - right.score.total) || left.rank - right.rank;
+>>>>>>> Stashed changes
       }
-      if (sortBy === "newest") {
-        return compareDates(right.firstSeenAt, left.firstSeenAt) || left.rank - right.rank;
+      if (sortBy === "dateAdded") {
+        return dir * compareDates(left.firstSeenAt, right.firstSeenAt) || left.rank - right.rank;
       }
-      return left.rank - right.rank;
+      if (sortBy === "latestActivity") {
+        return dir * compareDates(left.latestSignalAt, right.latestSignalAt) || left.rank - right.rank;
+      }
+      if (sortBy === "sources") {
+        return dir * (left.coverage.sourceCount - right.coverage.sourceCount) || left.rank - right.rank;
+      }
+      if (sortBy === "momentum") {
+        return dir * ((left.momentum.absoluteDelta ?? 0) - (right.momentum.absoluteDelta ?? 0)) || left.rank - right.rank;
+      }
+      return dir * (left.rank - right.rank);
     });
+<<<<<<< Updated upstream
   }, [deferredKeyword, detailsByTrendId, hideRecurring, initialData.explorer.trends, minimumScore, selectedAudience, selectedCategory, selectedLanguage, selectedMarket, selectedSource, sortBy]);
+=======
+  }, [
+    deferredKeyword,
+    detailsByTrendId,
+    hideRecurring,
+    initialData.explorer.trends,
+    minimumScore,
+    selectedAudience,
+    selectedCategory,
+    selectedConfidence,
+    selectedGeoCountry,
+    selectedLanguage,
+    selectedLens,
+    selectedMarket,
+    selectedMetaTrend,
+    selectedSource,
+    selectedStage,
+    selectedStatus,
+    sortBy,
+    sortDirection,
+  ]);
+
+  const explorerGeoMapData = useMemo(
+    () => buildExplorerGeoMapData(baseFilteredTrends, detailsByTrendId),
+    [baseFilteredTrends, detailsByTrendId],
+  );
+
+  const filteredTrends = baseFilteredTrends;
+
+  const exportHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (selectedSource !== "all") params.set("source", selectedSource);
+    if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedStage !== "all") params.set("stage", selectedStage);
+    if (selectedConfidence !== "all") params.set("confidence", selectedConfidence);
+    if (selectedLens !== "all") params.set("lens", selectedLens);
+    if (selectedMetaTrend !== "all") params.set("metaTrend", selectedMetaTrend);
+    if (selectedAudience !== "all") params.set("audience", selectedAudience);
+    if (selectedMarket !== "all") params.set("market", selectedMarket);
+    if (selectedLanguage !== "all") params.set("language", selectedLanguage);
+    if (selectedGeoCountry !== "all") params.set("geo", selectedGeoCountry);
+    if (keyword) params.set("q", keyword);
+    if (minimumScore && minimumScore > 0) params.set("min", String(minimumScore));
+    if (hideRecurring) params.set("hideRecurring", "1");
+    if (selectedStatus !== "all") params.set("status", selectedStatus);
+    params.set("sort", sortBy);
+    params.set("sortDir", sortDirection);
+    return `/api/export?${params.toString()}`;
+  }, [
+    selectedSource,
+    selectedCategory,
+    selectedStage,
+    selectedConfidence,
+    selectedLens,
+    selectedMetaTrend,
+    selectedAudience,
+    selectedMarket,
+    selectedLanguage,
+    selectedGeoCountry,
+    keyword,
+    minimumScore,
+    hideRecurring,
+    selectedStatus,
+    sortBy,
+    sortDirection,
+  ]);
+>>>>>>> Stashed changes
+
+  function handleSortChange(value: string) {
+    setSortBy(value);
+    setSortDirection(DEFAULT_SORT_DIRECTIONS[value] ?? "desc");
+  }
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -257,6 +553,11 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     }
     if (filterKey === "sort") {
       setSortBy("rank");
+      setSortDirection("asc");
+      return;
+    }
+    if (filterKey === "status") {
+      setSelectedStatus("all");
       return;
     }
     setHideRecurring(false);
@@ -270,10 +571,39 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
     setSelectedMarket("all");
     setSelectedLanguage("all");
     setSortBy("rank");
+    setSortDirection("asc");
+    setSelectedStatus("all");
     setMinimumScore(0);
     setHideRecurring(false);
   }
 
+<<<<<<< Updated upstream
+=======
+  function applyThesisPreset(preset: ThesisPreset) {
+    if (shouldClearActiveThesisPreset(activeThesisPresetKey, preset)) {
+      clearAllExplorerFilters();
+      return;
+    }
+    setKeyword("");
+    setSelectedSource(preset.source ?? "all");
+    setSelectedCategory("all");
+    setSelectedStage(preset.stage ?? "all");
+    setSelectedConfidence("all");
+    setSelectedLens(preset.lens ?? "all");
+    setSelectedMetaTrend("all");
+    setSelectedAudience(preset.audience ?? "all");
+    setSelectedMarket("all");
+    setSelectedLanguage("all");
+    setSelectedGeoCountry("all");
+    const presetSort = preset.sortBy ?? "rank";
+    setSortBy(presetSort);
+    setSortDirection(preset.sortDirection ?? DEFAULT_SORT_DIRECTIONS[presetSort] ?? "asc");
+    setSelectedStatus(preset.status ?? "all");
+    setMinimumScore(preset.minimumScore ?? 0);
+    setHideRecurring(preset.hideRecurring ?? false);
+  }
+
+>>>>>>> Stashed changes
   function handleRefresh() {
     setRefreshError(null);
     startTransition(async () => {
@@ -1035,6 +1365,124 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                 </label>
 
                 <label className="filter-field">
+<<<<<<< Updated upstream
+=======
+                  <span>Stage</span>
+                  <Select.Root value={selectedStage} onValueChange={(value) => setSelectedStage(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedStageLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {STAGE_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Status</span>
+                  <Select.Root value={selectedStatus} onValueChange={(value) => setSelectedStatus(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedStatusLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {STATUS_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Confidence</span>
+                  <Select.Root value={selectedConfidence} onValueChange={(value) => setSelectedConfidence(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedConfidenceLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {CONFIDENCE_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Lens</span>
+                  <Select.Root value={selectedLens} onValueChange={(value) => setSelectedLens(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedLensLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {LENS_OPTIONS.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+                  <span>Meta trend</span>
+                  <Select.Root value={selectedMetaTrend} onValueChange={(value) => setSelectedMetaTrend(value ?? "all")}>
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedMetaTrendLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner className="select-positioner" sideOffset={8}>
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {metaTrendOptions.map((option) => (
+                              <Select.Item className="select-item" key={option.value} value={option.value}>
+                                <Select.ItemText>{option.label}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
+>>>>>>> Stashed changes
                   <span>Audience</span>
                   <Select.Root value={selectedAudience} onValueChange={(value) => setSelectedAudience(value ?? "all")}>
                     <Select.Trigger className="select-trigger">
@@ -1105,6 +1553,7 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
 
                 <label className="filter-field">
                   <span>Sort</span>
+<<<<<<< Updated upstream
                   <Select.Root value={sortBy} onValueChange={(value) => setSortBy(value ?? "rank")}>
                     <Select.Trigger className="select-trigger">
                       <Select.Value />
@@ -1124,6 +1573,38 @@ export function DashboardShell({ initialData }: DashboardShellProps) {
                       </Select.Positioner>
                     </Select.Portal>
                   </Select.Root>
+=======
+                  <span style={{ display: "flex", gap: "0.25rem", alignItems: "center" }}>
+                    <Select.Root value={sortBy} onValueChange={(value) => handleSortChange(value ?? "rank")}>
+                      <Select.Trigger className="select-trigger">
+                        <span>{selectedSortLabel}</span>
+                        <Select.Icon className="select-icon">▼</Select.Icon>
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Positioner className="select-positioner" sideOffset={8}>
+                          <Select.Popup className="select-popup">
+                            <Select.List className="select-list">
+                              {SORT_OPTIONS.map((option) => (
+                                <Select.Item className="select-item" key={option.value} value={option.value}>
+                                  <Select.ItemText>{option.label}</Select.ItemText>
+                                </Select.Item>
+                              ))}
+                            </Select.List>
+                          </Select.Popup>
+                        </Select.Positioner>
+                      </Select.Portal>
+                    </Select.Root>
+                    <button
+                      className="toggle-chip"
+                      type="button"
+                      onClick={() => setSortDirection((d) => (d === "asc" ? "desc" : "asc"))}
+                      title={sortDirection === "asc" ? "Ascending" : "Descending"}
+                      style={{ minWidth: "2rem", textAlign: "center" }}
+                    >
+                      {sortDirection === "asc" ? "↑" : "↓"}
+                    </button>
+                  </span>
+>>>>>>> Stashed changes
                 </label>
 
                 <label className="filter-field">
@@ -2099,6 +2580,8 @@ export function listActiveExplorerFilters(filters: {
   selectedMarket: string;
   selectedLanguage: string;
   sortBy: string;
+  sortDirection: "asc" | "desc";
+  selectedStatus: string;
   hideRecurring: boolean;
 }): ExplorerActiveFilter[] {
   const result: ExplorerActiveFilter[] = [];
@@ -2120,8 +2603,20 @@ export function listActiveExplorerFilters(filters: {
   if (filters.selectedLanguage !== "all") {
     result.push({ key: "language", label: "Language", value: formatLanguageLabel(filters.selectedLanguage) });
   }
+<<<<<<< Updated upstream
   if (filters.sortBy !== "rank") {
     result.push({ key: "sort", label: "Sort", value: formatExplorerSortLabel(filters.sortBy) });
+=======
+  if (filters.selectedGeoCountry !== "all") {
+    result.push({ key: "geo", label: "Geo", value: formatGeoCountryLabel(filters.selectedGeoCountry) });
+  }
+  if (filters.sortBy !== "rank" || filters.sortDirection !== "asc") {
+    const arrow = filters.sortDirection === "asc" ? "↑" : "↓";
+    result.push({ key: "sort", label: "Sort", value: `${formatExplorerSortLabel(filters.sortBy)} ${arrow}` });
+  }
+  if (filters.selectedStatus !== "all") {
+    result.push({ key: "status", label: "Status", value: formatStatusLabel(filters.selectedStatus) });
+>>>>>>> Stashed changes
   }
   if (filters.hideRecurring) {
     result.push({ key: "seasonality", label: "Seasonality", value: "Hide recurring" });
@@ -2129,6 +2624,36 @@ export function listActiveExplorerFilters(filters: {
   return result;
 }
 
+<<<<<<< Updated upstream
+=======
+export function isThesisPresetApplied(preset: ThesisPreset, state: ThesisPresetFilterState) {
+  const expectedSort = preset.sortBy ?? "rank";
+  const expectedDirection = preset.sortDirection ?? DEFAULT_SORT_DIRECTIONS[expectedSort] ?? "asc";
+  return (
+    state.keyword.trim().length === 0 &&
+    state.selectedSource === (preset.source ?? "all") &&
+    state.selectedCategory === "all" &&
+    state.selectedStage === (preset.stage ?? "all") &&
+    state.selectedConfidence === "all" &&
+    state.selectedLens === (preset.lens ?? "all") &&
+    state.selectedMetaTrend === "all" &&
+    state.selectedAudience === (preset.audience ?? "all") &&
+    state.selectedMarket === "all" &&
+    state.selectedLanguage === "all" &&
+    state.selectedGeoCountry === "all" &&
+    (state.minimumScore ?? 0) === (preset.minimumScore ?? 0) &&
+    state.sortBy === expectedSort &&
+    state.sortDirection === expectedDirection &&
+    state.selectedStatus === (preset.status ?? "all") &&
+    state.hideRecurring === (preset.hideRecurring ?? false)
+  );
+}
+
+export function shouldClearActiveThesisPreset(activePresetKey: string | null, preset: ThesisPreset) {
+  return activePresetKey === preset.key;
+}
+
+>>>>>>> Stashed changes
 function buildSegmentFilterOptions(
   details: TrendDetailRecord[],
   segmentType: string,
@@ -2201,13 +2726,87 @@ function formatLanguageLabel(code: string) {
 function formatExplorerSortLabel(sortBy: string) {
   const labels: Record<string, string> = {
     rank: "Rank",
-    score: "Score",
-    mover: "Biggest mover",
-    newest: "Newest",
+    strength: "Strength",
+    dateAdded: "Date added",
+    latestActivity: "Latest activity",
+    sources: "Sources",
+    momentum: "Momentum",
   };
   return labels[sortBy] ?? sortBy;
 }
 
+<<<<<<< Updated upstream
+=======
+function formatStatusLabel(status: string | undefined) {
+  if (!status || status === "all") return "All statuses";
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function getOpportunityScoreForLens(detail: TrendDetailRecord | undefined, lens: string) {
+  if (!detail) {
+    return 0;
+  }
+  if (lens === "discovery") {
+    return detail.opportunity.discovery;
+  }
+  if (lens === "seo") {
+    return detail.opportunity.seo;
+  }
+  if (lens === "content") {
+    return detail.opportunity.content;
+  }
+  if (lens === "product") {
+    return detail.opportunity.product;
+  }
+  if (lens === "investment") {
+    return detail.opportunity.investment;
+  }
+  return detail.opportunity.composite;
+}
+
+function formatLensLabel(lens: string) {
+  const labels: Record<string, string> = {
+    all: "All lenses",
+    discovery: "Discovery",
+    seo: "SEO",
+    content: "Content",
+    product: "Product",
+    investment: "Investment",
+  };
+  return labels[lens] ?? lens;
+}
+
+function summarizeThesisFilters(thesis: TrendThesis) {
+  const filters = [
+    formatLensLabel(thesis.lens),
+    thesis.keywordQuery ? `keyword: ${thesis.keywordQuery}` : null,
+    thesis.source ? formatSourceLabel(thesis.source) : null,
+    thesis.category ? formatCategory(thesis.category) : null,
+    thesis.stage ? formatStageLabel(thesis.stage) : null,
+    thesis.metaTrend,
+    thesis.audience ? formatAudienceLabel(thesis.audience) : null,
+    thesis.market ? formatAudienceLabel(thesis.market) : null,
+    thesis.language ? thesis.language.toUpperCase() : null,
+    thesis.geoCountry ? thesis.geoCountry.toUpperCase() : null,
+    thesis.minimumScore > 0 ? `min ${thesis.minimumScore}` : null,
+    thesis.hideRecurring ? "non-recurring" : null,
+  ].filter(Boolean);
+  return filters.join(" · ");
+}
+
+function getOptionLabel<T extends { label: string; value: string }>(
+  options: readonly T[],
+  value: string,
+  fallback: string,
+) {
+  return options.find((option) => option.value === value)?.label ?? fallback;
+}
+
+function formatGeoCountryLabel(countryCode: string) {
+  return formatCountryLabel(countryCode, getRegionName(countryCode) ?? countryCode);
+}
+
+>>>>>>> Stashed changes
 function buildShareExpiryIso(preset: string) {
   const now = new Date();
   const next = new Date(now);

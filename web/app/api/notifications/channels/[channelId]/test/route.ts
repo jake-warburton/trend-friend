@@ -15,7 +15,7 @@ export async function handleNotificationChannelTestPost(
   try {
     const { channelId } = await context.params;
     const payload = await dependencies.testNotificationChannel(Number(channelId), {
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     });
     return NextResponse.json(payload);
   } catch (error) {

@@ -28,7 +28,7 @@ export async function handleShareExpirationPost(
         expiresAt: body.expiresAt ?? null,
       },
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
     );
     return NextResponse.json(payload);

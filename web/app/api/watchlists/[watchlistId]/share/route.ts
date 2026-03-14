@@ -29,7 +29,7 @@ export async function handleShareWatchlistPost(
       Number(watchlistId),
       body.public === true,
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
       body.showCreator === true,
       body.expiresAt ?? null,

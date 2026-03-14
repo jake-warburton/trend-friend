@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
   let watchlist: Watchlist | undefined;
   try {
     const data = (await listWatchlists({
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     })) as WatchlistResponse;
     watchlist = data.watchlists.find((w) => w.id === watchlistId);
   } catch {

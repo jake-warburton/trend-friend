@@ -17,7 +17,7 @@ export async function handleAlertsGet(
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unread_only") === "true";
     const payload = await dependencies.listAlerts(unreadOnly, {
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     });
     return NextResponse.json(payload);
   } catch (error) {
@@ -39,7 +39,7 @@ export async function handleAlertsPost(
   try {
     const body = (await request.json()) as AlertMutationBody;
     const payload = await dependencies.mutateAlerts(body, {
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     });
     return NextResponse.json(payload);
   } catch (error) {

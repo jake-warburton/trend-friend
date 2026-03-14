@@ -15,7 +15,7 @@ export async function handleNotificationChannelDelete(
   try {
     const { channelId } = await context.params;
     const payload = await dependencies.deleteNotificationChannel(Number(channelId), {
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     });
     return NextResponse.json(payload);
   } catch (error) {

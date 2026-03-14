@@ -21,7 +21,7 @@ export async function handleNotificationChannelsGet(
 ) {
   try {
     const payload = await dependencies.listNotificationChannels({
-      apiHeaders: buildForwardedAuthHeaders(request),
+      apiHeaders: await buildForwardedAuthHeaders(request),
     });
     return NextResponse.json(payload);
   } catch (error) {
@@ -47,7 +47,7 @@ export async function handleNotificationChannelsPost(
       body.destination ?? "",
       body.label ?? "",
       {
-        apiHeaders: buildForwardedAuthHeaders(request),
+        apiHeaders: await buildForwardedAuthHeaders(request),
       },
     );
     return NextResponse.json(payload);
