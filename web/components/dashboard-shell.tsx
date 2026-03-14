@@ -1844,29 +1844,28 @@ export function DashboardShell({
           <div className="section-heading">
             <h2>Source share</h2>
           </div>
-          <div className="pie-chart-wrap">
+          <div className="pie-chart-wrap-full">
             <div
-              className="pie-chart"
+              className="pie-chart-large"
               style={{
                 background: buildConicGradient(
                   overview.charts.sourceShare,
                 ),
               }}
             />
-            <div className="pie-chart-legend">
-              {overview.charts.sourceShare
-                .slice(0, 5)
-                .map((datum) => (
-                  <div className="pie-legend-row" key={datum.label}>
-                    <span>{datum.label}</span>
-                    <strong>
-                      {formatPercent(
-                        datum.value,
-                        overview.charts.sourceShare,
-                      )}
-                    </strong>
-                  </div>
-                ))}
+            <div className="pie-chart-legend-grid">
+              {overview.charts.sourceShare.map((datum, index) => (
+                <div className="pie-legend-item" key={datum.label}>
+                  <span
+                    className="pie-legend-dot"
+                    style={{ background: getSourceColor(index) }}
+                  />
+                  <span className="pie-legend-label">{datum.label}</span>
+                  <span className="pie-legend-pct">
+                    {formatPercent(datum.value, overview.charts.sourceShare)}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </article>
@@ -4655,24 +4654,28 @@ function isDataStale(lastRunAt: string | null): boolean {
   return Date.now() - new Date(lastRunAt).getTime() > twoHoursMs;
 }
 
+const SOURCE_PALETTE = [
+  "#5e6bff", "#00c4ff", "#7fe0a7", "#ffca6e", "#ff8b8b",
+  "#9b8cff", "#ff6eb4", "#4ecdc4", "#f7dc6f", "#a29bfe",
+  "#fd79a8", "#00b894", "#e17055", "#74b9ff", "#dfe6e9",
+  "#b8e994", "#f8c291", "#6c5ce7", "#81ecec", "#fab1a0",
+  "#55efc4", "#636e72",
+];
+
+function getSourceColor(index: number) {
+  return SOURCE_PALETTE[index % SOURCE_PALETTE.length];
+}
+
 function buildConicGradient(dataset: { value: number }[]) {
   const total = dataset.reduce((sum, item) => sum + item.value, 0);
   if (total <= 0) {
     return "conic-gradient(#182947 0deg 360deg)";
   }
 
-  const palette = [
-    "#5e6bff",
-    "#00c4ff",
-    "#7fe0a7",
-    "#ffca6e",
-    "#ff8b8b",
-    "#9b8cff",
-  ];
   let currentAngle = 0;
-  const segments = dataset.slice(0, 6).map((item, index) => {
+  const segments = dataset.map((item, index) => {
     const segmentAngle = (item.value / total) * 360;
-    const color = palette[index % palette.length];
+    const color = getSourceColor(index);
     const segment = `${color} ${currentAngle}deg ${currentAngle + segmentAngle}deg`;
     currentAngle += segmentAngle;
     return segment;

@@ -789,7 +789,7 @@ def build_dashboard_charts_payload(
                 label=source.source.replace("_", " ").title(),
                 value=float(source.signal_count),
             )
-            for source in source_summaries[:6]
+            for source in source_summaries
             if source.signal_count > 0
         ],
         status_breakdown=[
