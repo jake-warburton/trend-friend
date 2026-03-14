@@ -26,6 +26,7 @@ import {
 } from "@/lib/forecast-ui";
 import {
   getPrimaryEvidenceLink,
+  normalizeEvidenceUrl,
   summarizeEvidencePreview,
 } from "@/lib/evidence-links";
 import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
@@ -811,7 +812,7 @@ export function DashboardShell({
   function goToPage(page: number) {
     setCurrentPage(page);
     setExpandedTrendId(null);
-    document.getElementById("explorer-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("explorer-heading")?.scrollIntoView({ behavior: "instant", block: "start" });
   }
 
   const exportHref = useMemo(() => {
@@ -2084,7 +2085,11 @@ export function DashboardShell({
               <a
                 className="mini-action-button export-button"
                 href={exportHref}
-                download
+                download="signal-eye-export.csv"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = exportHref;
+                }}
               >
                 Export CSV
               </a>
@@ -2859,7 +2864,7 @@ export function DashboardShell({
                           {primaryEvidenceLink?.evidenceUrl ? (
                             <a
                               className="trend-link"
-                              href={primaryEvidenceLink.evidenceUrl}
+                              href={normalizeEvidenceUrl(primaryEvidenceLink.evidenceUrl)}
                               rel="noreferrer"
                               target="_blank"
                             >
@@ -3170,7 +3175,7 @@ export function DashboardShell({
                                   {primaryEvidenceLink?.evidenceUrl && (
                                     <a
                                       className="mini-action-button"
-                                      href={primaryEvidenceLink.evidenceUrl}
+                                      href={normalizeEvidenceUrl(primaryEvidenceLink.evidenceUrl)}
                                       rel="noreferrer"
                                       target="_blank"
                                     >
@@ -3252,7 +3257,7 @@ export function DashboardShell({
                 <button
                   className="explorer-pagination-button"
                   disabled={safePage >= totalPages}
-                  onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); setExpandedTrendId(null); }}
+                  onClick={() => goToPage(Math.min(totalPages, safePage + 1))}
                   type="button"
                   aria-label="Next page"
                 >
@@ -3261,7 +3266,7 @@ export function DashboardShell({
                 <button
                   className="explorer-pagination-button"
                   disabled={safePage >= totalPages}
-                  onClick={() => { setCurrentPage(totalPages); setExpandedTrendId(null); }}
+                  onClick={() => goToPage(totalPages)}
                   type="button"
                   aria-label="Last page"
                 >

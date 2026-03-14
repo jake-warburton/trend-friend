@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
-import { getPrimaryEvidenceLink } from "@/lib/evidence-links";
+import { getPrimaryEvidenceLink, normalizeEvidenceUrl } from "@/lib/evidence-links";
 import { ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
 import { slugifyBrowseValue } from "@/lib/trend-browse";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
@@ -197,7 +197,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             Rank #{trend.rank} with {trend.coverage.signalCount} captured signals across{" "}
             {trend.coverage.sourceCount} sources.
           </p>
-          {trend.summary ? <p className="detail-copy">{trend.summary}</p> : null}
+          {trend.summary && wikipediaData ? <p className="detail-copy">{trend.summary}</p> : null}
           {wikipediaLink || primaryEvidenceLink?.evidenceUrl || trend.relatedTrends[0] ? (
             <div className="detail-action-links">
               {wikipediaLink ? (
@@ -206,7 +206,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 </a>
               ) : null}
               {primaryEvidenceLink?.evidenceUrl ? (
-                <a className="detail-back-link" href={primaryEvidenceLink.evidenceUrl} rel="noreferrer" target="_blank">
+                <a className="detail-back-link" href={normalizeEvidenceUrl(primaryEvidenceLink.evidenceUrl)} rel="noreferrer" target="_blank">
                   Open source item from {formatSourceLabel(primaryEvidenceLink.source)}
                 </a>
               ) : null}
@@ -388,11 +388,12 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Canonicalization</p>
-              <h2>Tracked aliases</h2>
+              <p className="eyebrow">Identity</p>
+              <h2>Aliases & duplicates</h2>
             </div>
           </div>
 
+          <div className="detail-subsection-label">Tracked aliases</div>
           <div className="detail-list">
             {(trend.aliases.length > 0 ? trend.aliases : [trend.name]).map((alias) => (
               <article className="detail-list-item" key={`${trend.id}-alias-${alias}`}>
@@ -402,35 +403,22 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
               </article>
             ))}
           </div>
-        </section>
-
-        <section className="detail-panel">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Quality</p>
-              <h2>Potential duplicates</h2>
-            </div>
-          </div>
-
-          <div className="detail-list">
-            {(trend.duplicateCandidates.length > 0 ? trend.duplicateCandidates : []).map((candidate) => (
-              <article className="detail-list-item" key={`${trend.id}-duplicate-${candidate.id}`}>
-                <div>
-                  <strong>{candidate.name}</strong>
-                  <span>{candidate.reason}</span>
-                </div>
-                <small>{Math.round(candidate.similarity * 100)}% overlap</small>
-              </article>
-            ))}
-            {trend.duplicateCandidates.length === 0 ? (
-              <article className="detail-list-item">
-                <div>
-                  <strong>No close duplicates flagged</strong>
-                  <span>This trend currently looks distinct from the rest of the published set.</span>
-                </div>
-              </article>
-            ) : null}
-          </div>
+          {trend.duplicateCandidates.length > 0 ? (
+            <>
+              <div className="detail-subsection-label">Potential duplicates</div>
+              <div className="detail-list">
+                {trend.duplicateCandidates.map((candidate) => (
+                  <article className="detail-list-item" key={`${trend.id}-duplicate-${candidate.id}`}>
+                    <div>
+                      <strong>{candidate.name}</strong>
+                      <span>{candidate.reason}</span>
+                    </div>
+                    <small>{Math.round(candidate.similarity * 100)}% overlap</small>
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : null}
         </section>
 
         <section className="detail-panel">
@@ -439,29 +427,49 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
               <p className="eyebrow">Opportunity</p>
               <h2>What you can do with it</h2>
             </div>
+            <small className="section-heading-meta">{formatPredictionDirection(trend.breakoutPrediction.predictedDirection)}</small>
           </div>
 
-          <div className="detail-list">
-            <article className="detail-list-item">
-              <div>
-                <strong>Composite {formatOpportunityScore(trend.opportunity.composite)}</strong>
-                <span>
-                  Discovery {formatOpportunityScore(trend.opportunity.discovery)} · SEO{" "}
-                  {formatOpportunityScore(trend.opportunity.seo)} · Content {formatOpportunityScore(trend.opportunity.content)} · Product{" "}
-                  {formatOpportunityScore(trend.opportunity.product)} · Investment{" "}
-                  {formatOpportunityScore(trend.opportunity.investment)}
-                </span>
+          <div className="opportunity-hero">
+            <div className="opportunity-composite">
+              <span>Composite</span>
+              <strong>{formatOpportunityScore(trend.opportunity.composite)}</strong>
+            </div>
+            <div className="opportunity-scores">
+              <div className="opportunity-score-item">
+                <span>Discovery</span>
+                <strong>{formatOpportunityScore(trend.opportunity.discovery)}</strong>
               </div>
-              <small>{formatPredictionDirection(trend.breakoutPrediction.predictedDirection)}</small>
-            </article>
-            {trend.opportunity.reasoning.map((reason) => (
-              <article className="detail-list-item" key={reason}>
-                <div>
-                  <strong>{reason}</strong>
-                </div>
-              </article>
-            ))}
+              <div className="opportunity-score-item">
+                <span>SEO</span>
+                <strong>{formatOpportunityScore(trend.opportunity.seo)}</strong>
+              </div>
+              <div className="opportunity-score-item">
+                <span>Content</span>
+                <strong>{formatOpportunityScore(trend.opportunity.content)}</strong>
+              </div>
+              <div className="opportunity-score-item">
+                <span>Product</span>
+                <strong>{formatOpportunityScore(trend.opportunity.product)}</strong>
+              </div>
+              <div className="opportunity-score-item">
+                <span>Investment</span>
+                <strong>{formatOpportunityScore(trend.opportunity.investment)}</strong>
+              </div>
+            </div>
           </div>
+
+          {trend.opportunity.reasoning.length > 0 ? (
+            <div className="detail-list">
+              {trend.opportunity.reasoning.map((reason) => (
+                <article className="detail-list-item" key={reason}>
+                  <div>
+                    <strong>{reason}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
         </section>
 
         <section className="detail-panel">
@@ -653,7 +661,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 <div>
                   <strong>
                     {item.evidenceUrl ? (
-                      <a className="trend-link" href={item.evidenceUrl} rel="noreferrer" target="_blank">
+                      <a className="trend-link" href={normalizeEvidenceUrl(item.evidenceUrl)} rel="noreferrer" target="_blank">
                         {item.evidence}
                       </a>
                     ) : (

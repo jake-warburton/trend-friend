@@ -77,6 +77,11 @@ function getSourcePriority(source: string): number {
   return SOURCE_PRIORITY[source] ?? 0;
 }
 
+export function normalizeEvidenceUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `https://${url}`;
+}
+
 function truncateEvidencePreview(value: string, limit: number): string {
   if (value.length <= limit) {
     return value;
