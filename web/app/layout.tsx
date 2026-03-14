@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { NavBar } from "@/components/nav-bar";
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
 import { AuthProvider } from "@/components/auth-provider";
-import { getThemeClass, LIGHT_THEME, readThemePreference, THEME_COOKIE } from "@/lib/settings";
->>>>>>> Stashed changes
-=======
-import { getThemeClass, LIGHT_THEME, readThemePreference, THEME_COOKIE } from "@/lib/settings";
->>>>>>> main
+import {
+  getThemeClass,
+  LIGHT_THEME,
+  readThemePreference,
+  THEME_COOKIE,
+} from "@/lib/settings";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,11 +16,16 @@ export const metadata: Metadata = {
   description: "Trend intelligence dashboard for emerging topics.",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   let themeKey = LIGHT_THEME;
   try {
     const cookieStore = await cookies();
-    themeKey = readThemePreference(cookieStore.get(THEME_COOKIE)?.value) ?? LIGHT_THEME;
+    themeKey =
+      readThemePreference(cookieStore.get(THEME_COOKIE)?.value) ?? LIGHT_THEME;
   } catch {
     themeKey = LIGHT_THEME;
   }
@@ -50,24 +53,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html className={themeClass} lang="en" suppressHydrationWarning>
       <body>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-        <NavBar />
-        {children}
-=======
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
         <AuthProvider>
           <NavBar />
           {children}
         </AuthProvider>
         <Analytics />
->>>>>>> Stashed changes
-=======
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
-        <NavBar />
-        {children}
-        <Analytics />
->>>>>>> main
       </body>
     </html>
   );

@@ -333,18 +333,8 @@ test("listActiveExplorerFilters returns readable chips for non-default explorer 
       selectedAudience: "developer",
       selectedMarket: "b2b",
       selectedLanguage: "en",
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
       selectedGeoCountry: "GB",
->>>>>>> main
       sortBy: "score",
-=======
-      selectedGeoCountry: "GB",
-      sortBy: "strength",
-      sortDirection: "desc",
-      selectedStatus: "new",
->>>>>>> Stashed changes
       hideRecurring: true,
     }),
     [
@@ -355,26 +345,12 @@ test("listActiveExplorerFilters returns readable chips for non-default explorer 
       { key: "audience", label: "Audience", value: "Developer" },
       { key: "market", label: "Market", value: "B2B" },
       { key: "language", label: "Language", value: "English" },
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
       { key: "geo", label: "Geo", value: "GB - Great Britain" },
->>>>>>> main
       { key: "sort", label: "Sort", value: "Score" },
-=======
-      { key: "geo", label: "Geo", value: "GB - Great Britain" },
-      { key: "sort", label: "Sort", value: "Strength ↓" },
-      { key: "status", label: "Status", value: "New" },
->>>>>>> Stashed changes
       { key: "seasonality", label: "Seasonality", value: "Hide recurring" },
     ],
   );
 });
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> main
 
 test("isThesisPresetApplied only stays active while the full preset remains applied", () => {
   const preset = {
@@ -401,11 +377,6 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
       selectedGeoCountry: "all",
       minimumScore: 18,
       sortBy: "rank",
-<<<<<<< HEAD
-      sortDirection: "asc",
-      selectedStatus: "all",
-=======
->>>>>>> main
       hideRecurring: true,
     }),
     true,
@@ -426,11 +397,6 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
       selectedGeoCountry: "all",
       minimumScore: 18,
       sortBy: "rank",
-<<<<<<< HEAD
-      sortDirection: "asc",
-      selectedStatus: "all",
-=======
->>>>>>> main
       hideRecurring: false,
     }),
     false,
@@ -451,11 +417,6 @@ test("isThesisPresetApplied only stays active while the full preset remains appl
       selectedGeoCountry: "all",
       minimumScore: 12,
       sortBy: "rank",
-<<<<<<< HEAD
-      sortDirection: "asc",
-      selectedStatus: "all",
-=======
->>>>>>> main
       hideRecurring: true,
     }),
     false,
@@ -477,7 +438,3 @@ test("shouldClearActiveThesisPreset only clears when clicking the active preset"
   assert.equal(shouldClearActiveThesisPreset("seo", preset), false);
   assert.equal(shouldClearActiveThesisPreset(null, preset), false);
 });
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> main
