@@ -14,7 +14,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GeoMapClient } from "@/components/geo-map-client";
 import { detectChangedTrendIds, hasOverviewChanged } from "@/lib/auto-refresh";
 import { formatCategoryLabel } from "@/lib/category-labels";
@@ -74,7 +74,6 @@ import type {
 
 type DashboardShellProps = {
   initialData: ExploreInitialData;
-  canManualRefresh: boolean;
 };
 
 const LazyGeoMapCompact = dynamic(
@@ -323,9 +322,9 @@ type ThesisPresetFilterState = {
 
 export function DashboardShell({
   initialData,
-  canManualRefresh,
 }: DashboardShellProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [deferredData, setDeferredData] = useState<ExploreDeferredData | null>(
     null,
   );
@@ -349,7 +348,6 @@ export function DashboardShell({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [hideRecurring, setHideRecurring] = useState(false);
-  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(
     null,
   );
@@ -418,6 +416,9 @@ export function DashboardShell({
   const alertsDetailsRef = useRef<HTMLDetailsElement>(null);
   const runsDetailsRef = useRef<HTMLDetailsElement>(null);
   const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
+  const screenshotMode = searchParams.get("screenshot") === "1";
+  const screenshotPanel = searchParams.get("panel");
+  const screenshotTrendId = searchParams.get("trend");
   const overview = initialData.overview;
   const explorer = initialData.explorer;
   const history = deferredData?.history ?? EMPTY_HISTORY;
@@ -941,18 +942,6 @@ export function DashboardShell({
     setHideRecurring(preset.hideRecurring ?? false);
   }
 
-  function handleRefresh() {
-    setRefreshError(null);
-    startTransition(async () => {
-      const response = await fetch("/api/refresh", { method: "POST" });
-      if (!response.ok) {
-        const payload = (await response.json()) as { error?: string };
-        setRefreshError(payload.error ?? "Refresh failed");
-        return;
-      }
-      router.refresh();
-    });
-  }
 
   useEffect(() => {
     if (!WATCHLISTS_ENABLED) {
@@ -965,6 +954,24 @@ export function DashboardShell({
     void loadPublicWatchlists();
     void loadNotificationChannels();
   }, []);
+
+  useEffect(() => {
+    if (screenshotTrendId) {
+      setExpandedTrendId(screenshotTrendId);
+    }
+  }, [screenshotTrendId]);
+
+  useEffect(() => {
+    if (screenshotPanel === "sources" && sourcesDetailsRef.current) {
+      sourcesDetailsRef.current.open = true;
+    }
+    if (screenshotPanel === "runs" && runsDetailsRef.current) {
+      runsDetailsRef.current.open = true;
+    }
+    if (screenshotPanel === "alerts" && alertsDetailsRef.current) {
+      alertsDetailsRef.current.open = true;
+    }
+  }, [screenshotPanel, deferredDataState]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -1054,6 +1061,9 @@ export function DashboardShell({
   }, [explorer.trends, overview]);
 
   useEffect(() => {
+    if (screenshotMode) {
+      return;
+    }
     const intervalId = window.setInterval(async () => {
       setLiveUpdateState((current) =>
         current === "updating" ? current : "checking",
@@ -1086,7 +1096,7 @@ export function DashboardShell({
         clearTimeout(updatedBadgeTimeoutRef.current);
       }
     };
-  }, [router, startAutoRefresh]);
+  }, [router, screenshotMode, startAutoRefresh]);
 
   useEffect(() => {
     setShareExpiryPreset(defaultShareExpiryPreset(defaultWatchlist));
@@ -1726,7 +1736,15 @@ export function DashboardShell({
   }
 
   return (
-    <main className="dashboard-page">
+    <main
+      className={
+        screenshotMode
+          ? "dashboard-page dashboard-page-screenshot"
+          : "dashboard-page"
+      }
+      data-screenshot-target="explore"
+      data-screenshot-panel={screenshotPanel ?? undefined}
+    >
       <section className="hero-panel">
         <div className="hero-rail">
           <article className="hero-summary-card hero-summary-card-status">
@@ -1755,36 +1773,6 @@ export function DashboardShell({
                   ? `${changedTrendIds.length} trends updated`
                   : "Updated just now"}
               </span>
-            ) : null}
-            {canManualRefresh ? (
-              <Button
-                className="refresh-button refresh-button-wide"
-                disabled={isPending}
-                onClick={handleRefresh}
-                aria-label={isPending ? "Refreshing" : "Refresh data"}
-              >
-                <svg
-                  className={
-                    isPending
-                      ? "refresh-icon refresh-icon-spin"
-                      : "refresh-icon"
-                  }
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 2v6h-6" />
-                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                  <path d="M3 22v-6h6" />
-                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-                </svg>
-                <span>{isPending ? "Refreshing" : "Refresh data"}</span>
-              </Button>
             ) : null}
           </article>
           <article className="hero-summary-card">
@@ -1826,11 +1814,6 @@ export function DashboardShell({
         </div>
       </section>
 
-      {refreshError ? (
-        <p className="error-banner" role="alert">
-          {refreshError}
-        </p>
-      ) : null}
 
       <section className="analytics-strip">
         <article className="analytics-card">
@@ -2678,7 +2661,7 @@ export function DashboardShell({
                 </p>
               </div>
             ) : (
-              filteredTrends.map((trend) => {
+              filteredTrends.map((trend, index) => {
                 const forecastBadge = getExplorerForecastBadge(
                   trend.forecastDirection,
                 );
@@ -2734,7 +2717,7 @@ export function DashboardShell({
                         : "explorer-card"
                     }
                     data-status={trend.status}
-                    key={trend.id}
+                    key={buildTrendCardKey(trend, index)}
                   >
                     <div className="explorer-card-top">
                       <div className="trend-cell explorer-card-head">
@@ -3430,7 +3413,11 @@ export function DashboardShell({
             </>
           ) : null}
 
-          <details className="sidebar-section" ref={runsDetailsRef}>
+          <details
+            className="sidebar-section"
+            data-screenshot-target="pipeline-runs"
+            ref={runsDetailsRef}
+          >
             <summary>
               <div className="section-heading section-heading-spaced">
                 <h2>Runs</h2>
@@ -3481,7 +3468,11 @@ export function DashboardShell({
             </div>
           </details>
 
-          <details className="sidebar-section" ref={sourcesDetailsRef}>
+          <details
+            className="sidebar-section"
+            data-screenshot-target="source-health"
+            ref={sourcesDetailsRef}
+          >
             <summary>
               <div className="section-heading section-heading-spaced">
                 <h2>Sources</h2>
@@ -3702,6 +3693,10 @@ function formatTimestamp(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function buildTrendCardKey(trend: TrendExplorerRecord, index: number) {
+  return `${trend.id}-${trend.rank}-${trend.latestSignalAt}-${index}`;
 }
 
 function formatCompactTimestamp(value: string) {

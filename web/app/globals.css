@@ -2039,6 +2039,19 @@ input {
   border: 1px solid var(--border);
 }
 
+.dashboard-page-screenshot[data-screenshot-panel="sources"] .content-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-page-screenshot[data-screenshot-panel="sources"] .ranking-panel {
+  display: none;
+}
+
+.dashboard-page-screenshot[data-screenshot-panel="sources"] .history-panel {
+  width: 100%;
+  max-width: none;
+}
+
 .shared-page {
   width: min(960px, calc(100% - 40px));
   margin: 0 auto;
@@ -5030,6 +5043,16 @@ input {
   letter-spacing: 0.02em;
   color: var(--muted);
   background: var(--surface-panel);
+}
+
+.landing-screenshot-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top center;
+  background: var(--surface-faint);
 }
 
 /* Stats strip */

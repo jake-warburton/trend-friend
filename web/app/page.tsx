@@ -1,4 +1,12 @@
+import Image from "next/image";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import {
+  DARK_THEME,
+  LIGHT_THEME,
+  readThemePreference,
+  THEME_COOKIE,
+} from "@/lib/settings";
 
 export const metadata = {
   title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
@@ -6,7 +14,33 @@ export const metadata = {
     "Spot emerging trends before they peak. Signal Eye monitors 18+ data sources in real time to surface rising topics for content creators, founders, marketers, and investors.",
 };
 
-export default function Page() {
+const LANDING_SCREENSHOT_SETS = {
+  [LIGHT_THEME]: {
+    explorer: "/screenshots/explorer-light-v2.png",
+    trendDetail: "/screenshots/trend-detail-light-v2.png",
+    sourceHealth: "/screenshots/source-health-light-v2.png",
+    exploreGeo: "/screenshots/explore-geo-light-v2.png",
+  },
+  [DARK_THEME]: {
+    explorer: "/screenshots/explorer-dark-v2.png",
+    trendDetail: "/screenshots/trend-detail-dark-v2.png",
+    sourceHealth: "/screenshots/source-health-dark-v2.png",
+    exploreGeo: "/screenshots/explore-geo-dark-v2.png",
+  },
+} as const;
+
+export default async function Page() {
+  let themeKey: typeof LIGHT_THEME | typeof DARK_THEME = LIGHT_THEME;
+  try {
+    const cookieStore = await cookies();
+    const preferredTheme =
+      readThemePreference(cookieStore.get(THEME_COOKIE)?.value) ?? LIGHT_THEME;
+    themeKey = preferredTheme === DARK_THEME ? DARK_THEME : LIGHT_THEME;
+  } catch {
+    themeKey = LIGHT_THEME;
+  }
+  const screenshotSet = LANDING_SCREENSHOT_SETS[themeKey];
+
   return (
     <main className="landing-page">
       <section className="landing-hero">
@@ -33,22 +67,13 @@ export default function Page() {
       </section>
 
       <section className="landing-hero-screenshot">
-        <div className="landing-screenshot-frame">
-          <div className="landing-screenshot-bar">
-            <span /><span /><span />
-          </div>
-          {/* Replace with: <Image src="/screenshots/explorer.png" alt="Signal Eye explorer dashboard" ... /> */}
-          <div className="landing-screenshot-placeholder" aria-label="Screenshot: trend explorer dashboard">
-            <svg viewBox="0 0 800 450" fill="none" aria-hidden="true">
-              <rect x="20" y="20" width="760" height="50" rx="8" opacity="0.08" fill="currentColor" />
-              <rect x="20" y="90" width="240" height="340" rx="8" opacity="0.05" fill="currentColor" />
-              <rect x="280" y="90" width="500" height="164" rx="8" opacity="0.06" fill="currentColor" />
-              <rect x="280" y="270" width="245" height="160" rx="8" opacity="0.05" fill="currentColor" />
-              <rect x="535" y="270" width="245" height="160" rx="8" opacity="0.05" fill="currentColor" />
-            </svg>
-            <span>Explorer dashboard screenshot</span>
-          </div>
-        </div>
+        <LandingScreenshot
+          alt="Signal Eye explorer dashboard"
+          height={1024}
+          priority
+          src={screenshotSet.explorer}
+          width={1440}
+        />
       </section>
 
       <section className="landing-stats">
@@ -124,21 +149,13 @@ export default function Page() {
         </div>
         <div className="landing-features-showcase">
           <div className="landing-showcase-screenshot">
-            <div className="landing-screenshot-frame landing-screenshot-frame-sm">
-              <div className="landing-screenshot-bar">
-                <span /><span /><span />
-              </div>
-              {/* Replace with: <Image src="/screenshots/trend-detail.png" alt="Trend detail view" ... /> */}
-              <div className="landing-screenshot-placeholder" aria-label="Screenshot: trend detail page">
-                <svg viewBox="0 0 600 380" fill="none" aria-hidden="true">
-                  <rect x="16" y="16" width="350" height="24" rx="6" opacity="0.08" fill="currentColor" />
-                  <rect x="16" y="56" width="568" height="120" rx="8" opacity="0.05" fill="currentColor" />
-                  <rect x="16" y="192" width="275" height="170" rx="8" opacity="0.06" fill="currentColor" />
-                  <rect x="307" y="192" width="277" height="170" rx="8" opacity="0.06" fill="currentColor" />
-                </svg>
-                <span>Trend detail view</span>
-              </div>
-            </div>
+            <LandingScreenshot
+              alt="Signal Eye trend detail view"
+              className="landing-screenshot-frame-sm"
+              height={1080}
+              src={screenshotSet.trendDetail}
+              width={1440}
+            />
           </div>
           <div className="landing-features-list">
             <article className="landing-feature-card">
@@ -216,36 +233,20 @@ export default function Page() {
           <p>Real-time trend scoring, source health monitoring, and community watchlists — all in one interface.</p>
         </div>
         <div className="landing-preview-screenshots">
-          <div className="landing-screenshot-frame landing-screenshot-frame-sm">
-            <div className="landing-screenshot-bar">
-              <span /><span /><span />
-            </div>
-            {/* Replace with: <Image src="/screenshots/source-health.png" alt="Source health dashboard" ... /> */}
-            <div className="landing-screenshot-placeholder" aria-label="Screenshot: source health dashboard">
-              <svg viewBox="0 0 480 300" fill="none" aria-hidden="true">
-                <rect x="12" y="12" width="200" height="18" rx="4" opacity="0.08" fill="currentColor" />
-                <rect x="12" y="44" width="456" height="100" rx="6" opacity="0.05" fill="currentColor" />
-                <rect x="12" y="160" width="456" height="128" rx="6" opacity="0.06" fill="currentColor" />
-              </svg>
-              <span>Source health</span>
-            </div>
-          </div>
-          <div className="landing-screenshot-frame landing-screenshot-frame-sm">
-            <div className="landing-screenshot-bar">
-              <span /><span /><span />
-            </div>
-            {/* Replace with: <Image src="/screenshots/community.png" alt="Community watchlists" ... /> */}
-            <div className="landing-screenshot-placeholder" aria-label="Screenshot: community watchlists">
-              <svg viewBox="0 0 480 300" fill="none" aria-hidden="true">
-                <rect x="12" y="12" width="180" height="18" rx="4" opacity="0.08" fill="currentColor" />
-                <rect x="12" y="44" width="148" height="120" rx="6" opacity="0.05" fill="currentColor" />
-                <rect x="170" y="44" width="148" height="120" rx="6" opacity="0.05" fill="currentColor" />
-                <rect x="328" y="44" width="140" height="120" rx="6" opacity="0.05" fill="currentColor" />
-                <rect x="12" y="178" width="456" height="110" rx="6" opacity="0.04" fill="currentColor" />
-              </svg>
-              <span>Community watchlists</span>
-            </div>
-          </div>
+          <LandingScreenshot
+            alt="Signal Eye source health dashboard"
+            className="landing-screenshot-frame-sm"
+            height={1180}
+            src={screenshotSet.sourceHealth}
+            width={1440}
+          />
+          <LandingScreenshot
+            alt="Signal Eye explorer geographic footprint"
+            className="landing-screenshot-frame-sm"
+            height={1080}
+            src={screenshotSet.exploreGeo}
+            width={1440}
+          />
         </div>
       </section>
 
@@ -297,5 +298,41 @@ export default function Page() {
         </div>
       </section>
     </main>
+  );
+}
+
+function LandingScreenshot({
+  alt,
+  src,
+  width,
+  height,
+  className,
+  priority = false,
+}: {
+  alt: string;
+  src: string;
+  width: number;
+  height: number;
+  className?: string;
+  priority?: boolean;
+}) {
+  const frameClassName = className
+    ? `landing-screenshot-frame ${className}`
+    : "landing-screenshot-frame";
+
+  return (
+    <div className={frameClassName}>
+      <div className="landing-screenshot-bar">
+        <span /><span /><span />
+      </div>
+      <Image
+        alt={alt}
+        className="landing-screenshot-image"
+        height={height}
+        priority={priority}
+        src={src}
+        width={width}
+      />
+    </div>
   );
 }

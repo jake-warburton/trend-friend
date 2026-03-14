@@ -102,7 +102,7 @@ export default async function CommunityPage({ searchParams }: PageProps) {
   const presetSections = listCommunityPresetSections(directory.watchlists, filters);
 
   return (
-    <main className="community-page">
+    <main className="community-page" data-screenshot-target="community">
       <section className="community-hero">
         <div>
           <p className="eyebrow">Community Directory</p>

@@ -13,6 +13,5 @@ export const revalidate = 300;
 
 export default async function Page() {
   const initialData = await loadExploreInitialData();
-  const canManualRefresh = !!process.env.SIGNAL_EYE_API_URL || !process.env.VERCEL;
-  return <DashboardShell initialData={initialData} canManualRefresh={canManualRefresh} />;
+  return <DashboardShell initialData={initialData} />;
 }

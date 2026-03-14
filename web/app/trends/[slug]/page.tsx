@@ -49,7 +49,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
     if (recentTrend != null) {
       const historyPoints = buildRecentTrendHistory(history, slug);
       return (
-        <main className="detail-page">
+        <main className="detail-page" data-screenshot-target="trend-detail">
           <section className="detail-hero">
             <div>
               <Link className="detail-back-link" href="/explore">
@@ -164,7 +164,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
     : trend.marketFootprint.filter((metric) => !metric.isEstimated);
 
   return (
-    <main className="detail-page">
+    <main className="detail-page" data-screenshot-target="trend-detail">
       <section className="detail-hero">
         <div>
           <Link className="detail-back-link" href="/explore">

@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 
+import {
+  confidenceBucketForTrend,
+  trendMatchesAudience,
+  trendMatchesLanguage,
+  trendMatchesMarket,
+} from "@/components/dashboard-shell";
+import { trendMatchesGeo } from "@/lib/explorer-geo";
 import { loadTrendDetails, loadTrendExplorer } from "@/lib/trends";
 import { isRecurringTrend } from "@/lib/seasonality-ui";
 import type { TrendDetailRecord, TrendExplorerRecord } from "@/lib/types";
@@ -82,76 +89,129 @@ function summarizeSegments(summary: NonNullable<TrendExplorerRecord["audienceSum
     .join(",");
 }
 
-export async function GET(request: Request = new Request("http://localhost/api/export")) {
+type ExportRouteDependencies = {
+  loadTrendExplorer: typeof loadTrendExplorer;
+  loadTrendDetails: typeof loadTrendDetails;
+};
+
+const DEFAULT_DEPENDENCIES: ExportRouteDependencies = {
+  loadTrendExplorer,
+  loadTrendDetails,
+};
+
+export async function handleExportGet(
+  request: Request = new Request("http://localhost/api/export"),
+  dependencies: ExportRouteDependencies = DEFAULT_DEPENDENCIES,
+) {
   const { searchParams } = new URL(request.url);
-  const [explorer, details] = await Promise.all([loadTrendExplorer(), loadTrendDetails()]);
+  const [explorer, details] = await Promise.all([
+    dependencies.loadTrendExplorer(),
+    dependencies.loadTrendDetails(),
+  ]);
   const detailsById = new Map(details.trends.map((trend) => [trend.id, trend]));
 
-  let trends = explorer.trends;
+  const selectedSource = searchParams.get("source") ?? "all";
+  const selectedCategory = searchParams.get("category") ?? "all";
+  const selectedStage = searchParams.get("stage") ?? "all";
+  const selectedConfidence = searchParams.get("confidence") ?? "all";
+  const selectedLens = searchParams.get("lens") ?? "all";
+  const selectedMetaTrend = searchParams.get("metaTrend") ?? "all";
+  const selectedAudience = searchParams.get("audience") ?? "all";
+  const selectedMarket = searchParams.get("market") ?? "all";
+  const selectedLanguage = searchParams.get("language") ?? "all";
+  const selectedGeoCountry = searchParams.get("geo") ?? "all";
+  const selectedStatus = searchParams.get("status") ?? "all";
+  const keyword = (searchParams.get("q") ?? "").trim().toLowerCase();
+  const minimumScore = Number(searchParams.get("min") ?? "0");
+  const hideRecurring = searchParams.get("hideRecurring") === "1";
+  const sortBy = searchParams.get("sort") ?? "rank";
+  const sortDirection = (searchParams.get("sortDir") === "asc" ? "asc" : "desc");
 
-  // Apply filters from query parameters
-  const source = searchParams.get("source");
-  if (source) {
-    trends = trends.filter((t) => t.sources.includes(source));
-  }
+  const filteredTrends = explorer.trends.filter((trend) => {
+    const detail = detailsById.get(trend.id);
+    const matchesSource =
+      selectedSource === "all" || trend.sources.includes(selectedSource);
+    const matchesCategory =
+      selectedCategory === "all" || trend.category === selectedCategory;
+    const matchesStage =
+      selectedStage === "all" || trend.stage === selectedStage;
+    const matchesConfidence =
+      selectedConfidence === "all" ||
+      confidenceBucketForTrend(trend.confidence) === selectedConfidence;
+    const matchesMetaTrend =
+      selectedMetaTrend === "all" || trend.metaTrend === selectedMetaTrend;
+    const matchesAudience = trendMatchesAudience(detail, selectedAudience);
+    const matchesMarket = trendMatchesMarket(detail, selectedMarket);
+    const matchesLanguage = trendMatchesLanguage(detail, selectedLanguage);
+    const matchesGeo = trendMatchesGeo(detail, selectedGeoCountry);
+    const matchesKeyword =
+      keyword.length === 0 ||
+      trend.name.toLowerCase().includes(keyword) ||
+      trend.evidencePreview.some((item) =>
+        item.toLowerCase().includes(keyword),
+      );
+    const matchesScore = trend.score.total >= minimumScore;
+    const matchesSeasonality =
+      !hideRecurring || !isRecurringTrend(trend.seasonality);
+    const matchesStatus =
+      selectedStatus === "all" || trend.status === selectedStatus;
 
-  const category = searchParams.get("category");
-  if (category) {
-    trends = trends.filter((t) => t.category === category);
-  }
-
-  const q = searchParams.get("q");
-  if (q) {
-    const normalizedQ = q.toLowerCase();
-    trends = trends.filter(
-      (t) =>
-        t.name.toLowerCase().includes(normalizedQ) ||
-        t.evidencePreview.some((item) => item.toLowerCase().includes(normalizedQ)),
+    return (
+      matchesSource &&
+      matchesCategory &&
+      matchesStage &&
+      matchesConfidence &&
+      matchesMetaTrend &&
+      matchesAudience &&
+      matchesMarket &&
+      matchesLanguage &&
+      matchesGeo &&
+      matchesKeyword &&
+      matchesScore &&
+      matchesSeasonality &&
+      matchesStatus
     );
-  }
+  });
 
-  const min = searchParams.get("min");
-  if (min) {
-    const minScore = Number(min);
-    trends = trends.filter((t) => t.score.total >= minScore);
-  }
+  const dir = sortDirection === "asc" ? 1 : -1;
+  const trends = [...filteredTrends].sort((left, right) => {
+    const leftDetail = detailsById.get(left.id);
+    const rightDetail = detailsById.get(right.id);
 
-  const hideRecurring = searchParams.get("hideRecurring");
-  if (hideRecurring === "1") {
-    trends = trends.filter((t) => !isRecurringTrend(t.seasonality));
-  }
+    if (selectedLens !== "all") {
+      const lensDelta =
+        getOpportunityScore(rightDetail, selectedLens) -
+        getOpportunityScore(leftDetail, selectedLens);
+      if (lensDelta !== 0) {
+        return lensDelta;
+      }
+    }
 
-  // Note: audience, market, language, and geo filters require trend detail data
-  // which is not available at this level. These would need to be applied
-  // at the data loading stage or require fetching detail records separately.
-  // For now, only apply filters that work with explorer.trends data.
-
-  // Sort trends
-  const sortBy = searchParams.get("sort") || "rank";
-  const lens = searchParams.get("lens") || "all";
-  if (lens !== "all") {
-    trends.sort(
-      (left, right) =>
-        getOpportunityScore(detailsById.get(right.id), lens) - getOpportunityScore(detailsById.get(left.id), lens) ||
-        left.rank - right.rank,
-    );
-  } else if (sortBy === "score") {
-    trends.sort((left, right) => right.score.total - left.score.total || left.rank - right.rank);
-  } else if (sortBy === "mover") {
-    trends.sort(
-      (left, right) =>
-        (right.rankChange ?? Number.NEGATIVE_INFINITY) - (left.rankChange ?? Number.NEGATIVE_INFINITY) ||
-        left.rank - right.rank,
-    );
-  } else if (sortBy === "newest") {
-    trends.sort((left, right) => {
-      const leftDate = left.firstSeenAt ? new Date(left.firstSeenAt).getTime() : Number.NEGATIVE_INFINITY;
-      const rightDate = right.firstSeenAt ? new Date(right.firstSeenAt).getTime() : Number.NEGATIVE_INFINITY;
-      return rightDate - leftDate || left.rank - right.rank;
-    });
-  } else {
-    trends.sort((left, right) => left.rank - right.rank);
-  }
+    if (sortBy === "strength") {
+      return dir * (left.score.total - right.score.total) || left.rank - right.rank;
+    }
+    if (sortBy === "dateAdded") {
+      return dir * compareDates(left.firstSeenAt, right.firstSeenAt) || left.rank - right.rank;
+    }
+    if (sortBy === "latestActivity") {
+      return dir * compareDates(left.latestSignalAt, right.latestSignalAt) || left.rank - right.rank;
+    }
+    if (sortBy === "sources") {
+      return (
+        dir * (left.coverage.sourceCount - right.coverage.sourceCount) ||
+        left.rank - right.rank
+      );
+    }
+    if (sortBy === "momentum") {
+      return (
+        dir *
+          ((left.momentum.absoluteDelta ?? 0) -
+            (right.momentum.absoluteDelta ?? 0)) ||
+        left.rank - right.rank
+      );
+    }
+    return dir * (left.rank - right.rank);
+  });
 
   const rows = [CSV_COLUMNS.join(","), ...trends.map((trend) => trendToCsvRow(trend, detailsById.get(trend.id)))];
   const csv = rows.join("\n") + "\n";
@@ -163,6 +223,10 @@ export async function GET(request: Request = new Request("http://localhost/api/e
       "Content-Disposition": `attachment; filename="signal-eye-export-${date}.csv"`,
     },
   });
+}
+
+export async function GET(request: Request = new Request("http://localhost/api/export")) {
+  return handleExportGet(request);
 }
 
 function getOpportunityScore(detail: TrendDetailRecord | undefined, lens: string) {
@@ -185,4 +249,10 @@ function getOpportunityScore(detail: TrendDetailRecord | undefined, lens: string
     return detail.opportunity.investment;
   }
   return detail.opportunity.composite;
+}
+
+function compareDates(left: string | null, right: string | null) {
+  const leftTime = left ? new Date(left).getTime() : Number.NEGATIVE_INFINITY;
+  const rightTime = right ? new Date(right).getTime() : Number.NEGATIVE_INFINITY;
+  return leftTime - rightTime;
 }
