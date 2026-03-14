@@ -44,8 +44,8 @@ test("buildEnrichmentProviderStatuses reflects configured and fallback providers
   assert.equal(statuses[3].configured, false);
 });
 
-test("readEstimatedMetricsPreference defaults on and honors explicit false", () => {
-  assert.equal(readEstimatedMetricsPreference(undefined), true);
+test("readEstimatedMetricsPreference defaults off and honors explicit true", () => {
+  assert.equal(readEstimatedMetricsPreference(undefined), false);
   assert.equal(readEstimatedMetricsPreference("true"), true);
   assert.equal(readEstimatedMetricsPreference("false"), false);
 });

@@ -77,7 +77,7 @@ export function buildEnrichmentProviderStatuses(env: NodeJS.ProcessEnv): Enrichm
 }
 
 export function readEstimatedMetricsPreference(value: string | undefined): boolean {
-  return value !== "false";
+  return value === "true";
 }
 
 export function readThemePreference(value: string | undefined): string | null {

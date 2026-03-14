@@ -1743,7 +1743,7 @@ input {
 
 .thesis-presets-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -3801,7 +3801,7 @@ input {
   }
 
   .thesis-presets-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .detail-panel-wide {
@@ -4688,7 +4688,6 @@ input {
 }
 
 .landing-cta-primary:hover {
-  transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
@@ -4913,7 +4912,7 @@ input {
 }
 
 .landing-step:hover {
-  background: var(--surface-subtle);
+  background: transparent;
 }
 
 .landing-step-number {
@@ -5004,7 +5003,6 @@ input {
 }
 
 .landing-feature-card:hover {
-  padding-left: 8px;
 }
 
 .landing-feature-card h3 {
@@ -5257,7 +5255,6 @@ input {
 }
 
 .landing-pricing-cta-primary:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
 }
 
