@@ -156,22 +156,51 @@ const LENS_OPTIONS = [
 
 const SORT_OPTIONS = [
   { label: "Rank", value: "rank" },
-  { label: "Score", value: "score" },
-  { label: "Biggest mover", value: "mover" },
-  { label: "Newest", value: "newest" },
+  { label: "Strength", value: "strength" },
+  { label: "Date added", value: "dateAdded" },
+  { label: "Latest activity", value: "latestActivity" },
+  { label: "Sources", value: "sources" },
+  { label: "Momentum", value: "momentum" },
 ] as const;
+
+const DEFAULT_SORT_DIRECTIONS: Record<string, "asc" | "desc"> = {
+  rank: "asc",
+  strength: "desc",
+  dateAdded: "desc",
+  latestActivity: "desc",
+  sources: "desc",
+  momentum: "desc",
+};
+
+const DEFAULT_STATUS_OPTION = {
+  label: "All statuses",
+  value: "all",
+} as const;
+
+const STATUS_OPTIONS = [
+  DEFAULT_STATUS_OPTION,
+  { label: "New", value: "new" },
+  { label: "Breakout", value: "breakout" },
+  { label: "Rising", value: "rising" },
+  { label: "Cooling", value: "cooling" },
+  { label: "Steady", value: "steady" },
+] as const;
+
 const WATCHLISTS_ENABLED = false;
 
 type ThesisPreset = {
   key: string;
   label: string;
   description: string;
-  lens: string;
+  lens?: string;
   source?: string;
   stage?: string;
   audience?: string;
   hideRecurring?: boolean;
   minimumScore?: number;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+  status?: string;
 };
 
 const THESIS_PRESETS: readonly ThesisPreset[] = [
@@ -213,6 +242,15 @@ const THESIS_PRESETS: readonly ThesisPreset[] = [
     hideRecurring: true,
     minimumScore: 16,
   },
+  {
+    key: "new",
+    label: "New this run",
+    description:
+      "Trends appearing for the first time in the latest snapshot.",
+    status: "new",
+    sortBy: "dateAdded",
+    sortDirection: "desc",
+  },
 ] as const;
 
 type ExplorerActiveFilter = {
@@ -229,6 +267,7 @@ type ExplorerActiveFilter = {
     | "language"
     | "geo"
     | "sort"
+    | "status"
     | "seasonality";
   label: string;
   value: string;
@@ -248,6 +287,8 @@ type ThesisPresetFilterState = {
   selectedGeoCountry: string;
   minimumScore: number | null;
   sortBy: string;
+  sortDirection: "asc" | "desc";
+  selectedStatus: string;
   hideRecurring: boolean;
 };
 
@@ -270,6 +311,8 @@ export function DashboardShell({
   const [selectedGeoCountry, setSelectedGeoCountry] = useState<string>("all");
   const [minimumScore, setMinimumScore] = useState<number | null>(0);
   const [sortBy, setSortBy] = useState<string>("rank");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [hideRecurring, setHideRecurring] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(
@@ -472,6 +515,8 @@ export function DashboardShell({
         selectedLanguage,
         selectedGeoCountry,
         sortBy,
+        sortDirection,
+        selectedStatus,
         hideRecurring,
       }),
     [
@@ -487,7 +532,9 @@ export function DashboardShell({
       selectedMetaTrend,
       selectedSource,
       selectedStage,
+      selectedStatus,
       sortBy,
+      sortDirection,
     ],
   );
   const selectedSourceLabel = getOptionLabel(
@@ -536,6 +583,11 @@ export function DashboardShell({
     "All languages",
   );
   const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
+  const selectedStatusLabel = getOptionLabel(
+    STATUS_OPTIONS,
+    selectedStatus,
+    "All statuses",
+  );
   const activeThesisPresetKey = useMemo(
     () =>
       THESIS_PRESETS.find((preset) =>
@@ -553,6 +605,8 @@ export function DashboardShell({
           selectedGeoCountry,
           minimumScore,
           sortBy,
+          sortDirection,
+          selectedStatus,
           hideRecurring,
         }),
       )?.key ?? null,
@@ -570,7 +624,9 @@ export function DashboardShell({
       selectedMetaTrend,
       selectedSource,
       selectedStage,
+      selectedStatus,
       sortBy,
+      sortDirection,
     ],
   );
 
@@ -603,6 +659,8 @@ export function DashboardShell({
       const matchesScore = trend.score.total >= minimum;
       const matchesSeasonality =
         !hideRecurring || !isRecurringTrend(trend.seasonality);
+      const matchesStatus =
+        selectedStatus === "all" || trend.status === selectedStatus;
       return (
         matchesSource &&
         matchesCategory &&
@@ -615,10 +673,12 @@ export function DashboardShell({
         matchesGeo &&
         matchesKeyword &&
         matchesScore &&
-        matchesSeasonality
+        matchesSeasonality &&
+        matchesStatus
       );
     });
 
+    const dir = sortDirection === "asc" ? 1 : -1;
     return [...trends].sort((left, right) => {
       const leftDetail = detailsByTrendId.get(left.id);
       const rightDetail = detailsByTrendId.get(right.id);
@@ -630,23 +690,38 @@ export function DashboardShell({
           return lensDelta;
         }
       }
-      if (sortBy === "score") {
-        return right.score.total - left.score.total || left.rank - right.rank;
-      }
-      if (sortBy === "mover") {
+      if (sortBy === "strength") {
         return (
-          (right.rankChange ?? Number.NEGATIVE_INFINITY) -
-            (left.rankChange ?? Number.NEGATIVE_INFINITY) ||
+          dir * (left.score.total - right.score.total) ||
           left.rank - right.rank
         );
       }
-      if (sortBy === "newest") {
+      if (sortBy === "dateAdded") {
         return (
-          compareDates(right.firstSeenAt, left.firstSeenAt) ||
+          dir * compareDates(left.firstSeenAt, right.firstSeenAt) ||
           left.rank - right.rank
         );
       }
-      return left.rank - right.rank;
+      if (sortBy === "latestActivity") {
+        return (
+          dir * compareDates(left.latestSignalAt, right.latestSignalAt) ||
+          left.rank - right.rank
+        );
+      }
+      if (sortBy === "sources") {
+        return (
+          dir * (left.coverage.sourceCount - right.coverage.sourceCount) ||
+          left.rank - right.rank
+        );
+      }
+      if (sortBy === "momentum") {
+        return (
+          dir *
+            ((left.momentum.absoluteDelta ?? 0) -
+              (right.momentum.absoluteDelta ?? 0)) || left.rank - right.rank
+        );
+      }
+      return dir * (left.rank - right.rank);
     });
   }, [
     deferredKeyword,
@@ -664,7 +739,9 @@ export function DashboardShell({
     selectedMetaTrend,
     selectedSource,
     selectedStage,
+    selectedStatus,
     sortBy,
+    sortDirection,
   ]);
 
   const explorerGeoMapData = useMemo(
@@ -691,7 +768,9 @@ export function DashboardShell({
     if (minimumScore && minimumScore > 0)
       params.set("min", String(minimumScore));
     if (hideRecurring) params.set("hideRecurring", "1");
+    if (selectedStatus !== "all") params.set("status", selectedStatus);
     params.set("sort", sortBy);
+    params.set("sortDir", sortDirection);
     return `/api/export?${params.toString()}`;
   }, [
     selectedSource,
@@ -707,8 +786,15 @@ export function DashboardShell({
     keyword,
     minimumScore,
     hideRecurring,
+    selectedStatus,
     sortBy,
+    sortDirection,
   ]);
+
+  function handleSortChange(value: string) {
+    setSortBy(value);
+    setSortDirection(DEFAULT_SORT_DIRECTIONS[value] ?? "desc");
+  }
 
   function handleToggleExpand(trendId: string) {
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
@@ -761,6 +847,11 @@ export function DashboardShell({
     }
     if (filterKey === "sort") {
       setSortBy("rank");
+      setSortDirection("asc");
+      return;
+    }
+    if (filterKey === "status") {
+      setSelectedStatus("all");
       return;
     }
     setHideRecurring(false);
@@ -779,6 +870,8 @@ export function DashboardShell({
     setSelectedLanguage("all");
     setSelectedGeoCountry("all");
     setSortBy("rank");
+    setSortDirection("asc");
+    setSelectedStatus("all");
     setMinimumScore(0);
     setHideRecurring(false);
   }
@@ -793,13 +886,18 @@ export function DashboardShell({
     setSelectedCategory("all");
     setSelectedStage(preset.stage ?? "all");
     setSelectedConfidence("all");
-    setSelectedLens(preset.lens);
+    setSelectedLens(preset.lens ?? "all");
     setSelectedMetaTrend("all");
     setSelectedAudience(preset.audience ?? "all");
     setSelectedMarket("all");
     setSelectedLanguage("all");
     setSelectedGeoCountry("all");
-    setSortBy("rank");
+    const presetSort = preset.sortBy ?? "rank";
+    setSortBy(presetSort);
+    setSortDirection(
+      preset.sortDirection ?? DEFAULT_SORT_DIRECTIONS[presetSort] ?? "asc",
+    );
+    setSelectedStatus(preset.status ?? "all");
     setMinimumScore(preset.minimumScore ?? 0);
     setHideRecurring(preset.hideRecurring ?? false);
   }
@@ -2102,6 +2200,43 @@ export function DashboardShell({
                 </label>
 
                 <label className="filter-field">
+                  <span>Status</span>
+                  <Select.Root
+                    value={selectedStatus}
+                    onValueChange={(value) =>
+                      setSelectedStatus(value ?? "all")
+                    }
+                  >
+                    <Select.Trigger className="select-trigger">
+                      <span>{selectedStatusLabel}</span>
+                      <Select.Icon className="select-icon">▼</Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Positioner
+                        className="select-positioner"
+                        sideOffset={8}
+                      >
+                        <Select.Popup className="select-popup">
+                          <Select.List className="select-list">
+                            {STATUS_OPTIONS.map((option) => (
+                              <Select.Item
+                                className="select-item"
+                                key={option.value}
+                                value={option.value}
+                              >
+                                <Select.ItemText>
+                                  {option.label}
+                                </Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.List>
+                        </Select.Popup>
+                      </Select.Positioner>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+
+                <label className="filter-field">
                   <span>Confidence</span>
                   <Select.Root
                     value={selectedConfidence}
@@ -2321,37 +2456,62 @@ export function DashboardShell({
 
                 <label className="filter-field">
                   <span>Sort</span>
-                  <Select.Root
-                    value={sortBy}
-                    onValueChange={(value) => setSortBy(value ?? "rank")}
+                  <span
+                    style={{
+                      display: "flex",
+                      gap: "0.25rem",
+                      alignItems: "center",
+                    }}
                   >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedSortLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {SORT_OPTIONS.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
+                    <Select.Root
+                      value={sortBy}
+                      onValueChange={(value) =>
+                        handleSortChange(value ?? "rank")
+                      }
+                    >
+                      <Select.Trigger className="select-trigger">
+                        <span>{selectedSortLabel}</span>
+                        <Select.Icon className="select-icon">▼</Select.Icon>
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Positioner
+                          className="select-positioner"
+                          sideOffset={8}
+                        >
+                          <Select.Popup className="select-popup">
+                            <Select.List className="select-list">
+                              {SORT_OPTIONS.map((option) => (
+                                <Select.Item
+                                  className="select-item"
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  <Select.ItemText>
+                                    {option.label}
+                                  </Select.ItemText>
+                                </Select.Item>
+                              ))}
+                            </Select.List>
+                          </Select.Popup>
+                        </Select.Positioner>
+                      </Select.Portal>
+                    </Select.Root>
+                    <button
+                      className="toggle-chip"
+                      type="button"
+                      onClick={() =>
+                        setSortDirection((d) =>
+                          d === "asc" ? "desc" : "asc",
+                        )
+                      }
+                      title={
+                        sortDirection === "asc" ? "Ascending" : "Descending"
+                      }
+                      style={{ minWidth: "2rem", textAlign: "center" }}
+                    >
+                      {sortDirection === "asc" ? "\u2191" : "\u2193"}
+                    </button>
+                  </span>
                 </label>
 
                 <label className="filter-field">
@@ -3947,6 +4107,8 @@ export function listActiveExplorerFilters(filters: {
   selectedLanguage: string;
   selectedGeoCountry: string;
   sortBy: string;
+  sortDirection?: "asc" | "desc";
+  selectedStatus?: string;
   hideRecurring: boolean;
 }): ExplorerActiveFilter[] {
   const result: ExplorerActiveFilter[] = [];
@@ -4027,11 +4189,22 @@ export function listActiveExplorerFilters(filters: {
       value: formatGeoCountryLabel(filters.selectedGeoCountry),
     });
   }
-  if (filters.sortBy !== "rank") {
+  if (
+    filters.sortBy !== "rank" ||
+    (filters.sortDirection ?? "asc") !== "asc"
+  ) {
+    const arrow = (filters.sortDirection ?? "asc") === "asc" ? "\u2191" : "\u2193";
     result.push({
       key: "sort",
       label: "Sort",
-      value: formatExplorerSortLabel(filters.sortBy),
+      value: `${formatExplorerSortLabel(filters.sortBy)} ${arrow}`,
+    });
+  }
+  if ((filters.selectedStatus ?? "all") !== "all") {
+    result.push({
+      key: "status",
+      label: "Status",
+      value: formatStatusLabel(filters.selectedStatus),
     });
   }
   if (filters.hideRecurring) {
@@ -4048,20 +4221,25 @@ export function isThesisPresetApplied(
   preset: ThesisPreset,
   state: ThesisPresetFilterState,
 ) {
+  const expectedSort = preset.sortBy ?? "rank";
+  const expectedDirection =
+    preset.sortDirection ?? DEFAULT_SORT_DIRECTIONS[expectedSort] ?? "asc";
   return (
     state.keyword.trim().length === 0 &&
     state.selectedSource === (preset.source ?? "all") &&
     state.selectedCategory === "all" &&
     state.selectedStage === (preset.stage ?? "all") &&
     state.selectedConfidence === "all" &&
-    state.selectedLens === preset.lens &&
+    state.selectedLens === (preset.lens ?? "all") &&
     state.selectedMetaTrend === "all" &&
     state.selectedAudience === (preset.audience ?? "all") &&
     state.selectedMarket === "all" &&
     state.selectedLanguage === "all" &&
     state.selectedGeoCountry === "all" &&
     (state.minimumScore ?? 0) === (preset.minimumScore ?? 0) &&
-    state.sortBy === "rank" &&
+    state.sortBy === expectedSort &&
+    state.sortDirection === expectedDirection &&
+    state.selectedStatus === (preset.status ?? "all") &&
     state.hideRecurring === (preset.hideRecurring ?? false)
   );
 }
@@ -4187,11 +4365,18 @@ function formatLanguageLabel(code: string) {
 function formatExplorerSortLabel(sortBy: string) {
   const labels: Record<string, string> = {
     rank: "Rank",
-    score: "Score",
-    mover: "Biggest mover",
-    newest: "Newest",
+    strength: "Strength",
+    dateAdded: "Date added",
+    latestActivity: "Latest activity",
+    sources: "Sources",
+    momentum: "Momentum",
   };
   return labels[sortBy] ?? sortBy;
+}
+
+function formatStatusLabel(status: string | undefined) {
+  if (!status || status === "all") return "All statuses";
+  return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 function getOpportunityScoreForLens(

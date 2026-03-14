@@ -18,22 +18,22 @@ export function NavBar() {
         <span className="nav-bar-brand-mark" aria-hidden="true">
           <svg viewBox="0 0 256 256" role="presentation" fill="none">
             <g
-              stroke="#22c55e"
-              strokeWidth="10"
+              stroke="currentColor"
+              strokeWidth="14"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M40 96C90 56 166 56 216 96" />
-              <path d="M68 128C106 98 150 98 188 128" />
-              <path d="M96 160C116 144 140 144 160 160" />
-              <circle cx="128" cy="186" r="18" />
-              <line x1="141" y1="199" x2="167" y2="225" />
+              <path d="M36 82C88 38 168 38 220 82" strokeWidth="22" />
+              <path d="M62 118C104 82 152 82 194 118" strokeWidth="22" />
+              <path d="M90 150C114 130 142 130 166 150" strokeWidth="22" />
+              <circle cx="128" cy="186" r="20" fill="currentColor" />
+              <line x1="143" y1="201" x2="172" y2="230" />
             </g>
           </svg>
         </span>
         <span className="nav-bar-brand-copy">
           <span className="nav-bar-brand-name">Signal Eye</span>
-          <span className="nav-bar-brand-tag">Market intelligence terminal</span>
+          <span className="nav-bar-brand-tag">Trend intelligence terminal</span>
         </span>
       </Link>
       <div className="nav-bar-links">

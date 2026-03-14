@@ -11,7 +11,6 @@ export default function Page() {
     <main className="landing-page">
       <section className="landing-hero">
         <div className="landing-hero-content">
-          <p className="landing-kicker">Trend intelligence terminal</p>
           <h1>
             Spot the next big thing
             <br />
