@@ -808,6 +808,12 @@ export function DashboardShell({
     }
   }, [filteredTrends]);
 
+  function goToPage(page: number) {
+    setCurrentPage(page);
+    setExpandedTrendId(null);
+    document.getElementById("explorer-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   const exportHref = useMemo(() => {
     const params = new URLSearchParams();
     if (selectedSource !== "all") params.set("source", selectedSource);
@@ -2072,7 +2078,7 @@ export function DashboardShell({
 
       <section className="content-grid">
         <div className="ranking-panel">
-          <div className="section-heading">
+          <div className="section-heading" id="explorer-heading">
             <h2>Explorer</h2>
             <div className="section-heading-actions">
               <a
@@ -3196,7 +3202,7 @@ export function DashboardShell({
                 <button
                   className="explorer-pagination-button"
                   disabled={safePage <= 1}
-                  onClick={() => { setCurrentPage(1); setExpandedTrendId(null); }}
+                  onClick={() => goToPage(1)}
                   type="button"
                   aria-label="First page"
                 >
@@ -3205,7 +3211,7 @@ export function DashboardShell({
                 <button
                   className="explorer-pagination-button"
                   disabled={safePage <= 1}
-                  onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); setExpandedTrendId(null); }}
+                  onClick={() => goToPage(Math.max(1, safePage - 1))}
                   type="button"
                   aria-label="Previous page"
                 >
@@ -3234,7 +3240,7 @@ export function DashboardShell({
                             : "explorer-pagination-button"
                         }
                         key={p}
-                        onClick={() => { setCurrentPage(p); setExpandedTrendId(null); }}
+                        onClick={() => goToPage(p)}
                         type="button"
                         aria-current={p === safePage ? "page" : undefined}
                       >
