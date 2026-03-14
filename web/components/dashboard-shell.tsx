@@ -16,8 +16,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { GeoMapClient } from "@/components/geo-map-client";
-import { Sparkline } from "@/components/sparkline";
-import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { detectChangedTrendIds, hasOverviewChanged } from "@/lib/auto-refresh";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import type { OverviewRefreshMeta } from "@/lib/auto-refresh";
@@ -57,13 +55,17 @@ import type {
   AlertEvent,
   AlertEventsResponse,
   AuthStatusResponse,
-  DashboardData,
+  ExploreDeferredData,
+  ExploreInitialData,
   NotificationChannel,
   NotificationChannelsResponse,
   PublicWatchlistSummary,
   PublicWatchlistsResponse,
+  SourceSummaryResponse,
+  TrendDetailIndexResponse,
   TrendDetailRecord,
   TrendExplorerRecord,
+  TrendHistoryResponse,
   TrendThesis,
   TrendThesisMatch,
   Watchlist,
@@ -71,7 +73,7 @@ import type {
 } from "@/lib/types";
 
 type DashboardShellProps = {
-  initialData: DashboardData;
+  initialData: ExploreInitialData;
   canManualRefresh: boolean;
 };
 
@@ -80,8 +82,35 @@ const LazyGeoMapCompact = dynamic(
   { ssr: false, loading: () => null },
 );
 
+const LazyTrendTrajectoryChart = dynamic(
+  () =>
+    import("@/components/trend-trajectory-chart").then(
+      (mod) => mod.TrendTrajectoryChart,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="chart-empty">Loading trajectory history...</p>
+    ),
+  },
+);
+
 const OVERVIEW_POLL_INTERVAL_MS = 60_000;
 const UPDATED_TRENDS_FLASH_MS = 5_000;
+const EMPTY_GENERATED_AT = new Date(0).toISOString();
+const EMPTY_HISTORY: TrendHistoryResponse = {
+  generatedAt: EMPTY_GENERATED_AT,
+  snapshots: [],
+};
+const EMPTY_DETAIL_INDEX: TrendDetailIndexResponse = {
+  generatedAt: EMPTY_GENERATED_AT,
+  trends: [],
+};
+const EMPTY_SOURCE_SUMMARY: SourceSummaryResponse = {
+  generatedAt: EMPTY_GENERATED_AT,
+  sources: [],
+  familyHistory: [],
+};
 
 const SOURCE_FILTER_OPTIONS = [
   { label: "All sources", value: "all" },
@@ -297,6 +326,12 @@ export function DashboardShell({
   canManualRefresh,
 }: DashboardShellProps) {
   const router = useRouter();
+  const [deferredData, setDeferredData] = useState<ExploreDeferredData | null>(
+    null,
+  );
+  const [deferredDataState, setDeferredDataState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
   const [isPending, startTransition] = useTransition();
   const [keyword, setKeyword] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
@@ -383,6 +418,12 @@ export function DashboardShell({
   const alertsDetailsRef = useRef<HTMLDetailsElement>(null);
   const runsDetailsRef = useRef<HTMLDetailsElement>(null);
   const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
+  const overview = initialData.overview;
+  const explorer = initialData.explorer;
+  const history = deferredData?.history ?? EMPTY_HISTORY;
+  const details = deferredData?.details ?? EMPTY_DETAIL_INDEX;
+  const sourceSummary = deferredData?.sourceSummary ?? EMPTY_SOURCE_SUMMARY;
+  const hasDeferredData = deferredDataState === "ready";
   const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
   const savedTheses = watchlistData?.theses ?? [];
   const savedThesisMatches = watchlistData?.thesisMatches ?? [];
@@ -401,14 +442,12 @@ export function DashboardShell({
   );
   const sourceWatchlist = useMemo(
     () =>
-      initialData.overview.sourceWatch != null &&
-      initialData.overview.sourceWatch.length > 0
-        ? initialData.overview.sourceWatch
-        : buildSourceWatchlist(initialData.overview.sources),
-    [initialData.overview.sourceWatch, initialData.overview.sources],
+      overview.sourceWatch != null && overview.sourceWatch.length > 0
+        ? overview.sourceWatch
+        : buildSourceWatchlist(overview.sources),
+    [overview.sourceWatch, overview.sources],
   );
-  const latestPipelineRun =
-    initialData.overview.operations.recentRuns[0] ?? null;
+  const latestPipelineRun = overview.operations.recentRuns[0] ?? null;
   const thesisMatchesById = useMemo(() => {
     const map = new Map<number, TrendThesisMatch[]>();
     for (const match of savedThesisMatches) {
@@ -427,7 +466,7 @@ export function DashboardShell({
 
   const categoryOptions = useMemo(() => {
     const categories = Array.from(
-      new Set(initialData.explorer.trends.map((trend) => trend.category)),
+      new Set(explorer.trends.map((trend) => trend.category)),
     ).sort();
     return [
       DEFAULT_CATEGORY_OPTION,
@@ -436,15 +475,15 @@ export function DashboardShell({
         value: category,
       })),
     ];
-  }, [initialData.explorer.trends]);
+  }, [explorer.trends]);
 
   const audienceOptions = useMemo(
-    () => buildAudienceFilterOptions(initialData.details.trends),
-    [initialData.details.trends],
+    () => buildAudienceFilterOptions(details.trends),
+    [details.trends],
   );
   const metaTrendOptions = useMemo(() => {
     const metaTrends = Array.from(
-      new Set(initialData.explorer.trends.map((trend) => trend.metaTrend)),
+      new Set(explorer.trends.map((trend) => trend.metaTrend)),
     ).sort();
     return [
       DEFAULT_META_TREND_OPTION,
@@ -453,50 +492,50 @@ export function DashboardShell({
         value: metaTrend,
       })),
     ];
-  }, [initialData.explorer.trends]);
+  }, [explorer.trends]);
   const marketOptions = useMemo(
-    () => buildMarketFilterOptions(initialData.details.trends),
-    [initialData.details.trends],
+    () => buildMarketFilterOptions(details.trends),
+    [details.trends],
   );
   const languageOptions = useMemo(
-    () => buildLanguageFilterOptions(initialData.details.trends),
-    [initialData.details.trends],
+    () => buildLanguageFilterOptions(details.trends),
+    [details.trends],
   );
 
   const detailsByTrendId = useMemo(() => {
     const map = new Map<string, TrendDetailRecord>();
-    for (const detail of initialData.details.trends) {
+    for (const detail of details.trends) {
       map.set(detail.id, detail);
     }
     return map;
-  }, [initialData.details.trends]);
+  }, [details.trends]);
   const sourceImpactRows = useMemo(
     () =>
       buildSourceImpactRows(
-        initialData.overview.sources,
-        initialData.explorer.trends,
+        overview.sources,
+        explorer.trends,
         detailsByTrendId,
       ),
     [
       detailsByTrendId,
-      initialData.explorer.trends,
-      initialData.overview.sources,
+      explorer.trends,
+      overview.sources,
     ],
   );
   const sourceFamilyInsights = useMemo(
-    () => buildSourceFamilyInsights(initialData.overview.sources),
-    [initialData.overview.sources],
+    () => buildSourceFamilyInsights(overview.sources),
+    [overview.sources],
   );
   const sourceFamilyHistoryInsights = useMemo(
     () =>
-      initialData.sourceSummary.familyHistory.length > 0
+      sourceSummary.familyHistory.length > 0
         ? buildSourceFamilyHistoryInsightsFromSnapshots(
-            initialData.sourceSummary.familyHistory,
+            sourceSummary.familyHistory,
           )
-        : buildSourceFamilyHistoryInsights(initialData.sourceSummary.sources),
+        : buildSourceFamilyHistoryInsights(sourceSummary.sources),
     [
-      initialData.sourceSummary.familyHistory,
-      initialData.sourceSummary.sources,
+      sourceSummary.familyHistory,
+      sourceSummary.sources,
     ],
   );
 
@@ -633,7 +672,7 @@ export function DashboardShell({
   const baseFilteredTrends = useMemo(() => {
     const normalizedKeyword = deferredKeyword.trim().toLowerCase();
     const minimum = minimumScore ?? 0;
-    const trends = initialData.explorer.trends.filter((trend) => {
+    const trends = explorer.trends.filter((trend) => {
       const detail = detailsByTrendId.get(trend.id);
       const matchesSource =
         selectedSource === "all" || trend.sources.includes(selectedSource);
@@ -727,7 +766,7 @@ export function DashboardShell({
     deferredKeyword,
     detailsByTrendId,
     hideRecurring,
-    initialData.explorer.trends,
+    explorer.trends,
     minimumScore,
     selectedAudience,
     selectedCategory,
@@ -928,6 +967,39 @@ export function DashboardShell({
   }, []);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
+    async function loadDeferredExploreData() {
+      setDeferredDataState("loading");
+      try {
+        const response = await fetch("/api/explore/bootstrap", {
+          cache: "no-store",
+          signal: abortController.signal,
+        });
+        if (!response.ok) {
+          throw new Error(`Bootstrap unavailable (${response.status})`);
+        }
+        const payload = (await response.json()) as ExploreDeferredData;
+        if (!abortController.signal.aborted) {
+          setDeferredData(payload);
+          setDeferredDataState("ready");
+        }
+      } catch (error) {
+        if (abortController.signal.aborted) {
+          return;
+        }
+        setDeferredDataState("error");
+        if (error instanceof Error) {
+          console.error("Failed to load deferred explorer data", error);
+        }
+      }
+    }
+
+    void loadDeferredExploreData();
+    return () => abortController.abort();
+  }, [explorer.generatedAt, overview.generatedAt]);
+
+  useEffect(() => {
     if (
       expandedTrendId != null &&
       !filteredTrends.some((t) => t.id === expandedTrendId)
@@ -938,10 +1010,10 @@ export function DashboardShell({
 
   useEffect(() => {
     const nextOverviewMeta = {
-      generatedAt: initialData.overview.generatedAt,
-      operations: { lastRunAt: initialData.overview.operations.lastRunAt },
+      generatedAt: overview.generatedAt,
+      operations: { lastRunAt: overview.operations.lastRunAt },
     };
-    const nextExplorerTrends = initialData.explorer.trends.map((trend) => ({
+    const nextExplorerTrends = explorer.trends.map((trend) => ({
       id: trend.id,
       rank: trend.rank,
       score: { total: trend.score.total },
@@ -979,7 +1051,7 @@ export function DashboardShell({
         setChangedTrendIds([]);
       }, UPDATED_TRENDS_FLASH_MS);
     }
-  }, [initialData.overview, initialData.explorer.trends]);
+  }, [explorer.trends, overview]);
 
   useEffect(() => {
     const intervalId = window.setInterval(async () => {
@@ -1718,23 +1790,23 @@ export function DashboardShell({
           <article className="hero-summary-card">
             <span>Top</span>
             <strong>
-              {initialData.overview.highlights.topTrendName ?? "No data"}
+              {overview.highlights.topTrendName ?? "No data"}
             </strong>
           </article>
           <article className="hero-summary-card">
             <span>Newest</span>
             <strong>
-              {initialData.overview.highlights.newestTrendName ?? "No data"}
+              {overview.highlights.newestTrendName ?? "No data"}
             </strong>
           </article>
           <article className="hero-summary-card">
             <span>Coverage</span>
             <strong>
-              {initialData.overview.summary.trackedTrends} tracked
+              {overview.summary.trackedTrends} tracked
             </strong>
             <small>
-              {initialData.overview.summary.totalSignals} signals · avg{" "}
-              {initialData.overview.summary.averageScore.toFixed(1)}
+              {overview.summary.totalSignals} signals · avg{" "}
+              {overview.summary.averageScore.toFixed(1)}
             </small>
           </article>
           <article className="hero-summary-card">
@@ -1746,7 +1818,7 @@ export function DashboardShell({
             </strong>
             {latestPipelineRun ? (
               <small>
-                {initialData.overview.operations.successRate.toFixed(1)}% health
+                {overview.operations.successRate.toFixed(1)}% health
                 · {latestPipelineRun.multiSourceTrendCount} corroborated
               </small>
             ) : null}
@@ -1766,7 +1838,7 @@ export function DashboardShell({
             <h2>Top scores</h2>
           </div>
           <div className="mini-bar-list">
-            {initialData.overview.charts.topTrendScores
+            {overview.charts.topTrendScores
               .slice(0, 6)
               .map((datum) => (
                 <div className="mini-bar-row" key={datum.label}>
@@ -1775,7 +1847,7 @@ export function DashboardShell({
                     <div
                       className="mini-bar-fill"
                       style={{
-                        width: `${scaleValue(datum.value, initialData.overview.charts.topTrendScores)}%`,
+                        width: `${scaleValue(datum.value, overview.charts.topTrendScores)}%`,
                       }}
                     />
                   </div>
@@ -1794,12 +1866,12 @@ export function DashboardShell({
               className="pie-chart"
               style={{
                 background: buildConicGradient(
-                  initialData.overview.charts.sourceShare,
+                  overview.charts.sourceShare,
                 ),
               }}
             />
             <div className="pie-chart-legend">
-              {initialData.overview.charts.sourceShare
+              {overview.charts.sourceShare
                 .slice(0, 5)
                 .map((datum) => (
                   <div className="pie-legend-row" key={datum.label}>
@@ -1807,7 +1879,7 @@ export function DashboardShell({
                     <strong>
                       {formatPercent(
                         datum.value,
-                        initialData.overview.charts.sourceShare,
+                        overview.charts.sourceShare,
                       )}
                     </strong>
                   </div>
@@ -1821,14 +1893,14 @@ export function DashboardShell({
             <h2>Status mix</h2>
           </div>
           <div className="mini-bar-list">
-            {initialData.overview.charts.statusBreakdown.map((datum) => (
+            {overview.charts.statusBreakdown.map((datum) => (
               <div className="mini-bar-row" key={datum.label}>
                 <span>{datum.label}</span>
                 <div className="mini-bar-track">
                   <div
                     className="mini-bar-fill mini-bar-fill-muted"
                     style={{
-                      width: `${scaleValue(datum.value, initialData.overview.charts.statusBreakdown)}%`,
+                      width: `${scaleValue(datum.value, overview.charts.statusBreakdown)}%`,
                     }}
                   />
                 </div>
@@ -1844,10 +1916,11 @@ export function DashboardShell({
           <div className="section-heading">
             <h2>Top trends over time</h2>
           </div>
-          <TrendTrajectoryChart
-            history={initialData.history}
-            trends={initialData.details.trends}
-          />
+          {hasDeferredData ? (
+            <LazyTrendTrajectoryChart history={history} trends={details.trends} />
+          ) : (
+            <p className="chart-empty">Loading trajectory history...</p>
+          )}
         </article>
       </section>
 
@@ -1857,7 +1930,7 @@ export function DashboardShell({
             <h2>Categories</h2>
           </div>
           <div className="curated-list">
-            {initialData.overview.sections.metaTrends
+            {overview.sections.metaTrends
               .slice(0, 6)
               .map((trend) => (
                 <Link
@@ -1884,7 +1957,7 @@ export function DashboardShell({
             <h2>Breakout</h2>
           </div>
           <div className="curated-list">
-            {initialData.overview.sections.breakoutTrends
+            {overview.sections.breakoutTrends
               .slice(0, 4)
               .map((trend) => (
                 <Link
@@ -1904,7 +1977,7 @@ export function DashboardShell({
             <h2>Rising</h2>
           </div>
           <div className="curated-list">
-            {initialData.overview.sections.risingTrends
+            {overview.sections.risingTrends
               .slice(0, 4)
               .map((trend) => (
                 <Link
@@ -1924,7 +1997,7 @@ export function DashboardShell({
             <h2>Experimental</h2>
           </div>
           <div className="curated-list">
-            {initialData.overview.sections.experimentalTrends
+            {overview.sections.experimentalTrends
               .slice(0, 4)
               .map((trend) => (
                 <Link
@@ -1940,7 +2013,7 @@ export function DashboardShell({
         </article>
       </section>
 
-      {explorerGeoMapData.length > 0 ? (
+      {hasDeferredData && explorerGeoMapData.length > 0 ? (
         <section className="explorer-geo-strip">
           <div className="explorer-geo-panel">
             <div className="explorer-geo-panel-head">
@@ -1979,6 +2052,19 @@ export function DashboardShell({
                 selectedGeoCountry !== "all" ? selectedGeoCountry : null
               }
             />
+          </div>
+        </section>
+      ) : deferredDataState === "loading" ? (
+        <section className="explorer-geo-strip">
+          <div className="explorer-geo-panel">
+            <div className="explorer-geo-panel-head">
+              <div>
+                <strong>Geographic footprint</strong>
+                <p className="source-summary-copy">
+                  Loading geographic coverage...
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       ) : null}
@@ -2633,7 +2719,7 @@ export function DashboardShell({
                 const collapsedSourceInsights = detail
                   ? buildSourceContributionInsights(
                       detail.sourceContributions,
-                      initialData.overview.sources,
+                      overview.sources,
                     ).slice(0, 2)
                   : [];
                 const collapsedDriverSummary =
@@ -2808,7 +2894,15 @@ export function DashboardShell({
                       <div className="explorer-expand-panel">
                         {expandedTrendId === trend.id &&
                           (() => {
-                            if (!detail) return null;
+                            if (!detail) {
+                              return (
+                                <p className="chart-empty">
+                                  {deferredDataState === "loading"
+                                    ? "Loading deeper trend detail..."
+                                    : "Detailed enrichment is not available for this trend yet."}
+                                </p>
+                              );
+                            }
                             const maxScore = Math.max(
                               detail.score.social,
                               detail.score.developer,
@@ -2819,7 +2913,7 @@ export function DashboardShell({
                             );
                             const topContribs = buildSourceContributionInsights(
                               detail.sourceContributions,
-                              initialData.overview.sources,
+                              overview.sources,
                             ).slice(0, 5);
                             const maxContrib = Math.max(
                               ...topContribs.map((c) => c.scoreSharePercent),
@@ -3344,7 +3438,7 @@ export function DashboardShell({
             </summary>
 
             <div className="snapshot-list">
-              {initialData.overview.operations.recentRuns.map((run) => (
+              {overview.operations.recentRuns.map((run) => (
                 <section className="snapshot-card" key={run.capturedAt}>
                   <header>
                     <strong>{formatTimestamp(run.capturedAt)}</strong>
@@ -3395,6 +3489,19 @@ export function DashboardShell({
             </summary>
 
             <div className="snapshot-list">
+              {deferredDataState === "loading" ? (
+                <section className="snapshot-card">
+                  <header>
+                    <strong>Source analysis</strong>
+                    <span className="source-health-pill source-health-pill-healthy">
+                      Loading
+                    </span>
+                  </header>
+                  <p className="source-summary-copy">
+                    Loading deeper source mix and family history...
+                  </p>
+                </section>
+              ) : null}
               {sourceImpactRows.length > 0 ? (
                 <section className="snapshot-card">
                   <header>
@@ -3522,7 +3629,7 @@ export function DashboardShell({
                   </div>
                 </section>
               ) : null}
-              {initialData.overview.sources.map((source) => (
+              {overview.sources.map((source) => (
                 <section className="snapshot-card" key={source.source}>
                   <header>
                     <strong>

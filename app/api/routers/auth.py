@@ -5,12 +5,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
-from app.auth.middleware import SESSION_COOKIE_NAME, require_admin, require_auth
+from app.auth.middleware import SESSION_COOKIE_NAME, get_current_profile, require_admin, require_auth
 from app.auth.passwords import hash_password, verify_password
 from app.auth.repository import UserRepository
 from app.auth.tokens import generate_api_key, generate_session_token, hash_session_token
 from app.data.connection import DatabaseConnection
-from app.models import User
+from app.models import User, UserProfile
 
 router = APIRouter(tags=["auth"])
 
@@ -82,6 +82,31 @@ def get_current_user_info(user: User = Depends(require_auth)) -> dict:
     """Return the current authenticated user."""
 
     return {"user": _user_response(user)}
+
+
+@router.get("/auth/profile")
+def get_profile(profile: UserProfile = Depends(get_current_profile)) -> dict:
+    """Return the current user's profile with tier and admin info."""
+
+    if profile is None:
+        # Auth disabled — return synthetic admin profile
+        return {
+            "id": "anonymous",
+            "displayName": "Anonymous",
+            "username": None,
+            "isAdmin": True,
+            "accountTier": "pro",
+            "subscriptionStatus": "active",
+        }
+
+    return {
+        "id": profile.id,
+        "displayName": profile.display_name,
+        "username": profile.username,
+        "isAdmin": profile.is_admin,
+        "accountTier": profile.account_tier,
+        "subscriptionStatus": profile.subscription_status,
+    }
 
 
 @router.post("/auth/logout")

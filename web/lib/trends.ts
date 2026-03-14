@@ -3,8 +3,9 @@ import path from "node:path";
 
 import { apiGet } from "@/lib/api-client";
 import type {
-  DashboardData,
   DashboardOverviewResponse,
+  ExploreDeferredData,
+  ExploreInitialData,
   SourceSummaryRecord,
   SourceSummaryResponse,
   TrendDetailIndexResponse,
@@ -32,16 +33,21 @@ const SUPABASE_ACCESS_KEY =
 const API_ENABLED = !!process.env.SIGNAL_EYE_API_URL;
 const SUPABASE_PAYLOADS_ENABLED = !!SUPABASE_URL && !!SUPABASE_ACCESS_KEY;
 
-export async function loadDashboardData(): Promise<DashboardData> {
-  const [latest, history, overview, explorer, details, sourceSummary] = await Promise.all([
-    readLatestTrends(),
-    readTrendHistory(),
+export async function loadExploreInitialData(): Promise<ExploreInitialData> {
+  const [overview, explorer] = await Promise.all([
     readDashboardOverview(),
     readTrendExplorer(),
+  ]);
+  return { overview, explorer };
+}
+
+export async function loadExploreDeferredData(): Promise<ExploreDeferredData> {
+  const [history, details, sourceSummary] = await Promise.all([
+    readTrendHistory(),
     readTrendDetailIndex(),
     readSourceSummary(),
   ]);
-  return { latest, history, overview, explorer, details, sourceSummary };
+  return { history, details, sourceSummary };
 }
 
 async function readLatestTrends(): Promise<LatestTrendsResponse> {

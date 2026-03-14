@@ -7,6 +7,7 @@ export type AuthUser = {
   email: string | null;
   displayName: string;
   isAdmin: boolean;
+  accountTier: "free" | "pro";
   createdAt: string;
 };
 
@@ -34,6 +35,12 @@ export async function getCurrentUser(): Promise<AuthStatusResponse> {
       return { authEnabled: true, user: null };
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin, account_tier")
+      .eq("id", user.id)
+      .single();
+
     return {
       authEnabled: true,
       user: {
@@ -44,7 +51,8 @@ export async function getCurrentUser(): Promise<AuthStatusResponse> {
           user.user_metadata?.name ??
           user.email ??
           "",
-        isAdmin: false,
+        isAdmin: profile?.is_admin ?? false,
+        accountTier: profile?.account_tier === "pro" ? "pro" : "free",
         createdAt: user.created_at,
       },
     };

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { NavBar } from "@/components/nav-bar";
 import { AuthProvider } from "@/components/auth-provider";
+import { ProfileProvider } from "@/components/profile-provider";
 import {
   getThemeClass,
   LIGHT_THEME,
@@ -55,8 +56,10 @@ export default async function RootLayout({
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
         <AuthProvider>
-          <NavBar />
-          {children}
+          <ProfileProvider>
+            <NavBar />
+            {children}
+          </ProfileProvider>
         </AuthProvider>
         <Analytics />
       </body>

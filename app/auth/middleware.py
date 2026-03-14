@@ -79,9 +79,10 @@ def get_current_profile(
     request: Request,
     db: DatabaseConnection = Depends(get_db),
 ) -> Optional[UserProfile]:
-    """Extract the Supabase user profile from the request.
+    """Extract the user profile from the request.
 
     Returns the full UserProfile for routes that need subscription info.
+    Supports Supabase JWT, API key, and session cookie auth.
     Returns None when auth is disabled.
     """
 
@@ -92,11 +93,28 @@ def get_current_profile(
     if auth_header.startswith("Bearer "):
         token = auth_header[7:].strip()
         if token:
+            # Try Supabase JWT first
             jwt_secret = _get_supabase_jwt_secret()
             if jwt_secret and not token.startswith("tf_"):
                 profile = _authenticate_supabase_jwt(token, jwt_secret, db)
                 if profile is not None:
                     return profile
+
+            # Fall back to API key auth
+            try:
+                user = _authenticate_api_key(token, db)
+                return _profile_from_user(user, db)
+            except HTTPException:
+                pass
+
+    # Legacy session cookie fallback
+    session_token = request.cookies.get(SESSION_COOKIE_NAME)
+    if session_token:
+        try:
+            user = _authenticate_session(session_token, db)
+            return _profile_from_user(user, db)
+        except HTTPException:
+            pass
 
     raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -127,29 +145,51 @@ def require_admin(user: User = Depends(require_auth)) -> User:
     return user
 
 
+def _synthetic_admin_profile() -> UserProfile:
+    """Return a synthetic admin/pro profile for when auth is disabled."""
+
+    now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+    return UserProfile(
+        id="anonymous",
+        display_name="Anonymous",
+        username=None,
+        is_admin=True,
+        account_tier="pro",
+        stripe_customer_id=None,
+        stripe_subscription_id=None,
+        subscription_status="active",
+        current_period_end=None,
+        created_at=now,
+        updated_at=now,
+    )
+
+
 def require_pro(profile: Optional[UserProfile] = Depends(get_current_profile)) -> UserProfile:
-    """Dependency that requires an active Pro subscription."""
+    """Dependency that requires an active Pro subscription.
+
+    Admins (owners) bypass the subscription check.
+    """
 
     if not auth_enabled():
-        # When auth is disabled, return a synthetic pro profile
-        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
-        return UserProfile(
-            id="anonymous",
-            display_name="Anonymous",
-            username=None,
-            is_admin=True,
-            account_tier="pro",
-            stripe_customer_id=None,
-            stripe_subscription_id=None,
-            subscription_status="active",
-            current_period_end=None,
-            created_at=now,
-            updated_at=now,
-        )
+        return _synthetic_admin_profile()
     if profile is None:
         raise HTTPException(status_code=401, detail="Authentication required")
+    if profile.is_admin:
+        return profile
     if profile.account_tier != "pro" or profile.subscription_status not in ("active", "trialing"):
         raise HTTPException(status_code=403, detail="Pro subscription required")
+    return profile
+
+
+def require_owner(profile: Optional[UserProfile] = Depends(get_current_profile)) -> UserProfile:
+    """Dependency that requires admin (owner) privileges."""
+
+    if not auth_enabled():
+        return _synthetic_admin_profile()
+    if profile is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if not profile.is_admin:
+        raise HTTPException(status_code=403, detail="Owner privileges required")
     return profile
 
 
@@ -210,3 +250,45 @@ def _authenticate_session(token: str, db: DatabaseConnection) -> User:
 
     user_repo.touch_session(session.id)
     return user
+
+
+def _profile_from_user(user: User, db: DatabaseConnection) -> UserProfile:
+    """Build a UserProfile for an API-key or session-authenticated User.
+
+    If the user has a linked supabase_uid and a corresponding profile row,
+    returns that profile. Otherwise constructs a minimal profile from the
+    User object.
+    """
+
+    # Check if this legacy user has a linked Supabase profile
+    supabase_uid = None
+    try:
+        row = db.execute(
+            "SELECT supabase_uid FROM users WHERE id = ?",
+            (user.id,),
+        ).fetchone()
+        supabase_uid = row["supabase_uid"] if row and row["supabase_uid"] else None
+    except Exception:
+        pass
+
+    if supabase_uid:
+        repo = ProfileRepository(db)
+        profile = repo.get_profile_by_id(supabase_uid)
+        if profile is not None:
+            return profile
+
+    # No linked profile — construct a minimal one from the User
+    now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+    return UserProfile(
+        id=str(user.id),
+        display_name=user.display_name,
+        username=user.username,
+        is_admin=user.is_admin,
+        account_tier="free",
+        stripe_customer_id=None,
+        stripe_subscription_id=None,
+        subscription_status="none",
+        current_period_end=None,
+        created_at=user.created_at,
+        updated_at=now,
+    )

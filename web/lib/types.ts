@@ -32,11 +32,13 @@ export type TrendHistoryResponse = {
   snapshots: TrendSnapshot[];
 };
 
-export type DashboardData = {
-  latest: LatestTrendsResponse;
-  history: TrendHistoryResponse;
+export type ExploreInitialData = {
   overview: DashboardOverviewResponse;
   explorer: TrendExplorerResponse;
+};
+
+export type ExploreDeferredData = {
+  history: TrendHistoryResponse;
   details: TrendDetailIndexResponse;
   sourceSummary: SourceSummaryResponse;
 };
@@ -474,6 +476,7 @@ export type AuthUser = {
   username: string;
   displayName: string;
   isAdmin: boolean;
+  accountTier: "free" | "pro";
   createdAt: string;
 };
 
