@@ -52,6 +52,8 @@ def _score(topic: str, total_score: float) -> TrendScoreResult:
 
 
 class DigestTests(unittest.TestCase):
+    """Test run digest construction from score deltas."""
+
     def test_build_run_digest_captures_entries_movers_and_breakouts(self) -> None:
         digest = build_run_digest(
             current_scores=[
@@ -87,6 +89,8 @@ class DigestTests(unittest.TestCase):
 
 
 class NotificationRepositoryTests(unittest.TestCase):
+    """Test notification channel and log persistence."""
+
     def setUp(self) -> None:
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -119,6 +123,8 @@ class NotificationRepositoryTests(unittest.TestCase):
 
 
 class DeliveryTests(unittest.TestCase):
+    """Test webhook delivery and payload construction."""
+
     def setUp(self) -> None:
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -221,6 +227,8 @@ class DeliveryTests(unittest.TestCase):
 
 
 class SignatureTests(unittest.TestCase):
+    """Test HMAC signature generation for webhook payloads."""
+
     def test_compute_signature_produces_hex_digest(self) -> None:
         body = b'{"event":"notification_test"}'
         sig = compute_signature(body, "my-secret")
@@ -236,6 +244,8 @@ class SignatureTests(unittest.TestCase):
 
 
 class RetryTests(unittest.TestCase):
+    """Test webhook delivery retry behavior on transient failures."""
+
     def setUp(self) -> None:
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -312,6 +322,8 @@ class RetryTests(unittest.TestCase):
 
 
 class NotificationCliPayloadTests(unittest.TestCase):
+    """Test the CLI-layer notification channel helper payloads."""
+
     def setUp(self) -> None:
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -341,6 +353,8 @@ class NotificationCliPayloadTests(unittest.TestCase):
 
 
 class NotificationApiTests(unittest.TestCase):
+    """Test the notification API endpoints."""
+
     def setUp(self) -> None:
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row

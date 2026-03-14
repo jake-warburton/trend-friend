@@ -81,6 +81,8 @@ def _detail() -> TrendDetailRecord:
 
 
 class ThesisMatchingTests(unittest.TestCase):
+    """Test saved-thesis matching against trend detail records."""
+
     def test_matches_across_filters_and_ranks_by_lens(self) -> None:
         thesis = TrendThesis(
             id=1,
