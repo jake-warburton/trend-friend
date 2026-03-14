@@ -2978,6 +2978,129 @@ input {
   padding: 22px 0 0;
 }
 
+.about-panel {
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 82%, var(--page-background) 18%);
+  padding: 22px 0 0;
+  margin-top: 18px;
+}
+
+.about-panel .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.about-panel h2 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+
+.about-panel-content {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.about-panel-image {
+  flex: 0 0 auto;
+}
+
+.about-panel-thumbnail {
+  border-radius: 8px;
+  max-width: 240px;
+  height: auto;
+  object-fit: cover;
+}
+
+.about-panel-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.about-panel-tagline {
+  color: var(--accent-strong);
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin: 0 0 8px;
+  text-transform: capitalize;
+}
+
+.about-panel-extract {
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 64ch;
+  margin: 0 0 12px;
+}
+
+.about-panel-wiki-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.about-panel-wiki-link::after {
+  content: "\00a0\2192";
+}
+
+.why-trending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.why-trending-item {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.why-trending-item:last-child {
+  border-bottom: 0;
+}
+
+.why-trending-number {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  color: var(--page-background);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.why-trending-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.why-trending-item strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.why-trending-item span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .market-footprint-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3858,6 +3981,14 @@ input {
 
   .detail-panel-wide {
     grid-column: auto;
+  }
+
+  .about-panel-content {
+    flex-direction: column;
+  }
+
+  .about-panel-thumbnail {
+    max-width: 180px;
   }
 
   .source-metric-grid {

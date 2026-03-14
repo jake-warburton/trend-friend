@@ -16,7 +16,8 @@ import {
   getSourceFreshnessBadge,
   summarizeTopSourceDrivers,
 } from "@/lib/source-health";
-import { getWikipediaLinkFromDetail, loadWikipediaSummary } from "@/lib/wikipedia";
+import Image from "next/image";
+import { getWikipediaLinkFromDetail, loadWikipediaData } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 import { GeoMapClient } from "@/components/geo-map-client";
@@ -157,7 +158,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
   const primaryEvidenceLink = getPrimaryEvidenceLink(trend);
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
-  const wikipediaSummary = wikipediaLink ? await loadWikipediaSummary(wikipediaLink.title) : null;
+  const wikipediaData = wikipediaLink ? await loadWikipediaData(wikipediaLink.title) : null;
   const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
   const visibleMarketFootprint = showEstimatedMetrics
     ? trend.marketFootprint
@@ -236,6 +237,45 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
         </div>
       </section>
+
+      {wikipediaData ? (
+        <section className="about-panel">
+          <div className="about-panel-content">
+            {wikipediaData.thumbnailUrl ? (
+              <div className="about-panel-image">
+                <Image
+                  src={wikipediaData.thumbnailUrl}
+                  alt={trend.name}
+                  width={wikipediaData.thumbnailWidth || 240}
+                  height={wikipediaData.thumbnailHeight || 240}
+                  className="about-panel-thumbnail"
+                />
+              </div>
+            ) : null}
+            <div className="about-panel-text">
+              <p className="eyebrow">About</p>
+              <h2>What is {trend.name}?</h2>
+              {wikipediaData.description ? (
+                <p className="about-panel-tagline">{wikipediaData.description}</p>
+              ) : null}
+              <p className="about-panel-extract">{wikipediaData.extract}</p>
+              <a className="about-panel-wiki-link" href={wikipediaData.pageUrl} rel="noreferrer" target="_blank">
+                Read more on Wikipedia
+              </a>
+            </div>
+          </div>
+        </section>
+      ) : trend.summary ? (
+        <section className="about-panel">
+          <div className="about-panel-content">
+            <div className="about-panel-text">
+              <p className="eyebrow">About</p>
+              <h2>What is {trend.name}?</h2>
+              <p className="about-panel-extract">{trend.summary}</p>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="detail-grid">
         <section className="detail-panel detail-panel-wide">
@@ -321,16 +361,17 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           <div className="section-heading">
             <div>
               <p className="eyebrow">Why now</p>
-              <h2>Current rationale</h2>
+              <h2>Why is {trend.name} trending?</h2>
             </div>
           </div>
 
-          <div className="detail-list">
+          <div className="why-trending-list">
             {trend.whyNow.map((reason, index) => (
-              <article className="detail-list-item" key={`${trend.id}-why-now-${index}`}>
+              <article className="why-trending-item" key={`${trend.id}-why-now-${index}`}>
+                <span className="why-trending-number">{index + 1}</span>
                 <div>
-                  <strong>Signal {index + 1}</strong>
-                  <span>{reason}</span>
+                  <strong>{extractReasonTitle(reason)}</strong>
+                  <span>{extractReasonBody(reason)}</span>
                 </div>
               </article>
             ))}
@@ -535,32 +576,6 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
         </section>
 
-        {wikipediaLink ? (
-          <section className="detail-panel">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">Wikipedia</p>
-                <h2>Knowledge context</h2>
-              </div>
-            </div>
-
-            <div className="detail-list">
-              <article className="detail-list-item">
-                <div>
-                  <strong>
-                    <a className="trend-link" href={wikipediaLink.url} rel="noreferrer" target="_blank">
-                      {wikipediaLink.title}
-                    </a>
-                  </strong>
-                  <span>
-                    {wikipediaSummary ??
-                      "This trend includes a Wikipedia pageview signal. Treat it as context unless other sources also move."}
-                  </span>
-                </div>
-              </article>
-            </div>
-          </section>
-        ) : null}
 
         <section className="detail-panel">
           <div className="section-heading">
@@ -866,6 +881,30 @@ function volatilityClassName(volatility: string) {
     return "volatility-pill volatility-pill-emerging";
   }
   return "volatility-pill";
+}
+
+function extractReasonTitle(reason: string) {
+  const colonIndex = reason.indexOf(":");
+  if (colonIndex > 0 && colonIndex < 60) {
+    return reason.slice(0, colonIndex);
+  }
+  const periodIndex = reason.indexOf(".");
+  if (periodIndex > 0 && periodIndex < 80) {
+    return reason.slice(0, periodIndex);
+  }
+  return reason;
+}
+
+function extractReasonBody(reason: string) {
+  const colonIndex = reason.indexOf(":");
+  if (colonIndex > 0 && colonIndex < 60) {
+    return reason.slice(colonIndex + 1).trim();
+  }
+  const periodIndex = reason.indexOf(".");
+  if (periodIndex > 0 && periodIndex < 80) {
+    return reason.slice(periodIndex + 1).trim();
+  }
+  return "";
 }
 
 function contributionHealthClassName(status: string | null) {

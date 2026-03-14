@@ -3094,7 +3094,12 @@ class TrendScoreRepository:
             stage,
             self._build_trend_confidence(score, ordered_history, duplicate_penalty=duplicate_penalty),
             summary,
-            json.dumps(self._build_why_now(score, momentum, len(ordered_history))),
+            json.dumps(self._build_why_now(
+                score,
+                momentum,
+                len(ordered_history),
+                evidence_titles=self._get_evidence_titles_for_why_now(score.topic),
+            )),
             first_seen_at.isoformat() if first_seen_at is not None else None,
             score.latest_timestamp.isoformat(),
         )
@@ -3357,6 +3362,7 @@ class TrendScoreRepository:
         score: TrendScoreResult,
         momentum: TrendMomentum,
         history_length: int,
+        evidence_titles: list[tuple[str, str]] | None = None,
     ) -> list[str]:
         """Return concise rationale bullets explaining why the trend currently matters."""
 
@@ -3382,7 +3388,28 @@ class TrendScoreRepository:
             reasons.append(f"Total score is up {momentum.percent_delta:.1f}% versus the previous run.")
         if history_length <= 2:
             reasons.append("The trend is still early in its lifecycle, so competition may still be thin.")
-        return reasons[:3] or ["The trend is active, but the current run has limited explanatory evidence."]
+        if evidence_titles:
+            seen_sources: set[str] = set()
+            for source, title in evidence_titles:
+                if source == "wikipedia" or source in seen_sources:
+                    continue
+                label = source.replace("_", " ").title()
+                reasons.append(f"Discussed on {label}: \u201c{title}\u201d")
+                seen_sources.add(source)
+                if len(seen_sources) >= 2:
+                    break
+        return reasons[:5] or ["The trend is active, but the current run has limited explanatory evidence."]
+
+    def _get_evidence_titles_for_why_now(self, topic: str) -> list[tuple[str, str]]:
+        """Return (source, title) pairs from recent evidence for why-now headlines."""
+
+        items = self.get_topic_evidence(topic, limit=20)
+        result: list[tuple[str, str]] = []
+        for item in items:
+            title = item.evidence.strip()
+            if title and len(title) >= 10 and item.source != "wikipedia":
+                result.append((item.source, title))
+        return result
 
     @staticmethod
     def _build_trend_aliases(score: TrendScoreResult) -> list[str]:
