@@ -149,7 +149,9 @@ class RepositoryTests(unittest.TestCase):
 
         summary = TrendScoreRepository._build_trend_summary(score, "general-tech", momentum, history_length=4)
 
-        self.assertEqual(summary, "Robotics is a cooling trend validated by 2 signals across 2 sources.")
+        self.assertIn("Robotics is a cooling trend", summary)
+        self.assertIn("2 signals across 2 sources", summary)
+        self.assertIn("driven by", summary)
 
     def test_trend_score_repository_round_trip(self) -> None:
         score = TrendScoreResult(

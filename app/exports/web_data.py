@@ -135,11 +135,19 @@ logger = logging.getLogger(__name__)
 
 
 def _enrich_with_wikipedia(records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
-    """Attach Wikipedia summary data to detail records that have a Wikipedia evidence item."""
+    """Attach Wikipedia summary data to detail records.
+
+    First tries trends that already have Wikipedia evidence, then attempts
+    Wikipedia lookups for remaining trends using their canonical name.
+    This gives more trends a description and thumbnail.
+    """
 
     from app.enrichment.wikipedia import fetch_wikipedia_summaries
 
     title_to_record_indices: dict[str, list[int]] = {}
+    already_mapped: set[int] = set()
+
+    # Phase 1: Trends with existing Wikipedia evidence (high confidence match)
     for index, record in enumerate(records):
         wikipedia_item = next(
             (item for item in record.evidence_items if item.source == "wikipedia"),
@@ -149,6 +157,15 @@ def _enrich_with_wikipedia(records: list[TrendDetailRecord]) -> list[TrendDetail
             title = wikipedia_item.evidence.strip()
             if title:
                 title_to_record_indices.setdefault(title, []).append(index)
+                already_mapped.add(index)
+
+    # Phase 2: Try canonical trend names for records without Wikipedia evidence
+    for index, record in enumerate(records):
+        if index in already_mapped:
+            continue
+        name = record.name.strip()
+        if name and len(name) >= 3:
+            title_to_record_indices.setdefault(name, []).append(index)
 
     if not title_to_record_indices:
         return records

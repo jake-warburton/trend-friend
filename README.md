@@ -101,7 +101,7 @@ Supported environment variables:
 - `SIGNAL_EYE_GITHUB_PAGE_LIMIT`: Max GitHub result pages to fetch per query family. Default: `3`
 - `SIGNAL_EYE_ENABLE_EXPERIMENTAL_SOURCES`: Enable optional experimental sources like Polymarket. Default: `true`
 - `SIGNAL_EYE_ENABLE_TWITTER_SOURCE`: Enable the experimental Twitter/X adapter. Default: `false`
-- `SIGNAL_EYE_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `100`
+- `SIGNAL_EYE_RANKING_LIMIT`: Number of ranked trends to store and display. Default: `1000`
 - `SIGNAL_EYE_MARKET_ENRICHMENT_ENABLED`: Enable external market-footprint enrichment. Default: `true`
 - `SIGNAL_EYE_MARKET_ENRICHMENT_LIMIT`: Max ranked trends to enrich per run. Default: `25`
 - `SIGNAL_EYE_REDDIT_USER_AGENT`: User agent for Reddit requests

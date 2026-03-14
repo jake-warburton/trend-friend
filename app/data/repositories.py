@@ -3352,10 +3352,29 @@ class TrendScoreRepository:
         signal_count = sum(score.source_counts.values())
         stage = TrendScoreRepository._build_trend_stage(momentum, history_length, score.total_score)
         category_descriptor = "trend" if category == "general-tech" else f"{category_label} trend"
-        return (
-            f"{build_display_name(score.topic, score.evidence)} is a {stage} {category_descriptor} "
-            f"validated by {signal_count} signals across {source_count} sources."
+        display_name = build_display_name(score.topic, score.evidence)
+
+        # Build a richer summary with dominant signal context
+        dominant = max(
+            (
+                ("social buzz", score.social_score),
+                ("developer activity", score.developer_score),
+                ("knowledge coverage", score.knowledge_score),
+                ("search interest", score.search_score),
+            ),
+            key=lambda item: item[1],
         )
+        top_source = max(score.source_counts, key=score.source_counts.get) if score.source_counts else None
+        top_source_label = (top_source or "").replace("_", " ").title()
+
+        parts = [f"{display_name} is a {stage} {category_descriptor}"]
+        if dominant[1] > 0:
+            parts.append(f"driven by {dominant[0]}")
+        parts.append(f"with {signal_count} signals across {source_count} sources")
+        if top_source_label:
+            parts.append(f"(strongest on {top_source_label})")
+
+        return " ".join(parts) + "."
 
     @staticmethod
     def _build_why_now(
@@ -3388,6 +3407,25 @@ class TrendScoreRepository:
             reasons.append(f"Total score is up {momentum.percent_delta:.1f}% versus the previous run.")
         if history_length <= 2:
             reasons.append("The trend is still early in its lifecycle, so competition may still be thin.")
+
+        # Signal type diversity context
+        active_types = [t for t, v in [
+            ("social", score.social_score),
+            ("developer", score.developer_score),
+            ("knowledge", score.knowledge_score),
+            ("search", score.search_score),
+        ] if v > 0]
+        if len(active_types) >= 3:
+            reasons.append(f"Broad signal coverage: active in {', '.join(active_types)} channels.")
+
+        # Source diversity context
+        source_families = set()
+        for source in score.source_counts:
+            from app.sources.catalog import source_family_for_source
+            source_families.add(source_family_for_source(source))
+        if len(source_families) >= 3:
+            reasons.append(f"Corroborated across {len(source_families)} independent source families.")
+
         if evidence_titles:
             seen_sources: set[str] = set()
             for source, title in evidence_titles:

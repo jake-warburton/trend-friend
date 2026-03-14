@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import SettingsPage from "@/app/settings/page";
 import {
   buildEnrichmentProviderStatuses,
+  createThemeBootstrapScript,
   getDefaultThemeForScheme,
   getThemeClass,
   LIGHT_THEME,
@@ -64,4 +65,13 @@ test("theme helpers default safely and resolve CSS classes", () => {
   assert.equal(THEME_OPTIONS[1]?.key, "soft-charcoal");
   assert.equal(THEME_OPTIONS[2]?.key, "ocean");
   assert.equal(THEME_OPTIONS.length, 3);
+});
+
+test("theme bootstrap script persists the resolved theme when no cookie exists", () => {
+  const script = createThemeBootstrapScript();
+
+  assert.match(script, /window\.matchMedia\('\(prefers-color-scheme: dark\)'\)\.matches \? 'soft-charcoal' : 'tech-light'/);
+  assert.match(script, /if \(!themeCookie\)/);
+  assert.match(script, /document\.cookie = 'signal_eye_theme='/);
+  assert.match(script, /encodeURIComponent\(resolvedThemeValue\)/);
 });

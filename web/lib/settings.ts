@@ -91,3 +91,33 @@ export function getThemeClass(themeKey: string): string {
 export function getDefaultThemeForScheme(prefersDark: boolean): string {
   return prefersDark ? DARK_THEME : LIGHT_THEME;
 }
+
+export function createThemeBootstrapScript(themeCookieName: string = THEME_COOKIE): string {
+  return `
+    (function () {
+      try {
+        var themeCookie = document.cookie
+          .split('; ')
+          .find(function (entry) { return entry.indexOf('${themeCookieName}=') === 0; });
+        var themeValue = themeCookie ? decodeURIComponent(themeCookie.split('=').slice(1).join('=')) : '';
+        var resolvedThemeValue = themeValue === 'soft-charcoal'
+          ? 'soft-charcoal'
+          : themeValue === 'ocean'
+            ? 'ocean'
+            : themeValue === 'tech-light'
+              ? 'tech-light'
+              : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'soft-charcoal' : 'tech-light');
+        var themeClassName = resolvedThemeValue === 'soft-charcoal'
+          ? 'theme-soft-charcoal'
+          : resolvedThemeValue === 'ocean'
+            ? 'theme-ocean'
+            : 'theme-tech-light';
+        document.documentElement.classList.remove('theme-tech-light', 'theme-soft-charcoal', 'theme-ocean');
+        document.documentElement.classList.add(themeClassName);
+        if (!themeCookie) {
+          document.cookie = '${themeCookieName}=' + encodeURIComponent(resolvedThemeValue) + '; path=/; max-age=31536000; samesite=lax';
+        }
+      } catch (error) {}
+    }());
+  `;
+}

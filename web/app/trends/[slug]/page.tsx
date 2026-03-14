@@ -21,6 +21,7 @@ import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 import { GeoMapClient } from "@/components/geo-map-client";
+import { PlatformIntelligence } from "@/components/platform-intelligence";
 
 type TrendDetailPageProps = {
   params: Promise<{
@@ -310,58 +311,22 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
         <section className="detail-panel detail-panel-wide">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Market footprint</p>
-              <h2>Platform signals</h2>
+              <p className="eyebrow">Platform intelligence</p>
+              <h2>Source-by-source breakdown</h2>
             </div>
-          </div>
-          <div className="market-footprint-legend" aria-label="Metric source types">
-            <span className="market-footprint-legend-item">
-              <span className="market-footprint-legend-dot market-footprint-legend-dot-live" aria-hidden="true" />
-              Live provider metric
-            </span>
-            <span className="market-footprint-legend-item">
-              <span
-                className="market-footprint-legend-dot market-footprint-legend-dot-estimated"
-                aria-hidden="true"
-              />
-              Estimated fallback metric
-            </span>
+            <small className="section-heading-meta">
+              {trend.coverage.sourceCount} sources · {trend.coverage.signalCount} signals
+            </small>
           </div>
 
-          {visibleMarketFootprint.length > 0 ? (
-            <div className="market-footprint-grid">
-              {visibleMarketFootprint.map((metric) => {
-                const freshness = formatDateOnly(metric.capturedAt);
-                return (
-                  <article className="market-footprint-card" key={`${metric.source}-${metric.metricKey}`}>
-                    <div className="market-footprint-card-header">
-                      <span>{formatSourceLabel(metric.source)}</span>
-                      {metric.isEstimated ? <small>Estimated</small> : null}
-                    </div>
-                    <strong>{metric.valueDisplay}</strong>
-                    <p>{metric.label}</p>
-                    <small>
-                      {metric.period} · {Math.round(metric.confidence * 100)}% confidence · Updated {freshness}
-                    </small>
-                    {metric.provenanceUrl ? (
-                      <a className="detail-back-link market-footprint-link" href={metric.provenanceUrl} rel="noreferrer" target="_blank">
-                        Open source
-                      </a>
-                    ) : null}
-                  </article>
-                );
-              })}
-            </div>
-          ) : trend.marketFootprint.length > 0 && !showEstimatedMetrics ? (
-            <p className="detail-copy">
-              Estimated market metrics are currently hidden. Change this in <Link className="trend-link" href="/settings">Settings</Link>.
-            </p>
-          ) : (
-            <p className="detail-copy">
-              Market footprint enrichment is still sparse for this trend. Source-level metrics will appear here as
-              more platform evidence is captured.
-            </p>
-          )}
+          <PlatformIntelligence
+            sourceContributions={trend.sourceContributions}
+            sourceBreakdown={trend.sourceBreakdown}
+            marketFootprint={trend.marketFootprint}
+            evidenceItems={trend.evidenceItems}
+            sourceInsights={sourceInsights}
+            showEstimatedMetrics={showEstimatedMetrics}
+          />
         </section>
 
         <section className="detail-panel">
@@ -520,46 +485,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </div>
         </section>
 
-        <section className="detail-panel">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Sources</p>
-              <h2>What is driving this rank</h2>
-            </div>
-          </div>
-
-          <p className="source-summary-copy detail-source-summary">
-            {summarizeTopSourceDrivers(trend.sourceContributions)}
-          </p>
-          <div className="detail-list">
-            {sourceInsights.map((source) => (
-              <article className="detail-list-item detail-list-item-source" key={source.source}>
-                <div>
-                  <strong>{source.title}</strong>
-                  <span>
-                    {source.signalCount} signals · {source.scoreSharePercent.toFixed(1)}% est. score share
-                  </span>
-                  <span>{source.mixSummary}</span>
-                  <span>{source.fetchSummary}</span>
-                  {source.warning ? <span className="source-warning-copy">{source.warning}</span> : null}
-                </div>
-                <small>
-                  <span className={contributionHealthClassName(source.status)}>{source.statusLabel}</span>
-                  {(() => {
-                    const freshness = getSourceFreshnessBadge(source.fetchedAt);
-                    return freshness ? (
-                      <span className={`source-freshness-badge source-freshness-badge-${freshness.tone}`}>
-                        {freshness.label}
-                      </span>
-                    ) : null;
-                  })()}
-                  {source.fetchedAt ? ` · ${formatTimestamp(source.fetchedAt)}` : ""}
-                  {` · ${source.estimatedScore.toFixed(1)} pts · ${formatTimestamp(source.latestSignalAt)}`}
-                </small>
-              </article>
-            ))}
-          </div>
-        </section>
+        {/* Source drivers are now integrated into Platform Intelligence above */}
 
         <section className="detail-panel">
           <div className="section-heading">
@@ -647,45 +573,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           )}
         </section>
 
-        <section className="detail-panel detail-panel-wide">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Evidence</p>
-              <h2>Recent signals</h2>
-            </div>
-          </div>
-
-          <div className="detail-list">
-            {trend.evidenceItems.map((item, index) => (
-              <article className="detail-list-item detail-evidence-item" key={`${item.timestamp}-${index}`}>
-                <div>
-                  <strong>
-                    {item.evidenceUrl ? (
-                      <a className="trend-link" href={normalizeEvidenceUrl(item.evidenceUrl)} rel="noreferrer" target="_blank">
-                        {item.evidence}
-                      </a>
-                    ) : (
-                      item.evidence
-                    )}
-                  </strong>
-                  <span>
-                    {formatSourceLabel(item.source)} · {formatSignalType(item.signalType)} · Value{" "}
-                    {item.value.toFixed(1)}
-                  </span>
-                  {item.geoDetectionMode !== "unknown" ? (
-                    <span>
-                      {formatGeoLabel(item)} · {item.geoDetectionMode} · {Math.round(item.geoConfidence * 100)}%
-                    </span>
-                  ) : null}
-                  {(item.audienceFlags?.length ?? 0) > 0 || (item.marketFlags?.length ?? 0) > 0 || item.languageCode ? (
-                    <span>{formatEvidenceAudience(item)}</span>
-                  ) : null}
-                </div>
-                <small>{formatTimestamp(item.timestamp)}</small>
-              </article>
-            ))}
-          </div>
-        </section>
+        {/* Evidence items are now grouped per-platform in Platform Intelligence above */}
       </section>
     </main>
   );

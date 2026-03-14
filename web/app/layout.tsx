@@ -5,6 +5,7 @@ import { NavBar } from "@/components/nav-bar";
 import { AuthProvider } from "@/components/auth-provider";
 import { ProfileProvider } from "@/components/profile-provider";
 import {
+  createThemeBootstrapScript,
   getThemeClass,
   LIGHT_THEME,
   readThemePreference,
@@ -31,25 +32,7 @@ export default async function RootLayout({
     themeKey = LIGHT_THEME;
   }
   const themeClass = getThemeClass(themeKey);
-  const themeBootstrap = `
-    (function () {
-      try {
-        var themeCookie = document.cookie
-          .split('; ')
-          .find(function (entry) { return entry.indexOf('${THEME_COOKIE}=') === 0; });
-        var themeValue = themeCookie ? decodeURIComponent(themeCookie.split('=').slice(1).join('=')) : '';
-        var themeClassName = themeValue === 'soft-charcoal'
-          ? 'theme-soft-charcoal'
-          : themeValue === 'ocean'
-            ? 'theme-ocean'
-            : themeValue === 'tech-light'
-              ? 'theme-tech-light'
-              : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-soft-charcoal' : 'theme-tech-light');
-        document.documentElement.classList.remove('theme-tech-light', 'theme-soft-charcoal', 'theme-ocean');
-        document.documentElement.classList.add(themeClassName);
-      } catch (error) {}
-    }());
-  `;
+  const themeBootstrap = createThemeBootstrapScript(THEME_COOKIE);
 
   return (
     <html className={themeClass} lang="en" suppressHydrationWarning>
