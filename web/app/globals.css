@@ -1650,25 +1650,23 @@ input {
 }
 
 .pie-chart-wrap-full {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
 }
 
 .pie-chart-large {
-  width: 180px;
-  height: 180px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 36px var(--surface-inset);
   flex-shrink: 0;
 }
 
 .pie-chart-legend-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px 16px;
-  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 12px;
 }
 
 .pie-legend-item {
@@ -3827,14 +3825,18 @@ input {
     border-top: 1px solid var(--inset-divider);
   }
 
-  .pie-chart-legend-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .pie-chart-wrap-full {
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 10px;
   }
 
   .pie-chart-large {
-    width: 150px;
-    height: 150px;
-    box-shadow: inset 0 0 0 30px var(--surface-inset);
+    width: 90px;
+    height: 90px;
+  }
+
+  .pie-chart-legend-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .filters-panel-wide {
