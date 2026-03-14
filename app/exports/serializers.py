@@ -562,6 +562,10 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             if trend.seasonality is not None
             else None
         ),
+        wikipedia_extract=trend.wikipedia_extract,
+        wikipedia_description=trend.wikipedia_description,
+        wikipedia_thumbnail_url=trend.wikipedia_thumbnail_url,
+        wikipedia_page_url=trend.wikipedia_page_url,
     )
 
 

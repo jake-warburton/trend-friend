@@ -2254,6 +2254,58 @@ input {
   border-top: 0;
 }
 
+.explorer-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 20px 0 8px;
+}
+
+.explorer-pagination-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-panel-strong);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.explorer-pagination-button:hover:not(:disabled) {
+  border-color: var(--interactive-hover-border);
+  color: var(--fg);
+}
+
+.explorer-pagination-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.explorer-pagination-current {
+  background: var(--selection-active-bg);
+  border-color: var(--selection-active-border);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.explorer-pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
 .explorer-card-top {
   display: grid;
   gap: 6px;

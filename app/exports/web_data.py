@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import logging
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from app.config import Settings
 from app.data.primary import connect_primary_database
+from app.models import TrendDetailRecord
 from app.data.repositories import (
     PipelineRunRepository,
     PublishedPayloadRepository,
@@ -62,6 +65,7 @@ def export_web_data_payloads(settings: Settings) -> None:
     )
     explorer_records = repository.list_trend_explorer_records(limit=settings.ranking_limit)
     detail_records = repository.list_trend_detail_records(limit=settings.ranking_limit)
+    detail_records = _enrich_with_wikipedia(detail_records)
 
     latest_payload = build_latest_trends_payload(
         generated_at=latest_captured_at or generated_at,
@@ -125,3 +129,43 @@ def export_web_data_payloads(settings: Settings) -> None:
         ]
     )
     connection.close()
+
+
+logger = logging.getLogger(__name__)
+
+
+def _enrich_with_wikipedia(records: list[TrendDetailRecord]) -> list[TrendDetailRecord]:
+    """Attach Wikipedia summary data to detail records that have a Wikipedia evidence item."""
+
+    from app.enrichment.wikipedia import fetch_wikipedia_summaries
+
+    title_to_record_indices: dict[str, list[int]] = {}
+    for index, record in enumerate(records):
+        wikipedia_item = next(
+            (item for item in record.evidence_items if item.source == "wikipedia"),
+            None,
+        )
+        if wikipedia_item is not None:
+            title = wikipedia_item.evidence.strip()
+            if title:
+                title_to_record_indices.setdefault(title, []).append(index)
+
+    if not title_to_record_indices:
+        return records
+
+    logger.info("Fetching Wikipedia summaries for %d topics", len(title_to_record_indices))
+    summaries = fetch_wikipedia_summaries(list(title_to_record_indices))
+
+    enriched = list(records)
+    for title, summary in summaries.items():
+        for index in title_to_record_indices.get(title, []):
+            enriched[index] = replace(
+                enriched[index],
+                wikipedia_extract=summary.extract,
+                wikipedia_description=summary.description,
+                wikipedia_thumbnail_url=summary.thumbnail_url,
+                wikipedia_page_url=summary.page_url,
+            )
+
+    logger.info("Attached Wikipedia data to %d records", len(summaries))
+    return enriched

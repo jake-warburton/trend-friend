@@ -64,7 +64,7 @@ def load_settings() -> Settings:
         github_page_limit=int(os.getenv("SIGNAL_EYE_GITHUB_PAGE_LIMIT", "3")),
         enable_experimental_sources=os.getenv("SIGNAL_EYE_ENABLE_EXPERIMENTAL_SOURCES", "true").lower() == "true",
         enable_twitter_source=os.getenv("SIGNAL_EYE_ENABLE_TWITTER_SOURCE", "false").lower() == "true",
-        ranking_limit=int(os.getenv("SIGNAL_EYE_RANKING_LIMIT", "100")),
+        ranking_limit=int(os.getenv("SIGNAL_EYE_RANKING_LIMIT", "200")),
         experimental_ranking_limit=int(os.getenv("SIGNAL_EYE_EXPERIMENTAL_RANKING_LIMIT", "12")),
         history_run_limit=int(os.getenv("SIGNAL_EYE_HISTORY_RUN_LIMIT", "72")),
         market_enrichment_enabled=os.getenv("SIGNAL_EYE_MARKET_ENRICHMENT_ENABLED", "true").lower() == "true",

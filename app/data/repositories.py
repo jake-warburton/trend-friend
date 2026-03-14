@@ -3873,6 +3873,10 @@ class TrendScoreRepository:
                 duplicate_candidates=duplicate_map.get(record.id, []),
                 related_trends=related_map.get(record.id, []),
                 seasonality=record.seasonality,
+                wikipedia_extract=record.wikipedia_extract,
+                wikipedia_description=record.wikipedia_description,
+                wikipedia_thumbnail_url=record.wikipedia_thumbnail_url,
+                wikipedia_page_url=record.wikipedia_page_url,
             )
             for record in records
         ]

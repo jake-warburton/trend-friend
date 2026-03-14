@@ -373,6 +373,10 @@ class TrendDetailRecord:
     related_trends: list[RelatedTrend]
     market_footprint: list[TrendMetricSnapshot] = field(default_factory=list)
     seasonality: SeasonalityResult | None = None
+    wikipedia_extract: str | None = None
+    wikipedia_description: str | None = None
+    wikipedia_thumbnail_url: str | None = None
+    wikipedia_page_url: str | None = None
 
 
 @dataclass(frozen=True)

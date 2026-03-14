@@ -345,6 +345,10 @@ class TrendDetailRecordPayload:
     duplicate_candidates: list[TrendDuplicateCandidatePayload]
     related_trends: list[RelatedTrendPayload]
     seasonality: SeasonalityPayload | None = None
+    wikipedia_extract: str | None = None
+    wikipedia_description: str | None = None
+    wikipedia_thumbnail_url: str | None = None
+    wikipedia_page_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -845,4 +849,8 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     for item in payload["relatedTrends"]:
         item["scoreTotal"] = item.pop("score_total")
         item["relationshipStrength"] = item.pop("relationship_strength")
+    payload["wikipediaExtract"] = payload.pop("wikipedia_extract")
+    payload["wikipediaDescription"] = payload.pop("wikipedia_description")
+    payload["wikipediaThumbnailUrl"] = payload.pop("wikipedia_thumbnail_url")
+    payload["wikipediaPageUrl"] = payload.pop("wikipedia_page_url")
     return payload

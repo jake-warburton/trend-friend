@@ -397,6 +397,8 @@ export function DashboardShell({
   >("idle");
   const [changedTrendIds, setChangedTrendIds] = useState<string[]>([]);
   const [expandedTrendId, setExpandedTrendId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const EXPLORER_PAGE_SIZE = 20;
   const [, startAutoRefresh] = useTransition();
   const overviewMetaRef = useRef<OverviewRefreshMeta>({
     generatedAt: initialData.overview.generatedAt,
@@ -791,6 +793,21 @@ export function DashboardShell({
 
   const filteredTrends = baseFilteredTrends;
 
+  const totalPages = Math.max(1, Math.ceil(filteredTrends.length / EXPLORER_PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedTrends = filteredTrends.slice(
+    (safePage - 1) * EXPLORER_PAGE_SIZE,
+    safePage * EXPLORER_PAGE_SIZE,
+  );
+
+  const prevFilteredRef = useRef(filteredTrends);
+  useEffect(() => {
+    if (prevFilteredRef.current !== filteredTrends) {
+      prevFilteredRef.current = filteredTrends;
+      setCurrentPage(1);
+    }
+  }, [filteredTrends]);
+
   const exportHref = useMemo(() => {
     const params = new URLSearchParams();
     if (selectedSource !== "all") params.set("source", selectedSource);
@@ -914,6 +931,7 @@ export function DashboardShell({
     setSelectedStatus("all");
     setMinimumScore(0);
     setHideRecurring(false);
+    setCurrentPage(1);
   }
 
   function applyThesisPreset(preset: ThesisPreset) {
@@ -940,6 +958,7 @@ export function DashboardShell({
     setSelectedStatus(preset.status ?? "all");
     setMinimumScore(preset.minimumScore ?? 0);
     setHideRecurring(preset.hideRecurring ?? false);
+    setCurrentPage(1);
   }
 
 
@@ -2064,7 +2083,7 @@ export function DashboardShell({
                 Export CSV
               </a>
               <span className="section-heading-meta">
-                {filteredTrends.length} live
+                {filteredTrends.length} live · page {safePage} of {totalPages}
               </span>
             </div>
           </div>
@@ -2660,7 +2679,7 @@ export function DashboardShell({
                 </p>
               </div>
             ) : (
-              filteredTrends.map((trend, index) => {
+              paginatedTrends.map((trend, index) => {
                 const forecastBadge = getExplorerForecastBadge(
                   trend.forecastDirection,
                 );
@@ -3171,6 +3190,78 @@ export function DashboardShell({
                   </article>
                 );
               })
+            )}
+            {totalPages > 1 && (
+              <nav className="explorer-pagination" aria-label="Explorer pagination">
+                <button
+                  className="explorer-pagination-button"
+                  disabled={safePage <= 1}
+                  onClick={() => { setCurrentPage(1); setExpandedTrendId(null); }}
+                  type="button"
+                  aria-label="First page"
+                >
+                  &laquo;
+                </button>
+                <button
+                  className="explorer-pagination-button"
+                  disabled={safePage <= 1}
+                  onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); setExpandedTrendId(null); }}
+                  type="button"
+                  aria-label="Previous page"
+                >
+                  &lsaquo;
+                </button>
+                {(() => {
+                  const pages: number[] = [];
+                  const windowSize = 2;
+                  const start = Math.max(1, safePage - windowSize);
+                  const end = Math.min(totalPages, safePage + windowSize);
+                  if (start > 1) pages.push(1);
+                  if (start > 2) pages.push(-1);
+                  for (let i = start; i <= end; i++) pages.push(i);
+                  if (end < totalPages - 1) pages.push(-2);
+                  if (end < totalPages) pages.push(totalPages);
+                  return pages.map((p) =>
+                    p < 0 ? (
+                      <span className="explorer-pagination-ellipsis" key={p}>
+                        &hellip;
+                      </span>
+                    ) : (
+                      <button
+                        className={
+                          p === safePage
+                            ? "explorer-pagination-button explorer-pagination-current"
+                            : "explorer-pagination-button"
+                        }
+                        key={p}
+                        onClick={() => { setCurrentPage(p); setExpandedTrendId(null); }}
+                        type="button"
+                        aria-current={p === safePage ? "page" : undefined}
+                      >
+                        {p}
+                      </button>
+                    ),
+                  );
+                })()}
+                <button
+                  className="explorer-pagination-button"
+                  disabled={safePage >= totalPages}
+                  onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); setExpandedTrendId(null); }}
+                  type="button"
+                  aria-label="Next page"
+                >
+                  &rsaquo;
+                </button>
+                <button
+                  className="explorer-pagination-button"
+                  disabled={safePage >= totalPages}
+                  onClick={() => { setCurrentPage(totalPages); setExpandedTrendId(null); }}
+                  type="button"
+                  aria-label="Last page"
+                >
+                  &raquo;
+                </button>
+              </nav>
             )}
           </div>
         </div>

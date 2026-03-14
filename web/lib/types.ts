@@ -355,6 +355,10 @@ export type TrendDetailRecord = {
   duplicateCandidates: TrendDuplicateCandidate[];
   relatedTrends: RelatedTrend[];
   seasonality?: SeasonalitySummary | null;
+  wikipediaExtract?: string | null;
+  wikipediaDescription?: string | null;
+  wikipediaThumbnailUrl?: string | null;
+  wikipediaPageUrl?: string | null;
 };
 
 export type TrendDetailIndexResponse = {

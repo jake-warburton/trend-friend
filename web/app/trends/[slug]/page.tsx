@@ -17,7 +17,7 @@ import {
   summarizeTopSourceDrivers,
 } from "@/lib/source-health";
 import Image from "next/image";
-import { getWikipediaLinkFromDetail, loadWikipediaData } from "@/lib/wikipedia";
+import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 import { GeoMapClient } from "@/components/geo-map-client";
@@ -158,7 +158,14 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
   const primaryEvidenceLink = getPrimaryEvidenceLink(trend);
   const wikipediaLink = getWikipediaLinkFromDetail(trend);
-  const wikipediaData = wikipediaLink ? await loadWikipediaData(wikipediaLink.title) : null;
+  const wikipediaData = trend.wikipediaExtract
+    ? {
+        extract: trend.wikipediaExtract,
+        description: trend.wikipediaDescription ?? null,
+        thumbnailUrl: trend.wikipediaThumbnailUrl ?? null,
+        pageUrl: trend.wikipediaPageUrl ?? wikipediaLink?.url ?? "#",
+      }
+    : null;
   const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
   const visibleMarketFootprint = showEstimatedMetrics
     ? trend.marketFootprint
@@ -246,8 +253,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 <Image
                   src={wikipediaData.thumbnailUrl}
                   alt={trend.name}
-                  width={wikipediaData.thumbnailWidth || 240}
-                  height={wikipediaData.thumbnailHeight || 240}
+                  width={240}
+                  height={240}
                   className="about-panel-thumbnail"
                 />
               </div>
