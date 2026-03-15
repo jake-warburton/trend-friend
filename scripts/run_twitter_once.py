@@ -5,6 +5,10 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from _bootstrap import bootstrap_project_root
+
+bootstrap_project_root()
+
 from app.config import load_settings
 from app.data.primary import connect_primary_database
 from app.jobs.breaking_feed import run_breaking_feed_pipeline
