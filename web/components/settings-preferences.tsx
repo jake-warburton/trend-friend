@@ -8,6 +8,7 @@ import {
   getThemeClass,
   readThemePreference,
   THEME_COOKIE,
+  THEME_LOCAL_STORAGE_KEY,
   type ThemeOption,
 } from "@/lib/settings";
 
@@ -26,7 +27,12 @@ export function SettingsPreferences({
   const [selectedTheme, setSelectedTheme] = useState(initialTheme);
 
   useEffect(() => {
-    const storedTheme = readThemePreference(
+    const lsTheme = readThemePreference(localStorage.getItem(THEME_LOCAL_STORAGE_KEY) ?? undefined);
+    if (lsTheme) {
+      setSelectedTheme(lsTheme);
+      return;
+    }
+    const cookieTheme = readThemePreference(
       document.cookie
         .split("; ")
         .find((entry) => entry.startsWith(`${THEME_COOKIE}=`))
@@ -34,11 +40,14 @@ export function SettingsPreferences({
         .slice(1)
         .join("="),
     );
-    if (storedTheme) {
-      setSelectedTheme(storedTheme);
+    if (cookieTheme) {
+      setSelectedTheme(cookieTheme);
+      localStorage.setItem(THEME_LOCAL_STORAGE_KEY, cookieTheme);
       return;
     }
-    setSelectedTheme(getDefaultThemeForScheme(window.matchMedia("(prefers-color-scheme: dark)").matches));
+    const defaultTheme = getDefaultThemeForScheme(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setSelectedTheme(defaultTheme);
+    localStorage.setItem(THEME_LOCAL_STORAGE_KEY, defaultTheme);
   }, []);
 
   useEffect(() => {
@@ -57,6 +66,7 @@ export function SettingsPreferences({
 
   function updateThemePreference(nextTheme: string) {
     setSelectedTheme(nextTheme);
+    localStorage.setItem(THEME_LOCAL_STORAGE_KEY, nextTheme);
     document.cookie = `${THEME_COOKIE}=${nextTheme}; path=/; max-age=31536000; samesite=lax`;
   }
 

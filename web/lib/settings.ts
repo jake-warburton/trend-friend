@@ -92,21 +92,23 @@ export function getDefaultThemeForScheme(prefersDark: boolean): string {
   return prefersDark ? DARK_THEME : LIGHT_THEME;
 }
 
+export const THEME_LOCAL_STORAGE_KEY = "signal_eye_theme";
+
 export function createThemeBootstrapScript(themeCookieName: string = THEME_COOKIE): string {
   return `
     (function () {
       try {
+        var VALID = ['tech-light', 'soft-charcoal', 'ocean'];
+        var lsValue = '';
+        try { lsValue = localStorage.getItem('${THEME_LOCAL_STORAGE_KEY}') || ''; } catch (e) {}
         var themeCookie = document.cookie
           .split('; ')
           .find(function (entry) { return entry.indexOf('${themeCookieName}=') === 0; });
-        var themeValue = themeCookie ? decodeURIComponent(themeCookie.split('=').slice(1).join('=')) : '';
-        var resolvedThemeValue = themeValue === 'soft-charcoal'
-          ? 'soft-charcoal'
-          : themeValue === 'ocean'
-            ? 'ocean'
-            : themeValue === 'tech-light'
-              ? 'tech-light'
-              : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'soft-charcoal' : 'tech-light');
+        var cookieValue = themeCookie ? decodeURIComponent(themeCookie.split('=').slice(1).join('=')) : '';
+        var themeValue = (VALID.indexOf(lsValue) !== -1) ? lsValue
+          : (VALID.indexOf(cookieValue) !== -1) ? cookieValue
+          : '';
+        var resolvedThemeValue = themeValue || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'soft-charcoal' : 'tech-light');
         var themeClassName = resolvedThemeValue === 'soft-charcoal'
           ? 'theme-soft-charcoal'
           : resolvedThemeValue === 'ocean'
@@ -114,9 +116,8 @@ export function createThemeBootstrapScript(themeCookieName: string = THEME_COOKI
             : 'theme-tech-light';
         document.documentElement.classList.remove('theme-tech-light', 'theme-soft-charcoal', 'theme-ocean');
         document.documentElement.classList.add(themeClassName);
-        if (!themeCookie) {
-          document.cookie = '${themeCookieName}=' + encodeURIComponent(resolvedThemeValue) + '; path=/; max-age=31536000; samesite=lax';
-        }
+        try { localStorage.setItem('${THEME_LOCAL_STORAGE_KEY}', resolvedThemeValue); } catch (e) {}
+        document.cookie = '${themeCookieName}=' + encodeURIComponent(resolvedThemeValue) + '; path=/; max-age=31536000; samesite=lax';
       } catch (error) {}
     }());
   `;
