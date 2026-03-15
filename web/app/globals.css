@@ -1447,6 +1447,18 @@ input {
   border-radius: var(--radius-lg);
   background: var(--analytics-background);
   overflow: hidden;
+  position: relative;
+}
+
+.curated-strip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 80% at 0% 0%, var(--accent-soft), transparent),
+    radial-gradient(ellipse 50% 80% at 100% 100%, var(--accent-soft), transparent);
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .explorer-geo-strip {
