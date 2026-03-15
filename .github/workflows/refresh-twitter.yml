@@ -1,0 +1,45 @@
+name: Refresh Twitter
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+concurrency:
+  group: refresh-twitter
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      SIGNAL_EYE_DATABASE_URL: ${{ secrets.SIGNAL_EYE_DATABASE_URL }}
+      SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
+      TWITTER_SCRAPE_ACCOUNTS: ${{ secrets.TWITTER_SCRAPE_ACCOUNTS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate required secrets
+        run: |
+          if [ -z "${SIGNAL_EYE_DATABASE_URL}" ]; then
+            echo "Missing required secret: SIGNAL_EYE_DATABASE_URL"
+            exit 1
+          fi
+          if [ -z "${TWITTER_SCRAPE_ACCOUNTS}" ]; then
+            echo "Missing required secret: TWITTER_SCRAPE_ACCOUNTS"
+            exit 1
+          fi
+
+      - name: Scrape Twitter and update breaking feed
+        run: python3 scripts/run_twitter_once.py
