@@ -1534,7 +1534,6 @@ input {
 .theme-tech-light .curated-item {
   padding: 10px 0;
   border: 0;
-  border-top: 1px solid rgba(9, 30, 66, 0.05);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
@@ -1714,15 +1713,10 @@ input {
   gap: 12px;
   padding: 10px 0;
   border: 0;
-  border-top: 1px solid var(--inset-divider);
   border-radius: 0;
   background: transparent;
   color: inherit;
   text-decoration: none;
-}
-
-.curated-item:first-child {
-  border-top: 0;
 }
 
 .curated-item:hover {
@@ -2205,11 +2199,11 @@ input {
   position: relative;
   padding: 10px 0 10px 14px;
   border: 0;
-  border-top: 1px solid var(--border);
+  border-top: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  transition: border-color 140ms ease, background-color 140ms ease;
+  transition: background-color 140ms ease;
 }
 
 .explorer-card::before {
@@ -2575,8 +2569,8 @@ input {
 .explorer-card-bottom {
   margin-top: 4px;
   padding-left: var(--explorer-left-inset);
-  border-top: 1px solid color-mix(in srgb, var(--inset-divider) 70%, transparent);
-  padding-top: 10px;
+  border-top: 0;
+  padding-top: 6px;
 }
 
 .forecast-note {
