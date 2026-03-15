@@ -47,5 +47,5 @@ export async function GET() {
     void triggerTwitterRefresh();
   }
 
-  return NextResponse.json(feed);
+  return NextResponse.json(feed, { headers: { "Cache-Control": "s-maxage=55, stale-while-revalidate=10" } });
 }

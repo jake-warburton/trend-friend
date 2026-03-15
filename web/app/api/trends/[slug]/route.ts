@@ -12,5 +12,5 @@ export async function GET(_request: Request, context: RouteContext) {
   if (trend === null) {
     return NextResponse.json({ error: "Trend not found" }, { status: 404 });
   }
-  return NextResponse.json(trend);
+  return NextResponse.json(trend, { headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" } });
 }

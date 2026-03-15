@@ -12,5 +12,5 @@ export async function GET(_request: Request, context: RouteContext) {
   if (summary === null) {
     return NextResponse.json({ error: "Source not found" }, { status: 404 });
   }
-  return NextResponse.json(summary);
+  return NextResponse.json(summary, { headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" } });
 }
