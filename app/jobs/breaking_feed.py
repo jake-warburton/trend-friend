@@ -80,11 +80,13 @@ def build_breaking_items(
             age = (now - ts).total_seconds() / 60.0
             min_age = min(min_age, age)
 
+            raw_ts = tweet["timestamp"]
+            ts_str = raw_ts.isoformat() if hasattr(raw_ts, "isoformat") else str(raw_ts)
             tweet_payloads.append(BreakingTweetPayload(
                 account=handle,
                 text=tweet["text"],
                 tweet_id=tweet["tweet_id"],
-                timestamp=tweet["timestamp"],
+                timestamp=ts_str,
                 engagement=tweet["engagement"],
             ))
 
