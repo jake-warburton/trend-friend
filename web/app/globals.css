@@ -3011,6 +3011,16 @@ input {
   margin-bottom: 8px;
 }
 
+.detail-pill-row > * {
+  font-size: 0.58rem !important;
+  font-weight: 520 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  padding: 1px 6px !important;
+  border-radius: 3px !important;
+  line-height: 1.5 !important;
+}
+
 .detail-meta-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3057,27 +3067,35 @@ input {
 
 .about-panel h2 {
   font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 500;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 .about-panel-content {
-  display: flex;
-  gap: 28px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: clamp(180px, 22%, 320px) 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.about-panel-content:not(:has(.about-panel-image)) {
+  grid-template-columns: 1fr;
 }
 
 .about-panel-image {
-  flex: 0 0 auto;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 .about-panel-thumbnail {
-  border-radius: 10px;
-  max-width: 220px;
-  height: auto;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .about-panel-text {
@@ -3087,17 +3105,16 @@ input {
 
 .about-panel-tagline {
   color: var(--accent-strong);
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 500;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   text-transform: capitalize;
 }
 
 .about-panel-extract {
   color: var(--muted);
-  line-height: 1.65;
-  max-width: 64ch;
-  margin: 0 0 14px;
+  line-height: 1.7;
+  margin: 0 0 16px;
 }
 
 .about-panel-wiki-link {
@@ -4176,11 +4193,11 @@ input {
   }
 
   .about-panel-content {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .about-panel-thumbnail {
-    max-width: 180px;
+  .about-panel-image {
+    max-width: 200px;
   }
 
   .source-metric-grid {

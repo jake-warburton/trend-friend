@@ -254,8 +254,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 <Image
                   src={wikipediaData.thumbnailUrl}
                   alt={trend.name}
-                  width={240}
-                  height={240}
+                  width={320}
+                  height={320}
                   className="about-panel-thumbnail"
                 />
               </div>
@@ -786,13 +786,25 @@ function volatilityClassName(volatility: string) {
   return "volatility-pill";
 }
 
+function findSentenceBreak(text: string, maxPos: number): number {
+  for (let i = 0; i < text.length && i < maxPos; i++) {
+    if (text[i] === ".") {
+      const before = text[i - 1];
+      const after = text[i + 1];
+      if (before && after && /\d/.test(before) && /\d/.test(after)) continue;
+      return i;
+    }
+  }
+  return -1;
+}
+
 function extractReasonTitle(reason: string) {
   const colonIndex = reason.indexOf(":");
   if (colonIndex > 0 && colonIndex < 60) {
     return reason.slice(0, colonIndex);
   }
-  const periodIndex = reason.indexOf(".");
-  if (periodIndex > 0 && periodIndex < 80) {
+  const periodIndex = findSentenceBreak(reason, 80);
+  if (periodIndex > 0) {
     return reason.slice(0, periodIndex);
   }
   return reason;
@@ -803,8 +815,8 @@ function extractReasonBody(reason: string) {
   if (colonIndex > 0 && colonIndex < 60) {
     return reason.slice(colonIndex + 1).trim();
   }
-  const periodIndex = reason.indexOf(".");
-  if (periodIndex > 0 && periodIndex < 80) {
+  const periodIndex = findSentenceBreak(reason, 80);
+  if (periodIndex > 0) {
     return reason.slice(periodIndex + 1).trim();
   }
   return "";
