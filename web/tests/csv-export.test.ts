@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { GET, handleExportGet } from "@/app/api/export/route";
 import type { TrendDetailRecord, TrendExplorerRecord } from "@/lib/types";
+import { confidenceBucketForTrend, trendMatchesAudience, trendMatchesMarket, trendMatchesLanguage } from "@/lib/trend-filters";
 
 /**
  * The GET handler reads from loadTrendExplorer which falls back to an empty
@@ -217,4 +218,134 @@ test("export CSV applies detail-backed explorer filters", async () => {
   assert.equal(lines.length, 2);
   assert.match(lines[1] ?? "", /AI Agents/);
   assert.doesNotMatch(lines[1] ?? "", /Consumer Video/);
+});
+
+test("trend-filters: confidenceBucketForTrend classifies correctly", () => {
+  assert.equal(confidenceBucketForTrend(0.9), "high");
+  assert.equal(confidenceBucketForTrend(0.75), "high");
+  assert.equal(confidenceBucketForTrend(0.6), "medium");
+  assert.equal(confidenceBucketForTrend(0.5), "medium");
+  assert.equal(confidenceBucketForTrend(0.3), "low");
+  assert.equal(confidenceBucketForTrend(0), "low");
+});
+
+test("trend-filters: trendMatchesAudience returns true for 'all'", () => {
+  assert.equal(trendMatchesAudience(undefined, "all"), true);
+});
+
+test("trend-filters: trendMatchesAudience matches by segment label", () => {
+  const detail = {
+    audienceSummary: [{ segmentType: "audience", label: "developer", signalCount: 3 }],
+  } as TrendDetailRecord;
+  assert.equal(trendMatchesAudience(detail, "developer"), true);
+  assert.equal(trendMatchesAudience(detail, "founder"), false);
+});
+
+test("trend-filters: trendMatchesMarket returns true for 'all'", () => {
+  assert.equal(trendMatchesMarket(undefined, "all"), true);
+});
+
+test("trend-filters: trendMatchesLanguage matches by evidenceItems languageCode", () => {
+  const detail = {
+    evidenceItems: [
+      { source: "github", signalType: "developer", timestamp: "2026-03-12T00:00:00Z", value: 1, evidence: "test", evidenceUrl: null, languageCode: "en", audienceFlags: [], marketFlags: [], geoFlags: [], geoCountryCode: null, geoRegion: null, geoDetectionMode: "unknown", geoConfidence: 0 },
+    ],
+  } as TrendDetailRecord;
+  assert.equal(trendMatchesLanguage(detail, "en"), true);
+  assert.equal(trendMatchesLanguage(detail, "de"), false);
+  assert.equal(trendMatchesLanguage(detail, "all"), true);
+});
+
+test("export CSV handles trends with missing optional fields gracefully", async () => {
+  const minimalTrend: TrendExplorerRecord = {
+    id: "minimal",
+    name: "Minimal Trend",
+    category: "general-tech",
+    metaTrend: "General",
+    stage: "steady",
+    confidence: 0.5,
+    summary: "",
+    status: "steady",
+    volatility: "stable",
+    rank: 1,
+    previousRank: null,
+    rankChange: null,
+    firstSeenAt: null,
+    latestSignalAt: "2026-03-15T00:00:00Z",
+    score: { total: 5, social: 1, developer: 1, knowledge: 1, search: 1, diversity: 1 },
+    momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
+    coverage: { sourceCount: 1, signalCount: 1 },
+    sources: ["reddit"],
+    evidencePreview: [],
+    // intentionally omit audienceSummary, primaryEvidence, recentHistory, seasonality, forecastDirection
+  };
+
+  const response = await handleExportGet(
+    new Request("http://localhost/api/export"),
+    {
+      loadTrendExplorer: async () => ({
+        generatedAt: "2026-03-15T00:00:00Z",
+        trends: [minimalTrend],
+      }),
+      loadTrendDetails: async () => ({
+        generatedAt: "2026-03-15T00:00:00Z",
+        trends: [],
+      }),
+    },
+  );
+
+  assert.equal(response.status, 200);
+  const body = await response.text();
+  const lines = body.trimEnd().split("\n");
+  assert.equal(lines.length, 2);
+  assert.match(lines[1] ?? "", /Minimal Trend/);
+  // Should not crash with undefined audienceSummary
+});
+
+test("export CSV escapes commas and quotes in trend names", async () => {
+  const trendWithComma: TrendExplorerRecord = {
+    id: "tricky",
+    name: 'Trend "With", Commas',
+    category: "general-tech",
+    metaTrend: "General",
+    stage: "steady",
+    confidence: 0.5,
+    summary: "",
+    status: "steady",
+    volatility: "stable",
+    rank: 1,
+    previousRank: null,
+    rankChange: null,
+    firstSeenAt: null,
+    latestSignalAt: "2026-03-15T00:00:00Z",
+    score: { total: 5, social: 1, developer: 1, knowledge: 1, search: 1, diversity: 1 },
+    momentum: { previousRank: null, rankChange: null, absoluteDelta: null, percentDelta: null },
+    coverage: { sourceCount: 1, signalCount: 1 },
+    sources: ["reddit"],
+    evidencePreview: [],
+    audienceSummary: [],
+    primaryEvidence: null,
+    recentHistory: [],
+    seasonality: null,
+    forecastDirection: null,
+  };
+
+  const response = await handleExportGet(
+    new Request("http://localhost/api/export"),
+    {
+      loadTrendExplorer: async () => ({
+        generatedAt: "2026-03-15T00:00:00Z",
+        trends: [trendWithComma],
+      }),
+      loadTrendDetails: async () => ({
+        generatedAt: "2026-03-15T00:00:00Z",
+        trends: [],
+      }),
+    },
+  );
+
+  const body = await response.text();
+  const lines = body.trimEnd().split("\n");
+  // The name with commas and quotes should be properly escaped
+  assert.ok(lines[1]?.includes('"Trend ""With""'), "Should escape double quotes");
 });

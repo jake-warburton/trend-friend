@@ -5,7 +5,7 @@ import {
   trendMatchesAudience,
   trendMatchesLanguage,
   trendMatchesMarket,
-} from "@/components/dashboard-shell";
+} from "@/lib/trend-filters";
 import { trendMatchesGeo } from "@/lib/explorer-geo";
 import { loadTrendDetails, loadTrendExplorer } from "@/lib/trends";
 import { isRecurringTrend } from "@/lib/seasonality-ui";

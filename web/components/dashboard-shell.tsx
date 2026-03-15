@@ -4271,31 +4271,11 @@ export function buildLanguageFilterOptions(details: TrendDetailRecord[]) {
   ];
 }
 
-export function trendMatchesAudience(
-  detail: TrendDetailRecord | undefined,
-  selectedAudience: string,
-) {
-  return trendMatchesSegment(detail, selectedAudience, "audience");
-}
-
-export function trendMatchesMarket(
-  detail: TrendDetailRecord | undefined,
-  selectedMarket: string,
-) {
-  return trendMatchesSegment(detail, selectedMarket, "market");
-}
-
-export function trendMatchesLanguage(
-  detail: TrendDetailRecord | undefined,
-  selectedLanguage: string,
-) {
-  if (selectedLanguage === "all") {
-    return true;
-  }
-  return (detail?.evidenceItems ?? []).some(
-    (item) => item.languageCode?.toLowerCase() === selectedLanguage,
-  );
-}
+export {
+  trendMatchesAudience,
+  trendMatchesMarket,
+  trendMatchesLanguage,
+} from "@/lib/trend-filters";
 
 export function listActiveExplorerFilters(filters: {
   keyword: string;
@@ -4476,15 +4456,7 @@ function buildSegmentFilterOptions(
   ];
 }
 
-export function confidenceBucketForTrend(confidence: number) {
-  if (confidence >= 0.75) {
-    return "high";
-  }
-  if (confidence >= 0.5) {
-    return "medium";
-  }
-  return "low";
-}
+export { confidenceBucketForTrend } from "@/lib/trend-filters";
 
 function formatConfidenceLabel(confidence: number) {
   return `${formatConfidenceBucketLabel(confidenceBucketForTrend(confidence))} confidence`;
@@ -4507,18 +4479,6 @@ function formatStageLabel(stage: string | undefined) {
     .join(" ");
 }
 
-function trendMatchesSegment(
-  detail: TrendDetailRecord | undefined,
-  selectedValue: string,
-  segmentType: string,
-) {
-  if (selectedValue === "all") {
-    return true;
-  }
-  return (detail?.audienceSummary ?? []).some(
-    (item) => item.segmentType === segmentType && item.label === selectedValue,
-  );
-}
 
 function buildTrendAudienceBadge(
   summary: TrendDetailRecord["audienceSummary"],
