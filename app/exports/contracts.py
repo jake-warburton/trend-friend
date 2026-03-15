@@ -854,3 +854,58 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["wikipediaThumbnailUrl"] = payload.pop("wikipedia_thumbnail_url")
     payload["wikipediaPageUrl"] = payload.pop("wikipedia_page_url")
     return payload
+
+
+@dataclass(frozen=True)
+class BreakingTweetPayload:
+    """Single tweet in the breaking feed."""
+
+    account: str
+    text: str
+    tweet_id: str
+    timestamp: str
+    engagement: float
+
+
+@dataclass(frozen=True)
+class BreakingItemPayload:
+    """Grouped breaking topic with source tweets."""
+
+    topic: str
+    breaking_score: float
+    corroborated: bool
+    account_count: int
+    tweets: list[BreakingTweetPayload]
+
+
+@dataclass(frozen=True)
+class BreakingFeedPayload:
+    """Breaking news feed payload."""
+
+    updated_at: str
+    items: list[BreakingItemPayload]
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-serializable dictionary with API-style keys."""
+        return {
+            "updatedAt": self.updated_at,
+            "items": [
+                {
+                    "topic": item.topic,
+                    "breakingScore": item.breaking_score,
+                    "corroborated": item.corroborated,
+                    "accountCount": item.account_count,
+                    "tweets": [
+                        {
+                            "account": tweet.account,
+                            "text": tweet.text,
+                            "tweetId": tweet.tweet_id,
+                            "timestamp": tweet.timestamp,
+                            "engagement": tweet.engagement,
+                        }
+                        for tweet in item.tweets
+                    ],
+                }
+                for item in self.items
+            ],
+        }
