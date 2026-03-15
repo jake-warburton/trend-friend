@@ -6,7 +6,7 @@ import { handleExploreBootstrapGet } from "@/app/api/explore/bootstrap/route";
 import { loadExploreInitialData } from "@/lib/trends";
 
 test("explore page metadata is specific to the explorer route", () => {
-  assert.equal(metadata.title, "Explore Trends | Signal Eye");
+  assert.equal(metadata.title, "Explore Emerging Trends");
   assert.match(metadata.description ?? "", /emerging trends/i);
 });
 

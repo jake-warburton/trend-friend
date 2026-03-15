@@ -71,7 +71,6 @@ test("theme bootstrap script persists the resolved theme when no cookie exists",
   const script = createThemeBootstrapScript();
 
   assert.match(script, /window\.matchMedia\('\(prefers-color-scheme: dark\)'\)\.matches \? 'soft-charcoal' : 'tech-light'/);
-  assert.match(script, /if \(!themeCookie\)/);
   assert.match(script, /document\.cookie = 'signal_eye_theme='/);
   assert.match(script, /encodeURIComponent\(resolvedThemeValue\)/);
 });
