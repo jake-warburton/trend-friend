@@ -34,6 +34,7 @@ class Settings:
     github_token: Optional[str]
     twitter_bearer_token: Optional[str]
     twitter_scrape_accounts: Optional[str]
+    twitter_cookies_json: Optional[str]
     youtube_api_key: Optional[str]
     google_search_metrics_url: Optional[str]
     google_search_metrics_token: Optional[str]
@@ -83,6 +84,7 @@ def load_settings() -> Settings:
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
         twitter_scrape_accounts=os.getenv("TWITTER_SCRAPE_ACCOUNTS"),
+        twitter_cookies_json=os.getenv("TWITTER_COOKIES_JSON"),
         youtube_api_key=os.getenv("YOUTUBE_API_KEY"),
         google_search_metrics_url=os.getenv("SIGNAL_EYE_GOOGLE_SEARCH_METRICS_URL"),
         google_search_metrics_token=os.getenv("SIGNAL_EYE_GOOGLE_SEARCH_METRICS_TOKEN"),

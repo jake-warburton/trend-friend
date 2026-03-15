@@ -17,6 +17,7 @@ jobs:
       SIGNAL_EYE_DATABASE_URL: ${{ secrets.SIGNAL_EYE_DATABASE_URL }}
       SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
       TWITTER_SCRAPE_ACCOUNTS: ${{ secrets.TWITTER_SCRAPE_ACCOUNTS }}
+      TWITTER_COOKIES_JSON: ${{ secrets.TWITTER_COOKIES_JSON }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,8 +37,8 @@ jobs:
             echo "Missing required secret: SIGNAL_EYE_DATABASE_URL"
             exit 1
           fi
-          if [ -z "${TWITTER_SCRAPE_ACCOUNTS}" ]; then
-            echo "Missing required secret: TWITTER_SCRAPE_ACCOUNTS"
+          if [ -z "${TWITTER_COOKIES_JSON}" ] && [ -z "${TWITTER_SCRAPE_ACCOUNTS}" ]; then
+            echo "Missing required secret: TWITTER_COOKIES_JSON or TWITTER_SCRAPE_ACCOUNTS"
             exit 1
           fi
 

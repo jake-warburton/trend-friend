@@ -16,3 +16,4 @@ google-ads>=24.0.0
 # Billing
 stripe>=8.0.0
 twscrape
+twikit>=2.0.0
