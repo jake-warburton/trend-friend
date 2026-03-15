@@ -140,12 +140,26 @@ def _enrich_with_wikipedia(records: list[TrendDetailRecord]) -> list[TrendDetail
     First tries trends that already have Wikipedia evidence, then attempts
     Wikipedia lookups for remaining trends using their canonical name.
     This gives more trends a description and thumbnail.
+
+    Passes context hints (category, sources, evidence) to disambiguate
+    topics like "Rust" (programming language vs iron oxide).
     """
 
-    from app.enrichment.wikipedia import fetch_wikipedia_summaries
+    from app.enrichment.wikipedia import WikipediaLookupHint, fetch_wikipedia_summaries
 
     title_to_record_indices: dict[str, list[int]] = {}
+    title_to_hint: dict[str, WikipediaLookupHint] = {}
     already_mapped: set[int] = set()
+
+    def _build_hint(record: TrendDetailRecord) -> WikipediaLookupHint:
+        evidence_texts = [item.evidence for item in record.evidence_items[:5]]
+        if record.summary:
+            evidence_texts.insert(0, record.summary)
+        return WikipediaLookupHint(
+            category=record.category,
+            sources=record.sources,
+            evidence_texts=evidence_texts,
+        )
 
     # Phase 1: Trends with existing Wikipedia evidence (high confidence match)
     for index, record in enumerate(records):
@@ -157,6 +171,7 @@ def _enrich_with_wikipedia(records: list[TrendDetailRecord]) -> list[TrendDetail
             title = wikipedia_item.evidence.strip()
             if title:
                 title_to_record_indices.setdefault(title, []).append(index)
+                title_to_hint[title] = _build_hint(record)
                 already_mapped.add(index)
 
     # Phase 2: Try canonical trend names for records without Wikipedia evidence
@@ -166,12 +181,14 @@ def _enrich_with_wikipedia(records: list[TrendDetailRecord]) -> list[TrendDetail
         name = record.name.strip()
         if name and len(name) >= 3:
             title_to_record_indices.setdefault(name, []).append(index)
+            if name not in title_to_hint:
+                title_to_hint[name] = _build_hint(record)
 
     if not title_to_record_indices:
         return records
 
     logger.info("Fetching Wikipedia summaries for %d topics", len(title_to_record_indices))
-    summaries = fetch_wikipedia_summaries(list(title_to_record_indices))
+    summaries = fetch_wikipedia_summaries(list(title_to_record_indices), hints=title_to_hint)
 
     enriched = list(records)
     for title, summary in summaries.items():
