@@ -15,15 +15,30 @@ QUERY_FAMILIES = (
     ("builders", "open source ai tools"),
     ("robotics", "ai robotics"),
     ("coding", "vibe coding ai"),
+    ("cybersecurity", "cybersecurity threat trending"),
+    ("devtools", "developer tools trending"),
     # Consumer & lifestyle
     ("fitness", "fitness trend 2026"),
     ("skincare", "skincare routine trending"),
     ("food", "food trend 2026"),
     ("home", "smart home automation"),
+    ("fashion", "fashion trend 2026"),
+    ("wellness", "wellness trend mental health"),
+    ("parenting", "parenting hack trending"),
+    ("pets", "pet care trending"),
     # Business & finance
     ("startup", "startup idea trending"),
     ("investing", "investing trend 2026"),
     ("sidehustle", "side hustle passive income"),
+    ("ecommerce", "ecommerce trend dropshipping"),
+    ("crypto", "crypto trend 2026"),
+    # Culture & entertainment
+    ("gaming", "gaming trend 2026"),
+    ("movies", "movie trend review"),
+    ("music", "music trend viral"),
+    # Science & education
+    ("science", "science breakthrough discovery"),
+    ("sustainability", "sustainability green energy"),
 )
 
 
@@ -46,7 +61,7 @@ class YouTubeSourceAdapter(SourceAdapter):
         per_query_limit = max(3, min(self.settings.max_items_per_source // len(QUERY_FAMILIES), 6))
         items: list[RawSourceItem] = []
         seen_ids: set[str] = set()
-        published_after = (datetime.now(tz=timezone.utc) - timedelta(days=10)).isoformat().replace("+00:00", "Z")
+        published_after = (datetime.now(tz=timezone.utc) - timedelta(days=self.settings.youtube_search_days)).isoformat().replace("+00:00", "Z")
         for query_family, query in QUERY_FAMILIES:
             search_payload = self.get_json(
                 "https://www.googleapis.com/youtube/v3/search"

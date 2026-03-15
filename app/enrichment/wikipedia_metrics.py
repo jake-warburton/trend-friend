@@ -17,10 +17,16 @@ class WikipediaPageviewsEnricher(MarketMetricEnricher):
         article_title = self._resolve_article(target)
         if not article_title:
             return []
+        metrics: list[TrendMetricSnapshot] = []
         try:
-            return self._fetch_pageview_metrics(article_title, captured_at)
+            metrics.extend(self._fetch_pageview_metrics(article_title, captured_at))
         except Exception:
-            return []
+            pass
+        try:
+            metrics.extend(self._fetch_article_categories(article_title, captured_at))
+        except Exception:
+            pass
+        return metrics
 
     def _resolve_article(self, target: EnrichmentTarget) -> str | None:
         """Try to find a matching Wikipedia article for the topic."""
@@ -46,6 +52,69 @@ class WikipediaPageviewsEnricher(MarketMetricEnricher):
             except Exception:
                 continue
         return None
+
+    def _fetch_article_categories(self, article_title: str, captured_at: datetime) -> list[TrendMetricSnapshot]:
+        """Fetch Wikipedia categories and Wikidata description for topic classification."""
+
+        from urllib.parse import quote
+
+        encoded = quote(article_title.replace(" ", "_"), safe="")
+        provenance = f"https://en.wikipedia.org/wiki/{encoded}"
+        metrics: list[TrendMetricSnapshot] = []
+
+        try:
+            payload = self.get_json(
+                f"https://en.wikipedia.org/w/api.php?action=query&titles={encoded}"
+                f"&prop=categories|langlinkscount&cllimit=20&clshow=!hidden&format=json",
+                headers={"User-Agent": "SignalEye/1.0 (trend intelligence)"},
+            )
+            pages = payload.get("query", {}).get("pages", {})
+            for page_data in pages.values():
+                categories = page_data.get("categories", [])
+                if categories:
+                    cat_names = [
+                        c.get("title", "").replace("Category:", "")
+                        for c in categories[:10]
+                        if c.get("title", "").startswith("Category:")
+                    ]
+                    if cat_names:
+                        metrics.append(
+                            TrendMetricSnapshot(
+                                source=self.source_name,
+                                metric_key="wikipedia_categories",
+                                label="Wikipedia categories",
+                                value_numeric=float(len(cat_names)),
+                                value_display=", ".join(cat_names[:8]),
+                                unit="categories",
+                                period="current",
+                                captured_at=captured_at,
+                                confidence=0.9,
+                                provenance_url=provenance,
+                                is_estimated=False,
+                            )
+                        )
+
+                lang_count = page_data.get("langlinkscount", 0)
+                if lang_count and lang_count > 0:
+                    metrics.append(
+                        TrendMetricSnapshot(
+                            source=self.source_name,
+                            metric_key="wikipedia_languages",
+                            label="Wikipedia language editions",
+                            value_numeric=float(lang_count),
+                            value_display=f"{lang_count} languages",
+                            unit="count",
+                            period="current",
+                            captured_at=captured_at,
+                            confidence=0.95,
+                            provenance_url=provenance,
+                            is_estimated=False,
+                        )
+                    )
+        except Exception:
+            pass
+
+        return metrics
 
     def _fetch_pageview_metrics(self, article_title: str, captured_at: datetime) -> list[TrendMetricSnapshot]:
         """Fetch daily pageview data from the Wikimedia pageviews API."""

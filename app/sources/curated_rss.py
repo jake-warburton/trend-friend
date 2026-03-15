@@ -30,29 +30,44 @@ FEEDS: tuple[FeedSpec, ...] = (
     FeedSpec("BBC Entertainment", "BBC", "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"),
     FeedSpec("BBC Science", "BBC", "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"),
     FeedSpec("BBC Business", "BBC", "https://feeds.bbci.co.uk/news/business/rss.xml"),
+    FeedSpec("BBC Sport", "BBC", "https://feeds.bbci.co.uk/sport/rss.xml"),
     # Tech & AI
     FeedSpec("TechCrunch AI", "TechCrunch", "https://techcrunch.com/category/artificial-intelligence/feed/"),
     FeedSpec("TechCrunch Startups", "TechCrunch", "https://techcrunch.com/category/startups/feed/"),
     FeedSpec("The Verge AI", "The Verge", "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"),
+    FeedSpec("The Verge Tech", "The Verge", "https://www.theverge.com/rss/tech/index.xml"),
     FeedSpec("OpenAI News", "OpenAI", "https://openai.com/news/rss.xml"),
     FeedSpec("Google AI Blog", "Google", "https://blog.google/technology/ai/rss/"),
     FeedSpec("MarkTechPost", "MarkTechPost", "https://www.marktechpost.com/feed/"),
     FeedSpec("AI News", "AI News", "https://www.artificialintelligence-news.com/feed/"),
     FeedSpec("Ars Technica", "Ars Technica", "https://feeds.arstechnica.com/arstechnica/index"),
     FeedSpec("Wired", "Wired", "https://www.wired.com/feed/rss"),
+    FeedSpec("The Information", "The Information", "https://www.theinformation.com/feed"),
+    FeedSpec("ZDNET", "ZDNET", "https://www.zdnet.com/news/rss.xml"),
     # Business & finance
     FeedSpec("Reuters Business", "Reuters", "https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best"),
     FeedSpec("Reuters World", "Reuters", "https://www.reutersagency.com/feed/"),
     FeedSpec("Fast Company", "Fast Company", "https://www.fastcompany.com/latest/rss"),
     FeedSpec("VentureBeat", "VentureBeat", "https://venturebeat.com/feed/"),
+    FeedSpec("Forbes Innovation", "Forbes", "https://www.forbes.com/innovation/feed/"),
+    FeedSpec("Bloomberg Markets", "Bloomberg", "https://feeds.bloomberg.com/markets/news.rss"),
     # Consumer & culture
     FeedSpec("The Guardian World", "The Guardian", "https://www.theguardian.com/world/rss"),
+    FeedSpec("The Guardian Lifestyle", "The Guardian", "https://www.theguardian.com/lifeandstyle/rss"),
     FeedSpec("Mashable", "Mashable", "https://mashable.com/feeds/rss/all"),
+    FeedSpec("Vox", "Vox", "https://www.vox.com/rss/index.xml"),
     # Gaming
     FeedSpec("IGN News", "IGN", "https://feeds.ign.com/ign/games-all"),
+    FeedSpec("Kotaku", "Kotaku", "https://kotaku.com/rss"),
     # Science & health
     FeedSpec("Nature News", "Nature", "https://www.nature.com/nature.rss"),
     FeedSpec("MIT Tech Review", "MIT", "https://www.technologyreview.com/feed/"),
+    FeedSpec("Science Daily", "Science Daily", "https://www.sciencedaily.com/rss/all.xml"),
+    FeedSpec("New Scientist", "New Scientist", "https://www.newscientist.com/feed/home/"),
+    # Health & fitness
+    FeedSpec("Medical News Today", "MNT", "https://rss.medicalnewstoday.com/featurednews.xml"),
+    # Sustainability & environment
+    FeedSpec("Carbon Brief", "Carbon Brief", "https://www.carbonbrief.org/feed/"),
 )
 
 
@@ -160,14 +175,24 @@ class CuratedRssSourceAdapter(SourceAdapter):
             "Nature": 22.0,
             "MIT": 20.0,
             "TechCrunch": 20.0,
+            "Bloomberg": 20.0,
             "Reuters": 18.0,
             "The Verge": 18.0,
+            "Forbes": 18.0,
+            "The Information": 18.0,
             "The Guardian": 16.0,
             "Ars Technica": 16.0,
+            "Vox": 16.0,
             "Wired": 14.0,
             "Fast Company": 14.0,
             "VentureBeat": 14.0,
+            "ZDNET": 14.0,
+            "Science Daily": 14.0,
+            "New Scientist": 14.0,
             "Mashable": 12.0,
+            "Carbon Brief": 12.0,
+            "MNT": 12.0,
+            "Kotaku": 12.0,
         }.get(publisher, 14.0)
         return max(42.0, 120.0 - (position * 6.0) + publisher_bonus)
 
