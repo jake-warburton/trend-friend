@@ -960,7 +960,6 @@ input {
   border-radius: 0;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--inset-divider);
 }
 
 .stat-card span,
@@ -1448,7 +1447,6 @@ input {
 .analytics-card {
   padding: 0 24px 0 0;
   border: 0;
-  border-right: 1px solid var(--inset-divider);
   border-radius: 0;
   background: transparent;
   backdrop-filter: none;
@@ -1457,7 +1455,6 @@ input {
 
 .analytics-strip > .analytics-card:last-child,
 .curated-strip > .analytics-card:last-child {
-  border-right: 0;
   padding-right: 0;
 }
 
@@ -1496,7 +1493,6 @@ input {
 .theme-tech-light .explorer-geo-panel {
   padding: 0 24px 0 0;
   border: 0;
-  border-right: 1px solid rgba(9, 30, 66, 0.05);
   border-radius: 0;
   background: transparent;
   backdrop-filter: none;
@@ -1581,8 +1577,8 @@ input {
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--inset-divider);
+  padding-bottom: 0;
+  border-bottom: 0;
   scroll-margin-top: 72px;
 }
 
