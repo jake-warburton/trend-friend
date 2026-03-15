@@ -2926,6 +2926,7 @@ export function DashboardShell({
                               detail.score.developer,
                               detail.score.knowledge,
                               detail.score.search,
+                              detail.score.advertising ?? 0,
                               detail.score.diversity,
                               1,
                             );
@@ -2951,6 +2952,7 @@ export function DashboardShell({
                                           ["Developer", detail.score.developer],
                                           ["Knowledge", detail.score.knowledge],
                                           ["Search", detail.score.search],
+                                          ["Advertising", detail.score.advertising ?? 0],
                                           ["Diversity", detail.score.diversity],
                                         ] as const
                                       ).map(([label, value]) => (
@@ -3885,6 +3887,7 @@ function formatScoreMix(score: TrendExplorerRecord["score"]) {
       ["Developer", score.developer],
       ["Knowledge", score.knowledge],
       ["Search", score.search],
+      ["Advertising", score.advertising ?? 0],
     ] as Array<[string, number]>
   )
     .filter(([, value]) => value > 0)
@@ -4117,6 +4120,7 @@ function formatSourceContributionSummary(
     ["Developer", source.score.developer],
     ["Knowledge", source.score.knowledge],
     ["Search", source.score.search],
+    ["Advertising", source.score.advertising ?? 0],
     ["Diversity", source.score.diversity],
   ];
   const topComponents = components

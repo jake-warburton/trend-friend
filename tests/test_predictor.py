@@ -18,6 +18,7 @@ def _make_score(topic: str = "ai agents", total: float = 42.0, sources: int = 3)
         social_score=total * 0.3,
         developer_score=total * 0.25,
         knowledge_score=total * 0.15,
+        advertising_score=0.0,
         diversity_score=total * 0.1,
         evidence=["Test"],
         source_counts=source_counts,

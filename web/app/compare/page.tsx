@@ -191,8 +191,9 @@ function buildScoreMix(trend: TrendDetailRecord) {
     { label: "Social", value: trend.score.social },
     { label: "Developer", value: trend.score.developer },
     { label: "Knowledge", value: trend.score.knowledge },
-    { label: "Diversity", value: trend.score.diversity },
     { label: "Search", value: trend.score.search },
+    { label: "Advertising", value: trend.score.advertising ?? 0 },
+    { label: "Diversity", value: trend.score.diversity },
   ].filter((item) => item.value > 0);
 }
 

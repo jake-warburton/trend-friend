@@ -58,6 +58,15 @@ class EnrichmentTests(unittest.TestCase):
             health_file_path=Path("data/last_run.json"),
             refresh_secret=None,
             serpapi_key="",
+            google_ads_client_id=None,
+            google_ads_client_secret=None,
+            google_ads_developer_token=None,
+            google_ads_refresh_token=None,
+            google_ads_customer_id=None,
+            meta_app_token=None,
+            tiktok_ads_client_key=None,
+            tiktok_ads_client_secret=None,
+            enable_ad_intelligence_sources=False,
         )
 
     def tearDown(self) -> None:
@@ -83,6 +92,7 @@ class EnrichmentTests(unittest.TestCase):
             social_score=12.0,
             developer_score=8.0,
             knowledge_score=4.0,
+            advertising_score=0.0,
             diversity_score=3.0,
             evidence=["ChatGPT"],
             source_counts={"google_trends": 1, "twitter": 1},

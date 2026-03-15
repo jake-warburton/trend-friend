@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.rate_limit import rate_limiter, response_cache
-from app.api.routers import alerts, auth, billing, community, dashboard, exports, notifications, predictions, stripe_webhooks, trends, sources, refresh, watchlists
+from app.api.routers import ad_intelligence, alerts, auth, billing, community, dashboard, exports, notifications, predictions, stripe_webhooks, trends, sources, refresh, watchlists
 
 # Cacheable GET endpoints with their TTL in seconds
 _CACHE_ROUTES: dict[str, float] = {
@@ -110,6 +110,7 @@ def create_app() -> FastAPI:
     application.include_router(exports.router, prefix="/api/v1")
     application.include_router(billing.router, prefix="/api/v1")
     application.include_router(stripe_webhooks.router, prefix="/api/v1")
+    application.include_router(ad_intelligence.router, prefix="/api/v1")
 
     @application.get("/api/v1/health")
     def health_check() -> dict[str, str]:

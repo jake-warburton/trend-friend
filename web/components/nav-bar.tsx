@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useProfile } from "@/components/profile-provider";
 
 const NAV_LINKS = [
-  { label: "Explorer", href: "/explore" },
-  { label: "Settings", href: "/settings" },
+  { label: "Explorer", href: "/explore", pro: false },
+  { label: "Ad Intelligence", href: "/ad-intelligence", pro: true },
+  { label: "Settings", href: "/settings", pro: false },
 ] as const;
 
 export function NavBar() {
   const pathname = usePathname();
+  const { isPro } = useProfile();
   const navClassName = pathname === "/explore" ? "nav-bar nav-bar-static nav-bar-blend" : "nav-bar";
 
   return (
@@ -49,6 +52,7 @@ export function NavBar() {
               key={link.href}
             >
               {link.label}
+              {link.pro && !isPro && <span className="nav-bar-pro-badge">Pro</span>}
             </Link>
           );
         })}

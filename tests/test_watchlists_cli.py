@@ -24,10 +24,10 @@ from app.models import TrendScoreResult
 def _insert_trend_score(connection: sqlite3.Connection, topic: str, total: float = 42.0) -> None:
     connection.execute(
         "INSERT INTO trend_scores (topic, total_score, search_score, social_score, "
-        "developer_score, knowledge_score, diversity_score, source_counts_json, "
-        "evidence_json, latest_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "developer_score, knowledge_score, advertising_score, diversity_score, source_counts_json, "
+        "evidence_json, latest_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
-            topic, total, 8.0, 12.0, 10.0, 6.0, 6.0,
+            topic, total, 8.0, 12.0, 10.0, 6.0, 0.0, 6.0,
             json.dumps({"reddit": 3}),
             json.dumps(["ev1"]),
             "2026-03-09T00:00:00",
@@ -189,6 +189,7 @@ class ShareWatchlistTests(unittest.TestCase):
                     social_score=12.0,
                     developer_score=10.0,
                     knowledge_score=6.0,
+                    advertising_score=0.0,
                     diversity_score=6.0,
                     evidence=["ev1"],
                     source_counts={"reddit": 3},

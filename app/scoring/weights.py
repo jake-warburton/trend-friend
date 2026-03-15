@@ -9,10 +9,11 @@ from dataclasses import dataclass
 class ScoreWeights:
     """Weights used to calculate component scores."""
 
-    social_weight: float = 0.3
-    developer_weight: float = 0.25
-    knowledge_weight: float = 0.15
-    search_weight: float = 0.2
+    social_weight: float = 0.28
+    developer_weight: float = 0.23
+    knowledge_weight: float = 0.14
+    search_weight: float = 0.18
+    advertising_weight: float = 0.15
     diversity_weight: float = 6.0
 
 

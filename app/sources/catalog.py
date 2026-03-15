@@ -78,6 +78,10 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
         0.72,
         ("lifestyle", "home", "fashion", "food", "beauty", "consumer-tech"),
     ),
+    "google_keyword_planner": SourceDefinition("google_keyword_planner", "advertising", "advertising", 0.88, ("search", "business")),
+    "facebook_ad_library": SourceDefinition("facebook_ad_library", "advertising", "advertising", 0.80, ("social", "business")),
+    "tiktok_ads": SourceDefinition("tiktok_ads", "advertising", "advertising", 0.75, ("culture", "consumer-tech")),
+    "google_ads_transparency": SourceDefinition("google_ads_transparency", "advertising", "advertising", 0.82, ("search", "business")),
 }
 
 

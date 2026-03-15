@@ -30,6 +30,7 @@ def _build_score(topic: str = "ai agents", total_score: float = 42.0) -> TrendSc
         social_score=18.0,
         developer_score=16.0,
         knowledge_score=6.0,
+        advertising_score=0.0,
         diversity_score=2.0,
         evidence=["Test evidence"],
         source_counts={"reddit": 2, "github": 1},

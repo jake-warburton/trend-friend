@@ -42,6 +42,7 @@ test("buildWatchlistCsv includes enrichment columns and added timestamp", () => 
         developer: 10,
         knowledge: 6.2,
         search: 5,
+        advertising: 0,
         diversity: 6.2,
       },
       momentum: {

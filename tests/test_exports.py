@@ -325,6 +325,7 @@ def build_score(topic: str, display_name: str | None = None) -> TrendScoreResult
         social_score=18.2,
         developer_score=16.1,
         knowledge_score=6.4,
+        advertising_score=0.0,
         diversity_score=1.7,
         evidence=[f"{topic} evidence"],
         source_counts={"github": 1, "reddit": 1},
@@ -479,6 +480,7 @@ def build_detail_record(topic: str) -> TrendDetailRecord:
                 developer_score=0.0,
                 knowledge_score=6.0,
                 search_score=0.0,
+                advertising_score=0.0,
                 diversity_score=0.0,
             )
         ],

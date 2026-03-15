@@ -44,6 +44,15 @@ class Settings:
     health_file_path: Path
     refresh_secret: Optional[str]
     serpapi_key: str
+    google_ads_client_id: Optional[str]
+    google_ads_client_secret: Optional[str]
+    google_ads_developer_token: Optional[str]
+    google_ads_refresh_token: Optional[str]
+    google_ads_customer_id: Optional[str]
+    meta_app_token: Optional[str]
+    tiktok_ads_client_key: Optional[str]
+    tiktok_ads_client_secret: Optional[str]
+    enable_ad_intelligence_sources: bool
 
 
 def load_settings() -> Settings:
@@ -83,6 +92,15 @@ def load_settings() -> Settings:
         health_file_path=Path(os.getenv("SIGNAL_EYE_HEALTH_FILE_PATH", "data/last_run.json")),
         refresh_secret=os.getenv("SIGNAL_EYE_REFRESH_SECRET"),
         serpapi_key=os.environ.get("SERPAPI_KEY", ""),
+        google_ads_client_id=os.getenv("GOOGLE_ADS_CLIENT_ID"),
+        google_ads_client_secret=os.getenv("GOOGLE_ADS_CLIENT_SECRET"),
+        google_ads_developer_token=os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN"),
+        google_ads_refresh_token=os.getenv("GOOGLE_ADS_REFRESH_TOKEN"),
+        google_ads_customer_id=os.getenv("GOOGLE_ADS_CUSTOMER_ID"),
+        meta_app_token=os.getenv("META_APP_TOKEN"),
+        tiktok_ads_client_key=os.getenv("TIKTOK_ADS_CLIENT_KEY"),
+        tiktok_ads_client_secret=os.getenv("TIKTOK_ADS_CLIENT_SECRET"),
+        enable_ad_intelligence_sources=os.getenv("SIGNAL_EYE_ENABLE_AD_INTELLIGENCE_SOURCES", "false").lower() == "true",
     )
 
 

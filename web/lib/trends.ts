@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { apiGet } from "@/lib/api-client";
 import type {
+  AdIntelligenceResponse,
   DashboardOverviewResponse,
   ExploreDeferredData,
   ExploreInitialData,
@@ -637,6 +638,7 @@ export function buildFallbackTrendDetailFromOverviewItem(
       developer: 0,
       knowledge: 0,
       search: 0,
+      advertising: 0,
       diversity: 0,
     },
     momentum: {
@@ -766,6 +768,25 @@ export function normalizeSourceSummary(payload: SourceSummaryResponse): SourceSu
 
 export async function loadSourceSummaries(): Promise<SourceSummaryResponse> {
   return readSourceSummary();
+}
+
+export async function readAdIntelligence(): Promise<AdIntelligenceResponse> {
+  if (API_ENABLED) {
+    try {
+      return await apiGet<AdIntelligenceResponse>("/ad-intelligence");
+    } catch { /* fall through to file */ }
+  }
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      return await readSupabasePayload<AdIntelligenceResponse>("ad-intelligence.json");
+    } catch { /* fall through to file */ }
+  }
+  return readJsonFile<AdIntelligenceResponse>("ad-intelligence.json", {
+    generatedAt: new Date(0).toISOString(),
+    topKeywords: [],
+    topAdvertisers: [],
+    platformSummary: [],
+  });
 }
 
 async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {

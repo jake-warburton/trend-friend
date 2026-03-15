@@ -14,4 +14,6 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 
 -- Bridge column on existing users table for migration
-ALTER TABLE users ADD COLUMN supabase_uid TEXT UNIQUE;
+ALTER TABLE users ADD COLUMN supabase_uid TEXT;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_supabase_uid ON users(supabase_uid);

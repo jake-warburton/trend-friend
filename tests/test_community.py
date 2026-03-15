@@ -57,10 +57,10 @@ class CommunityAPITests(unittest.TestCase):
     def _insert_trend_score(self, topic: str, total: float = 42.0) -> None:
         self.connection.execute(
             "INSERT INTO trend_scores (topic, total_score, search_score, social_score, "
-            "developer_score, knowledge_score, diversity_score, source_counts_json, "
-            "evidence_json, latest_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "developer_score, knowledge_score, advertising_score, diversity_score, source_counts_json, "
+            "evidence_json, latest_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
-                topic, total, 8.0, 12.0, 10.0, 6.0, 6.0,
+                topic, total, 8.0, 12.0, 10.0, 6.0, 0.0, 6.0,
                 json.dumps({"reddit": 3}),
                 json.dumps(["ev1"]),
                 "2026-03-09T00:00:00",
@@ -77,11 +77,11 @@ class CommunityAPITests(unittest.TestCase):
         run_id = self.connection.execute("SELECT last_insert_rowid()").fetchone()[0]
         self.connection.execute(
             "INSERT INTO trend_score_snapshots (run_id, rank_position, topic, total_score, "
-            "search_score, social_score, developer_score, knowledge_score, diversity_score, "
+            "search_score, social_score, developer_score, knowledge_score, advertising_score, diversity_score, "
             "source_counts_json, evidence_json, latest_timestamp) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
-                run_id, rank, topic, total, 8.0, 12.0, 10.0, 6.0, 6.0,
+                run_id, rank, topic, total, 8.0, 12.0, 10.0, 6.0, 0.0, 6.0,
                 json.dumps({"reddit": 3}),
                 json.dumps(["ev1"]),
                 "2026-03-09T00:00:00",

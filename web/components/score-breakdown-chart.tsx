@@ -31,6 +31,7 @@ export function ScoreBreakdownChart({ score }: ScoreBreakdownChartProps) {
     { label: "Developer", value: score.developer },
     { label: "Knowledge", value: score.knowledge },
     { label: "Search", value: score.search },
+    { label: "Advertising", value: score.advertising ?? 0 },
     { label: "Diversity", value: score.diversity },
   ].filter((item) => item.value > 0);
 

@@ -6,6 +6,10 @@ import re
 from datetime import datetime, timezone
 
 from app.exports.contracts import (
+    AdIntelligenceAdvertiserPayload,
+    AdIntelligenceKeywordPayload,
+    AdIntelligencePayload,
+    AdIntelligencePlatformSummaryPayload,
     BreakoutPredictionPayload,
     DashboardOverviewChartDatumPayload,
     DashboardOverviewChartsPayload,
@@ -272,6 +276,7 @@ def format_source_family_label(family: str) -> str:
         "knowledge": "Knowledge",
         "market": "Market",
         "research": "Research",
+        "advertising": "Advertising",
         "search": "Search",
         "social": "Social",
         "other": "Other",
@@ -292,6 +297,7 @@ def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:
             developer=round(score.developer_score, 1),
             knowledge=round(score.knowledge_score, 1),
             search=round(score.search_score, 1),
+            advertising=round(score.advertising_score, 1),
             diversity=round(score.diversity_score, 1),
         ),
         sources=sorted(score.source_counts),
@@ -324,6 +330,7 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
             developer=round(trend.score.developer_score, 1),
             knowledge=round(trend.score.knowledge_score, 1),
             search=round(trend.score.search_score, 1),
+            advertising=round(trend.score.advertising_score, 1),
             diversity=round(trend.score.diversity_score, 1),
         ),
         momentum=TrendMomentumPayload(
@@ -405,6 +412,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
             developer=round(trend.score.developer_score, 1),
             knowledge=round(trend.score.knowledge_score, 1),
             search=round(trend.score.search_score, 1),
+            advertising=round(trend.score.advertising_score, 1),
             diversity=round(trend.score.diversity_score, 1),
         ),
         momentum=TrendMomentumPayload(
@@ -472,6 +480,7 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
                     developer=round(item.developer_score, 1),
                     knowledge=round(item.knowledge_score, 1),
                     search=round(item.search_score, 1),
+                    advertising=round(item.advertising_score, 1),
                     diversity=round(item.diversity_score, 1),
                 ),
             )
@@ -990,3 +999,89 @@ def build_source_summary_records(
             )
         )
     return summaries
+
+
+def build_ad_intelligence_payload(
+    generated_at: datetime,
+    signals: list[NormalizedSignal],
+) -> AdIntelligencePayload:
+    """Create the ad intelligence payload from ingested signals."""
+
+    from app.sources.catalog import source_family_for_source
+
+    keyword_stats: dict[str, dict[str, object]] = {}
+    advertiser_stats: dict[tuple[str, str], dict[str, object]] = {}
+    platform_stats: dict[str, dict[str, set[str]]] = {}
+
+    for signal in signals:
+        family = source_family_for_source(signal.source)
+        if family != "advertising":
+            continue
+        topic = signal.topic
+        if topic not in keyword_stats:
+            keyword_stats[topic] = {
+                "keyword": topic,
+                "cpc": 0.0,
+                "search_volume": 0,
+                "competition_level": "unknown",
+                "ad_density": 0.0,
+                "platforms": set(),
+                "top_advertisers": set(),
+                "trend_id": slugify(topic),
+            }
+        keyword_stats[topic]["platforms"].add(signal.source)
+        keyword_stats[topic]["ad_density"] = max(
+            keyword_stats[topic]["ad_density"],
+            signal.value,
+        )
+
+        platform = signal.source
+        if platform not in platform_stats:
+            platform_stats[platform] = {
+                "keywords": set(),
+                "advertisers": set(),
+                "ad_count": 0,
+            }
+        platform_stats[platform]["keywords"].add(topic)
+        platform_stats[platform]["ad_count"] += 1
+
+    top_keywords = sorted(
+        keyword_stats.values(),
+        key=lambda kw: (-kw["ad_density"], kw["keyword"]),
+    )[:20]
+
+    keyword_payloads = [
+        AdIntelligenceKeywordPayload(
+            keyword=kw["keyword"],
+            cpc=kw["cpc"],
+            search_volume=kw["search_volume"],
+            competition_level=kw["competition_level"],
+            ad_density=round(kw["ad_density"], 2),
+            platforms=sorted(kw["platforms"]),
+            top_advertisers=sorted(kw["top_advertisers"]),
+            trend_id=kw["trend_id"],
+        )
+        for kw in top_keywords
+    ]
+
+    advertiser_payloads: list[AdIntelligenceAdvertiserPayload] = []
+
+    platform_payloads = [
+        AdIntelligencePlatformSummaryPayload(
+            platform=platform,
+            ad_count=stats["ad_count"],
+            keyword_count=len(stats["keywords"]),
+            advertiser_count=len(stats["advertisers"]),
+        )
+        for platform, stats in sorted(
+            platform_stats.items(),
+            key=lambda item: (-item[1]["ad_count"], item[0]),
+        )
+    ]
+
+    return AdIntelligencePayload(
+        generated_at=to_timestamp(generated_at),
+        top_keywords=keyword_payloads,
+        top_advertisers=advertiser_payloads,
+        platform_summary=platform_payloads,
+    )

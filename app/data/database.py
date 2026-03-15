@@ -211,6 +211,8 @@ SQLITE_MIGRATIONS = [
     Migration("0011_trend_theses", load_sql_migration("sqlite_migrations/0011_trend_theses.sql")),
     Migration("0012_trend_metric_snapshots", load_sql_migration("sqlite_migrations/0012_trend_metric_snapshots.sql")),
     Migration("0013_source_family_snapshots", load_sql_migration("sqlite_migrations/0013_source_family_snapshots.sql")),
+    Migration("0014_profiles_and_subscriptions", load_sql_migration("sqlite_migrations/0014_profiles_and_subscriptions.sql")),
+    Migration("0015_advertising_score", load_sql_migration("sqlite_migrations/0015_advertising_score.sql")),
 ]
 
 

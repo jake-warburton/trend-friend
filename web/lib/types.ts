@@ -4,6 +4,7 @@ export type TrendScore = {
   developer: number;
   knowledge: number;
   search: number;
+  advertising: number;
   diversity: number;
 };
 
@@ -658,4 +659,19 @@ export type NotificationChannel = {
 
 export type NotificationChannelsResponse = {
   channels: NotificationChannel[];
+};
+
+export type AdIntelligenceKeyword = {
+  keyword: string; cpc: number; searchVolume: number; competitionLevel: string;
+  adDensity: number; platforms: string[]; topAdvertisers: string[]; trendId: string | null;
+};
+export type AdIntelligenceAdvertiser = {
+  name: string; platform: string; adCount: number; adFormats: string[]; regions: string[];
+};
+export type AdIntelligencePlatformSummary = {
+  platform: string; adCount: number; keywordCount: number; advertiserCount: number;
+};
+export type AdIntelligenceResponse = {
+  generatedAt: string; topKeywords: AdIntelligenceKeyword[];
+  topAdvertisers: AdIntelligenceAdvertiser[]; platformSummary: AdIntelligencePlatformSummary[];
 };

@@ -45,14 +45,14 @@ class CsvExportTests(unittest.TestCase):
         self.assertEqual(row[3], "breakout")  # status
         self.assertEqual(row[4], "spiking")  # volatility
         self.assertEqual(row[5], "42.4")  # score total
-        self.assertEqual(row[11], "3")  # rank_change
-        self.assertEqual(row[12], "40.2")  # momentum_pct
-        self.assertEqual(row[13], "2")  # source_count
-        self.assertEqual(row[14], "2")  # signal_count
-        self.assertIn("reddit", row[15])  # sources
-        self.assertEqual(row[16], "developer")
-        self.assertEqual(row[17], "b2b")
-        self.assertEqual(row[18], "EN")
+        self.assertEqual(row[12], "3")  # rank_change
+        self.assertEqual(row[13], "40.2")  # momentum_pct
+        self.assertEqual(row[14], "2")  # source_count
+        self.assertEqual(row[15], "2")  # signal_count
+        self.assertIn("reddit", row[16])  # sources
+        self.assertEqual(row[17], "developer")
+        self.assertEqual(row[18], "b2b")
+        self.assertEqual(row[19], "EN")
 
     def test_trends_to_csv_handles_null_rank_change(self) -> None:
         record = _build_explorer_record()
@@ -91,7 +91,7 @@ class CsvExportTests(unittest.TestCase):
         reader = csv.reader(io.StringIO(csv_text))
         next(reader)  # skip header
         row = next(reader)
-        self.assertEqual(row[11], "")  # rank_change should be empty
+        self.assertEqual(row[12], "")  # rank_change should be empty
 
     def test_trends_to_csv_quotes_sources_with_commas(self) -> None:
         generated_at = datetime(2026, 3, 10, 12, 0, 0, tzinfo=timezone.utc)
@@ -146,6 +146,7 @@ def _build_explorer_record() -> TrendExplorerRecord:
             social_score=15.0,
             developer_score=10.0,
             knowledge_score=6.2,
+            advertising_score=0.0,
             diversity_score=6.2,
             evidence=["Evidence 1", "Evidence 2"],
             source_counts={"reddit": 1, "github": 1},

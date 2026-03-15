@@ -2057,10 +2057,10 @@ class TrendScoreRepository:
             """
             INSERT INTO trend_scores (
                 topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
+                knowledge_score, advertising_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
                 is_published
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -2070,6 +2070,7 @@ class TrendScoreRepository:
                     score.social_score,
                     score.developer_score,
                     score.knowledge_score,
+                    score.advertising_score,
                     score.diversity_score,
                     json.dumps(score.source_counts, sort_keys=True),
                     json.dumps(score.evidence),
@@ -2102,10 +2103,10 @@ class TrendScoreRepository:
             """
             INSERT INTO trend_score_snapshots (
                 run_id, rank_position, topic, total_score, search_score, social_score, developer_score,
-                knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
+                knowledge_score, advertising_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name,
                 is_published
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -2117,6 +2118,7 @@ class TrendScoreRepository:
                     score.social_score,
                     score.developer_score,
                     score.knowledge_score,
+                    score.advertising_score,
                     score.diversity_score,
                     json.dumps(score.source_counts, sort_keys=True),
                     json.dumps(score.evidence),
@@ -2139,7 +2141,7 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+                   knowledge_score, advertising_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_scores
             WHERE is_published = 1
             ORDER BY total_score DESC, topic ASC, latest_timestamp ASC
@@ -2265,7 +2267,7 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+                   knowledge_score, advertising_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_score_snapshots
             WHERE run_id = ? AND is_published = 1
             ORDER BY rank_position ASC
@@ -2286,7 +2288,7 @@ class TrendScoreRepository:
         rows = self.connection.execute(
             """
             SELECT topic, total_score, search_score, social_score, developer_score,
-                   knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+                   knowledge_score, advertising_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
             FROM trend_score_snapshots
             WHERE run_id = ? AND is_published = 0
             ORDER BY rank_position ASC
@@ -2312,7 +2314,7 @@ class TrendScoreRepository:
             score_rows = self.connection.execute(
                 """
                 SELECT topic, total_score, search_score, social_score, developer_score,
-                       knowledge_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
+                       knowledge_score, advertising_score, diversity_score, source_counts_json, evidence_json, latest_timestamp, display_name
                 FROM trend_score_snapshots
                 WHERE run_id = ? AND is_published = 1
                 ORDER BY rank_position ASC
@@ -2836,6 +2838,7 @@ class TrendScoreRepository:
             "developer": 0,
             "knowledge": 0,
             "search": 0,
+            "advertising": 0,
         }
         for row in rows:
             signal_type = row["signal_type"]
@@ -2845,7 +2848,7 @@ class TrendScoreRepository:
             source_entry = by_source.setdefault(
                 row["source"],
                 {
-                    "counts": {"social": 0, "developer": 0, "knowledge": 0, "search": 0},
+                    "counts": {"social": 0, "developer": 0, "knowledge": 0, "search": 0, "advertising": 0},
                     "signal_count": 0,
                     "latest_signal_at": datetime.fromisoformat(row["latest_signal_at"]),
                 },
@@ -2865,9 +2868,10 @@ class TrendScoreRepository:
             developer_score = self._component_source_share(score.developer_score, counts["developer"], total_counts["developer"])  # type: ignore[index]
             knowledge_score = self._component_source_share(score.knowledge_score, counts["knowledge"], total_counts["knowledge"])  # type: ignore[index]
             search_score = self._component_source_share(score.search_score, counts["search"], total_counts["search"])  # type: ignore[index]
+            advertising_score = self._component_source_share(score.advertising_score, counts["advertising"], total_counts["advertising"])  # type: ignore[index]
             diversity_score = round(score.diversity_score / source_total, 2)
             estimated_score = round(
-                social_score + developer_score + knowledge_score + search_score + diversity_score,
+                social_score + developer_score + knowledge_score + search_score + advertising_score + diversity_score,
                 2,
             )
             score_share_percent = round((estimated_score / score.total_score) * 100, 1) if score.total_score > 0 else 0.0
@@ -2882,6 +2886,7 @@ class TrendScoreRepository:
                     developer_score=developer_score,
                     knowledge_score=knowledge_score,
                     search_score=search_score,
+                    advertising_score=advertising_score,
                     diversity_score=diversity_score,
                 )
             )
@@ -3292,6 +3297,7 @@ class TrendScoreRepository:
             social_score=row["social_score"],
             developer_score=row["developer_score"],
             knowledge_score=row["knowledge_score"],
+            advertising_score=row["advertising_score"],
             diversity_score=row["diversity_score"],
             source_counts=json.loads(row["source_counts_json"]),
             evidence=evidence,
@@ -3467,6 +3473,7 @@ class TrendScoreRepository:
                 ("developer", score.developer_score),
                 ("knowledge", score.knowledge_score),
                 ("search", score.search_score),
+                ("advertising", score.advertising_score),
             ),
             key=lambda item: item[1],
         )
@@ -3489,6 +3496,7 @@ class TrendScoreRepository:
             ("developer", score.developer_score),
             ("knowledge", score.knowledge_score),
             ("search", score.search_score),
+            ("advertising", score.advertising_score),
         ] if v > 0]
         if len(active_types) >= 3:
             reasons.append(f"Broad signal coverage: active in {', '.join(active_types)} channels.")

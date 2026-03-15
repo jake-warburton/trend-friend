@@ -44,6 +44,7 @@ def _score(topic: str, total_score: float) -> TrendScoreResult:
         social_score=10.0,
         developer_score=10.0,
         knowledge_score=5.0,
+        advertising_score=0.0,
         diversity_score=2.0,
         evidence=["evidence"],
         source_counts={"reddit": 1},
