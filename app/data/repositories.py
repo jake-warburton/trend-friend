@@ -211,7 +211,9 @@ class TwitterTweetRepository:
             "SELECT tweet_id FROM twitter_tweets WHERE account_handle = ? ORDER BY timestamp DESC LIMIT 1",
             (account_handle,),
         ).fetchone()
-        return row[0] if row else None
+        if not row:
+            return None
+        return row["tweet_id"] if isinstance(row, dict) else row[0]
 
     def prune_account(self, account_handle: str, keep: int = 100) -> None:
         """Delete tweets beyond the keep limit for an account."""
@@ -243,6 +245,8 @@ class TwitterTweetRepository:
             (cutoff,),
         ).fetchall()
         return [
+            {"account_handle": r["account_handle"], "tweet_id": r["tweet_id"], "text": r["text"], "timestamp": r["timestamp"], "engagement": r["engagement"], "metadata": r["metadata"]}
+            if isinstance(r, dict) else
             {"account_handle": r[0], "tweet_id": r[1], "text": r[2], "timestamp": r[3], "engagement": r[4], "metadata": r[5]}
             for r in rows
         ]
@@ -253,6 +257,8 @@ class TwitterTweetRepository:
             "SELECT account_handle, tweet_id, text, timestamp, engagement, metadata FROM twitter_tweets ORDER BY timestamp DESC"
         ).fetchall()
         return [
+            {"account_handle": r["account_handle"], "tweet_id": r["tweet_id"], "text": r["text"], "timestamp": r["timestamp"], "engagement": r["engagement"], "metadata": r["metadata"]}
+            if isinstance(r, dict) else
             {"account_handle": r[0], "tweet_id": r[1], "text": r[2], "timestamp": r[3], "engagement": r[4], "metadata": r[5]}
             for r in rows
         ]
