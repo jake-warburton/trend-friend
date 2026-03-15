@@ -275,8 +275,8 @@ def test_watchlisted_dead_topic_is_protected(self) -> None:
     self.repository.append_snapshot([score], captured_at=old_time)
 
     watchlist_repo = WatchlistRepository(self.connection)
-    watchlist_id = watchlist_repo.create_watchlist("Test Watchlist")
-    watchlist_repo.add_watchlist_item(watchlist_id, "watchlisted-topic", "Watchlisted Topic")
+    watchlist = watchlist_repo.create_watchlist("Test Watchlist")
+    watchlist_repo.add_item(watchlist.id, "watchlisted-topic", "Watchlisted Topic")
 
     from app.data.pruning import prune_stale_snapshots
     prune_stale_snapshots(self.connection, now)
@@ -482,54 +482,67 @@ Add the functions:
 
 ```python
 def _thin_snapshots_by_week(connection: DatabaseConnection, slugs: list[str]) -> int:
-    """Keep only the latest published snapshot per ISO calendar week for each topic."""
+    """Keep only the latest published snapshot per ISO calendar week for each topic.
+
+    Uses Python-side week calculation to avoid SQLite/PostgreSQL dialect issues
+    with STRFTIME vs TO_CHAR.
+    """
 
     raw_topics = _get_raw_topics_for_slugs(connection, slugs)
     if not raw_topics:
         return 0
     placeholders = ",".join("?" for _ in raw_topics)
 
-    keep_ids_rows = connection.execute(
+    # Fetch all snapshot IDs with their run timestamps for these topics
+    rows = connection.execute(
         f"""
-        SELECT MAX(s.id) AS keep_id
+        SELECT s.id, s.topic, r.captured_at, s.is_published
         FROM trend_score_snapshots s
         INNER JOIN trend_runs r ON r.id = s.run_id
         WHERE s.topic IN ({placeholders})
-          AND s.is_published = 1
-        GROUP BY s.topic, STRFTIME('%Y-%W', r.captured_at)
+        ORDER BY s.id DESC
         """,
         raw_topics,
     ).fetchall()
-    keep_ids = {row["keep_id"] for row in keep_ids_rows}
 
-    if not keep_ids:
-        cursor = connection.execute(
-            f"DELETE FROM trend_score_snapshots WHERE topic IN ({placeholders})",
-            raw_topics,
-        )
-        return cursor.rowcount
+    # Group by (topic, iso_year_week) and pick the best ID per group
+    from datetime import datetime as dt
+    best_per_week: dict[tuple[str, str], int] = {}
+    for row in rows:
+        captured = dt.fromisoformat(row["captured_at"])
+        iso_year, iso_week, _ = captured.isocalendar()
+        week_key = (row["topic"], f"{iso_year}-W{iso_week:02d}")
+        if row["is_published"] and week_key not in best_per_week:
+            best_per_week[week_key] = row["id"]
 
-    keep_placeholders = ",".join("?" for _ in keep_ids)
+    keep_ids = set(best_per_week.values())
+    all_ids = {row["id"] for row in rows}
+    delete_ids = all_ids - keep_ids
+
+    if not delete_ids:
+        return 0
+    delete_placeholders = ",".join("?" for _ in delete_ids)
     cursor = connection.execute(
-        f"""
-        DELETE FROM trend_score_snapshots
-        WHERE topic IN ({placeholders})
-          AND id NOT IN ({keep_placeholders})
-        """,
-        raw_topics + list(keep_ids),
+        f"DELETE FROM trend_score_snapshots WHERE id IN ({delete_placeholders})",
+        list(delete_ids),
     )
     return cursor.rowcount
 
 
 def _delete_market_metrics(connection: DatabaseConnection, slugs: list[str]) -> int:
-    """Delete trend_metric_snapshots for the given topic slugs."""
+    """Delete trend_metric_snapshots for topics matching the given slugs.
 
-    if not slugs:
+    Note: trend_metric_snapshots.topic_key stores raw topic strings (e.g. "ai agents"),
+    not slugified versions. We use _get_raw_topics_for_slugs to resolve them.
+    """
+
+    raw_topics = _get_raw_topics_for_slugs(connection, slugs)
+    if not raw_topics:
         return 0
-    placeholders = ",".join("?" for _ in slugs)
+    placeholders = ",".join("?" for _ in raw_topics)
     cursor = connection.execute(
         f"DELETE FROM trend_metric_snapshots WHERE topic_key IN ({placeholders})",
-        slugs,
+        raw_topics,
     )
     return cursor.rowcount
 ```
