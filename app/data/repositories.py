@@ -2351,6 +2351,70 @@ class TrendScoreRepository:
             for row in rows
         ]
 
+    def batch_get_topic_histories(
+        self, topics: list[str], limit_runs: int,
+    ) -> dict[str, list[TrendHistoryPoint]]:
+        """Return recent history for multiple topics in a single query."""
+
+        if not topics:
+            return {}
+        # Fetch the N most recent runs first
+        run_rows = self.connection.execute(
+            "SELECT id, captured_at FROM trend_runs ORDER BY captured_at DESC, id DESC LIMIT ?",
+            (limit_runs,),
+        ).fetchall()
+        if not run_rows:
+            return {topic: [] for topic in topics}
+        run_ids = [row["id"] for row in run_rows]
+        run_captured_at = {row["id"]: row["captured_at"] for row in run_rows}
+        placeholders_topics = ",".join("?" for _ in topics)
+        placeholders_runs = ",".join("?" for _ in run_ids)
+        rows = self.connection.execute(
+            f"""
+            SELECT topic, run_id, rank_position, total_score
+            FROM trend_score_snapshots
+            WHERE topic IN ({placeholders_topics})
+              AND run_id IN ({placeholders_runs})
+              AND is_published = 1
+            ORDER BY run_id DESC
+            """,
+            topics + run_ids,
+        ).fetchall()
+        result: dict[str, list[TrendHistoryPoint]] = {topic: [] for topic in topics}
+        for row in rows:
+            captured_at_str = run_captured_at.get(row["run_id"])
+            if captured_at_str is None:
+                continue
+            result[row["topic"]].append(
+                TrendHistoryPoint(
+                    captured_at=datetime.fromisoformat(captured_at_str),
+                    rank=row["rank_position"],
+                    score_total=row["total_score"],
+                )
+            )
+        return result
+
+    def batch_get_first_seen(self, topics: list[str]) -> dict[str, datetime | None]:
+        """Return first seen timestamps for multiple topics in a single query."""
+
+        if not topics:
+            return {}
+        placeholders = ",".join("?" for _ in topics)
+        rows = self.connection.execute(
+            f"""
+            SELECT s.topic, MIN(r.captured_at) AS first_captured_at
+            FROM trend_score_snapshots s
+            INNER JOIN trend_runs r ON r.id = s.run_id
+            WHERE s.topic IN ({placeholders}) AND s.is_published = 1
+            GROUP BY s.topic
+            """,
+            topics,
+        ).fetchall()
+        result: dict[str, datetime | None] = {topic: None for topic in topics}
+        for row in rows:
+            result[row["topic"]] = datetime.fromisoformat(row["first_captured_at"])
+        return result
+
     def get_first_seen_at(self, topic: str) -> datetime | None:
         """Return the first captured run timestamp for a topic."""
 
@@ -2415,12 +2479,19 @@ class TrendScoreRepository:
 
         from app.scoring.forecast import describe_forecast_direction, forecast_trend
 
+        # Batch-fetch histories and first-seen dates (2 queries instead of N×3)
+        topics = [score.topic for score in latest_scores]
+        forecast_limit = max(history_limit, 6)
+        histories = self.batch_get_topic_histories(topics, limit_runs=forecast_limit)
+        first_seen_dates = self.batch_get_first_seen(topics)
+
         records: list[TrendExplorerRecord] = []
         for rank, score in enumerate(latest_scores, start=1):
-            recent_history = self.get_topic_history(score.topic, limit_runs=history_limit)
-            full_history = list(reversed(self.get_topic_history(score.topic, limit_runs=max(history_limit, 6))))
+            full_history = histories.get(score.topic, [])
+            recent_history = full_history[:history_limit]
+            ordered_history = list(reversed(full_history))
             momentum = self._build_momentum(score.total_score, recent_history)
-            forecast = forecast_trend(full_history)
+            forecast = forecast_trend(ordered_history)
             seasonality = self.get_topic_seasonality(score.topic)
             entity = self._get_or_create_trend_entity(score, recent_history)
             records.append(
@@ -2437,7 +2508,7 @@ class TrendScoreRepository:
                     rank=rank,
                     previous_rank=momentum.previous_rank,
                     rank_change=momentum.rank_change,
-                    first_seen_at=self.get_first_seen_at(score.topic),
+                    first_seen_at=first_seen_dates.get(score.topic),
                     latest_signal_at=score.latest_timestamp,
                     score=score,
                     momentum=momentum,
@@ -2469,8 +2540,12 @@ class TrendScoreRepository:
         from app.scoring.opportunity import score_opportunities
         from app.scoring.predictor import predict_breakouts
 
+        # Batch-fetch histories and first-seen dates (2 queries instead of N×3)
+        topics = [score.topic for score in latest_scores]
+        all_histories = self.batch_get_topic_histories(topics, limit_runs=history_limit)
+        first_seen_by_topic = self.batch_get_first_seen(topics)
+
         history_by_topic: dict[str, list[TrendHistoryPoint]] = {}
-        first_seen_by_topic: dict[str, datetime | None] = {}
         momentum_by_topic: dict[str, TrendMomentum] = {}
         forecast_by_topic: dict[str, TrendForecast | None] = {}
         seasonality_by_topic: dict[str, SeasonalityResult | None] = {}
@@ -2478,10 +2553,10 @@ class TrendScoreRepository:
         ranks_by_topic: dict[str, int] = {}
 
         for rank, score in enumerate(latest_scores, start=1):
-            history = list(reversed(self.get_topic_history(score.topic, limit_runs=history_limit)))
-            momentum = self._build_momentum(score.total_score, list(reversed(history)))
+            raw_history = all_histories.get(score.topic, [])
+            history = list(reversed(raw_history))
+            momentum = self._build_momentum(score.total_score, raw_history)
             history_by_topic[score.topic] = history
-            first_seen_by_topic[score.topic] = self.get_first_seen_at(score.topic)
             momentum_by_topic[score.topic] = momentum
             forecast_by_topic[score.topic] = forecast_trend(history)
             seasonality = self.get_topic_seasonality(score.topic)

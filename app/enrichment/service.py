@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from app.config import Settings
@@ -92,11 +93,18 @@ def refresh_external_market_metrics(
         )
         enrichers = _select_enrichers_for_trend(settings, score.source_counts)
         snapshots = []
-        for enricher in enrichers:
+
+        def _run_enricher(enricher):
             try:
-                snapshots.extend(enricher.enrich(target, captured_at))
+                return enricher.enrich(target, captured_at)
             except Exception as error:
                 LOGGER.warning("Market enricher %s failed for %s: %s", enricher.source_name, score.topic, error)
+                return []
+
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            futures = [pool.submit(_run_enricher, e) for e in enrichers]
+            for future in as_completed(futures):
+                snapshots.extend(future.result())
         try:
             snapshots.extend(compute_growth_metrics(repository, score.topic, captured_at))
         except Exception as error:

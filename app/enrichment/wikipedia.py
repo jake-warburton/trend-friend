@@ -29,23 +29,32 @@ def fetch_wikipedia_summaries(
     *,
     timeout_seconds: int = 8,
     delay_seconds: float = 0.1,
+    max_workers: int = 6,
 ) -> dict[str, WikipediaSummary]:
     """Fetch Wikipedia summaries for a list of article titles.
 
     Returns a dict keyed by the original title.  Titles that fail silently
-    return no entry.
+    return no entry.  Uses thread-based parallelism for faster batch fetches.
     """
 
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     results: dict[str, WikipediaSummary] = {}
-    for title in titles:
+
+    def _fetch_title(title: str) -> tuple[str, WikipediaSummary | None]:
         try:
-            summary = _fetch_one(title, timeout_seconds=timeout_seconds)
-            if summary is not None:
-                results[title] = summary
+            return title, _fetch_one(title, timeout_seconds=timeout_seconds)
         except Exception:
             logger.debug("Wikipedia summary fetch failed for %r", title, exc_info=True)
-        if delay_seconds > 0:
-            time.sleep(delay_seconds)
+            return title, None
+
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(_fetch_title, title): title for title in titles}
+        for future in as_completed(futures):
+            title, summary = future.result()
+            if summary is not None:
+                results[title] = summary
+
     return results
 
 
