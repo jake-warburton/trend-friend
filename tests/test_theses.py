@@ -42,6 +42,7 @@ def _detail() -> TrendDetailRecord:
             social_score=10.0,
             developer_score=12.0,
             knowledge_score=6.0,
+            advertising_score=0.0,
             diversity_score=2.0,
             evidence=["AI agents"],
             source_counts={"reddit": 1, "github": 1, "google_trends": 1},

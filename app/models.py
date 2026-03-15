@@ -89,6 +89,7 @@ class TrendScoreResult:
     social_score: float
     developer_score: float
     knowledge_score: float
+    advertising_score: float
     diversity_score: float
     evidence: list[str]
     source_counts: dict[str, int]
@@ -225,6 +226,7 @@ class TrendSourceContribution:
     developer_score: float
     knowledge_score: float
     search_score: float
+    advertising_score: float
     diversity_score: float
 
 

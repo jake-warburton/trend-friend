@@ -60,6 +60,7 @@ def calculate_trend_scores(
         developer_score = scaled_component_score(aggregate, "developer", weights.developer_weight)
         knowledge_score = scaled_component_score(aggregate, "knowledge", weights.knowledge_weight)
         search_score = scaled_component_score(aggregate, "search", weights.search_weight)
+        advertising_score = scaled_component_score(aggregate, "advertising", weights.advertising_weight)
         diversity_score = len(aggregate.source_counts) * weights.diversity_weight
         quality_adjustment = topic_quality_adjustment(aggregate, reference_time)
         total_score = round(
@@ -67,6 +68,7 @@ def calculate_trend_scores(
             + developer_score
             + knowledge_score
             + search_score
+            + advertising_score
             + diversity_score
             + quality_adjustment,
             2,
@@ -79,6 +81,7 @@ def calculate_trend_scores(
                 social_score=round(social_score, 2),
                 developer_score=round(developer_score, 2),
                 knowledge_score=round(knowledge_score, 2),
+                advertising_score=round(advertising_score, 2),
                 diversity_score=round(diversity_score, 2),
                 evidence=aggregate.evidence,
                 source_counts=aggregate.source_counts,
@@ -220,7 +223,7 @@ def broad_interest_adjustment(aggregate: TopicAggregate) -> float:
     if len(active_signal_types) < 2 or len(families) < 2:
         return 0.0
     score = 0.0
-    if {"social", "knowledge"} <= active_signal_types or {"social", "search"} <= active_signal_types:
+    if {"social", "knowledge"} <= active_signal_types or {"social", "search"} <= active_signal_types or {"social", "advertising"} <= active_signal_types:
         score += 2.3
     score += min(1.0, (len(families) - 1) / 3.0) * 1.7
     return round(min(score, MAX_BROAD_INTEREST_BONUS), 2)

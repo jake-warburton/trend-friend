@@ -19,6 +19,7 @@ from app.data.repositories import (
     TrendScoreRepository,
 )
 from app.exports.files import (
+    AD_INTELLIGENCE_FILENAME,
     LATEST_TRENDS_FILENAME,
     OVERVIEW_V2_FILENAME,
     SOURCE_SUMMARY_V2_FILENAME,
@@ -28,6 +29,7 @@ from app.exports.files import (
     write_export_payloads,
 )
 from app.exports.serializers import (
+    build_ad_intelligence_payload,
     build_dashboard_overview_payload,
     build_source_summary_payload,
     build_source_summary_records,
@@ -102,12 +104,17 @@ def export_web_data_payloads(settings: Settings) -> None:
             for snapshot in snapshots
         ],
     )
+    ad_intelligence_payload = build_ad_intelligence_payload(
+        generated_at=latest_captured_at or generated_at,
+        signals=signals,
+    )
     latest_payload_dict = latest_payload.to_dict()
     history_payload_dict = history_payload.to_dict()
     overview_payload_dict = overview_payload.to_dict()
     explorer_payload_dict = explorer_payload.to_dict()
     detail_payload_dict = detail_payload.to_dict()
     source_summary_payload_dict = source_summary_payload.to_dict()
+    ad_intelligence_payload_dict = ad_intelligence_payload.to_dict()
 
     write_export_payloads(
         settings.web_data_path,
@@ -117,6 +124,7 @@ def export_web_data_payloads(settings: Settings) -> None:
         explorer_payload,
         detail_payload,
         source_summary_payload,
+        ad_intelligence_payload,
     )
     published_payload_repository.replace_payloads(
         [
@@ -126,6 +134,7 @@ def export_web_data_payloads(settings: Settings) -> None:
             (TREND_EXPLORER_V2_FILENAME, explorer_payload_dict["generatedAt"], json.dumps(explorer_payload_dict)),
             (TREND_DETAIL_INDEX_V2_FILENAME, detail_payload_dict["generatedAt"], json.dumps(detail_payload_dict)),
             (SOURCE_SUMMARY_V2_FILENAME, source_summary_payload_dict["generatedAt"], json.dumps(source_summary_payload_dict)),
+            (AD_INTELLIGENCE_FILENAME, ad_intelligence_payload_dict["generatedAt"], json.dumps(ad_intelligence_payload_dict)),
         ]
     )
     connection.close()

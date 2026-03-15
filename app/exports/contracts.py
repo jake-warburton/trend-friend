@@ -14,6 +14,7 @@ class TrendScoreComponents:
     developer: float
     knowledge: float
     search: float
+    advertising: float
     diversity: float
 
 
@@ -728,6 +729,90 @@ class SourceSummaryPayload:
             family["averageYieldRatePercent"] = family.pop("average_yield_rate_percent")
             family["successRatePercent"] = family.pop("success_rate_percent")
         return payload
+
+
+@dataclass(frozen=True)
+class AdIntelligenceKeywordPayload:
+    """Keyword-level advertising intelligence."""
+
+    keyword: str
+    cpc: float
+    search_volume: int
+    competition_level: str
+    ad_density: float
+    platforms: list[str]
+    top_advertisers: list[str]
+    trend_id: str | None
+
+
+@dataclass(frozen=True)
+class AdIntelligenceAdvertiserPayload:
+    """Advertiser-level advertising intelligence."""
+
+    name: str
+    platform: str
+    ad_count: int
+    ad_formats: list[str]
+    regions: list[str]
+
+
+@dataclass(frozen=True)
+class AdIntelligencePlatformSummaryPayload:
+    """Platform-level advertising summary."""
+
+    platform: str
+    ad_count: int
+    keyword_count: int
+    advertiser_count: int
+
+
+@dataclass(frozen=True)
+class AdIntelligencePayload:
+    """Full ad intelligence response payload."""
+
+    generated_at: str
+    top_keywords: list[AdIntelligenceKeywordPayload]
+    top_advertisers: list[AdIntelligenceAdvertiserPayload]
+    platform_summary: list[AdIntelligencePlatformSummaryPayload]
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-serializable dictionary with camelCase keys."""
+
+        return {
+            "generatedAt": self.generated_at,
+            "topKeywords": [
+                {
+                    "keyword": kw.keyword,
+                    "cpc": kw.cpc,
+                    "searchVolume": kw.search_volume,
+                    "competitionLevel": kw.competition_level,
+                    "adDensity": kw.ad_density,
+                    "platforms": kw.platforms,
+                    "topAdvertisers": kw.top_advertisers,
+                    "trendId": kw.trend_id,
+                }
+                for kw in self.top_keywords
+            ],
+            "topAdvertisers": [
+                {
+                    "name": adv.name,
+                    "platform": adv.platform,
+                    "adCount": adv.ad_count,
+                    "adFormats": adv.ad_formats,
+                    "regions": adv.regions,
+                }
+                for adv in self.top_advertisers
+            ],
+            "platformSummary": [
+                {
+                    "platform": ps.platform,
+                    "adCount": ps.ad_count,
+                    "keywordCount": ps.keyword_count,
+                    "advertiserCount": ps.advertiser_count,
+                }
+                for ps in self.platform_summary
+            ],
+        }
 
 
 def trend_to_dict(trend: TrendRecord) -> dict[str, object]:

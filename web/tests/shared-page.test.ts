@@ -63,6 +63,7 @@ test("shared page renders the fetched watchlist", async () => {
                 developer: 0,
                 knowledge: 6,
                 search: 0,
+                advertising: 0,
                 diversity: 0,
               },
             },

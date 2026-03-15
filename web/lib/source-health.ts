@@ -342,6 +342,7 @@ function formatSourceContributionSummary(source: TrendSourceContribution): strin
     ["Developer", source.score.developer],
     ["Knowledge", source.score.knowledge],
     ["Search", source.score.search],
+    ["Advertising", source.score.advertising ?? 0],
     ["Diversity", source.score.diversity],
   ];
 

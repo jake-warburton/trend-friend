@@ -1,0 +1,56 @@
+name: Refresh Ad Intelligence
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 23 * * *"
+
+concurrency:
+  group: refresh-ad-intelligence
+  cancel-in-progress: true
+
+jobs:
+  ad-intelligence:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      SIGNAL_EYE_DATABASE_URL: ${{ secrets.SIGNAL_EYE_DATABASE_URL }}
+      SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
+      SIGNAL_EYE_ENABLE_AD_INTELLIGENCE_SOURCES: "true"
+      SIGNAL_EYE_WEB_DATA_PATH: web/data
+      SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+      GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
+      GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
+      GOOGLE_ADS_DEVELOPER_TOKEN: ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
+      GOOGLE_ADS_REFRESH_TOKEN: ${{ secrets.GOOGLE_ADS_REFRESH_TOKEN }}
+      GOOGLE_ADS_CUSTOMER_ID: ${{ secrets.GOOGLE_ADS_CUSTOMER_ID }}
+      META_APP_TOKEN: ${{ secrets.META_APP_TOKEN }}
+      TIKTOK_ADS_CLIENT_KEY: ${{ secrets.TIKTOK_ADS_CLIENT_KEY }}
+      TIKTOK_ADS_CLIENT_SECRET: ${{ secrets.TIKTOK_ADS_CLIENT_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate required secrets
+        run: |
+          if [ -z "${SIGNAL_EYE_DATABASE_URL}" ]; then
+            echo "Missing required Actions secret: SIGNAL_EYE_DATABASE_URL"
+            exit 1
+          fi
+
+      - name: Run ad intelligence pipeline
+        run: python3 scripts/run_ad_intelligence.py
+
+      - name: Re-export web data
+        run: |
+          mkdir -p web/data
+          python3 scripts/export_web_data.py

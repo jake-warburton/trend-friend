@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from app.exports.contracts import (
+    AdIntelligencePayload,
     DashboardOverviewPayload,
     LatestTrendsPayload,
     SourceSummaryPayload,
@@ -20,6 +21,7 @@ TREND_HISTORY_FILENAME = "trend-history.json"
 TREND_EXPLORER_V2_FILENAME = "trend-explorer.v2.json"
 TREND_DETAIL_INDEX_V2_FILENAME = "trend-detail-index.v2.json"
 SOURCE_SUMMARY_V2_FILENAME = "source-summary.v2.json"
+AD_INTELLIGENCE_FILENAME = "ad-intelligence.json"
 
 
 def write_export_payloads(
@@ -30,6 +32,7 @@ def write_export_payloads(
     explorer_payload: TrendExplorerPayload | None = None,
     detail_payload: TrendDetailIndexPayload | None = None,
     source_summary_payload: SourceSummaryPayload | None = None,
+    ad_intelligence_payload: AdIntelligencePayload | None = None,
 ) -> None:
     """Write the latest and historical payloads for the web app."""
 
@@ -44,6 +47,8 @@ def write_export_payloads(
         write_json(export_directory / TREND_DETAIL_INDEX_V2_FILENAME, detail_payload.to_dict())
     if source_summary_payload is not None:
         write_json(export_directory / SOURCE_SUMMARY_V2_FILENAME, source_summary_payload.to_dict())
+    if ad_intelligence_payload is not None:
+        write_json(export_directory / AD_INTELLIGENCE_FILENAME, ad_intelligence_payload.to_dict())
 
 
 def write_json(path: Path, payload: dict[str, object]) -> None:

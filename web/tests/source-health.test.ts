@@ -60,7 +60,7 @@ test("buildSourceContributionInsights merges source health with contribution det
         latestSignalAt: "2026-03-11T21:00:00Z",
         estimatedScore: 9.2,
         scoreSharePercent: 46.2,
-        score: { total: 9.2, social: 0, developer: 7.8, knowledge: 0, search: 1.4, diversity: 0 },
+        score: { total: 9.2, social: 0, developer: 7.8, knowledge: 0, search: 1.4, advertising: 0, diversity: 0 },
       },
       {
         source: "reddit",
@@ -68,7 +68,7 @@ test("buildSourceContributionInsights merges source health with contribution det
         latestSignalAt: "2026-03-11T20:55:00Z",
         estimatedScore: 4.7,
         scoreSharePercent: 23.5,
-        score: { total: 4.7, social: 4.2, developer: 0, knowledge: 0.5, search: 0, diversity: 0 },
+        score: { total: 4.7, social: 4.2, developer: 0, knowledge: 0.5, search: 0, advertising: 0, diversity: 0 },
       },
     ],
     [
@@ -121,7 +121,7 @@ test("summarizeTopSourceDrivers explains score concentration", () => {
       latestSignalAt: "2026-03-11T21:00:00Z",
       estimatedScore: 9.2,
       scoreSharePercent: 46.2,
-      score: { total: 9.2, social: 0, developer: 7.8, knowledge: 0, search: 1.4, diversity: 0 },
+      score: { total: 9.2, social: 0, developer: 7.8, knowledge: 0, search: 1.4, advertising: 0, diversity: 0 },
     },
     {
       source: "reddit",
@@ -129,7 +129,7 @@ test("summarizeTopSourceDrivers explains score concentration", () => {
       latestSignalAt: "2026-03-11T20:55:00Z",
       estimatedScore: 4.7,
       scoreSharePercent: 23.5,
-      score: { total: 4.7, social: 4.2, developer: 0, knowledge: 0.5, search: 0, diversity: 0 },
+      score: { total: 4.7, social: 4.2, developer: 0, knowledge: 0.5, search: 0, advertising: 0, diversity: 0 },
     },
   ]);
 

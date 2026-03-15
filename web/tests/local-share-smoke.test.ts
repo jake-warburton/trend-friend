@@ -46,6 +46,7 @@ test("local share smoke flow covers share creation and shared page render", asyn
                 developer: 0,
                 knowledge: 6,
                 search: 0,
+                advertising: 0,
                 diversity: 0,
               },
             },
