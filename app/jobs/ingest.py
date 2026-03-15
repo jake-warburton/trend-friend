@@ -33,6 +33,10 @@ from app.sources.coingecko import CoinGeckoSourceAdapter
 from app.sources.apple_charts import AppleChartsSourceAdapter
 from app.sources.tiktok import TikTokSourceAdapter
 from app.sources.pinterest import PinterestSourceAdapter
+from app.sources.google_keyword_planner import GoogleKeywordPlannerSourceAdapter
+from app.sources.facebook_ad_library import FacebookAdLibrarySourceAdapter
+from app.sources.tiktok_ads import TikTokAdsSourceAdapter
+from app.sources.google_ads_transparency import GoogleAdsTransparencySourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
