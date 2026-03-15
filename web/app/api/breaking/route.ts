@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { loadBreakingFeed } from "@/lib/trends";
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
+const GITHUB_TOKEN = process.env.TOKEN_DISPATCH || "";
 const GITHUB_REPO = process.env.GITHUB_REPO || "trend-friend";
 const GITHUB_OWNER = process.env.GITHUB_OWNER || "";
 const STALE_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
