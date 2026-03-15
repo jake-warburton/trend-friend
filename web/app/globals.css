@@ -1408,7 +1408,7 @@ input {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  margin-top: 28px;
+  margin-top: 40px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1417,7 +1417,7 @@ input {
 }
 
 .trajectory-strip {
-  margin-top: 28px;
+  margin-top: 40px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1432,7 +1432,7 @@ input {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 0.85fr));
   gap: 0;
-  margin-top: 28px;
+  margin-top: 40px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1441,7 +1441,7 @@ input {
 }
 
 .explorer-geo-strip {
-  margin-top: 12px;
+  margin-top: 40px;
 }
 
 .analytics-card {
@@ -1509,7 +1509,7 @@ input {
 .theme-tech-light .curated-strip,
 .theme-tech-light .explorer-geo-strip,
 .theme-tech-light .content-grid {
-  margin-top: 8px;
+  margin-top: 40px;
 }
 
 .theme-tech-light .analytics-strip,
@@ -2044,7 +2044,7 @@ input {
   display: grid;
   grid-template-columns: minmax(0, 2.3fr) minmax(260px, 0.72fr);
   gap: 24px;
-  margin-top: 28px;
+  margin-top: 40px;
 }
 
 .ranking-panel,
