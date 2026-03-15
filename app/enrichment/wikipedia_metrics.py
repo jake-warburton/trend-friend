@@ -140,6 +140,7 @@ class WikipediaPageviewsEnricher(MarketMetricEnricher):
         )
         items_30d = payload_30d.get("items", [])
         total_30d = sum(item.get("views", 0) for item in items_30d)
+        num_days_30d = max(len(items_30d), 1)
 
         if total_30d > 0:
             metrics.append(
@@ -158,10 +159,42 @@ class WikipediaPageviewsEnricher(MarketMetricEnricher):
                 )
             )
 
-        # Last 7 days for weekly metric
-        items_7d = [item for item in items_30d if item.get("timestamp", "") >= start_7d]
-        total_7d = sum(item.get("views", 0) for item in items_7d)
+            # Daily average derived from the full 30-day window
+            daily_avg = total_30d / num_days_30d
+            metrics.append(
+                TrendMetricSnapshot(
+                    source=self.source_name,
+                    metric_key="daily_avg_pageviews",
+                    label="Wikipedia daily avg pageviews",
+                    value_numeric=round(daily_avg),
+                    value_display=f"{self.compact_number(round(daily_avg))}/day",
+                    unit="pageviews",
+                    period="daily average (30 days)",
+                    captured_at=captured_at,
+                    confidence=0.9,
+                    provenance_url=provenance,
+                    is_estimated=False,
+                )
+            )
+
+        # Last 7 days — use a separate API call for accuracy instead of
+        # filtering the 30-day response (Wikimedia timestamps use YYYYMMDDHH
+        # format which breaks naive string comparison against YYYYMMDD).
+        try:
+            payload_7d = self.get_json(
+                f"https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/"
+                f"en.wikipedia/all-access/all-agents/{encoded}/daily/{start_7d}/{end_date}",
+                headers={"User-Agent": "SignalEye/1.0 (trend intelligence)"},
+            )
+            items_7d = payload_7d.get("items", [])
+            total_7d = sum(item.get("views", 0) for item in items_7d)
+        except Exception:
+            total_7d = 0
+
         if total_7d > 0:
+            # Sanity: weekly must never exceed monthly
+            if total_30d > 0:
+                total_7d = min(total_7d, total_30d)
             metrics.append(
                 TrendMetricSnapshot(
                     source=self.source_name,
