@@ -179,6 +179,7 @@ class TrendExplorerRecordPayload:
     recent_history: list[TrendHistoryPointPayload]
     seasonality: SeasonalityPayload | None = None
     forecast_direction: str | None = None
+    breaking: TrendBreakingPayload | None = None
 
 
 @dataclass(frozen=True)
@@ -350,6 +351,7 @@ class TrendDetailRecordPayload:
     wikipedia_description: str | None = None
     wikipedia_thumbnail_url: str | None = None
     wikipedia_page_url: str | None = None
+    breaking: TrendBreakingPayload | None = None
 
 
 @dataclass(frozen=True)
@@ -855,6 +857,11 @@ def trend_explorer_record_to_dict(trend: TrendExplorerRecordPayload) -> dict[str
     for point in payload["recentHistory"]:
         point["capturedAt"] = point.pop("captured_at")
         point["scoreTotal"] = point.pop("score_total")
+    if payload.get("breaking") is not None:
+        payload["breaking"]["breakingScore"] = payload["breaking"].pop("breaking_score")
+        payload["breaking"]["accountCount"] = payload["breaking"].pop("account_count")
+        for tweet in payload["breaking"].get("tweets", []):
+            tweet["tweetId"] = tweet.pop("tweet_id")
     return payload
 
 
@@ -938,6 +945,11 @@ def trend_detail_record_to_dict(trend: TrendDetailRecordPayload) -> dict[str, ob
     payload["wikipediaDescription"] = payload.pop("wikipedia_description")
     payload["wikipediaThumbnailUrl"] = payload.pop("wikipedia_thumbnail_url")
     payload["wikipediaPageUrl"] = payload.pop("wikipedia_page_url")
+    if payload.get("breaking") is not None:
+        payload["breaking"]["breakingScore"] = payload["breaking"].pop("breaking_score")
+        payload["breaking"]["accountCount"] = payload["breaking"].pop("account_count")
+        for tweet in payload["breaking"].get("tweets", []):
+            tweet["tweetId"] = tweet.pop("tweet_id")
     return payload
 
 
@@ -950,6 +962,16 @@ class BreakingTweetPayload:
     tweet_id: str
     timestamp: str
     engagement: float
+
+
+@dataclass(frozen=True)
+class TrendBreakingPayload:
+    """Breaking feed data attached to an individual trend."""
+
+    breaking_score: float
+    corroborated: bool
+    account_count: int
+    tweets: list[BreakingTweetPayload]
 
 
 @dataclass(frozen=True)

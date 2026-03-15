@@ -20,6 +20,8 @@ from app.enrichment.pypi import PyPIDownloadsEnricher
 from app.enrichment.stackoverflow import StackOverflowEnricher
 from app.enrichment.tiktok import TikTokMetricsEnricher
 from app.enrichment.wikipedia_metrics import WikipediaPageviewsEnricher
+from app.enrichment.app_store_metadata import AppStoreMetadataEnricher
+from app.enrichment.google_play_metadata import GooglePlayMetadataEnricher
 from app.enrichment.youtube import YouTubeMetricsEnricher
 from app.models import TrendScoreResult
 
@@ -29,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 _DEV_SOURCES = {"github", "npm", "pypi", "stackoverflow", "huggingface", "lobsters", "devto"}
 
 # Sources that indicate a trend has broad consumer appeal
-_CONSUMER_SOURCES = {"reddit", "youtube", "google_trends", "google_news", "curated_feeds", "tiktok", "apple_charts", "pinterest"}
+_CONSUMER_SOURCES = {"reddit", "youtube", "google_trends", "google_news", "curated_feeds", "tiktok", "apple_charts", "google_play", "pinterest"}
 
 
 def _select_enrichers_for_trend(
@@ -68,6 +70,12 @@ def _select_enrichers_for_trend(
     # AI/ML-specific enricher
     if "huggingface" in source_counts or "arxiv" in source_counts:
         enrichers.append(HuggingFaceEnricher(settings))
+
+    # App store enrichers
+    if "apple_charts" in source_counts:
+        enrichers.append(AppStoreMetadataEnricher(settings))
+    if "google_play" in source_counts:
+        enrichers.append(GooglePlayMetadataEnricher(settings))
 
     return enrichers
 

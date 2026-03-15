@@ -6910,6 +6910,43 @@ input {
   color: #172b4d;
 }
 
+/* ── Breaking Strip on Explorer Cards ─────────────────────── */
+
+.explorer-breaking-strip {
+  border-top: 1px solid var(--inset-divider);
+  padding: 8px 16px 10px;
+}
+
+.explorer-breaking-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.explorer-breaking-label {
+  font-family: var(--font-sans);
+  font-size: var(--type-size-xs);
+  font-weight: var(--type-weight-strong);
+  color: var(--danger-text, #ff5e5e);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.explorer-breaking-tweets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.explorer-breaking-tweets li {
+  margin: 0;
+  padding: 0;
+}
+
 /* ── Breaking Feed: responsive ───────────────────────────── */
 
 @media (max-width: 768px) {

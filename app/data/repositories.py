@@ -182,6 +182,17 @@ class PublishedPayloadRepository:
         )
         self.connection.commit()
 
+    def get_payload(self, key: str) -> str | None:
+        """Return the raw JSON string for *key*, or ``None`` if absent."""
+
+        row = self.connection.execute(
+            "SELECT payload_json FROM published_payloads WHERE payload_key = ?",
+            (key,),
+        ).fetchone()
+        if row is None:
+            return None
+        return row[0] if isinstance(row, (tuple, list)) else row["payload_json"]
+
 
 class TwitterTweetRepository:
     """Persist and query scraped Twitter tweets."""

@@ -69,6 +69,10 @@ def export_web_data_payloads(settings: Settings) -> None:
     detail_records = repository.list_trend_detail_records(limit=settings.ranking_limit)
     detail_records = _enrich_with_wikipedia(detail_records)
 
+    # Load breaking feed for cross-referencing
+    from app.exports.serializers import _build_breaking_index
+    breaking_index = _build_breaking_index(connection)
+
     latest_payload = build_latest_trends_payload(
         generated_at=latest_captured_at or generated_at,
         scores=latest_scores,
@@ -77,10 +81,12 @@ def export_web_data_payloads(settings: Settings) -> None:
     explorer_payload = build_trend_explorer_payload(
         generated_at=latest_captured_at or generated_at,
         trends=explorer_records,
+        breaking_index=breaking_index,
     )
     detail_payload = build_trend_detail_index_payload(
         generated_at=latest_captured_at or generated_at,
         trends=detail_records,
+        breaking_index=breaking_index,
     )
     overview_payload = build_dashboard_overview_payload(
         generated_at=latest_captured_at or generated_at,

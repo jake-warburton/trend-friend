@@ -31,6 +31,7 @@ from app.sources.wikipedia import WikipediaSourceAdapter
 from app.sources.mastodon import MastodonSourceAdapter
 from app.sources.coingecko import CoinGeckoSourceAdapter
 from app.sources.apple_charts import AppleChartsSourceAdapter
+from app.sources.google_play import GooglePlaySourceAdapter
 from app.sources.tiktok import TikTokSourceAdapter
 from app.sources.pinterest import PinterestSourceAdapter
 from app.sources.google_keyword_planner import GoogleKeywordPlannerSourceAdapter
@@ -68,6 +69,8 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         TikTokSourceAdapter(settings),
         PinterestSourceAdapter(settings),
     ]
+    if settings.enable_google_play_source:
+        adapters.append(GooglePlaySourceAdapter(settings))
     if settings.enable_experimental_sources:
         adapters.append(PolymarketSourceAdapter(settings))
     adapters.append(TwitterSourceAdapter(settings))

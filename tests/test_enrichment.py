@@ -48,6 +48,7 @@ class EnrichmentTests(unittest.TestCase):
             github_token=None,
             twitter_bearer_token=None,
             twitter_scrape_accounts=None,
+            twitter_cookies_json=None,
             youtube_api_key=None,
             google_search_metrics_url=None,
             google_search_metrics_token=None,
@@ -68,6 +69,7 @@ class EnrichmentTests(unittest.TestCase):
             tiktok_ads_client_key=None,
             tiktok_ads_client_secret=None,
             enable_ad_intelligence_sources=False,
+            enable_google_play_source=True,
         )
 
     def tearDown(self) -> None:

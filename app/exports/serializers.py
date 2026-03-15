@@ -55,6 +55,7 @@ from app.exports.contracts import (
     BreakingFeedPayload,
     BreakingItemPayload,
     BreakingTweetPayload,
+    TrendBreakingPayload,
 )
 from app.models import (
     NormalizedSignal,
@@ -70,9 +71,53 @@ from app.models import (
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.data.connection import DatabaseConnection
 from app.sources.catalog import source_family_for_source
 from app.topics.categorize import categorize_topic
 from app.topics.display import build_display_name, fallback_display_name
+
+
+def _build_breaking_index(
+    connection: DatabaseConnection,
+) -> dict[str, BreakingItemPayload]:
+    """Load the published breaking feed and build a topic -> item lookup."""
+
+    import json
+
+    from app.data.repositories import PublishedPayloadRepository
+
+    repo = PublishedPayloadRepository(connection)
+    raw = repo.get_payload("breaking-feed.json")
+    if not raw:
+        return {}
+
+    try:
+        feed = json.loads(raw) if isinstance(raw, str) else raw
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+    index: dict[str, BreakingItemPayload] = {}
+    for item in feed.get("items", []):
+        topic = item.get("topic", "").strip().lower()
+        if topic:
+            tweets = [
+                BreakingTweetPayload(
+                    account=t.get("account", ""),
+                    text=t.get("text", ""),
+                    tweet_id=t.get("tweetId", ""),
+                    timestamp=t.get("timestamp", ""),
+                    engagement=t.get("engagement", 0),
+                )
+                for t in item.get("tweets", [])
+            ]
+            index[topic] = BreakingItemPayload(
+                topic=item.get("topic", ""),
+                breaking_score=item.get("breakingScore", 0),
+                corroborated=item.get("corroborated", False),
+                account_count=item.get("accountCount", 0),
+                tweets=tweets,
+            )
+    return index
 
 
 def build_latest_trends_payload(
@@ -108,24 +153,34 @@ def build_trend_history_payload(
 def build_trend_explorer_payload(
     generated_at: datetime,
     trends: list[TrendExplorerRecord],
+    breaking_index: dict[str, BreakingItemPayload] | None = None,
 ) -> TrendExplorerPayload:
     """Create the explorer payload for Dashboard V2."""
 
+    idx = breaking_index or {}
     return TrendExplorerPayload(
         generated_at=to_timestamp(generated_at),
-        trends=[serialize_explorer_trend(trend) for trend in trends],
+        trends=[
+            serialize_explorer_trend(trend, breaking=idx.get(trend.id))
+            for trend in trends
+        ],
     )
 
 
 def build_trend_detail_index_payload(
     generated_at: datetime,
     trends: list[TrendDetailRecord],
+    breaking_index: dict[str, BreakingItemPayload] | None = None,
 ) -> TrendDetailIndexPayload:
     """Create the detail index payload for Dashboard V2."""
 
+    idx = breaking_index or {}
     return TrendDetailIndexPayload(
         generated_at=to_timestamp(generated_at),
-        trends=[serialize_detail_trend(trend) for trend in trends],
+        trends=[
+            serialize_detail_trend(trend, breaking=idx.get(trend.id))
+            for trend in trends
+        ],
     )
 
 
@@ -309,7 +364,10 @@ def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:
     )
 
 
-def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordPayload:
+def serialize_explorer_trend(
+    trend: TrendExplorerRecord,
+    breaking: BreakingItemPayload | None = None,
+) -> TrendExplorerRecordPayload:
     """Convert an internal explorer record into the public V2 contract."""
 
     return TrendExplorerRecordPayload(
@@ -387,10 +445,23 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
             else None
         ),
         forecast_direction=trend.forecast_direction,
+        breaking=(
+            TrendBreakingPayload(
+                breaking_score=breaking.breaking_score,
+                corroborated=breaking.corroborated,
+                account_count=breaking.account_count,
+                tweets=breaking.tweets,
+            )
+            if breaking is not None
+            else None
+        ),
     )
 
 
-def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload:
+def serialize_detail_trend(
+    trend: TrendDetailRecord,
+    breaking: BreakingItemPayload | None = None,
+) -> TrendDetailRecordPayload:
     """Convert an internal detail record into the public V2 contract."""
 
     return TrendDetailRecordPayload(
@@ -578,6 +649,16 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         wikipedia_description=trend.wikipedia_description,
         wikipedia_thumbnail_url=trend.wikipedia_thumbnail_url,
         wikipedia_page_url=trend.wikipedia_page_url,
+        breaking=(
+            TrendBreakingPayload(
+                breaking_score=breaking.breaking_score,
+                corroborated=breaking.corroborated,
+                account_count=breaking.account_count,
+                tweets=breaking.tweets,
+            )
+            if breaking is not None
+            else None
+        ),
     )
 
 

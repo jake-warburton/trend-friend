@@ -55,6 +55,7 @@ class Settings:
     tiktok_ads_client_key: Optional[str]
     tiktok_ads_client_secret: Optional[str]
     enable_ad_intelligence_sources: bool
+    enable_google_play_source: bool
 
 
 def load_settings() -> Settings:
@@ -105,6 +106,7 @@ def load_settings() -> Settings:
         tiktok_ads_client_key=os.getenv("TIKTOK_ADS_CLIENT_KEY"),
         tiktok_ads_client_secret=os.getenv("TIKTOK_ADS_CLIENT_SECRET"),
         enable_ad_intelligence_sources=os.getenv("SIGNAL_EYE_ENABLE_AD_INTELLIGENCE_SOURCES", "false").lower() == "true",
+        enable_google_play_source=os.getenv("SIGNAL_EYE_ENABLE_GOOGLE_PLAY_SOURCE", "true").lower() == "true",
     )
 
 

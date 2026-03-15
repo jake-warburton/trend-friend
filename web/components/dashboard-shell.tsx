@@ -2930,6 +2930,33 @@ export function DashboardShell({
                           </div>
                         ) : null}
                       </div>
+                      {trend.breaking && trend.breaking.tweets.length > 0 && (
+                        <div className="explorer-breaking-strip">
+                          <div className="explorer-breaking-header">
+                            <span className="breaking-feed-dot" aria-hidden="true" />
+                            <span className="explorer-breaking-label">Breaking</span>
+                            <span className="breaking-feed-score">{trend.breaking.breakingScore.toFixed(1)}</span>
+                            {trend.breaking.corroborated && (
+                              <span className="breaking-feed-corroborated">Corroborated</span>
+                            )}
+                          </div>
+                          <ul className="explorer-breaking-tweets">
+                            {trend.breaking.tweets.slice(0, 2).map((tweet) => (
+                              <li key={tweet.tweetId}>
+                                <a
+                                  href={`https://x.com/i/status/${tweet.tweetId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="breaking-feed-tweet-link"
+                                >
+                                  <span className="breaking-feed-account">@{tweet.account}</span>
+                                  <span className="breaking-feed-tweet-text">{tweet.text}</span>
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
 
                     <div
