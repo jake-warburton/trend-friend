@@ -51,6 +51,12 @@ import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
+import {
+  confidenceBucketForTrend,
+  trendMatchesAudience,
+  trendMatchesMarket,
+  trendMatchesLanguage,
+} from "@/lib/trend-filters";
 
 import type {
   AlertEvent,
@@ -4271,11 +4277,8 @@ export function buildLanguageFilterOptions(details: TrendDetailRecord[]) {
   ];
 }
 
-export {
-  trendMatchesAudience,
-  trendMatchesMarket,
-  trendMatchesLanguage,
-} from "@/lib/trend-filters";
+// Re-exported for backwards compatibility — canonical source is @/lib/trend-filters
+export { trendMatchesAudience, trendMatchesMarket, trendMatchesLanguage };
 
 export function listActiveExplorerFilters(filters: {
   keyword: string;
@@ -4456,7 +4459,8 @@ function buildSegmentFilterOptions(
   ];
 }
 
-export { confidenceBucketForTrend } from "@/lib/trend-filters";
+// Re-exported for backwards compatibility — canonical source is @/lib/trend-filters
+export { confidenceBucketForTrend };
 
 function formatConfidenceLabel(confidence: number) {
   return `${formatConfidenceBucketLabel(confidenceBucketForTrend(confidence))} confidence`;
