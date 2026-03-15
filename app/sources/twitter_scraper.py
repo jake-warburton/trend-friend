@@ -40,12 +40,28 @@ def compute_engagement(likes: int, retweets: int, replies: int) -> float:
 # twikit cookie-based scraper (preferred)
 # ---------------------------------------------------------------------------
 
+def _build_account_lookup() -> dict[str, "TwitterAccount"]:
+    """Build a case-insensitive handle → TwitterAccount lookup from the curated list."""
+    return {a.handle.lower(): a for a in TWITTER_ACCOUNTS}
+
+
+# Default metadata for accounts not in the curated list but appearing in the timeline
+_DEFAULT_TIER = "medium"
+_DEFAULT_VERTICALS = ("general",)
+
+
 async def _scrape_with_twikit(
     settings: Settings,
     repo: TwitterTweetRepository,
     stats: dict[str, int],
 ) -> dict[str, int]:
-    """Scrape using twikit + pre-exported browser cookies (no login call)."""
+    """Scrape the home timeline using twikit + pre-exported browser cookies.
+
+    Instead of fetching each account individually (84 requests), this fetches
+    the authenticated user's home timeline in a single call. The @SignalEyeFetch
+    account should follow all target accounts — tweets from followed accounts
+    appear in the timeline.
+    """
     import twikit
 
     cookies_json = settings.twitter_cookies_json
@@ -59,70 +75,81 @@ async def _scrape_with_twikit(
     client = twikit.Client("en-US")
     client.set_cookies(cookies)
 
-    for account in TWITTER_ACCOUNTS:
-        stats["accounts_checked"] += 1
-        try:
-            latest_stored = repo.latest_tweet_id(account.handle)
+    account_lookup = _build_account_lookup()
 
-            user = await client.get_user_by_screen_name(account.handle)
-            user_tweets = await client.get_user_tweets(user.id, "Tweets", count=TWEETS_PER_ACCOUNT)
+    # Fetch the home timeline — one API call gets all followed accounts' tweets
+    try:
+        timeline = await client.get_timeline(count=100)
+        tweets_list = list(timeline) if timeline else []
+        LOGGER.info("Home timeline returned %d tweets", len(tweets_list))
+    except Exception as exc:
+        LOGGER.error("Failed to fetch home timeline: %s", exc)
+        return stats
 
-            if not user_tweets:
-                stats["skipped"] += 1
-                continue
+    if not tweets_list:
+        return stats
 
-            tweets_list = list(user_tweets)
+    # Group tweets by account and upsert
+    seen_accounts: set[str] = set()
+    rows = []
+    for tweet in tweets_list:
+        tweet_id = str(tweet.id)
 
-            # Early exit: if newest tweet matches what we have, skip
-            if latest_stored and tweets_list and str(tweets_list[0].id) == latest_stored:
-                stats["skipped"] += 1
-                continue
+        # Resolve the author handle
+        handle = ""
+        if hasattr(tweet, "user") and tweet.user:
+            handle = getattr(tweet.user, "screen_name", "") or ""
+        if not handle:
+            continue
 
-            rows = []
-            for tweet in tweets_list:
-                tweet_id = str(tweet.id)
-                # Stop if we reach already-stored tweets
-                if latest_stored and tweet_id == latest_stored:
-                    break
+        handle_lower = handle.lower()
+        seen_accounts.add(handle_lower)
 
-                likes = getattr(tweet, "favorite_count", 0) or 0
-                retweets = getattr(tweet, "retweet_count", 0) or 0
-                replies = getattr(tweet, "reply_count", 0) or 0
-                engagement = compute_engagement(likes, retweets, replies)
+        # Look up account metadata from curated list
+        account_info = account_lookup.get(handle_lower)
+        tier = account_info.tier if account_info else _DEFAULT_TIER
+        verticals = list(account_info.verticals) if account_info else list(_DEFAULT_VERTICALS)
 
-                author_name = account.handle
-                if hasattr(tweet, "user") and tweet.user:
-                    author_name = getattr(tweet.user, "screen_name", account.handle) or account.handle
+        # Skip if we already have this tweet
+        latest_stored = repo.latest_tweet_id(handle)
+        if latest_stored and tweet_id == latest_stored:
+            continue
 
-                metadata = json.dumps({
-                    "author_name": author_name,
-                    "tier": account.tier,
-                    "verticals": list(account.verticals),
-                })
+        likes = getattr(tweet, "favorite_count", 0) or 0
+        retweets = getattr(tweet, "retweet_count", 0) or 0
+        replies = getattr(tweet, "reply_count", 0) or 0
+        engagement = compute_engagement(likes, retweets, replies)
 
-                ts = datetime.now(tz=timezone.utc).isoformat()
-                if hasattr(tweet, "created_at") and tweet.created_at:
-                    ts = tweet.created_at
+        metadata = json.dumps({
+            "author_name": handle,
+            "tier": tier,
+            "verticals": verticals,
+        })
 
-                rows.append((
-                    account.handle,
-                    tweet_id,
-                    getattr(tweet, "full_text", None) or getattr(tweet, "text", str(tweet)),
-                    ts,
-                    engagement,
-                    datetime.now(tz=timezone.utc).isoformat(),
-                    metadata,
-                ))
+        ts = datetime.now(tz=timezone.utc).isoformat()
+        if hasattr(tweet, "created_at") and tweet.created_at:
+            ts = tweet.created_at
 
-            if rows:
-                repo.upsert_tweets(rows)
-                stats["new_tweets"] += len(rows)
+        rows.append((
+            handle,
+            tweet_id,
+            getattr(tweet, "full_text", None) or getattr(tweet, "text", str(tweet)),
+            ts,
+            engagement,
+            datetime.now(tz=timezone.utc).isoformat(),
+            metadata,
+        ))
 
-            repo.prune_account(account.handle, keep=PRUNE_KEEP)
+    if rows:
+        repo.upsert_tweets(rows)
+        stats["new_tweets"] = len(rows)
 
-        except Exception as exc:
-            LOGGER.warning("Error processing @%s: %s", account.handle, exc)
-            stats["errors"] += 1
+    stats["accounts_checked"] = len(seen_accounts)
+    LOGGER.info("Timeline: %d accounts seen, %d new tweets stored", len(seen_accounts), len(rows))
+
+    # Prune all known accounts
+    for handle in seen_accounts:
+        repo.prune_account(handle, keep=PRUNE_KEEP)
 
     return stats
 
