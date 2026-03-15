@@ -1,0 +1,34 @@
+"""Single-shot Twitter scrape + breaking feed update (for GitHub Actions)."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+
+from app.config import load_settings
+from app.data.primary import connect_primary_database
+from app.jobs.breaking_feed import run_breaking_feed_pipeline
+from app.sources.twitter_scraper import scrape_twitter_accounts
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+LOGGER = logging.getLogger(__name__)
+
+
+def main() -> None:
+    settings = load_settings()
+    connection = connect_primary_database(settings)
+    stats = asyncio.run(scrape_twitter_accounts(settings, connection))
+    breaking_count = run_breaking_feed_pipeline(settings, connection)
+    connection.close()
+    LOGGER.info(
+        "Twitter once: checked=%d new=%d skipped=%d errors=%d breaking=%d",
+        stats["accounts_checked"],
+        stats["new_tweets"],
+        stats["skipped"],
+        stats["errors"],
+        breaking_count,
+    )
+
+
+if __name__ == "__main__":
+    main()

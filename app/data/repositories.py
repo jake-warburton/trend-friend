@@ -183,6 +183,81 @@ class PublishedPayloadRepository:
         self.connection.commit()
 
 
+class TwitterTweetRepository:
+    """Persist and query scraped Twitter tweets."""
+
+    def __init__(self, connection: DatabaseConnection) -> None:
+        self.connection = connection
+
+    def upsert_tweets(self, tweets: list[tuple[str, str, str, str, float, str, str]]) -> None:
+        """Upsert tweets. Each tuple: (account_handle, tweet_id, text, timestamp, engagement, fetched_at, metadata)."""
+        self.connection.executemany(
+            """
+            INSERT INTO twitter_tweets (account_handle, tweet_id, text, timestamp, engagement, fetched_at, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(tweet_id)
+            DO UPDATE SET
+                engagement = excluded.engagement,
+                metadata = excluded.metadata,
+                fetched_at = excluded.fetched_at
+            """,
+            tweets,
+        )
+        self.connection.commit()
+
+    def latest_tweet_id(self, account_handle: str) -> str | None:
+        """Return the most recent tweet_id for an account, or None."""
+        row = self.connection.execute(
+            "SELECT tweet_id FROM twitter_tweets WHERE account_handle = ? ORDER BY timestamp DESC LIMIT 1",
+            (account_handle,),
+        ).fetchone()
+        return row[0] if row else None
+
+    def prune_account(self, account_handle: str, keep: int = 100) -> None:
+        """Delete tweets beyond the keep limit for an account."""
+        self.connection.execute(
+            """
+            DELETE FROM twitter_tweets
+            WHERE account_handle = ? AND id NOT IN (
+                SELECT id FROM twitter_tweets
+                WHERE account_handle = ?
+                ORDER BY timestamp DESC
+                LIMIT ?
+            )
+            """,
+            (account_handle, account_handle, keep),
+        )
+        self.connection.commit()
+
+    def fetch_recent_tweets(self, hours: int = 2) -> list[dict]:
+        """Fetch tweets from the last N hours."""
+        from datetime import datetime, timedelta, timezone
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+        rows = self.connection.execute(
+            """
+            SELECT account_handle, tweet_id, text, timestamp, engagement, metadata
+            FROM twitter_tweets
+            WHERE timestamp >= ?
+            ORDER BY timestamp DESC
+            """,
+            (cutoff,),
+        ).fetchall()
+        return [
+            {"account_handle": r[0], "tweet_id": r[1], "text": r[2], "timestamp": r[3], "engagement": r[4], "metadata": r[5]}
+            for r in rows
+        ]
+
+    def fetch_all_tweets(self) -> list[dict]:
+        """Fetch all stored tweets for pipeline ingestion."""
+        rows = self.connection.execute(
+            "SELECT account_handle, tweet_id, text, timestamp, engagement, metadata FROM twitter_tweets ORDER BY timestamp DESC"
+        ).fetchall()
+        return [
+            {"account_handle": r[0], "tweet_id": r[1], "text": r[2], "timestamp": r[3], "engagement": r[4], "metadata": r[5]}
+            for r in rows
+        ]
+
+
 class SourceIngestionRunRepository:
     """Persist and retrieve source ingestion outcomes."""
 

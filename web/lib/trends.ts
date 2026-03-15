@@ -14,6 +14,7 @@ import type {
   LatestTrendsResponse,
   TrendExplorerResponse,
   TrendHistoryResponse,
+  BreakingFeed,
 } from "@/lib/types";
 
 const DATA_DIRECTORIES = [
@@ -808,4 +809,13 @@ function buildSupabasePayloadUrl(payloadKey: string): string {
   url.searchParams.set("payload_key", `eq.${payloadKey}`);
   url.searchParams.set("limit", "1");
   return url.toString();
+}
+
+export async function loadBreakingFeed(): Promise<BreakingFeed | null> {
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      return await readSupabasePayload<BreakingFeed>("breaking-feed.json");
+    } catch { /* fall through */ }
+  }
+  return null;
 }

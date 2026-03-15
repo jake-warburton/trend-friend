@@ -659,3 +659,24 @@ export type NotificationChannel = {
 export type NotificationChannelsResponse = {
   channels: NotificationChannel[];
 };
+
+export type BreakingTweet = {
+  account: string;
+  text: string;
+  tweetId: string;
+  timestamp: string;
+  engagement: number;
+};
+
+export type BreakingItem = {
+  topic: string;
+  breakingScore: number;
+  corroborated: boolean;
+  accountCount: number;
+  tweets: BreakingTweet[];
+};
+
+export type BreakingFeed = {
+  updatedAt: string;
+  items: BreakingItem[];
+};

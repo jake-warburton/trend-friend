@@ -48,6 +48,9 @@ from app.exports.contracts import (
     TrendSourceContributionPayload,
     TrendSourceBreakdownPayload,
     TrendSnapshotPayload,
+    BreakingFeedPayload,
+    BreakingItemPayload,
+    BreakingTweetPayload,
 )
 from app.models import (
     NormalizedSignal,
@@ -990,3 +993,14 @@ def build_source_summary_records(
             )
         )
     return summaries
+
+
+def build_breaking_feed_payload(
+    updated_at: datetime,
+    items: list[BreakingItemPayload],
+) -> BreakingFeedPayload:
+    """Create the breaking feed payload."""
+    return BreakingFeedPayload(
+        updated_at=to_timestamp(updated_at),
+        items=items,
+    )

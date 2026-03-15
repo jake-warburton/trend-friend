@@ -62,6 +62,7 @@ import type {
   AlertEvent,
   AlertEventsResponse,
   AuthStatusResponse,
+  BreakingFeed,
   ExploreDeferredData,
   ExploreInitialData,
   NotificationChannel,
@@ -395,6 +396,7 @@ export function DashboardShell({
   const [publicWatchlists, setPublicWatchlists] = useState<
     PublicWatchlistSummary[]
   >([]);
+  const [breakingFeed, setBreakingFeed] = useState<BreakingFeed | null>(null);
   const [overviewMeta, setOverviewMeta] = useState({
     generatedAt: initialData.overview.generatedAt,
     lastRunAt: initialData.overview.operations.lastRunAt,
@@ -1091,6 +1093,32 @@ export function DashboardShell({
       }, UPDATED_TRENDS_FLASH_MS);
     }
   }, [explorer.trends, overview]);
+
+  useEffect(() => {
+    async function fetchBreakingFeed() {
+      try {
+        const response = await fetch("/api/breaking");
+        if (response.ok) {
+          const feed = await response.json();
+          setBreakingFeed(feed);
+        }
+      } catch { /* ignore fetch errors */ }
+    }
+    void fetchBreakingFeed();
+    const intervalId = window.setInterval(() => {
+      void fetchBreakingFeed();
+    }, 60_000);
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void fetchBreakingFeed();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (screenshotMode) {
@@ -1846,6 +1874,8 @@ export function DashboardShell({
         </div>
       </section>
 
+
+      <BreakingFeedSection feed={breakingFeed} />
 
       <section className="analytics-strip">
         <article className="analytics-card">
@@ -4730,6 +4760,49 @@ const SOURCE_PALETTE = [
 
 function getSourceColor(index: number) {
   return SOURCE_PALETTE[index % SOURCE_PALETTE.length];
+}
+
+function BreakingFeedSection({ feed }: { feed: BreakingFeed | null }) {
+  if (feed == null || feed.items.length === 0) {
+    return null;
+  }
+  const sorted = [...feed.items].sort((a, b) => b.breakingScore - a.breakingScore);
+  return (
+    <section className="breaking-feed-section">
+      <div className="breaking-feed-header">
+        <span className="breaking-feed-dot" aria-hidden="true" />
+        <h2 className="breaking-feed-title">Breaking</h2>
+      </div>
+      <div className="breaking-feed-items">
+        {sorted.map((item) => (
+          <article className="breaking-feed-item" key={item.topic}>
+            <div className="breaking-feed-item-header">
+              <strong className="breaking-feed-topic">{item.topic}</strong>
+              <span className="breaking-feed-score">{item.breakingScore.toFixed(1)}</span>
+              {item.corroborated && (
+                <span className="breaking-feed-corroborated">Corroborated</span>
+              )}
+            </div>
+            <ul className="breaking-feed-tweets">
+              {item.tweets.map((tweet) => (
+                <li className="breaking-feed-tweet" key={tweet.tweetId}>
+                  <a
+                    href={`https://x.com/i/status/${tweet.tweetId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="breaking-feed-tweet-link"
+                  >
+                    <span className="breaking-feed-account">@{tweet.account}</span>
+                    <span className="breaking-feed-tweet-text">{tweet.text}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function buildConicGradient(dataset: { value: number }[]) {
