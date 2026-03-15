@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { loadBreakingFeed } from "@/lib/trends";
 
+export const revalidate = 55;
+
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const GITHUB_REPO = process.env.GITHUB_REPO || "trend-friend";
 const GITHUB_OWNER = process.env.GITHUB_OWNER || "";
@@ -47,5 +49,5 @@ export async function GET() {
     void triggerTwitterRefresh();
   }
 
-  return NextResponse.json(feed, { headers: { "Cache-Control": "s-maxage=55, stale-while-revalidate=10" } });
+  return NextResponse.json(feed);
 }

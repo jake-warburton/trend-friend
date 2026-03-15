@@ -3,10 +3,12 @@ import { NextResponse } from "next/server";
 import { ApiError } from "@/lib/api-client";
 import { listPublicWatchlists, WatchlistServiceError } from "@/lib/server/watchlist-service";
 
+export const revalidate = 2400;
+
 export async function GET() {
   try {
     const payload = await listPublicWatchlists();
-    return NextResponse.json(payload, { headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" } });
+    return NextResponse.json(payload);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Community watchlists unavailable";
     const status =

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { loadExploreDeferredData } from "@/lib/trends";
 import type { ExploreDeferredData } from "@/lib/types";
 
+export const revalidate = 2400;
+
 type ExploreBootstrapDependencies = {
   loadDeferredData: () => Promise<ExploreDeferredData>;
 };
@@ -16,7 +18,7 @@ export async function handleExploreBootstrapGet(
   dependencies: ExploreBootstrapDependencies = DEFAULT_DEPENDENCIES,
 ) {
   const payload = await dependencies.loadDeferredData();
-  return NextResponse.json(payload, { headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" } });
+  return NextResponse.json(payload);
 }
 
 export async function GET(request: Request) {

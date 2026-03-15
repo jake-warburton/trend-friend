@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { loadSourceSummaries } from "@/lib/trends";
 
+export const revalidate = 2400;
+
 export async function GET() {
   const sources = await loadSourceSummaries();
-  return NextResponse.json(sources, { headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" } });
+  return NextResponse.json(sources);
 }
