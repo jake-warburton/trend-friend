@@ -43,3 +43,10 @@ jobs:
 
       - name: Scrape Twitter and update breaking feed
         run: python3 scripts/run_twitter_once.py
+
+      - name: Invalidate Vercel cache
+        if: success()
+        run: |
+          curl -s -X POST "https://www.signaleye.live/api/revalidate?secret=${REVALIDATE_SECRET}" || true
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
