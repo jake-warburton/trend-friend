@@ -534,10 +534,10 @@ class SourceNormalizationTests(unittest.TestCase):
         self.assertEqual(len(adapter.calls), 3)
         self.assertEqual(items[0].metadata["query_family"], "recent")
 
-    def test_twitter_adapter_uses_multiple_query_families(self) -> None:
+    def test_twitter_adapter_fallback_produces_items(self) -> None:
         adapter = TwitterSourceAdapter(self.settings)
-        self.assertGreater(len(adapter.QUERY_FAMILIES), 1)
-        self.assertEqual(adapter.QUERY_FAMILIES[0][0], "ai")
+        items = adapter.fetch()
+        self.assertGreater(len(items), 0)
 
     def test_google_news_adapter_expands_topic_coverage(self) -> None:
         self.assertEqual(

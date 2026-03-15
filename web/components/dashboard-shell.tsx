@@ -58,7 +58,6 @@ import {
   trendMatchesLanguage,
 } from "@/lib/trend-filters";
 
-import { loadBreakingFeed } from "@/lib/trends";
 import type {
   AlertEvent,
   AlertEventsResponse,
@@ -1097,8 +1096,13 @@ export function DashboardShell({
 
   useEffect(() => {
     async function fetchBreakingFeed() {
-      const feed = await loadBreakingFeed();
-      setBreakingFeed(feed);
+      try {
+        const response = await fetch("/api/breaking");
+        if (response.ok) {
+          const feed = await response.json();
+          setBreakingFeed(feed);
+        }
+      } catch { /* ignore fetch errors */ }
     }
     void fetchBreakingFeed();
     const intervalId = window.setInterval(() => {
