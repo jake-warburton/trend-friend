@@ -16,7 +16,9 @@ export async function handleExploreBootstrapGet(
   dependencies: ExploreBootstrapDependencies = DEFAULT_DEPENDENCIES,
 ) {
   const payload = await dependencies.loadDeferredData();
-  return NextResponse.json(payload);
+  return NextResponse.json(payload, {
+    headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" },
+  });
 }
 
 export async function GET(request: Request) {

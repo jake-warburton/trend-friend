@@ -6,7 +6,9 @@ import { listPublicWatchlists, WatchlistServiceError } from "@/lib/server/watchl
 export async function GET() {
   try {
     const payload = await listPublicWatchlists();
-    return NextResponse.json(payload);
+    return NextResponse.json(payload, {
+      headers: { "Cache-Control": "s-maxage=2400, stale-while-revalidate=600" },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Community watchlists unavailable";
     const status =
