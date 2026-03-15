@@ -113,3 +113,67 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
             source_runs.append(run)
 
     return all_items, source_runs
+
+
+def fetch_ad_intelligence_items(settings: Settings) -> tuple[list[RawSourceItem], list[SourceIngestionRun]]:
+    """Fetch items from ad intelligence sources only.
+
+    Designed to run on a separate daily schedule since ad data changes
+    much less frequently than organic trend signals.
+    """
+
+    if not settings.enable_ad_intelligence_sources:
+        return [], []
+
+    adapters = [
+        GoogleKeywordPlannerSourceAdapter(settings),
+        FacebookAdLibrarySourceAdapter(settings),
+        TikTokAdsSourceAdapter(settings),
+        GoogleAdsTransparencySourceAdapter(settings),
+    ]
+    all_items: list[RawSourceItem] = []
+    source_runs: list[SourceIngestionRun] = []
+
+    def _fetch_one(adapter):
+        adapter.reset_fetch_state()
+        fetched_at = datetime.now(tz=timezone.utc)
+        started_at = perf_counter()
+        try:
+            source_items = adapter.fetch()
+            duration_ms = int((perf_counter() - started_at) * 1000)
+            LOGGER.info("Fetched %s items from %s", len(source_items), adapter.source_name)
+            raw_item_count = getattr(adapter, "raw_item_count", len(source_items))
+            kept_item_count = getattr(adapter, "kept_item_count", len(source_items))
+            return source_items, SourceIngestionRun(
+                source=adapter.source_name,
+                fetched_at=fetched_at,
+                success=True,
+                raw_item_count=raw_item_count,
+                item_count=len(source_items),
+                kept_item_count=kept_item_count,
+                duration_ms=duration_ms,
+                used_fallback=adapter.used_fallback,
+            )
+        except Exception as error:
+            duration_ms = int((perf_counter() - started_at) * 1000)
+            LOGGER.exception("Unexpected failure while fetching %s: %s", adapter.source_name, error)
+            return [], SourceIngestionRun(
+                source=adapter.source_name,
+                fetched_at=fetched_at,
+                success=False,
+                raw_item_count=getattr(adapter, "raw_item_count", 0),
+                item_count=0,
+                kept_item_count=getattr(adapter, "kept_item_count", 0),
+                duration_ms=duration_ms,
+                used_fallback=adapter.used_fallback,
+                error_message=str(error),
+            )
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(_fetch_one, adapter): adapter for adapter in adapters}
+        for future in as_completed(futures):
+            items, run = future.result()
+            all_items.extend(items)
+            source_runs.append(run)
+
+    return all_items, source_runs

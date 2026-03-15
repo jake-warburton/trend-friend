@@ -150,6 +150,57 @@ def run_trend_pipeline(settings: Settings) -> list[TrendScoreResult]:
     return ranked_scores
 
 
+def run_ad_intelligence_pipeline(settings: Settings) -> None:
+    """Fetch ad intelligence sources and merge into the existing signal set.
+
+    Runs as a separate daily job since ad data changes slowly compared to
+    organic trend signals. Appends ad signals to the stored signal set and
+    triggers a re-score so the advertising dimension is reflected.
+    """
+
+    from app.jobs.ingest import fetch_ad_intelligence_items
+
+    if not settings.enable_ad_intelligence_sources:
+        LOGGER.info("Ad intelligence sources are disabled, skipping")
+        return
+
+    LOGGER.info("Starting ad intelligence pipeline")
+    started_at = perf_counter()
+
+    ad_items, ad_source_runs = fetch_ad_intelligence_items(settings)
+    if not ad_items:
+        LOGGER.info("No ad intelligence items fetched, skipping re-score")
+        return
+
+    ad_signals = build_signals_from_items(ad_items)
+    LOGGER.info("Ad intelligence produced %d signals from %d items", len(ad_signals), len(ad_items))
+
+    connection = connect_primary_database(settings)
+    signal_repo = SignalRepository(connection)
+    source_run_repo = SourceIngestionRunRepository(connection)
+
+    source_run_repo.append_runs(ad_source_runs)
+
+    existing_signals = signal_repo.list_signals()
+    non_ad_signals = [s for s in existing_signals if s.signal_type != "advertising"]
+    merged_signals = non_ad_signals + list(ad_signals)
+    signal_repo.replace_signals(merged_signals)
+
+    aggregates = aggregate_topic_signals(merged_signals)
+    scores = calculate_trend_scores(aggregates)
+    ranked_scores = rank_topics_by_score(scores, limit=settings.ranking_limit)
+    published_topics = {score.topic for score in ranked_scores}
+    repository = TrendScoreRepository(connection)
+    repository.replace_scores(
+        ranked_scores + rank_experimental_topics(scores, published_scores=ranked_scores, limit=settings.experimental_ranking_limit),
+        published_topics=published_topics,
+    )
+
+    connection.close()
+    duration_ms = round((perf_counter() - started_at) * 1000)
+    LOGGER.info("Ad intelligence pipeline completed in %dms — %d signals merged", duration_ms, len(ad_signals))
+
+
 def _build_previous_state(
     repository: TrendScoreRepository,
     ranking_limit: int,

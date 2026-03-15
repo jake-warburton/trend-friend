@@ -20,7 +20,7 @@ from _bootstrap import bootstrap_project_root
 bootstrap_project_root()
 
 from app.config import load_settings, Settings
-from app.jobs.compute_scores import run_trend_pipeline
+from app.jobs.compute_scores import run_ad_intelligence_pipeline, run_trend_pipeline
 from app.logging import configure_logging
 
 LOGGER = logging.getLogger(__name__)
@@ -74,6 +74,36 @@ def export_web_data(settings: Settings) -> None:
     export_web_data_payloads(settings)
 
 
+AD_INTELLIGENCE_INTERVAL_HOURS = 24
+_last_ad_intelligence_run: datetime | None = None
+
+
+def _should_run_ad_intelligence() -> bool:
+    """Return True when enough time has passed since the last ad run."""
+
+    global _last_ad_intelligence_run
+    if _last_ad_intelligence_run is None:
+        return True
+    elapsed = (datetime.now(tz=timezone.utc) - _last_ad_intelligence_run).total_seconds()
+    return elapsed >= AD_INTELLIGENCE_INTERVAL_HOURS * 3600
+
+
+def run_ad_intelligence_if_due(settings: Settings) -> None:
+    """Run the ad intelligence pipeline if the daily interval has elapsed."""
+
+    global _last_ad_intelligence_run
+    if not settings.enable_ad_intelligence_sources:
+        return
+    if not _should_run_ad_intelligence():
+        return
+    LOGGER.info("Running daily ad intelligence pipeline")
+    try:
+        run_ad_intelligence_pipeline(settings)
+        _last_ad_intelligence_run = datetime.now(tz=timezone.utc)
+    except Exception as error:
+        LOGGER.exception("Ad intelligence pipeline failed: %s", error)
+
+
 def main() -> None:
     """Run the pipeline on a fixed interval until shutdown is requested."""
 
@@ -91,6 +121,7 @@ def main() -> None:
 
     while not _shutdown_requested:
         run_pipeline_with_export(settings)
+        run_ad_intelligence_if_due(settings)
         if _shutdown_requested:
             break
         LOGGER.info("Next run in %d minutes", settings.poll_interval_minutes)
