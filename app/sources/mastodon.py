@@ -91,14 +91,21 @@ class MastodonSourceAdapter(SourceAdapter):
         if not name:
             return None
 
+        # Skip low-value hashtags that are purely social/lifestyle noise
+        if _is_low_value_hashtag(name):
+            return None
+
         url = tag.get("url", f"https://{instance}/tags/{name}")
         engagement = self._calculate_tag_engagement(tag)
         history = tag.get("history", [])
         timestamp = self._timestamp_from_history(history)
 
+        # Deduplicate tags across instances by using just the tag name
+        # (not instance-specific) so #Caturday on mastodon.social and
+        # fosstodon.org don't create separate items
         return RawSourceItem(
             source=self.source_name,
-            external_id=f"tag:{instance}:{name}",
+            external_id=f"tag:{name.lower()}",
             title=f"#{name}",
             url=url,
             timestamp=timestamp,
@@ -144,7 +151,12 @@ class MastodonSourceAdapter(SourceAdapter):
 
     @staticmethod
     def _calculate_tag_engagement(tag: dict) -> float:
-        """Calculate engagement from tag history: uses x accounts for the most recent day."""
+        """Calculate engagement from tag history.
+
+        Uses a scaled formula that produces values comparable to other sources
+        (~100-1000 range). The raw uses*accounts product is too large — a tag
+        with 350 uses by 120 accounts would score 42,000 vs Reddit's ~500.
+        """
 
         history = tag.get("history", [])
         if not history:
@@ -152,7 +164,9 @@ class MastodonSourceAdapter(SourceAdapter):
         recent = history[0]
         uses = int(recent.get("uses", 0))
         accounts = int(recent.get("accounts", 0))
-        return float(uses * accounts)
+        # Scale down: uses + accounts * 2 keeps scores in the 100-800 range
+        # comparable to Reddit hot posts and HN stories
+        return float(uses + accounts * 2)
 
     @staticmethod
     def _timestamp_from_history(history: list[dict]) -> datetime:
@@ -248,3 +262,43 @@ def _strip_html(html: str) -> str:
     """Remove HTML tags from a string using a simple regex."""
 
     return HTML_TAG_RE.sub("", html)
+
+
+# Hashtag patterns that are purely social rituals, not meaningful trends.
+# These dominate Mastodon trending but have no intelligence value.
+_LOW_VALUE_PATTERNS = {
+    # Day-of-week rituals
+    "caturday", "silentsaturday", "silentsunday", "sundayvibes",
+    "mondaymotivation", "tuesdaythoughts", "wednesdaywisdom",
+    "throwbackthursday", "fridayfeeling", "fridayvibes", "tgif",
+    "followfriday", "ff",
+    # Photo/art share rituals
+    "photography", "photo", "myphoto", "catoftheday", "dogsofmastodon",
+    "catsofmastodon", "birdsofmastodon", "florespondence",
+    "bloomscrolling", "gardenersofmastodon", "naturephotography",
+    # Generic social tags
+    "introduction", "introductions", "newhere", "fediverse",
+    "mastodon", "boost", "toot", "fediverselife",
+    # Recurring media tags
+    "nowplaying", "nowwatching", "nowreading", "bookstagram",
+    "musicmonday", "vinylcollection",
+}
+
+# Patterns that suggest day-of-week or recurring social hashtags
+_DAY_RITUAL_FRAGMENTS = {
+    "monday", "tuesday", "wednesday", "thursday", "friday",
+    "saturday", "sunday", "daily", "weekly",
+}
+
+
+def _is_low_value_hashtag(name: str) -> bool:
+    """Return True if a hashtag is a low-value social ritual."""
+
+    lower = name.lower()
+    if lower in _LOW_VALUE_PATTERNS:
+        return True
+    # Check for day-of-week ritual pattern (e.g., "SilentSaturday", "MondayMotivation")
+    for fragment in _DAY_RITUAL_FRAGMENTS:
+        if fragment in lower and len(lower) > len(fragment):
+            return True
+    return False
