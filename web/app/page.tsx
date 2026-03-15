@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -7,6 +9,17 @@ import {
   readThemePreference,
   THEME_COOKIE,
 } from "@/lib/settings";
+
+type ScreenshotManifest = Record<string, string>;
+
+function loadScreenshotManifest(): ScreenshotManifest | null {
+  try {
+    const manifestPath = join(process.cwd(), "public", "screenshots", "manifest.json");
+    return JSON.parse(readFileSync(manifestPath, "utf-8"));
+  } catch {
+    return null;
+  }
+}
 
 export const metadata = {
   title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
@@ -38,7 +51,7 @@ export const metadata = {
   },
 };
 
-const LANDING_SCREENSHOT_SETS = {
+const FALLBACK_SCREENSHOT_SETS = {
   [LIGHT_THEME]: {
     explorer: "/screenshots/explorer-light-v2.png",
     trendDetail: "/screenshots/trend-detail-light-v2.png",
@@ -53,6 +66,27 @@ const LANDING_SCREENSHOT_SETS = {
   },
 } as const;
 
+type ScreenshotSet = {
+  explorer: string;
+  trendDetail: string;
+  sourceHealth: string;
+  exploreGeo: string;
+};
+
+function getScreenshotSet(
+  themeKey: typeof LIGHT_THEME | typeof DARK_THEME,
+): ScreenshotSet {
+  const manifest = loadScreenshotManifest();
+  if (!manifest) return FALLBACK_SCREENSHOT_SETS[themeKey];
+  const suffix = themeKey === DARK_THEME ? "dark" : "light";
+  return {
+    explorer: manifest[`explorer-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].explorer,
+    trendDetail: manifest[`trend-detail-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].trendDetail,
+    sourceHealth: manifest[`source-health-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].sourceHealth,
+    exploreGeo: manifest[`explore-geo-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].exploreGeo,
+  };
+}
+
 export default async function Page() {
   let themeKey: typeof LIGHT_THEME | typeof DARK_THEME = LIGHT_THEME;
   try {
@@ -63,7 +97,7 @@ export default async function Page() {
   } catch {
     themeKey = LIGHT_THEME;
   }
-  const screenshotSet = LANDING_SCREENSHOT_SETS[themeKey];
+  const screenshotSet = getScreenshotSet(themeKey);
 
   return (
     <main className="landing-page">

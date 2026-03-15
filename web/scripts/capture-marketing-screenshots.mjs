@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, readdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
@@ -33,15 +33,17 @@ const SHOTS = [
     name: "explorer",
     path: "/explore?screenshot=1",
     viewport: { width: 1440, height: 1024 },
-    waitFor: '[data-screenshot-target="explore"] .explorer-card',
+    waitFor: '[data-screenshot-target="explore"] .trajectory-strip .chart-container svg .recharts-line',
     capture: "page",
+    settleDelayMs: 1000,
   },
   {
     name: "trend-detail",
     path: "/trends/ai-agents?screenshot=1",
     viewport: { width: 1440, height: 1080 },
-    waitFor: '[data-screenshot-target="trend-detail"] .detail-panel',
+    waitFor: '[data-screenshot-target="trend-detail"] .chart-container svg .recharts-line',
     capture: "page",
+    settleDelayMs: 1000,
   },
   {
     name: "source-health",
@@ -63,10 +65,15 @@ const SHOTS = [
   },
 ] ;
 
+const MANIFEST_FILE = join(OUTPUT_DIR, "manifest.json");
+
 async function main() {
   await mkdir(OUTPUT_DIR, { recursive: true });
   run("npm", ["run", "build"]);
   const server = startServer();
+
+  const timestamp = Date.now();
+  const manifest = {};
 
   try {
     await waitForServer(`${BASE_URL}/`);
@@ -75,12 +82,18 @@ async function main() {
     try {
       for (const theme of THEMES) {
         for (const shot of SHOTS) {
-          await captureShot(browser, shot, theme);
+          const fileName = await captureShot(browser, shot, theme, timestamp);
+          const key = `${shot.name}-${theme.suffix}`;
+          manifest[key] = `/screenshots/${fileName}`;
         }
       }
     } finally {
       await browser.close();
     }
+
+    await removeStaleScreenshots(timestamp);
+    await writeFile(MANIFEST_FILE, JSON.stringify(manifest, null, 2) + "\n");
+    console.log(`Wrote manifest to ${MANIFEST_FILE}`);
   } finally {
     await stopServer(server);
   }
@@ -109,14 +122,21 @@ function startServer() {
       },
       stdio: "inherit",
       shell: process.platform === "win32",
+      detached: true,
     },
   );
   process.on("exit", () => {
-    if (!child.killed) {
-      child.kill("SIGTERM");
-    }
+    killProcessGroup(child);
   });
   return child;
+}
+
+function killProcessGroup(child, signal = "SIGTERM") {
+  try {
+    process.kill(-child.pid, signal);
+  } catch {
+    // process group already gone
+  }
 }
 
 async function waitForServer(url) {
@@ -135,8 +155,8 @@ async function waitForServer(url) {
   throw new Error(`Timed out waiting for ${url}`);
 }
 
-async function captureShot(browser, shot, theme) {
-  const fileName = `${shot.name}-${theme.suffix}.png`;
+async function captureShot(browser, shot, theme, timestamp) {
+  const fileName = `${shot.name}-${theme.suffix}-${timestamp}.png`;
   console.log(`Capturing ${fileName} from ${shot.path}`);
   const context = await browser.newContext({
     viewport: shot.viewport,
@@ -195,15 +215,29 @@ async function captureShot(browser, shot, theme) {
       await page.locator(shot.selector).screenshot({
         path: outputPath,
       });
-      return;
+      return fileName;
     }
 
     await page.screenshot({
       path: outputPath,
       fullPage: false,
     });
+
+    return fileName;
   } finally {
     await context.close();
+  }
+}
+
+async function removeStaleScreenshots(currentTimestamp) {
+  const files = await readdir(OUTPUT_DIR);
+  const timestampPattern = /^(.+)-(\d+)\.png$/;
+  for (const file of files) {
+    const match = file.match(timestampPattern);
+    if (match && match[2] !== String(currentTimestamp)) {
+      await unlink(join(OUTPUT_DIR, file));
+      console.log(`Removed stale screenshot: ${file}`);
+    }
   }
 }
 
@@ -216,18 +250,21 @@ async function stopServer(server) {
     return;
   }
 
-  server.kill("SIGTERM");
+  killProcessGroup(server, "SIGTERM");
   await Promise.race([
     new Promise((resolve) => server.once("exit", resolve)),
     delay(5_000).then(() => {
       if (server.exitCode == null) {
-        server.kill("SIGKILL");
+        killProcessGroup(server, "SIGKILL");
       }
     }),
   ]);
 }
 
-main().catch((error) => {
+main().then(() => {
+  console.log("Done.");
+  process.exit(0);
+}).catch((error) => {
   console.error(error);
   process.exit(1);
 });
