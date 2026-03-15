@@ -82,3 +82,32 @@ class TwitterTweetRepositoryTests(unittest.TestCase):
         ])
         tweets = self.repo.fetch_all_tweets()
         self.assertEqual(len(tweets), 2)
+
+
+from app.sources.twitter_accounts import TwitterAccount, TWITTER_ACCOUNTS
+
+
+class TwitterAccountsTests(unittest.TestCase):
+
+    def test_accounts_list_is_not_empty(self) -> None:
+        self.assertGreater(len(TWITTER_ACCOUNTS), 0)
+
+    def test_accounts_have_valid_tiers(self) -> None:
+        for account in TWITTER_ACCOUNTS:
+            self.assertIn(account.tier, ("high", "medium"), f"{account.handle} has invalid tier")
+
+    def test_accounts_have_verticals(self) -> None:
+        for account in TWITTER_ACCOUNTS:
+            self.assertGreater(len(account.verticals), 0, f"{account.handle} has no verticals")
+
+
+class TwitterScraperTests(unittest.TestCase):
+
+    def test_compute_engagement(self) -> None:
+        from app.sources.twitter_scraper import compute_engagement
+        result = compute_engagement(likes=100, retweets=50, replies=10)
+        self.assertAlmostEqual(result, 210.0)
+
+    def test_compute_engagement_zeros(self) -> None:
+        from app.sources.twitter_scraper import compute_engagement
+        self.assertAlmostEqual(compute_engagement(0, 0, 0), 0.0)

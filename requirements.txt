@@ -12,3 +12,4 @@ cryptography>=42.0.0
 
 # Billing
 stripe>=8.0.0
+twscrape
