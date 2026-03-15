@@ -11,7 +11,31 @@ import {
 export const metadata = {
   title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
   description:
-    "Spot emerging trends before they peak. Signal Eye monitors 18+ data sources in real time to surface rising topics for content creators, founders, marketers, and investors.",
+    "Spot emerging trends before they peak. Signal Eye monitors 24+ data sources — Reddit, GitHub, TikTok, Google Trends, arXiv, and more — to surface rising topics with momentum scoring, breakout predictions, and market signals.",
+  keywords: [
+    "trend intelligence platform",
+    "emerging trends tool",
+    "trend tracking software",
+    "breakout topic detection",
+    "trend forecasting",
+    "market trend analysis",
+    "content trend discovery",
+    "startup trend signals",
+    "exploding topics alternative",
+    "treendly alternative",
+  ],
+  openGraph: {
+    title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
+    description:
+      "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals — all in one dashboard.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Signal Eye — Trend Intelligence Platform",
+    description:
+      "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals.",
+  },
 };
 
 const LANDING_SCREENSHOT_SETS = {

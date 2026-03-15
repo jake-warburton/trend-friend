@@ -10,6 +10,7 @@ from app.data.repositories import TrendScoreRepository
 from app.enrichment.base import EnrichmentTarget, MarketMetricEnricher
 from app.enrichment.github import GitHubMetricsEnricher
 from app.enrichment.huggingface import HuggingFaceEnricher
+from app.enrichment.google_autocomplete import GoogleAutocompleteEnricher
 from app.enrichment.google_search import GoogleSearchMetricsEnricher
 from app.enrichment.google_trends import GoogleTrendsEnricher
 from app.enrichment.growth import compute_growth_metrics
@@ -27,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 _DEV_SOURCES = {"github", "npm", "pypi", "stackoverflow", "huggingface", "lobsters", "devto"}
 
 # Sources that indicate a trend has broad consumer appeal
-_CONSUMER_SOURCES = {"reddit", "youtube", "google_trends", "google_news", "curated_feeds", "tiktok", "apple_charts"}
+_CONSUMER_SOURCES = {"reddit", "youtube", "google_trends", "google_news", "curated_feeds", "tiktok", "apple_charts", "pinterest"}
 
 
 def _select_enrichers_for_trend(
@@ -45,6 +46,7 @@ def _select_enrichers_for_trend(
     enrichers: list[MarketMetricEnricher] = [
         GoogleSearchMetricsEnricher(settings),
         GoogleTrendsEnricher(settings),
+        GoogleAutocompleteEnricher(settings),
         YouTubeMetricsEnricher(settings),
         WikipediaPageviewsEnricher(settings),
     ]

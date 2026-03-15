@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
@@ -30,6 +31,64 @@ type TrendDetailPageProps = {
 };
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: TrendDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const trend = await loadTrendDetail(slug);
+
+  if (!trend) {
+    return {
+      title: "Trend Not Found",
+      description: "This trend is no longer in the live ranking.",
+    };
+  }
+
+  const displayName = trend.name;
+  const category = formatCategoryLabel(trend.category);
+  const score = trend.score.total.toFixed(1);
+  const sourceCount = trend.sources.length;
+  const status = trend.status.charAt(0).toUpperCase() + trend.status.slice(1);
+
+  const description = trend.wikipediaDescription
+    ? `${displayName}: ${trend.wikipediaDescription}. Currently ranked #${trend.rank} with a score of ${score} across ${sourceCount} sources. Status: ${status}.`
+    : trend.summary
+      ? `${trend.summary} Ranked #${trend.rank} with a score of ${score} across ${sourceCount} sources.`
+      : `${displayName} is trending at rank #${trend.rank} with a score of ${score} across ${sourceCount} data sources. Track momentum, breakout predictions, and platform signals.`;
+
+  const keywords = [
+    displayName,
+    `${displayName} trend`,
+    `${displayName} trending`,
+    `is ${displayName} trending`,
+    category,
+    trend.metaTrend,
+    "trend analysis",
+    "trend data",
+    ...trend.aliases.slice(0, 3),
+  ].filter(Boolean);
+
+  const ogImages = trend.wikipediaThumbnailUrl
+    ? [{ url: trend.wikipediaThumbnailUrl, alt: displayName }]
+    : [];
+
+  return {
+    title: `${displayName} — Trend Intelligence`,
+    description,
+    keywords,
+    openGraph: {
+      title: `${displayName} — Trend Intelligence | Signal Eye`,
+      description,
+      type: "article",
+      ...(ogImages.length > 0 ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: ogImages.length > 0 ? "summary_large_image" : "summary",
+      title: `${displayName} — Trend Intelligence`,
+      description,
+      ...(ogImages.length > 0 ? { images: ogImages.map((i) => i.url) } : {}),
+    },
+  };
+}
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;

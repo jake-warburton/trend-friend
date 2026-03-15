@@ -425,6 +425,8 @@ export function formatSourceLabel(source: string): string {
     polymarket: "Polymarket",
     twitter: "Twitter/X",
     youtube: "YouTube",
+    tiktok: "TikTok",
+    pinterest: "Pinterest",
   };
   return labels[source] ?? source
     .split("_")

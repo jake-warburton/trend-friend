@@ -30,6 +30,8 @@ from app.sources.wikipedia import WikipediaSourceAdapter
 from app.sources.mastodon import MastodonSourceAdapter
 from app.sources.coingecko import CoinGeckoSourceAdapter
 from app.sources.apple_charts import AppleChartsSourceAdapter
+from app.sources.tiktok import TikTokSourceAdapter
+from app.sources.pinterest import PinterestSourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +60,8 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
         MastodonSourceAdapter(settings),
         CoinGeckoSourceAdapter(settings),
         AppleChartsSourceAdapter(settings),
+        TikTokSourceAdapter(settings),
+        PinterestSourceAdapter(settings),
     ]
     if settings.enable_experimental_sources:
         adapters.append(PolymarketSourceAdapter(settings))

@@ -1,20 +1,20 @@
-"""Reddit source adapter using the public Atom/RSS feed.
+"""Reddit source adapter using the JSON API with RSS fallback.
 
-Reddit's JSON API now blocks unauthenticated bot requests (403).
-The Atom feed at /hot.rss remains publicly accessible and returns
-titles, permalinks, timestamps, and subreddit labels — enough for
-topic extraction.  Engagement scores are unavailable via RSS so
-posts that made it to "hot" receive a base engagement value that
-scales by position in the feed (higher-ranked = hotter).
+Tries Reddit's public JSON API at old.reddit.com first, which provides
+real engagement data (score, num_comments, upvote_ratio). Falls back to
+Atom/RSS feeds if the JSON endpoint returns 403 or otherwise fails.
 """
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from app.models import RawSourceItem
 from app.sources.base import SourceAdapter
+
+logger = logging.getLogger(__name__)
 
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 BASE_ENGAGEMENT = 500
@@ -22,7 +22,11 @@ BASE_ENGAGEMENT = 500
 
 
 class RedditSourceAdapter(SourceAdapter):
-    """Fetch Reddit posts from multiple curated RSS feeds and normalize them."""
+    """Fetch Reddit posts from multiple curated feeds and normalize them.
+
+    Primary path: JSON API at old.reddit.com (real engagement metrics).
+    Fallback path: Atom/RSS feeds (estimated engagement by position).
+    """
 
     source_name = "reddit"
     TREND_SUBREDDITS = [
@@ -126,13 +130,123 @@ class RedditSourceAdapter(SourceAdapter):
 
     def fetch(self) -> list[RawSourceItem]:
         try:
-            return self._fetch_rss()
-        except Exception as error:
-            self.log_fallback(error)
-            return self.normalize_items(self.sample_payload())
+            return self._fetch_json()
+        except Exception as json_error:
+            logger.warning("Reddit JSON API failed (%s), falling back to RSS", json_error)
+            try:
+                return self._fetch_rss()
+            except Exception as rss_error:
+                self.log_fallback(rss_error)
+                return self.normalize_items(self.sample_payload())
+
+    # ------------------------------------------------------------------
+    # JSON API path (primary)
+    # ------------------------------------------------------------------
+
+    def _fetch_json(self) -> list[RawSourceItem]:
+        """Fetch multiple curated Reddit feeds via the JSON API."""
+
+        items: list[RawSourceItem] = []
+        seen_ids: set[str] = set()
+        subreddit_groups = self._subreddit_groups()
+        feed_limit = max(4, min(self.settings.max_items_per_source // max(len(subreddit_groups), 1), 8))
+        feed_specs = self.FEED_SPECS[: max(1, min(self.settings.reddit_page_limit, len(self.FEED_SPECS)))]
+
+        for feed_name, time_window in feed_specs:
+            for subreddit_group in subreddit_groups:
+                subreddit_path = "+".join(subreddit_group)
+                url = self._build_json_url(subreddit_path, feed_name, feed_limit, time_window)
+                headers = {
+                    "User-Agent": self.settings.reddit_user_agent,
+                    "Accept": "application/json",
+                }
+                listing = self.get_json(url, headers=headers)
+                children = listing.get("data", {}).get("children", [])
+                self.raw_item_count += len(children)
+
+                for child in children:
+                    post = child.get("data", {})
+                    item = self._build_item_from_json(post, feed_name, time_window)
+                    if item is None or item.external_id in seen_ids:
+                        continue
+                    seen_ids.add(item.external_id)
+                    items.append(item)
+                    self.kept_item_count += 1
+                    if len(items) >= self.settings.max_items_per_source:
+                        return items
+
+        return items
+
+    @staticmethod
+    def _build_json_url(subreddit_path: str, feed_name: str, limit: int, time_window: str | None) -> str:
+        """Return one Reddit JSON API URL for a subreddit batch and feed type."""
+
+        url = f"https://old.reddit.com/r/{subreddit_path}/{feed_name}.json?limit={limit}&raw_json=1"
+        if time_window:
+            url = f"{url}&t={time_window}"
+        return url
+
+    def _build_item_from_json(
+        self,
+        post: dict,
+        feed_name: str,
+        time_window: str | None,
+    ) -> RawSourceItem | None:
+        """Normalize one JSON post object into a shared source item."""
+
+        title = str(post.get("title", "")).strip()
+        post_id = str(post.get("id", "")).strip()
+        permalink = str(post.get("permalink", ""))
+        created_utc = float(post.get("created_utc", 0.0))
+
+        if not title or not post_id:
+            return None
+
+        score = int(post.get("score", 0))
+        num_comments = int(post.get("num_comments", 0))
+        upvote_ratio = float(post.get("upvote_ratio", 0.0))
+        engagement = score + (num_comments * 3)
+
+        selftext = str(post.get("selftext", "")).strip()
+        selftext_preview = selftext[:200] if selftext else ""
+
+        metadata: dict[str, object] = {
+            "subreddit": str(post.get("subreddit", "")),
+            "score": score,
+            "num_comments": num_comments,
+            "upvote_ratio": upvote_ratio,
+            "feed": feed_name,
+        }
+        if time_window:
+            metadata["window"] = time_window
+        if selftext_preview:
+            metadata["selftext"] = selftext_preview
+        flair = post.get("link_flair_text")
+        if flair:
+            metadata["link_flair_text"] = str(flair)
+
+        timestamp = (
+            self.parse_unix_timestamp(created_utc)
+            if created_utc
+            else datetime.now(tz=timezone.utc)
+        )
+
+        return RawSourceItem(
+            source=self.source_name,
+            external_id=post_id,
+            title=title,
+            url=f"https://www.reddit.com{permalink}",
+            timestamp=timestamp,
+            engagement_score=float(engagement),
+            metadata=metadata,
+        )
+
+    # ------------------------------------------------------------------
+    # RSS fallback path
+    # ------------------------------------------------------------------
 
     def _fetch_rss(self) -> list[RawSourceItem]:
-        """Fetch multiple curated Reddit feeds for better topic coverage."""
+        """Fetch multiple curated Reddit feeds via Atom/RSS (fallback)."""
 
         items: list[RawSourceItem] = []
         seen_ids: set[str] = set()
@@ -164,6 +278,10 @@ class RedditSourceAdapter(SourceAdapter):
                         return items
 
         return items
+
+    # ------------------------------------------------------------------
+    # Shared helpers
+    # ------------------------------------------------------------------
 
     def _subreddit_groups(self) -> list[list[str]]:
         """Split the subreddit list into small feed batches to widen coverage."""
@@ -208,7 +326,7 @@ class RedditSourceAdapter(SourceAdapter):
             return None
 
         engagement = self._estimate_engagement(position, feed_name, time_window)
-        metadata = {"subreddit": subreddit, "feed": feed_name}
+        metadata: dict[str, object] = {"subreddit": subreddit, "feed": feed_name}
         if time_window:
             metadata["window"] = time_window
 

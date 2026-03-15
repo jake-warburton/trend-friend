@@ -56,6 +56,7 @@ const SOURCE_FAMILIES: Record<string, string> = {
   polymarket: "market",
   coingecko: "market",
   tiktok: "social",
+  pinterest: "social",
   google_search: "search",
   score_history: "analytics",
 };
@@ -84,6 +85,7 @@ const SIGNAL_TYPES: Record<string, string> = {
   polymarket: "search",
   coingecko: "search",
   tiktok: "social",
+  pinterest: "social",
   google_search: "search",
   score_history: "analytics",
 };
@@ -139,6 +141,7 @@ function formatSourceLabel(source: string): string {
     polymarket: "Polymarket",
     coingecko: "CoinGecko",
     tiktok: "TikTok",
+    pinterest: "Pinterest",
     google_search: "Google Search",
     score_history: "Score History",
   };

@@ -97,7 +97,12 @@ class EnrichmentTests(unittest.TestCase):
 
         # Without API keys configured, no fake metrics should be generated
         # Only score_history growth metrics may be present (from actual snapshot data)
+        # The Google Autocomplete enricher may produce a "search_depth" metric
+        # marked as estimated because it's inferred from autocomplete volume
+        allowed_estimated = {"search_depth"}
         for metric in metrics:
+            if metric.metric_key in allowed_estimated:
+                continue
             self.assertFalse(metric.is_estimated, f"Metric {metric.metric_key} should not be estimated")
 
 
