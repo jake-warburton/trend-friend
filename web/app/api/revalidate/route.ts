@@ -9,6 +9,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 
-  revalidateTag("supabase-payload");
+  revalidateTag("supabase-payload", { expire: 0 });
   return NextResponse.json({ revalidated: true });
 }
