@@ -66,8 +66,7 @@ def fetch_source_items(settings: Settings) -> tuple[list[RawSourceItem], list[So
     ]
     if settings.enable_experimental_sources:
         adapters.append(PolymarketSourceAdapter(settings))
-    if settings.enable_experimental_sources and settings.enable_twitter_source:
-        adapters.append(TwitterSourceAdapter(settings))
+    adapters.append(TwitterSourceAdapter(settings))
     all_items: list[RawSourceItem] = []
     source_runs: list[SourceIngestionRun] = []
 

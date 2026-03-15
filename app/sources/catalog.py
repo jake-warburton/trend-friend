@@ -52,7 +52,7 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
         ("world", "politics", "sports", "gaming", "culture", "tech"),
     ),
     "stackoverflow": SourceDefinition("stackoverflow", "developer", "developer", 0.88, ("tech", "developer")),
-    "twitter": SourceDefinition("twitter", "social", "social", 0.45, ("social", "general-interest"), experimental=True),
+    "twitter": SourceDefinition("twitter", "social", "social", 0.85, ("social", "general-interest")),
     "youtube": SourceDefinition("youtube", "social", "social", 0.79, ("gaming", "culture", "consumer-tech", "tech")),
     "wikipedia": SourceDefinition("wikipedia", "knowledge", "knowledge", 0.67, ("world", "culture", "science", "sports")),
     "mastodon": SourceDefinition("mastodon", "social", "community", 0.68, ("tech", "developer", "culture")),
