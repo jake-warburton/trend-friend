@@ -36,7 +36,7 @@ export default function PricingPage() {
             <ul className="landing-pricing-features">
               <li>Everything in Free</li>
               <li>CSV export</li>
-              <li>Ad spend keyword metrics</li>
+              <li>Ad Intelligence</li>
             </ul>
             <Link
               href="/signup"
