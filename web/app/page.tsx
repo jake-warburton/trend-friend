@@ -326,7 +326,7 @@ export default async function Page() {
           </article>
           <article className="landing-pricing-card landing-pricing-card-featured">
             <h3>Pro</h3>
-            <p className="landing-pricing-price">[Price]<span>/month</span></p>
+            <p className="landing-pricing-price">$5.99<span>/month</span></p>
             <ul className="landing-pricing-features">
               <li>Everything in Free</li>
               <li>Unlimited watchlists and alerts</li>
