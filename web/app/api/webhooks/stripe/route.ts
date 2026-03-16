@@ -62,8 +62,11 @@ export async function POST(request: NextRequest) {
       const customerId = subscription.customer as string;
       const status = subscription.status;
       const tier = status === "active" || status === "trialing" ? "pro" : "free";
-      const periodEnd = subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000).toISOString()
+      // current_period_end removed in newer Stripe API; extract from raw data
+      const rawSub = event.data.object as Record<string, unknown>;
+      const periodEndTs = rawSub.current_period_end as number | undefined;
+      const periodEnd = periodEndTs
+        ? new Date(periodEndTs * 1000).toISOString()
         : null;
 
       await supabase
