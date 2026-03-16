@@ -369,14 +369,15 @@ class ExtractedTopicCandidate:
 def extract_candidate_topics(title: str, source_name: str | None = None) -> list[str]:
     """Extract ranked candidates from a title."""
 
-    tokens = remove_stop_words(tokenize_text(title))
+    working_title = clean_tweet_text(title) if source_name == "twitter" else title
+    tokens = remove_stop_words(tokenize_text(working_title))
     if source_name:
         blocked_tokens = SOURCE_LOW_SIGNAL_TOKENS.get(source_name, set())
         tokens = [token for token in tokens if token not in blocked_tokens]
     if not tokens:
         return []
     ranked_candidates: list[ExtractedTopicCandidate] = []
-    ranked_candidates.extend(infer_entity_span_topics(title, source_name))
+    ranked_candidates.extend(infer_entity_span_topics(working_title, source_name))
 
     source_specific_topics = infer_source_specific_topics(title, tokens, source_name)
     ranked_candidates.extend(
@@ -490,6 +491,8 @@ def infer_source_specific_topics(title: str, tokens: list[str], source_name: str
         return infer_mastodon_topics(title, tokens)
     if source_name == "stackoverflow":
         return infer_stackoverflow_topics(title, tokens)
+    if source_name == "twitter":
+        return infer_twitter_topics(title, tokens)
     return []
 
 
@@ -889,6 +892,78 @@ def infer_mastodon_topics(title: str, tokens: list[str]) -> list[str]:
         normalized = normalize_topic_name(parts)
         if normalized and is_meaningful_topic(normalized):
             inferred.append(normalized)
+    return inferred
+
+
+_TWITTER_CLEAN_PATTERNS = (
+    re.compile(r"https?://\S+"),          # URLs
+    re.compile(r"@\w+"),                   # @mentions
+    re.compile(r"[^\w\s'.,;:!?/$%&+-]", re.UNICODE),  # Emojis and special chars
+    re.compile(r"[.]{2,}"),               # Ellipsis
+    re.compile(r"\bRT\b"),                # Retweet marker
+    re.compile(r"\n+"),                   # Newlines
+)
+
+# Conversational filler common in tweets but not in headlines
+_TWITTER_FILLER = re.compile(
+    r"\b(who do you|what do you|how do you|fill out|check out|let me know|"
+    r"here's what|what to expect|do you have|winning it all|sound off|"
+    r"drop your|share your|tell us|tag someone|link in bio)\b",
+    re.IGNORECASE,
+)
+
+
+def clean_tweet_text(text: str) -> str:
+    """Strip URLs, @mentions, emojis, filler, and noise from tweet text for topic extraction."""
+    cleaned = text
+    for pattern in _TWITTER_CLEAN_PATTERNS:
+        cleaned = pattern.sub(" ", cleaned)
+    # Strip hashtag symbols but keep the word
+    cleaned = cleaned.replace("#", "")
+    # Remove conversational filler
+    cleaned = _TWITTER_FILLER.sub(" ", cleaned)
+    # Handle possessives before case normalization
+    cleaned = re.sub(r"'[Ss]\b", "", cleaned)
+    # Normalize ALL CAPS to title case for entity span extraction
+    # Keep short acronyms (2-4 chars) as-is (e.g., ICE, NATO, NCAA)
+    words = cleaned.split()
+    normalized_words = []
+    for word in words:
+        if len(word) > 4 and word.isupper() and word.isalpha():
+            normalized_words.append(word.title())
+        else:
+            normalized_words.append(word)
+    cleaned = " ".join(normalized_words)
+    # Remove BREAKING: / JUST IN: prefixes
+    cleaned = re.sub(r"^(BREAKING|JUST IN|WATCH|LIVE|EXCLUSIVE|ALERT)\s*[:\-–|]\s*", "", cleaned, flags=re.IGNORECASE)
+    # Collapse whitespace
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
+def infer_twitter_topics(title: str, tokens: list[str]) -> list[str]:
+    """Extract topics from tweets: hashtags first, then key phrases from cleaned text."""
+
+    inferred: list[str] = []
+
+    # 1. Extract hashtags as high-confidence topics
+    hashtags = re.findall(r"#(\w{2,})", title)
+    for tag in hashtags:
+        # Split camelCase (e.g., "NCAATournament" → "ncaa tournament")
+        parts = re.sub(r"([a-z])([A-Z])", r"\1 \2", tag).lower()
+        normalized = normalize_topic_name(parts)
+        if normalized and is_meaningful_topic(normalized) and normalized not in inferred:
+            inferred.append(normalized)
+
+    # 2. Clean tweet text and extract entity-span topics from it
+    cleaned = clean_tweet_text(title)
+    if cleaned:
+        entity_topics = infer_entity_span_topics(cleaned, "twitter")
+        for candidate in entity_topics:
+            normalized = normalize_topic_name(candidate.raw_text)
+            if normalized and is_meaningful_topic(normalized) and normalized not in inferred:
+                inferred.append(normalized)
+
     return inferred
 
 
