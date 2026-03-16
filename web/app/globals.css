@@ -614,13 +614,13 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   overflow: hidden;
   text-decoration: none;
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: 4px;
   transition: opacity 0.15s ease;
 }
 
@@ -652,7 +652,7 @@ input {
   font-size: var(--type-size-xs);
   color: var(--muted);
   text-decoration: none;
-  margin-left: 8px;
+  margin-left: 4px;
   white-space: nowrap;
   transition: color 0.15s ease;
 }
