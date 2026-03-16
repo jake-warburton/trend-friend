@@ -3646,6 +3646,104 @@ dialog::backdrop {
   backdrop-filter: blur(2px);
 }
 
+.upgrade-modal {
+  border: none;
+  border-radius: var(--radius-md, 12px);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  background: var(--card-bg, #fff);
+  color: var(--fg, #1a1a1a);
+  text-align: center;
+}
+
+.upgrade-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.upgrade-modal-badge {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: var(--accent, #6366f1);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.upgrade-modal-title {
+  margin: 0;
+  font-size: var(--type-size-lg, 1.2rem);
+  font-weight: var(--type-weight-strong, 600);
+}
+
+.upgrade-modal-desc {
+  margin: 0 0 1.25rem;
+  line-height: 1.55;
+  opacity: 0.75;
+  font-size: var(--type-size-sm, 0.9rem);
+}
+
+.upgrade-modal-price {
+  margin-bottom: 1.5rem;
+}
+
+.upgrade-modal-amount {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.upgrade-modal-period {
+  opacity: 0.6;
+  font-size: var(--type-size-sm, 0.9rem);
+}
+
+.upgrade-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.upgrade-modal-cancel {
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--border, #ddd);
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--fg, #1a1a1a);
+  cursor: pointer;
+  font-size: var(--type-size-md, 0.95rem);
+  font-weight: 500;
+}
+
+.upgrade-modal-cta {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--accent, #6366f1);
+  color: #fff;
+  cursor: pointer;
+  font-size: var(--type-size-md, 0.95rem);
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.upgrade-modal-cta:hover {
+  opacity: 0.9;
+}
+
+.upgrade-modal-cta:disabled,
+.upgrade-modal-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .settings-card-body p {
   margin: 0;
   color: var(--muted);
@@ -7495,6 +7593,126 @@ dialog::backdrop {
 
   .breaking-feed-meta {
     margin-left: 0;
+  }
+}
+
+/* ── Site Footer ──────────────────────────────────────────── */
+
+.site-footer {
+  margin-top: 48px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-faint);
+  font-family: var(--font-sans);
+}
+
+.site-footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px 32px;
+}
+
+.site-footer-brand {
+  max-width: 260px;
+}
+
+.site-footer-logo {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  color: var(--copy);
+  text-decoration: none;
+}
+
+.site-footer-tagline {
+  margin: 6px 0 0;
+  font-size: var(--type-size-sm);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.site-footer-links {
+  display: flex;
+  gap: 48px;
+}
+
+.site-footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.site-footer-col h4 {
+  margin: 0 0 4px;
+  font-size: var(--type-size-xs);
+  font-weight: var(--type-weight-strong);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.site-footer-col a {
+  font-size: var(--type-size-sm);
+  color: var(--copy);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.site-footer-col a:hover {
+  color: var(--accent);
+}
+
+.site-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  font-size: var(--type-size-xs);
+  color: var(--muted);
+}
+
+.site-footer-separator {
+  opacity: 0.4;
+}
+
+/* ── Footer: tech-light overrides ────────────────────────── */
+
+.theme-tech-light .site-footer {
+  border-top-color: rgba(9, 30, 66, 0.06);
+  background: rgba(248, 249, 251, 0.5);
+}
+
+.theme-tech-light .site-footer-bottom {
+  border-top-color: rgba(9, 30, 66, 0.06);
+}
+
+/* ── Footer: responsive ──────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .site-footer-inner {
+    flex-direction: column;
+    gap: 28px;
+    padding: 28px 20px 24px;
+  }
+
+  .site-footer-brand {
+    max-width: none;
+  }
+
+  .site-footer-links {
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .site-footer-bottom {
+    padding: 14px 20px;
   }
 }
 

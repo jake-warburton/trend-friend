@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { NavBar } from "@/components/nav-bar";
+import { SiteFooter } from "@/components/site-footer";
 import { AuthProvider } from "@/components/auth-provider";
 import { ProfileProvider } from "@/components/profile-provider";
 import {
@@ -76,6 +77,7 @@ export default async function RootLayout({
           <ProfileProvider>
             <NavBar />
             {children}
+            <SiteFooter />
           </ProfileProvider>
         </AuthProvider>
         <Analytics />
