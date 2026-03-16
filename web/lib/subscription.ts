@@ -9,6 +9,7 @@ export type BillingStatus = {
   subscriptionStatus: string;
   currentPeriodEnd: string | null;
   stripeCustomerId: string | null;
+  cancelAtPeriodEnd?: boolean;
 };
 
 export function isPro(status: BillingStatus | null): boolean {

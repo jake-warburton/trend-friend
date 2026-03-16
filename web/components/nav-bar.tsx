@@ -33,7 +33,7 @@ function AvatarContent({ user }: { user: { user_metadata?: Record<string, string
 export function NavBar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { isPro } = useProfile();
+  const { isPro, isAdmin } = useProfile();
   const [menuOpen, setMenuOpen] = useState(false);
   const navClassName =
     pathname === "/explore" ? "nav-bar nav-bar-static nav-bar-blend" : "nav-bar";
@@ -89,6 +89,14 @@ export function NavBar() {
               isPro={isPro}
             />
           ),
+        )}
+        {isAdmin && (
+          <Link
+            className={`nav-bar-link${pathname.startsWith("/admin") ? " nav-bar-link-active" : ""}`}
+            href="/admin"
+          >
+            Admin
+          </Link>
         )}
         {user ? (
           <Link href="/settings" className="nav-bar-avatar" title={user.user_metadata?.full_name || user.email || "Account"}>
@@ -154,6 +162,15 @@ export function NavBar() {
           mobile
         />
       ))}
+      {isAdmin && (
+        <Link
+          className={`nav-bar-mobile-link${pathname.startsWith("/admin") ? " nav-bar-mobile-link-active" : ""}`}
+          href="/admin"
+          onClick={closeMenu}
+        >
+          Admin
+        </Link>
+      )}
     </div>
     </>
   );

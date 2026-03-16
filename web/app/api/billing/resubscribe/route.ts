@@ -12,24 +12,22 @@ export async function POST() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("stripe_customer_id")
+      .select("stripe_subscription_id")
       .eq("id", user.id)
       .single();
 
-    if (!profile?.stripe_customer_id) {
-      return NextResponse.json({ error: "No active billing account" }, { status: 400 });
+    if (!profile?.stripe_subscription_id) {
+      return NextResponse.json({ error: "No active subscription" }, { status: 400 });
     }
 
     const stripe = getStripeClient();
-    const frontendUrl = process.env.SIGNAL_EYE_FRONTEND_URL ?? "https://www.signaleye.live";
-    const session = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
-      return_url: `${frontendUrl}/billing`,
+    await stripe.subscriptions.update(profile.stripe_subscription_id, {
+      cancel_at_period_end: false,
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ resubscribed: true });
   } catch (err) {
-    console.error("[portal] error:", err);
+    console.error("[billing/resubscribe] error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
