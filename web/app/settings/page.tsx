@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 
+import { LogoutButton } from "@/components/logout-button";
 import { SettingsPreferences } from "@/components/settings-preferences";
 import {
   buildEnrichmentProviderStatuses,
@@ -74,6 +75,16 @@ export default async function SettingsPage() {
                   <p className="settings-copy">{provider.detail}</p>
                 </div>
               ))}
+            </div>
+          </article>
+
+          <article className="settings-card settings-card-wide">
+            <header>
+              <p className="eyebrow">Account</p>
+              <h2>Session</h2>
+            </header>
+            <div className="settings-card-body">
+              <LogoutButton />
             </div>
           </article>
         </div>
