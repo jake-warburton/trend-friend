@@ -741,14 +741,18 @@ input {
   transform: translateX(0);
 }
 
+.nav-bar-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px;
+}
+
 .nav-bar-mobile-close {
   appearance: none;
   border: 0;
   background: none;
   cursor: pointer;
-  position: absolute;
-  top: 14px;
-  right: 14px;
   padding: 8px;
   color: var(--muted);
   transition: color 140ms ease;

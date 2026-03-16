@@ -7,10 +7,28 @@ import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
 
 const NAV_LINKS = [
-  { label: "Explorer", href: "/explore", pro: false },
-  { label: "Ad Intelligence", href: "/ad-intelligence", pro: true },
-  { label: "Settings", href: "/settings", pro: false },
+  { label: "Explorer", href: "/explore", pro: false, desktopOnly: false },
+  { label: "Ad Intelligence", href: "/ad-intelligence", pro: true, desktopOnly: false },
+  { label: "Settings", href: "/settings", pro: false, desktopOnly: false },
 ] as const;
+
+function AvatarContent({ user }: { user: { user_metadata?: Record<string, string>; email?: string } }) {
+  if (user.user_metadata?.avatar_url) {
+    return (
+      <img
+        src={user.user_metadata.avatar_url}
+        alt=""
+        className="nav-bar-avatar-img"
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
+  return (
+    <span className="nav-bar-avatar-initial">
+      {(user.user_metadata?.full_name || user.email || "?").charAt(0).toUpperCase()}
+    </span>
+  );
+}
 
 export function NavBar() {
   const pathname = usePathname();
@@ -62,28 +80,19 @@ export function NavBar() {
       </Link>
 
       <div className="nav-bar-links">
-        {NAV_LINKS.map((link) => (
-          <NavLink
-            key={link.href}
-            link={link}
-            pathname={pathname}
-            isPro={isPro}
-          />
-        ))}
+        {NAV_LINKS.map((link) =>
+          link.href === "/settings" ? null : (
+            <NavLink
+              key={link.href}
+              link={link}
+              pathname={pathname}
+              isPro={isPro}
+            />
+          ),
+        )}
         {user ? (
           <Link href="/settings" className="nav-bar-avatar" title={user.user_metadata?.full_name || user.email || "Account"}>
-            {user.user_metadata?.avatar_url ? (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt=""
-                className="nav-bar-avatar-img"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <span className="nav-bar-avatar-initial">
-                {(user.user_metadata?.full_name || user.email || "?").charAt(0).toUpperCase()}
-              </span>
-            )}
+            <AvatarContent user={user} />
           </Link>
         ) : (
           <Link href="/login" className="nav-bar-sign-in">
@@ -115,16 +124,27 @@ export function NavBar() {
     <div
       className={`nav-bar-mobile-menu${menuOpen ? " nav-bar-mobile-menu-open" : ""}`}
     >
-      <button
-        className="nav-bar-mobile-close"
-        onClick={closeMenu}
-        aria-label="Close menu"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+      <div className="nav-bar-mobile-header">
+        {user ? (
+          <Link href="/settings" className="nav-bar-avatar" onClick={closeMenu} title={user.user_metadata?.full_name || user.email || "Account"}>
+            <AvatarContent user={user} />
+          </Link>
+        ) : (
+          <Link href="/login" className="nav-bar-sign-in" onClick={closeMenu}>
+            Sign in
+          </Link>
+        )}
+        <button
+          className="nav-bar-mobile-close"
+          onClick={closeMenu}
+          aria-label="Close menu"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
       {NAV_LINKS.map((link) => (
         <NavLink
           key={link.href}
