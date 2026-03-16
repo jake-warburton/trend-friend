@@ -1805,257 +1805,24 @@ export function DashboardShell({
       data-screenshot-target="explore"
       data-screenshot-panel={screenshotPanel ?? undefined}
     >
-      <section className="hero-panel">
-        <div className="hero-rail">
-          <article className="hero-summary-card hero-summary-card-status">
-            <span>Terminal status</span>
-            <strong>
-              {overviewMeta.lastRunAt
-                ? formatCompactTimestamp(overviewMeta.lastRunAt)
-                : "Awaiting run"}
-            </strong>
-            <small>
-              {latestPipelineRun
-                ? `${latestPipelineRun.successfulSourceCount}/${latestPipelineRun.sourceCount} sources healthy`
-                : "No recent pipeline run"}
-            </small>
-            {isDataStale(overviewMeta.lastRunAt) ? (
-              <span className="stale-warning">Data may be stale</span>
-            ) : liveUpdateState === "checking" ? (
-              <span className="live-update-note">Checking for updates…</span>
-            ) : liveUpdateState === "updating" ? (
-              <span className="live-update-note pulse-text">
-                Applying live update…
-              </span>
-            ) : liveUpdateState === "updated" ? (
-              <span className="live-update-note live-update-note-success">
-                {changedTrendIds.length > 0
-                  ? `${changedTrendIds.length} trends updated`
-                  : "Updated just now"}
-              </span>
-            ) : null}
-          </article>
-          <article className="hero-summary-card">
-            <span>Top</span>
-            <strong>
-              {overview.highlights.topTrendName ?? "No data"}
-            </strong>
-          </article>
-          <article className="hero-summary-card">
-            <span>Newest</span>
-            <strong>
-              {overview.highlights.newestTrendName ?? "No data"}
-            </strong>
-          </article>
-          <article className="hero-summary-card">
-            <span>Coverage</span>
-            <strong>
-              {overview.summary.trackedTrends} tracked
-            </strong>
-            <small>
-              {overview.summary.totalSignals} signals · avg{" "}
-              {overview.summary.averageScore.toFixed(1)}
-            </small>
-          </article>
-          <article className="hero-summary-card">
-            <span>Quality</span>
-            <strong>
-              {latestPipelineRun
-                ? `${latestPipelineRun.duplicateTopicRate.toFixed(1)}% dupes`
-                : "No data"}
-            </strong>
-            {latestPipelineRun ? (
-              <small>
-                {overview.operations.successRate.toFixed(1)}% health
-                · {latestPipelineRun.multiSourceTrendCount} corroborated
-              </small>
-            ) : null}
-          </article>
-        </div>
+      {/* ── Top 5 Trends ──────────────────────────────────── */}
+      <section className="top-trends-strip">
+        {overview.charts.topTrendScores.slice(0, 5).map((datum, i) => (
+          <Link
+            className="top-trend-chip"
+            href={`/trends/${encodeURIComponent(datum.label.toLowerCase())}`}
+            key={datum.label}
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <span className="top-trend-rank">#{i + 1}</span>
+            <span className="top-trend-name">{datum.label}</span>
+            <span className="top-trend-score">{datum.value.toFixed(1)}</span>
+          </Link>
+        ))}
       </section>
 
-
+      {/* ── Breaking Feed ─────────────────────────────────── */}
       <BreakingFeedSection feed={breakingFeed} />
-
-      <section className="analytics-strip">
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Top scores</h2>
-          </div>
-          <div className="mini-bar-list">
-            {overview.charts.topTrendScores
-              .slice(0, 6)
-              .map((datum) => (
-                <div className="mini-bar-row" key={datum.label}>
-                  <span>{datum.label}</span>
-                  <div className="mini-bar-track">
-                    <div
-                      className="mini-bar-fill"
-                      style={{
-                        width: `${scaleValue(datum.value, overview.charts.topTrendScores)}%`,
-                      }}
-                    />
-                  </div>
-                  <strong>{datum.value.toFixed(1)}</strong>
-                </div>
-              ))}
-          </div>
-        </article>
-
-        <article className="analytics-card analytics-card-pie">
-          <div className="section-heading">
-            <h2>Source share</h2>
-          </div>
-          <div className="pie-chart-wrap-full">
-            <div
-              className="pie-chart-large"
-              style={{
-                background: buildConicGradient(
-                  overview.charts.sourceShare,
-                ),
-              }}
-            />
-            <div className="pie-chart-legend-grid">
-              {overview.charts.sourceShare.map((datum, index) => (
-                <div className="pie-legend-item" key={datum.label}>
-                  <span
-                    className="pie-legend-dot"
-                    style={{ background: getSourceColor(index) }}
-                  />
-                  <span className="pie-legend-label">{datum.label}</span>
-                  <span className="pie-legend-pct">
-                    {formatPercent(datum.value, overview.charts.sourceShare)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </article>
-
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Status mix</h2>
-          </div>
-          <div className="mini-bar-list">
-            {overview.charts.statusBreakdown.map((datum) => (
-              <div className="mini-bar-row" key={datum.label}>
-                <span>{datum.label}</span>
-                <div className="mini-bar-track">
-                  <div
-                    className="mini-bar-fill mini-bar-fill-muted"
-                    style={{
-                      width: `${scaleValue(datum.value, overview.charts.statusBreakdown)}%`,
-                    }}
-                  />
-                </div>
-                <strong>{datum.value.toFixed(0)}</strong>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="trajectory-strip">
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Top trends over time</h2>
-          </div>
-          {hasDeferredData ? (
-            <LazyTrendTrajectoryChart history={history} trends={details.trends} />
-          ) : (
-            <p className="chart-empty">Loading trajectory history...</p>
-          )}
-        </article>
-      </section>
-
-      <section className="curated-strip">
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Categories</h2>
-          </div>
-          <div className="curated-list">
-            {overview.sections.metaTrends
-              .slice(0, 6)
-              .map((trend) => (
-                <Link
-                  className="curated-item"
-                  href={`/categories/${trend.category}`}
-                  key={trend.category}
-                >
-                  <span>{formatCategory(trend.category)}</span>
-                  <small>
-                    {trend.trendCount} trends · avg{" "}
-                    {trend.averageScore.toFixed(1)}
-                  </small>
-                </Link>
-              ))}
-            <Link className="curated-item" href="/meta-trends">
-              <span>Browse meta trends</span>
-              <small>Open the cross-category trend directory</small>
-            </Link>
-          </div>
-        </article>
-
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Breakout</h2>
-          </div>
-          <div className="curated-list">
-            {overview.sections.breakoutTrends
-              .slice(0, 4)
-              .map((trend) => (
-                <Link
-                  className="curated-item"
-                  href={`/trends/${trend.id}`}
-                  key={trend.id}
-                >
-                  <span>{trend.name}</span>
-                  <strong>#{trend.rank}</strong>
-                </Link>
-              ))}
-          </div>
-        </article>
-
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Rising</h2>
-          </div>
-          <div className="curated-list">
-            {overview.sections.risingTrends
-              .slice(0, 4)
-              .map((trend) => (
-                <Link
-                  className="curated-item"
-                  href={`/trends/${trend.id}`}
-                  key={trend.id}
-                >
-                  <span>{trend.name}</span>
-                  <strong>{trend.scoreTotal.toFixed(1)}</strong>
-                </Link>
-              ))}
-          </div>
-        </article>
-
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Experimental</h2>
-          </div>
-          <div className="curated-list">
-            {overview.sections.experimentalTrends
-              .slice(0, 4)
-              .map((trend) => (
-                <Link
-                  className="curated-item"
-                  href={`/trends/${trend.id}`}
-                  key={trend.id}
-                >
-                  <span>{trend.name}</span>
-                  <strong>{trend.scoreTotal.toFixed(1)}</strong>
-                </Link>
-              ))}
-          </div>
-        </article>
-      </section>
 
       {hasDeferredData && explorerGeoMapData.length > 0 ? (
         <section className="explorer-geo-strip">
@@ -3344,8 +3111,76 @@ export function DashboardShell({
 
         <aside className="history-panel">
           <div className="section-heading">
-            <h2>{WATCHLISTS_ENABLED ? "Watchlists" : "Operations"}</h2>
+            <h2>Discover</h2>
           </div>
+
+          <details className="sidebar-section" open>
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Categories</h2>
+              </div>
+            </summary>
+            <div className="curated-list">
+              {overview.sections.metaTrends.slice(0, 6).map((trend) => (
+                <Link className="curated-item" href={`/categories/${trend.category}`} key={trend.category}>
+                  <span>{formatCategory(trend.category)}</span>
+                  <small>{trend.trendCount} trends · avg {trend.averageScore.toFixed(1)}</small>
+                </Link>
+              ))}
+              <Link className="curated-item" href="/meta-trends">
+                <span>Browse meta trends</span>
+                <small>Open the cross-category trend directory</small>
+              </Link>
+            </div>
+          </details>
+
+          <details className="sidebar-section">
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Breakout</h2>
+              </div>
+            </summary>
+            <div className="curated-list">
+              {overview.sections.breakoutTrends.slice(0, 4).map((trend) => (
+                <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                  <span>{trend.name}</span>
+                  <strong>#{trend.rank}</strong>
+                </Link>
+              ))}
+            </div>
+          </details>
+
+          <details className="sidebar-section">
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Rising</h2>
+              </div>
+            </summary>
+            <div className="curated-list">
+              {overview.sections.risingTrends.slice(0, 4).map((trend) => (
+                <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                  <span>{trend.name}</span>
+                  <strong>{trend.scoreTotal.toFixed(1)}</strong>
+                </Link>
+              ))}
+            </div>
+          </details>
+
+          <details className="sidebar-section">
+            <summary>
+              <div className="section-heading section-heading-spaced">
+                <h2>Experimental</h2>
+              </div>
+            </summary>
+            <div className="curated-list">
+              {overview.sections.experimentalTrends.slice(0, 4).map((trend) => (
+                <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
+                  <span>{trend.name}</span>
+                  <strong>{trend.scoreTotal.toFixed(1)}</strong>
+                </Link>
+              ))}
+            </div>
+          </details>
 
           {WATCHLISTS_ENABLED ? (
             <>
@@ -3579,276 +3414,85 @@ export function DashboardShell({
             </>
           ) : null}
 
-          <details
-            className="sidebar-section"
-            data-screenshot-target="pipeline-runs"
-            ref={runsDetailsRef}
-          >
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Runs</h2>
-              </div>
-            </summary>
-
-            <div className="snapshot-list">
-              {overview.operations.recentRuns.map((run) => (
-                <section className="snapshot-card" key={run.capturedAt}>
-                  <header>
-                    <strong>{formatTimestamp(run.capturedAt)}</strong>
-                    <span className={sourceHealthClassName(run.status)}>
-                      {run.failedSourceCount === 0
-                        ? "Healthy run"
-                        : "Degraded run"}
-                    </span>
-                  </header>
-                  <p className="source-summary-copy">
-                    {run.signalCount} sig · {run.rankedTrendCount} trends ·{" "}
-                    {run.successfulSourceCount}/{run.sourceCount} healthy
-                  </p>
-                  <p className="source-summary-copy">
-                    {run.rawTopicCount} raw → {run.mergedTopicCount} merged ·{" "}
-                    {run.duplicateTopicRate.toFixed(1)}% dupes
-                  </p>
-                  <p className="source-summary-copy">
-                    {run.multiSourceTrendCount} corroborated ·{" "}
-                    {run.lowEvidenceTrendCount} thin ·{" "}
-                    {formatDuration(run.durationMs)} ·{" "}
-                    {run.topTrendId && run.topTrendName ? (
-                      <>
-                        <Link
-                          className="trend-link"
-                          href={`/trends/${run.topTrendId}`}
-                        >
-                          {run.topTrendName}
-                        </Link>
-                        {run.topScore != null
-                          ? ` ${run.topScore.toFixed(1)}`
-                          : ""}
-                      </>
-                    ) : (
-                      "No top trend"
-                    )}
-                  </p>
-                </section>
-              ))}
-            </div>
-          </details>
-
-          <details
-            className="sidebar-section"
-            data-screenshot-target="source-health"
-            ref={sourcesDetailsRef}
-          >
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Sources</h2>
-              </div>
-            </summary>
-
-            <div className="snapshot-list">
-              {deferredDataState === "loading" ? (
-                <section className="snapshot-card">
-                  <header>
-                    <strong>Source analysis</strong>
-                    <span className="source-health-pill source-health-pill-healthy">
-                      Loading
-                    </span>
-                  </header>
-                  <p className="source-summary-copy">
-                    Loading deeper source mix and family history...
-                  </p>
-                </section>
-              ) : null}
-              {sourceImpactRows.length > 0 ? (
-                <section className="snapshot-card">
-                  <header>
-                    <strong>Source impact</strong>
-                    <span className="source-health-pill source-health-pill-healthy">
-                      Published ranking
-                    </span>
-                  </header>
-                  <div className="detail-list">
-                    {sourceImpactRows.slice(0, 6).map((source) => (
-                      <article className="detail-list-item" key={source.source}>
-                        <div>
-                          <strong>{formatSourceLabel(source.source)}</strong>
-                          <span>
-                            {source.materialTrendCount} material ·{" "}
-                            {source.totalTrendCount} total ·{" "}
-                            {source.materialTrendCount > 0
-                              ? `${source.averageMaterialSharePercent.toFixed(1)}% avg share`
-                              : "No material share yet"}
-                          </span>
-                          {source.exampleTrendNames.length > 0 ? (
-                            <span>{source.exampleTrendNames.join(" · ")}</span>
-                          ) : null}
-                        </div>
-                        <small>{source.materialTrendCount}</small>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              {sourceFamilyInsights.length > 0 ? (
-                <section className="snapshot-card">
-                  <header>
-                    <strong>Source families</strong>
-                    <span className="source-health-pill source-health-pill-healthy">
-                      Cross-source mix
-                    </span>
-                  </header>
-                  <div className="detail-list">
-                    {sourceFamilyInsights.slice(0, 6).map((family) => (
-                      <article className="detail-list-item" key={family.family}>
-                        <div>
-                          <strong>
-                            {formatSourceFamilyLabel(family.family)}
-                          </strong>
-                          <span>
-                            {family.sourceCount} sources · {family.trendCount}{" "}
-                            trends · {family.signalCount} sig
-                          </span>
-                        </div>
-                        <small>
-                          {family.averageYieldRatePercent.toFixed(0)}%
-                        </small>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              {sourceFamilyHistoryInsights.length > 0 ? (
-                <section className="snapshot-card">
-                  <header>
-                    <strong>Family pulse</strong>
-                    <span className="source-health-pill source-health-pill-healthy">
-                      Recent runs
-                    </span>
-                  </header>
-                  <div className="detail-list">
-                    {sourceFamilyHistoryInsights.slice(0, 6).map((family) => (
-                      <article
-                        className="detail-list-item"
-                        key={`${family.family}-pulse`}
-                      >
-                        <div>
-                          <strong>{family.label}</strong>
-                          <span>
-                            {family.healthySourceCount}/{family.sourceCount}{" "}
-                            healthy · {family.trendCount} ranked ·{" "}
-                            {family.corroboratedTrendCount} corroborated
-                          </span>
-                          <span>
-                            {family.topRankedTrendCount} top ranked ·{" "}
-                            {family.recentAverageYieldRatePercent.toFixed(0)}%
-                            avg yield · {family.averageScore.toFixed(1)} avg
-                            score
-                          </span>
-                          <span>
-                            {family.capturedAt
-                              ? formatCompactTimestamp(family.capturedAt)
-                              : "No recent snapshot"}{" "}
-                            · {family.recentSuccessRatePercent.toFixed(0)}% live
-                            success
-                          </span>
-                        </div>
-                        <small>{family.topRankedTrendCount}</small>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              {sourceWatchlist.length > 0 ? (
-                <section className="snapshot-card">
-                  <header>
-                    <strong>Source watch</strong>
-                    <span className="source-health-pill source-health-pill-degraded">
-                      Needs attention
-                    </span>
-                  </header>
-                  <div className="detail-list">
-                    {sourceWatchlist.map((item) => (
-                      <article className="detail-list-item" key={item.source}>
-                        <div>
-                          <strong>
-                            <Link
-                              className="trend-link"
-                              href={`/sources/${item.source}`}
-                            >
-                              {item.title}
-                            </Link>
-                          </strong>
-                          <span>{item.detail}</span>
-                        </div>
-                        <small>{formatWatchSeverity(item.severity)}</small>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-              {overview.sources.map((source) => (
-                <section className="snapshot-card" key={source.source}>
-                  <header>
-                    <strong>
-                      <Link
-                        className="trend-link"
-                        href={`/sources/${source.source}`}
-                      >
-                        {formatSourceLabel(source.source)}
-                      </Link>
-                    </strong>
-                    <span className={sourceHealthClassName(source.status)}>
-                      {formatSourceStatus(source.status)}
-                    </span>
-                  </header>
-                  <p className="source-summary-copy">
-                    {formatSourceFamilyLabel(source.family)} family
-                  </p>
-                  <p className="source-summary-copy">
-                    {source.signalCount} sig · {source.trendCount} trends
-                  </p>
-                  <p className="source-summary-copy">
-                    {source.latestFetchAt
-                      ? formatCompactTimestamp(source.latestFetchAt)
-                      : "No fetch"}{" "}
-                    · {source.latestItemCount} items ·{" "}
-                    {formatDuration(source.durationMs)}
-                  </p>
-                  <p className="source-summary-copy">
-                    {source.rawTopicCount} raw topics ·{" "}
-                    {source.mergedTopicCount} merged ·{" "}
-                    {source.duplicateTopicRate.toFixed(1)}% dupes
-                  </p>
-                  <p className="source-summary-copy">
-                    {summarizeSourceYield(source)}
-                  </p>
-                  {source.usedFallback ? (
-                    <p className="source-warning-copy">
-                      Latest successful fetch used fallback sample data.
-                    </p>
-                  ) : (
-                    <p className="source-summary-copy">
-                      {describeSourceYield(source)}
-                    </p>
-                  )}
-                  {source.errorMessage ? (
-                    <p className="source-error-copy">{source.errorMessage}</p>
-                  ) : null}
-                </section>
-              ))}
-            </div>
-          </details>
-
-          {WATCHLISTS_ENABLED ? (
-            <details className="sidebar-section">
-              <summary>
-                <div className="section-heading section-heading-spaced">
-                  <h2>Public watchlists</h2>
-                </div>
-              </summary>
-            </details>
-          ) : null}
         </aside>
+      </section>
+
+      <section className="analytics-strip">
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Top scores</h2>
+          </div>
+          <div className="mini-bar-list">
+            {overview.charts.topTrendScores
+              .slice(0, 6)
+              .map((datum) => (
+                <div className="mini-bar-row" key={datum.label}>
+                  <span>{datum.label}</span>
+                  <div className="mini-bar-track">
+                    <div
+                      className="mini-bar-fill"
+                      style={{
+                        width: `${scaleValue(datum.value, overview.charts.topTrendScores)}%`,
+                      }}
+                    />
+                  </div>
+                  <strong>{datum.value.toFixed(1)}</strong>
+                </div>
+              ))}
+          </div>
+        </article>
+
+        <article className="analytics-card analytics-card-pie">
+          <div className="section-heading">
+            <h2>Source share</h2>
+          </div>
+          <div className="pie-chart-wrap-full">
+            <div
+              className="pie-chart-large"
+              style={{
+                background: buildConicGradient(
+                  overview.charts.sourceShare,
+                ),
+              }}
+            />
+            <div className="pie-chart-legend-grid">
+              {overview.charts.sourceShare.map((datum, index) => (
+                <div className="pie-legend-item" key={datum.label}>
+                  <span
+                    className="pie-legend-dot"
+                    style={{ background: getSourceColor(index) }}
+                  />
+                  <span className="pie-legend-label">{datum.label}</span>
+                  <span className="pie-legend-pct">
+                    {formatPercent(datum.value, overview.charts.sourceShare)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="section-heading">
+            <h2>Status mix</h2>
+          </div>
+          <div className="mini-bar-list">
+            {overview.charts.statusBreakdown.map((datum) => (
+              <div className="mini-bar-row" key={datum.label}>
+                <span>{datum.label}</span>
+                <div className="mini-bar-track">
+                  <div
+                    className="mini-bar-fill mini-bar-fill-muted"
+                    style={{
+                      width: `${scaleValue(datum.value, overview.charts.statusBreakdown)}%`,
+                    }}
+                  />
+                </div>
+                <strong>{datum.value.toFixed(0)}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
       </section>
     </main>
   );
