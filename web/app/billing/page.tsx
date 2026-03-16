@@ -3,36 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isPro, isPastDue, type BillingStatus } from "@/lib/subscription";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-
-async function apiFetch<T>(path: string, accessToken: string): Promise<T> {
-  const res = await fetch(`${API_BASE}/api/v1${path}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!res.ok) throw new Error(`API ${path} returned ${res.status}`);
-  return res.json() as Promise<T>;
-}
-
-async function apiPost<T>(path: string, accessToken: string): Promise<T> {
-  const res = await fetch(`${API_BASE}/api/v1${path}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error(`API ${path} returned ${res.status}`);
-  return res.json() as Promise<T>;
-}
-
-const PRO_FEATURES = [
-  "Unlimited watchlists and alerts",
-  "Advanced trend analytics",
-  "Priority data refresh",
-  "Market footprint enrichment",
-  "Export to CSV and API access",
-  "Community leaderboard features",
-];
 
 export default function BillingPage() {
   const { user, loading: authLoading } = useAuth();
@@ -49,12 +20,10 @@ export default function BillingPage() {
 
     const load = async () => {
       try {
-        const supabase = createSupabaseBrowserClient();
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        if (!token) return;
-        const billing = await apiFetch<BillingStatus>("/billing/status", token);
-        setStatus(billing);
+        const res = await fetch("/api/billing/status");
+        if (res.ok) {
+          setStatus(await res.json());
+        }
       } catch {
         // billing endpoint may not be available
       } finally {
@@ -67,12 +36,11 @@ export default function BillingPage() {
   const handleCheckout = async () => {
     setActionLoading(true);
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) return;
-      const { url } = await apiPost<{ url: string }>("/billing/checkout", token);
-      if (url) window.location.href = url;
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      if (res.ok) {
+        const { url } = await res.json();
+        if (url) window.location.href = url;
+      }
     } catch {
       // handle error
     } finally {
@@ -83,12 +51,11 @@ export default function BillingPage() {
   const handlePortal = async () => {
     setActionLoading(true);
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-      if (!token) return;
-      const { url } = await apiPost<{ url: string }>("/billing/portal", token);
-      if (url) window.location.href = url;
+      const res = await fetch("/api/billing/portal", { method: "POST" });
+      if (res.ok) {
+        const { url } = await res.json();
+        if (url) window.location.href = url;
+      }
     } catch {
       // handle error
     } finally {
@@ -158,7 +125,7 @@ export default function BillingPage() {
                       disabled={actionLoading}
                       type="button"
                     >
-                      {actionLoading ? "Loading..." : "Upgrade to Pro"}
+                      {actionLoading ? "Loading..." : "Upgrade to Pro — $5.99/mo"}
                     </button>
                   )}
                 </div>
@@ -171,14 +138,18 @@ export default function BillingPage() {
                 </header>
                 <div className="settings-card-body">
                   <ul className="billing-feature-list">
-                    {PRO_FEATURES.map((feature) => (
-                      <li key={feature} className="billing-feature-item">
-                        <span className="billing-feature-check" aria-hidden="true">
-                          {pro ? "\u2713" : "\u2014"}
-                        </span>
-                        {feature}
-                      </li>
-                    ))}
+                    <li className="billing-feature-item">
+                      <span className="billing-feature-check" aria-hidden="true">
+                        {pro ? "\u2713" : "\u2014"}
+                      </span>
+                      CSV export
+                    </li>
+                    <li className="billing-feature-item">
+                      <span className="billing-feature-check" aria-hidden="true">
+                        {pro ? "\u2713" : "\u2014"}
+                      </span>
+                      Ad Intelligence
+                    </li>
                   </ul>
                 </div>
               </article>

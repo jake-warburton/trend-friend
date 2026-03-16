@@ -31,7 +31,7 @@ export function PricingTable() {
             <li>Ad Intelligence</li>
           </ul>
           <Link
-            href="/signup"
+            href="/billing"
             className="landing-pricing-cta landing-pricing-cta-primary"
           >
             Upgrade to Pro
