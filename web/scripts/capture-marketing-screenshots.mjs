@@ -33,7 +33,7 @@ const SHOTS = [
     name: "explorer",
     path: "/explore?screenshot=1",
     viewport: { width: 1440, height: 1024 },
-    waitFor: '[data-screenshot-target="explore"] .trajectory-strip .chart-container svg .recharts-line',
+    waitFor: '[data-screenshot-target="explore"] .content-grid .ranking-panel',
     capture: "page",
     settleDelayMs: 1000,
   },
@@ -41,17 +41,9 @@ const SHOTS = [
     name: "trend-detail",
     path: "/trends/ai-agents?screenshot=1",
     viewport: { width: 1440, height: 1080 },
-    waitFor: '[data-screenshot-target="trend-detail"] .chart-container svg .recharts-line',
+    waitFor: '[data-screenshot-target="trend-detail"] .chart-container svg',
     capture: "page",
     settleDelayMs: 1000,
-  },
-  {
-    name: "source-health",
-    path: "/explore?screenshot=1&panel=sources",
-    viewport: { width: 1680, height: 945 },
-    waitFor: '[data-screenshot-target="source-health"] .snapshot-card',
-    capture: "page",
-    scrollTo: '[data-screenshot-target="source-health"]',
   },
   {
     name: "explore-geo",
@@ -176,7 +168,7 @@ async function captureShot(browser, shot, theme, timestamp) {
     ]);
     const page = await context.newPage();
     page.setDefaultTimeout(DEFAULT_TIMEOUT_MS);
-    await page.goto(`${BASE_URL}${shot.path}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${BASE_URL}${shot.path}`, { waitUntil: "networkidle" });
     await page.addStyleTag({
       content: `
         *,

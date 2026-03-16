@@ -1,0 +1,164 @@
+{
+  "generatedAt": "2026-03-16T14:22:42.620025Z",
+  "topKeywords": [
+    {
+      "keyword": "active ads",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 790.0,
+      "platforms": [
+        "google_ads_transparency"
+      ],
+      "topAdvertisers": [],
+      "trendId": "active-ads"
+    },
+    {
+      "keyword": "ads across",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 790.0,
+      "platforms": [
+        "google_ads_transparency"
+      ],
+      "topAdvertisers": [],
+      "trendId": "ads-across"
+    },
+    {
+      "keyword": "keyword",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 59.89,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "keyword"
+    },
+    {
+      "keyword": "ai powered",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 15.0,
+      "platforms": [
+        "facebook_ad_library"
+      ],
+      "topAdvertisers": [],
+      "trendId": "ai-powered"
+    },
+    {
+      "keyword": "powered automation",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 15.0,
+      "platforms": [
+        "facebook_ad_library"
+      ],
+      "topAdvertisers": [],
+      "trendId": "powered-automation"
+    },
+    {
+      "keyword": "ai studio pro",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 12.0,
+      "platforms": [
+        "tiktok_ads"
+      ],
+      "topAdvertisers": [],
+      "trendId": "ai-studio-pro"
+    },
+    {
+      "keyword": "cloudsecure enterprise",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 12.0,
+      "platforms": [
+        "facebook_ad_library"
+      ],
+      "topAdvertisers": [],
+      "trendId": "cloudsecure-enterprise"
+    },
+    {
+      "keyword": "enterprise security",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 12.0,
+      "platforms": [
+        "facebook_ad_library"
+      ],
+      "topAdvertisers": [],
+      "trendId": "enterprise-security"
+    },
+    {
+      "keyword": "tiktok ad",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 12.0,
+      "platforms": [
+        "tiktok_ads"
+      ],
+      "topAdvertisers": [],
+      "trendId": "tiktok-ad"
+    },
+    {
+      "keyword": "analytics platform",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 10.0,
+      "platforms": [
+        "facebook_ad_library"
+      ],
+      "topAdvertisers": [],
+      "trendId": "analytics-platform"
+    },
+    {
+      "keyword": "time analytics",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "unknown",
+      "adDensity": 10.0,
+      "platforms": [
+        "facebook_ad_library"
+      ],
+      "topAdvertisers": [],
+      "trendId": "time-analytics"
+    }
+  ],
+  "topAdvertisers": [],
+  "platformSummary": [
+    {
+      "platform": "facebook_ad_library",
+      "adCount": 6,
+      "keywordCount": 6,
+      "advertiserCount": 0
+    },
+    {
+      "platform": "google_ads_transparency",
+      "adCount": 6,
+      "keywordCount": 2,
+      "advertiserCount": 0
+    },
+    {
+      "platform": "tiktok_ads",
+      "adCount": 4,
+      "keywordCount": 2,
+      "advertiserCount": 0
+    },
+    {
+      "platform": "google_keyword_planner",
+      "adCount": 3,
+      "keywordCount": 1,
+      "advertiserCount": 0
+    }
+  ]
+}
