@@ -35,12 +35,8 @@ export default function PricingPage() {
             </p>
             <ul className="landing-pricing-features">
               <li>Everything in Free</li>
-              <li>Unlimited alerts and saved theses</li>
-              <li>Advanced trend analytics</li>
-              <li>Priority data refresh</li>
-              <li>Market footprint enrichment</li>
-              <li>CSV export and API access</li>
-              <li>Breaking news feed</li>
+              <li>CSV export</li>
+              <li>Ad spend keyword metrics</li>
             </ul>
             <Link
               href="/signup"
