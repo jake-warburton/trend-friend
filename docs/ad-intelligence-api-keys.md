@@ -73,9 +73,19 @@ Most friction — can defer this one.
 
 ---
 
+## 5. AppKittie — App Revenue Data
+
+No API needed — scrape or reference appkittie.com for app revenue and download data. Useful for market intelligence: see what apps are making revenue, cross-reference with trending topics to identify monetization opportunities.
+
+**URL:** https://appkittie.com
+**Secrets:** None required
+
+---
+
 ## Suggested order
 
 1. SerpApi — already done
 2. Meta Ad Library — 10 minutes, free
 3. Google Keyword Planner — 30 minutes, uses existing account
-4. TikTok — apply and wait, lowest priority
+4. AppKittie — research integration approach
+5. TikTok — apply and wait, lowest priority
