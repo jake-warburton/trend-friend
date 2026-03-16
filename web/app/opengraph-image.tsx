@@ -132,7 +132,7 @@ export default function OgImage() {
             marginBottom: "36px",
           }}
         >
-          18+ live data sources. Momentum scoring. Breakout predictions.
+          22+ live data sources. Momentum scoring. Breakout predictions.
         </p>
 
         {/* CTA button */}

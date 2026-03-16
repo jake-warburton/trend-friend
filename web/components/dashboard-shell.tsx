@@ -1875,6 +1875,7 @@ export function DashboardShell({
                 </p>
               </div>
             </div>
+            <div className="geo-map-skeleton skeleton-pulse" style={{ height: 320 }} />
           </div>
         </section>
       ) : null}
@@ -4441,7 +4442,31 @@ function BreakingFeedSection({ feed }: { feed: BreakingFeed | null }) {
   const ITEMS_PER_PAGE = 4;
   const [page, setPage] = useState(0);
 
-  if (feed == null || feed.items.length === 0) {
+  if (feed == null) {
+    return (
+      <section className="breaking-feed-section breaking-feed-skeleton">
+        <div className="breaking-feed-header">
+          <div className="breaking-feed-header-left">
+            <span className="breaking-feed-dot" aria-hidden="true" />
+            <h2 className="breaking-feed-title">Breaking</h2>
+          </div>
+        </div>
+        <div className="breaking-feed-items">
+          {Array.from({ length: 4 }, (_, i) => (
+            <article className="breaking-feed-item skeleton-pulse" key={i}>
+              <div className="breaking-feed-item-header">
+                <span className="skeleton-line" style={{ width: "40%" }} />
+                <span className="skeleton-line" style={{ width: "15%" }} />
+              </div>
+              <div className="skeleton-line" style={{ width: "90%" }} />
+              <div className="skeleton-line" style={{ width: "70%" }} />
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
+  if (feed.items.length === 0) {
     return null;
   }
   const sorted = [...feed.items].sort((a, b) => b.breakingScore - a.breakingScore);

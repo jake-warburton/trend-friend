@@ -1,17 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
 import type { AdIntelligenceResponse } from "@/lib/types";
 
 export function AdIntelligenceDashboard() {
+  const { user } = useAuth();
   const { isPro, loading: profileLoading } = useProfile();
+  const router = useRouter();
   const [data, setData] = useState<AdIntelligenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isPro) {
-      setLoading(false);
+    if (profileLoading) return;
+    if (!user || !isPro) {
+      router.replace(user ? "/pricing" : "/login?next=/ad-intelligence");
       return;
     }
     fetch("/api/ad-intelligence")
@@ -19,7 +24,7 @@ export function AdIntelligenceDashboard() {
       .then((json) => setData(json))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isPro]);
+  }, [isPro, profileLoading, user, router]);
 
   if (profileLoading || loading) {
     return (
