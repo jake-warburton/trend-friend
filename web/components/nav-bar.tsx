@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
 
 const NAV_LINKS = [
@@ -13,6 +14,7 @@ const NAV_LINKS = [
 
 export function NavBar() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const { isPro } = useProfile();
   const [menuOpen, setMenuOpen] = useState(false);
   const navClassName =
@@ -69,6 +71,27 @@ export function NavBar() {
           />
         ))}
       </div>
+
+      {user ? (
+        <Link href="/settings" className="nav-bar-avatar" title={user.user_metadata?.full_name || user.email || "Account"}>
+          {user.user_metadata?.avatar_url ? (
+            <img
+              src={user.user_metadata.avatar_url}
+              alt=""
+              className="nav-bar-avatar-img"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="nav-bar-avatar-initial">
+              {(user.user_metadata?.full_name || user.email || "?").charAt(0).toUpperCase()}
+            </span>
+          )}
+        </Link>
+      ) : (
+        <Link href="/login" className="nav-bar-sign-in">
+          Sign in
+        </Link>
+      )}
 
       <button
         className={`nav-bar-hamburger${menuOpen ? " nav-bar-hamburger-open" : ""}`}

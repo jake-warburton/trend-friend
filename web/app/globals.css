@@ -610,6 +610,57 @@ input {
   letter-spacing: 0.04em;
 }
 
+.nav-bar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  text-decoration: none;
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: opacity 0.15s ease;
+}
+
+.nav-bar-avatar:hover {
+  opacity: 0.8;
+}
+
+.nav-bar-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.nav-bar-avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 620;
+  border-radius: 50%;
+}
+
+.nav-bar-sign-in {
+  font-size: var(--type-size-xs);
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 8px;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.nav-bar-sign-in:hover {
+  color: var(--copy);
+}
+
 .nav-bar-hamburger {
   display: none;
   appearance: none;
