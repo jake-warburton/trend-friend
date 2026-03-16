@@ -1807,16 +1807,16 @@ export function DashboardShell({
     >
       {/* ── Top 5 Trends ──────────────────────────────────── */}
       <section className="top-trends-strip">
-        {overview.charts.topTrendScores.slice(0, 5).map((datum, i) => (
+        {overview.sections.topTrends.slice(0, 5).map((trend, i) => (
           <Link
             className="top-trend-chip"
-            href={`/trends/${encodeURIComponent(datum.label.toLowerCase())}`}
-            key={datum.label}
+            href={`/trends/${trend.id}`}
+            key={trend.id}
             style={{ animationDelay: `${i * 60}ms` }}
           >
-            <span className="top-trend-rank">#{i + 1}</span>
-            <span className="top-trend-name">{datum.label}</span>
-            <span className="top-trend-score">{datum.value.toFixed(1)}</span>
+            <span className="top-trend-rank">#{trend.rank}</span>
+            <span className="top-trend-name">{trend.name}</span>
+            <span className="top-trend-score">{trend.scoreTotal.toFixed(1)}</span>
           </Link>
         ))}
       </section>
