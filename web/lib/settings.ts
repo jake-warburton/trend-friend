@@ -1,4 +1,3 @@
-export const ESTIMATED_METRICS_COOKIE = "signal_eye_show_estimated_metrics";
 export const THEME_COOKIE = "signal_eye_theme";
 export const LIGHT_THEME = "tech-light";
 export const DARK_THEME = "soft-charcoal";
@@ -74,10 +73,6 @@ export function buildEnrichmentProviderStatuses(env: NodeJS.ProcessEnv): Enrichm
         : "Using estimated TikTok footprint values until a provider endpoint is configured.",
     },
   ];
-}
-
-export function readEstimatedMetricsPreference(value: string | undefined): boolean {
-  return value === "true";
 }
 
 export function readThemePreference(value: string | undefined): string | null {

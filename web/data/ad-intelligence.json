@@ -1,164 +1,177 @@
 {
-  "generatedAt": "2026-03-16T14:22:42.620025Z",
+  "generatedAt": "2026-03-16T21:03:43.969017Z",
   "topKeywords": [
     {
-      "keyword": "active ads",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 790.0,
-      "platforms": [
-        "google_ads_transparency"
-      ],
-      "topAdvertisers": [],
-      "trendId": "active-ads"
-    },
-    {
-      "keyword": "ads across",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 790.0,
-      "platforms": [
-        "google_ads_transparency"
-      ],
-      "topAdvertisers": [],
-      "trendId": "ads-across"
-    },
-    {
-      "keyword": "keyword",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
+      "keyword": "cloud security",
+      "cpc": 12.3,
+      "searchVolume": 74000,
+      "competitionLevel": "HIGH",
       "adDensity": 59.89,
       "platforms": [
         "google_keyword_planner"
       ],
       "topAdvertisers": [],
-      "trendId": "keyword"
+      "trendId": "cloud-security"
     },
     {
-      "keyword": "ai powered",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 15.0,
+      "keyword": "low-code platform",
+      "cpc": 8.75,
+      "searchVolume": 33000,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 39.54,
       "platforms": [
-        "facebook_ad_library"
+        "google_keyword_planner"
       ],
       "topAdvertisers": [],
-      "trendId": "ai-powered"
+      "trendId": "low-code-platform"
     },
     {
-      "keyword": "powered automation",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 15.0,
+      "keyword": "AI automation",
+      "cpc": 4.5,
+      "searchVolume": 110000,
+      "competitionLevel": "HIGH",
+      "adDensity": 22.69,
       "platforms": [
-        "facebook_ad_library"
+        "google_keyword_planner"
       ],
       "topAdvertisers": [],
-      "trendId": "powered-automation"
-    },
-    {
-      "keyword": "ai studio pro",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 12.0,
-      "platforms": [
-        "tiktok_ads"
-      ],
-      "topAdvertisers": [],
-      "trendId": "ai-studio-pro"
-    },
-    {
-      "keyword": "cloudsecure enterprise",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 12.0,
-      "platforms": [
-        "facebook_ad_library"
-      ],
-      "topAdvertisers": [],
-      "trendId": "cloudsecure-enterprise"
-    },
-    {
-      "keyword": "enterprise security",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 12.0,
-      "platforms": [
-        "facebook_ad_library"
-      ],
-      "topAdvertisers": [],
-      "trendId": "enterprise-security"
-    },
-    {
-      "keyword": "tiktok ad",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 12.0,
-      "platforms": [
-        "tiktok_ads"
-      ],
-      "topAdvertisers": [],
-      "trendId": "tiktok-ad"
-    },
-    {
-      "keyword": "analytics platform",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 10.0,
-      "platforms": [
-        "facebook_ad_library"
-      ],
-      "topAdvertisers": [],
-      "trendId": "analytics-platform"
-    },
-    {
-      "keyword": "time analytics",
-      "cpc": 0.0,
-      "searchVolume": 0,
-      "competitionLevel": "unknown",
-      "adDensity": 10.0,
-      "platforms": [
-        "facebook_ad_library"
-      ],
-      "topAdvertisers": [],
-      "trendId": "time-analytics"
+      "trendId": "ai-automation"
     }
   ],
-  "topAdvertisers": [],
+  "topAdvertisers": [
+    {
+      "name": "Google",
+      "platform": "google_ads_transparency",
+      "adCount": 150,
+      "adFormats": [
+        "image",
+        "responsive",
+        "text",
+        "video"
+      ],
+      "regions": [
+        "DE",
+        "GB",
+        "US"
+      ]
+    },
+    {
+      "name": "Microsoft",
+      "platform": "google_ads_transparency",
+      "adCount": 95,
+      "adFormats": [
+        "image",
+        "text",
+        "video"
+      ],
+      "regions": [
+        "GB",
+        "US"
+      ]
+    },
+    {
+      "name": "Salesforce",
+      "platform": "google_ads_transparency",
+      "adCount": 60,
+      "adFormats": [
+        "image",
+        "text"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "AI Studio Pro",
+      "platform": "tiktok_ads",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "CloudSecure",
+      "platform": "facebook_ad_library",
+      "adCount": 1,
+      "adFormats": [
+        "feed"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "DataFlow",
+      "platform": "facebook_ad_library",
+      "adCount": 1,
+      "adFormats": [
+        "feed"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "FinApp",
+      "platform": "tiktok_ads",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "LearnCode",
+      "platform": "tiktok_ads",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "TechCorp",
+      "platform": "facebook_ad_library",
+      "adCount": 1,
+      "adFormats": [
+        "feed"
+      ],
+      "regions": [
+        "US"
+      ]
+    }
+  ],
   "platformSummary": [
     {
       "platform": "facebook_ad_library",
-      "adCount": 6,
-      "keywordCount": 6,
-      "advertiserCount": 0
+      "adCount": 3,
+      "keywordCount": 3,
+      "advertiserCount": 3
     },
     {
       "platform": "google_ads_transparency",
-      "adCount": 6,
-      "keywordCount": 2,
-      "advertiserCount": 0
-    },
-    {
-      "platform": "tiktok_ads",
-      "adCount": 4,
-      "keywordCount": 2,
-      "advertiserCount": 0
+      "adCount": 3,
+      "keywordCount": 0,
+      "advertiserCount": 3
     },
     {
       "platform": "google_keyword_planner",
       "adCount": 3,
-      "keywordCount": 1,
+      "keywordCount": 3,
       "advertiserCount": 0
+    },
+    {
+      "platform": "tiktok_ads",
+      "adCount": 3,
+      "keywordCount": 3,
+      "advertiserCount": 3
     }
   ]
 }

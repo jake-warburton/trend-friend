@@ -1,14 +1,8 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/server/auth-service";
-import {
-  buildEnrichmentProviderStatuses,
-  ESTIMATED_METRICS_COOKIE,
-  readEstimatedMetricsPreference,
-} from "@/lib/settings";
-import { EstimatedMetricsToggle } from "@/components/estimated-metrics-toggle";
+import { buildEnrichmentProviderStatuses } from "@/lib/settings";
 
 export default async function AdminPage() {
   const { user } = await getCurrentUser();
@@ -19,14 +13,6 @@ export default async function AdminPage() {
   }
 
   const providerStatuses = buildEnrichmentProviderStatuses(process.env);
-
-  let showEstimatedMetrics = true;
-  try {
-    const cookieStore = await cookies();
-    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
-  } catch {
-    showEstimatedMetrics = true;
-  }
 
   return (
     <main className="detail-page">
@@ -65,15 +51,6 @@ export default async function AdminPage() {
             </div>
           </article>
 
-          <article className="settings-card settings-card-wide">
-            <header>
-              <p className="eyebrow">Data</p>
-              <h2>Estimated market metrics</h2>
-            </header>
-            <div className="settings-card-body">
-              <EstimatedMetricsToggle initialValue={showEstimatedMetrics} />
-            </div>
-          </article>
         </div>
       </section>
     </main>

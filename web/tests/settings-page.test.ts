@@ -9,7 +9,6 @@ import {
   getDefaultThemeForScheme,
   getThemeClass,
   LIGHT_THEME,
-  readEstimatedMetricsPreference,
   readThemePreference,
   THEME_OPTIONS,
 } from "@/lib/settings";
@@ -24,7 +23,6 @@ test("settings page renders preferences and enrichment status sections", async (
   assert.match(html, /Tech Light/);
   assert.match(html, /Soft Charcoal/);
   assert.match(html, /Ocean/);
-  assert.match(html, /Estimated market metrics/);
   assert.match(html, /Enrichment status/);
   assert.match(html, /Google search provider/);
   assert.match(html, /YouTube API/);
@@ -43,12 +41,6 @@ test("buildEnrichmentProviderStatuses reflects configured and fallback providers
   assert.equal(statuses[1].configured, true);
   assert.equal(statuses[2].configured, false);
   assert.equal(statuses[3].configured, false);
-});
-
-test("readEstimatedMetricsPreference defaults off and honors explicit true", () => {
-  assert.equal(readEstimatedMetricsPreference(undefined), false);
-  assert.equal(readEstimatedMetricsPreference("true"), true);
-  assert.equal(readEstimatedMetricsPreference("false"), false);
 });
 
 test("theme helpers default safely and resolve CSS classes", () => {

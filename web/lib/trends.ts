@@ -810,7 +810,7 @@ export function clearSupabasePayloadCache() {
   supabasePayloadCache.clear();
 }
 
-async function readSupabasePayload<T>(payloadKey: string): Promise<T> {
+async function readSupabasePayload<T>(payloadKey: string, ttlMs = SUPABASE_CACHE_TTL_MS): Promise<T> {
   const cached = supabasePayloadCache.get(payloadKey);
   if (cached && Date.now() < cached.expiresAt) {
     return cached.data as T;
@@ -837,7 +837,7 @@ async function readSupabasePayload<T>(payloadKey: string): Promise<T> {
 
   supabasePayloadCache.set(payloadKey, {
     data: result,
-    expiresAt: Date.now() + SUPABASE_CACHE_TTL_MS,
+    expiresAt: Date.now() + ttlMs,
   });
 
   return result;
@@ -854,7 +854,7 @@ function buildSupabasePayloadUrl(payloadKey: string): string {
 export async function loadBreakingFeed(): Promise<BreakingFeed | null> {
   if (SUPABASE_PAYLOADS_ENABLED) {
     try {
-      return await readSupabasePayload<BreakingFeed>("breaking-feed.json");
+      return await readSupabasePayload<BreakingFeed>("breaking-feed.json", 60_000);
     } catch { /* fall through */ }
   }
   return null;

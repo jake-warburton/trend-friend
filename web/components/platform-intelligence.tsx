@@ -29,7 +29,6 @@ type PlatformIntelligenceProps = {
   marketFootprint: TrendMarketMetric[];
   evidenceItems: TrendEvidenceItem[];
   sourceInsights: SourceContributionInsight[];
-  showEstimatedMetrics: boolean;
 };
 
 const SOURCE_FAMILIES: Record<string, string> = {
@@ -157,7 +156,7 @@ function normalizeEvidenceUrl(url: string): string {
 }
 
 function buildPlatformDossiers(props: PlatformIntelligenceProps): PlatformDossier[] {
-  const { sourceContributions, sourceBreakdown, marketFootprint, evidenceItems, sourceInsights, showEstimatedMetrics } = props;
+  const { sourceContributions, sourceBreakdown, marketFootprint, evidenceItems, sourceInsights } = props;
 
   // Collect all unique sources
   const allSources = new Set<string>();
@@ -174,7 +173,7 @@ function buildPlatformDossiers(props: PlatformIntelligenceProps): PlatformDossie
     const insight = sourceInsights.find((i) => i.source === source) ?? null;
     const metrics = marketFootprint.filter((m) => {
       if (m.source !== source) return false;
-      if (!showEstimatedMetrics && m.isEstimated) return false;
+      if (m.isEstimated) return false;
       return true;
     });
     const evidence = evidenceItems.filter((e) => e.source === source);
@@ -353,7 +352,6 @@ function PlatformCard({ dossier, rank }: { dossier: PlatformDossier; rank: numbe
                     <div className="pi-metric-label">{metric.label}</div>
                     <div className="pi-metric-meta">
                       {metric.period}
-                      {metric.isEstimated && <span className="pi-estimated-tag">est.</span>}
                     </div>
                   </div>
                 );

@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import type { Metadata } from "next";
 
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink, normalizeEvidenceUrl } from "@/lib/evidence-links";
-import { ESTIMATED_METRICS_COOKIE, readEstimatedMetricsPreference } from "@/lib/settings";
 import { slugifyBrowseValue } from "@/lib/trend-browse";
 import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
@@ -30,7 +28,7 @@ type TrendDetailPageProps = {
   }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: TrendDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -92,13 +90,6 @@ export async function generateMetadata({ params }: TrendDetailPageProps): Promis
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
-  let showEstimatedMetrics = true;
-  try {
-    const cookieStore = await cookies();
-    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
-  } catch {
-    showEstimatedMetrics = true;
-  }
   const [trend, history, sourceSummary] = await Promise.all([
     loadTrendDetail(slug),
     loadTrendHistory(),
@@ -227,9 +218,7 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
       }
     : null;
   const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
-  const visibleMarketFootprint = showEstimatedMetrics
-    ? trend.marketFootprint
-    : trend.marketFootprint.filter((metric) => !metric.isEstimated);
+  const visibleMarketFootprint = trend.marketFootprint.filter((metric) => !metric.isEstimated);
 
   return (
     <main className="detail-page" data-screenshot-target="trend-detail">
@@ -384,7 +373,6 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             marketFootprint={trend.marketFootprint}
             evidenceItems={trend.evidenceItems}
             sourceInsights={sourceInsights}
-            showEstimatedMetrics={showEstimatedMetrics}
           />
         </section>
 
