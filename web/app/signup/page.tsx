@@ -39,14 +39,25 @@ export default function SignupPage() {
       return;
     }
 
-    // If email confirmation is disabled, user gets a session immediately
+    // If session returned, signup is complete — redirect
     if (data.session) {
       router.push("/explore");
       return;
     }
 
-    // Fallback: email confirmation is enabled
-    setError("Check your email for a confirmation link.");
+    // No session — try signing in directly (handles case where confirmation is disabled
+    // but Supabase didn't return a session, or user already exists)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (!signInError) {
+      router.push("/explore");
+      return;
+    }
+
+    setError("Account created. Please check your email to confirm, then sign in.");
     setLoading(false);
   };
 
