@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Signal Eye pricing — start free, upgrade to Pro for unlimited watchlists, alerts, advanced analytics, and API access.",
+    "Signal Eye pricing — start free, upgrade to Pro for advanced analytics, alerts, and API access.",
 };
 
 export default function PricingPage() {
@@ -21,8 +21,8 @@ export default function PricingPage() {
             <ul className="landing-pricing-features">
               <li>Live trend explorer</li>
               <li>All filters and lens presets</li>
-              <li>Community watchlists</li>
-              <li>Up to 3 saved watchlists</li>
+              <li>Trend alerts</li>
+              <li>Geographic coverage map</li>
             </ul>
             <Link href="/signup" className="landing-pricing-cta">
               Get started
@@ -35,12 +35,12 @@ export default function PricingPage() {
             </p>
             <ul className="landing-pricing-features">
               <li>Everything in Free</li>
-              <li>Unlimited watchlists and alerts</li>
+              <li>Unlimited alerts and saved theses</li>
               <li>Advanced trend analytics</li>
               <li>Priority data refresh</li>
               <li>Market footprint enrichment</li>
               <li>CSV export and API access</li>
-              <li>Community leaderboard features</li>
+              <li>Breaking news feed</li>
             </ul>
             <Link
               href="/signup"
