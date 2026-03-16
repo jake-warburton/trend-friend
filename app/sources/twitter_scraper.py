@@ -103,12 +103,15 @@ async def _scrape_with_twikit(
             continue
 
         handle_lower = handle.lower()
-        seen_accounts.add(handle_lower)
 
-        # Look up account metadata from curated list
+        # Only keep tweets from accounts in our curated list — skip algorithmic recommendations
         account_info = account_lookup.get(handle_lower)
-        tier = account_info.tier if account_info else _DEFAULT_TIER
-        verticals = list(account_info.verticals) if account_info else list(_DEFAULT_VERTICALS)
+        if not account_info:
+            continue
+
+        seen_accounts.add(handle_lower)
+        tier = account_info.tier
+        verticals = list(account_info.verticals)
 
         # Skip if we already have this tweet
         latest_stored = repo.latest_tweet_id(handle)
