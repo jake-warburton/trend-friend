@@ -3653,9 +3653,13 @@ dialog::backdrop {
   max-width: 400px;
   width: 90vw;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  background: var(--card-bg, #fff);
-  color: var(--fg, #1a1a1a);
+  background: var(--surface-strong, #fff);
+  color: var(--copy, #1a1a1a);
   text-align: center;
+}
+
+.upgrade-modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .upgrade-modal-header {
@@ -3716,7 +3720,7 @@ dialog::backdrop {
   border: 1px solid var(--border, #ddd);
   border-radius: var(--radius-sm, 6px);
   background: transparent;
-  color: var(--fg, #1a1a1a);
+  color: var(--copy, #1a1a1a);
   cursor: pointer;
   font-size: var(--type-size-md, 0.95rem);
   font-weight: 500;
