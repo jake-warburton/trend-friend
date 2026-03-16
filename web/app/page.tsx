@@ -23,7 +23,7 @@ function loadScreenshotManifest(): ScreenshotManifest | null {
 }
 
 export const metadata = {
-  title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
+  title: "Signal Eye — Trend Intelligence Platform",
   description:
     "Spot emerging trends before they peak. Signal Eye monitors 24+ data sources — Reddit, GitHub, TikTok, Google Trends, arXiv, and more — to surface rising topics with momentum scoring, breakout predictions, and market signals.",
   keywords: [
@@ -39,16 +39,18 @@ export const metadata = {
     "treendly alternative",
   ],
   openGraph: {
-    title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
+    title: "Signal Eye — Trend Intelligence Platform",
     description:
       "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals — all in one dashboard.",
     type: "website",
+    images: [{ url: "/screenshots/explorer-light-v2.png", width: 1200, height: 630, alt: "Signal Eye dashboard" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Signal Eye — Trend Intelligence Platform",
     description:
       "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals.",
+    images: ["/screenshots/explorer-light-v2.png"],
   },
 };
 
