@@ -2,92 +2,95 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 
 import { LogoutButton } from "@/components/logout-button";
+import { SubscriptionManager } from "@/components/subscription-manager";
 import { SettingsPreferences } from "@/components/settings-preferences";
 import {
-  buildEnrichmentProviderStatuses,
-  ESTIMATED_METRICS_COOKIE,
   LIGHT_THEME,
-  readEstimatedMetricsPreference,
   readThemePreference,
   THEME_COOKIE,
   THEME_OPTIONS,
 } from "@/lib/settings";
 
 export default async function SettingsPage() {
-  let showEstimatedMetrics = true;
   let selectedTheme = LIGHT_THEME;
   try {
     const cookieStore = await cookies();
-    showEstimatedMetrics = readEstimatedMetricsPreference(cookieStore.get(ESTIMATED_METRICS_COOKIE)?.value);
     selectedTheme = readThemePreference(cookieStore.get(THEME_COOKIE)?.value) ?? LIGHT_THEME;
   } catch {
-    showEstimatedMetrics = true;
     selectedTheme = LIGHT_THEME;
   }
-  const providerStatuses = buildEnrichmentProviderStatuses(process.env);
 
   return (
     <main className="detail-page">
-      <section className="detail-hero">
-        <div>
+      <section className="settings-hero">
+        <div className="settings-hero-content">
           <Link className="detail-back-link" href="/explore">
             Back to explorer
           </Link>
-          <p className="eyebrow">Settings</p>
-          <h1>Settings</h1>
-          <p className="detail-copy">
-            Configure how market-footprint enrichment behaves and see which live providers are currently wired into the
-            app.
+          <h1 className="settings-headline">Settings</h1>
+          <p className="settings-subline">
+            Manage your preferences, subscription, and account.
           </p>
         </div>
       </section>
 
-      <section className="detail-panel settings-panel">
-        <div className="settings-grid">
-          <article className="settings-card settings-card-wide">
-            <header>
-              <p className="eyebrow">Display</p>
-              <h2>UI preferences</h2>
-            </header>
-            <div className="settings-card-body">
-              <SettingsPreferences
-                initialShowEstimatedMetrics={showEstimatedMetrics}
-                initialTheme={selectedTheme}
-                themes={THEME_OPTIONS}
-              />
+      <section className="settings-sections">
+        <article className="settings-section">
+          <div className="settings-section-header">
+            <div className="settings-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
             </div>
-          </article>
+            <div>
+              <h2 className="settings-section-title">Appearance</h2>
+              <p className="settings-section-desc">Choose the palette used across the app.</p>
+            </div>
+          </div>
+          <div className="settings-section-body">
+            <SettingsPreferences
+              initialTheme={selectedTheme}
+              themes={THEME_OPTIONS}
+            />
+          </div>
+        </article>
 
-          <article className="settings-card settings-card-wide">
-            <header>
-              <p className="eyebrow">Data</p>
-              <h2>Enrichment status</h2>
-            </header>
-            <div className="settings-provider-grid">
-              {providerStatuses.map((provider) => (
-                <div className="settings-provider-card" key={provider.key}>
-                  <div className="settings-provider-header">
-                    <strong>{provider.label}</strong>
-                    <span className={provider.configured ? "status-pill status-pill-success" : "status-pill"}>
-                      {provider.configured ? "Configured" : "Fallback"}
-                    </span>
-                  </div>
-                  <p className="settings-copy">{provider.detail}</p>
-                </div>
-              ))}
+        <article className="settings-section">
+          <div className="settings-section-header">
+            <div className="settings-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                <line x1="1" y1="10" x2="23" y2="10" />
+              </svg>
             </div>
-          </article>
+            <div>
+              <h2 className="settings-section-title">Subscription</h2>
+              <p className="settings-section-desc">Manage your plan and billing.</p>
+            </div>
+          </div>
+          <div className="settings-section-body">
+            <SubscriptionManager />
+          </div>
+        </article>
 
-          <article className="settings-card settings-card-wide">
-            <header>
-              <p className="eyebrow">Account</p>
-              <h2>Session</h2>
-            </header>
-            <div className="settings-card-body">
-              <LogoutButton />
+        <article className="settings-section">
+          <div className="settings-section-header">
+            <div className="settings-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
             </div>
-          </article>
-        </div>
+            <div>
+              <h2 className="settings-section-title">Account</h2>
+              <p className="settings-section-desc">Session and sign out.</p>
+            </div>
+          </div>
+          <div className="settings-section-body">
+            <LogoutButton />
+          </div>
+        </article>
       </section>
     </main>
   );

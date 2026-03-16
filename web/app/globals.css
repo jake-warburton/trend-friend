@@ -3641,6 +3641,11 @@ input {
   min-height: 72px;
 }
 
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
 .settings-card-body p {
   margin: 0;
   color: var(--muted);
@@ -5739,6 +5744,115 @@ input {
 
   .billing-hero {
     padding: 4rem 1.5rem 2rem;
+  }
+}
+
+/* ─── Settings page (redesigned) ─── */
+
+.settings-hero {
+  position: relative;
+  padding: 5rem 2rem 2.5rem;
+}
+
+.settings-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 60% at 30% 0%, var(--accent-soft), transparent);
+  pointer-events: none;
+}
+
+.settings-hero-content {
+  position: relative;
+  max-width: 680px;
+}
+
+.settings-headline {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0.5rem 0 0;
+}
+
+.settings-subline {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0.4rem 0 0;
+}
+
+.settings-sections {
+  max-width: 680px;
+  padding: 0 2rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.settings-section {
+  padding: 28px 0;
+  border-top: 1px solid var(--inset-divider);
+}
+
+.settings-section:first-child {
+  border-top: 0;
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.settings-section-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.settings-section-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.settings-section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+.settings-section-desc {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.settings-section-body {
+  padding-left: 50px;
+}
+
+@media (max-width: 640px) {
+  .settings-hero {
+    padding: 4rem 1.5rem 2rem;
+  }
+
+  .settings-headline {
+    font-size: 1.6rem;
+  }
+
+  .settings-sections {
+    padding: 0 1.5rem 3rem;
+  }
+
+  .settings-section-body {
+    padding-left: 0;
   }
 }
 
