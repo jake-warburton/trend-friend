@@ -1,6 +1,8 @@
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
+import { clearSupabasePayloadCache } from "@/lib/trends";
+
 const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET || "";
 
 export async function POST(request: NextRequest) {
@@ -9,6 +11,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 
+  clearSupabasePayloadCache();
   revalidateTag("supabase-payload", { expire: 0 });
   return NextResponse.json({ revalidated: true });
 }
