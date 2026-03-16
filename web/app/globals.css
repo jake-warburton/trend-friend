@@ -3688,11 +3688,13 @@ dialog::backdrop {
   font-weight: var(--type-weight-strong, 600);
 }
 
-.upgrade-modal-desc {
+.upgrade-modal-features {
+  list-style: none;
+  padding: 0;
   margin: 0 0 1.25rem;
-  line-height: 1.55;
-  opacity: 0.75;
   font-size: var(--type-size-sm, 0.9rem);
+  line-height: 1.8;
+  opacity: 0.85;
 }
 
 .upgrade-modal-price {

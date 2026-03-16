@@ -103,7 +103,7 @@ const LazyTrendTrajectoryChart = dynamic(
   },
 );
 
-const OVERVIEW_POLL_INTERVAL_MS = 60_000;
+const OVERVIEW_POLL_INTERVAL_MS = 300_000; // 5 minutes
 const UPDATED_TRENDS_FLASH_MS = 5_000;
 const EMPTY_GENERATED_AT = new Date(0).toISOString();
 const EMPTY_HISTORY: TrendHistoryResponse = {
@@ -1016,7 +1016,6 @@ export function DashboardShell({
       setDeferredDataState("loading");
       try {
         const response = await fetch("/api/explore/bootstrap", {
-          cache: "no-store",
           signal: abortController.signal,
         });
         if (!response.ok) {
@@ -1109,7 +1108,7 @@ export function DashboardShell({
     void fetchBreakingFeed();
     const intervalId = window.setInterval(() => {
       void fetchBreakingFeed();
-    }, 60_000);
+    }, 300_000); // 5 minutes
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
         void fetchBreakingFeed();
@@ -1131,9 +1130,7 @@ export function DashboardShell({
         current === "updating" ? current : "checking",
       );
       try {
-        const response = await fetch("/api/dashboard/overview", {
-          cache: "no-store",
-        });
+        const response = await fetch("/api/dashboard/overview");
         if (!response.ok) {
           setLiveUpdateState("idle");
           return;

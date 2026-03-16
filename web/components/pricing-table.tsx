@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 
+export const PRO_FEATURES = [
+  "Everything in Free",
+  "CSV export",
+  "Ad Intelligence",
+] as const;
+
 export function PricingTable() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -52,9 +58,9 @@ export function PricingTable() {
             $5.99<span>/month</span>
           </p>
           <ul className="landing-pricing-features">
-            <li>Everything in Free</li>
-            <li>CSV export</li>
-            <li>Ad Intelligence</li>
+            {PRO_FEATURES.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
           </ul>
           <button
             className="landing-pricing-cta landing-pricing-cta-primary"

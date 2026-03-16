@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
+import { PRO_FEATURES } from "@/components/pricing-table";
 
 type UpgradeModalProps = {
   open: boolean;
@@ -56,9 +57,11 @@ export function UpgradeModal({ open, onClose, feature }: UpgradeModalProps) {
           {featureLabel} requires a Pro plan
         </h3>
       </div>
-      <p className="upgrade-modal-desc">
-        Upgrade to unlock CSV export, ad intelligence, email alerts, watchlists, and more.
-      </p>
+      <ul className="upgrade-modal-features">
+        {PRO_FEATURES.map((f) => (
+          <li key={f}>{f}</li>
+        ))}
+      </ul>
       <div className="upgrade-modal-price">
         <span className="upgrade-modal-amount">$5.99</span>
         <span className="upgrade-modal-period">/ month</span>
