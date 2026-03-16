@@ -649,16 +649,27 @@ input {
 }
 
 .nav-bar-sign-in {
-  font-size: var(--type-size-xs);
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 560;
+  letter-spacing: 0.02em;
+  color: var(--copy);
   text-decoration: none;
-  margin-left: 4px;
+  margin-left: 6px;
   white-space: nowrap;
-  transition: color 0.15s ease;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-faint);
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 
 .nav-bar-sign-in:hover {
-  color: var(--copy);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .nav-bar-hamburger {
