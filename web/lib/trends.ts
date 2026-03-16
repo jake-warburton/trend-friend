@@ -823,7 +823,7 @@ async function readSupabasePayload<T>(payloadKey: string): Promise<T> {
       Authorization: `Bearer ${SUPABASE_ACCESS_KEY!}`,
       Accept: "application/json",
     },
-    next: { tags: ["supabase-payload"], revalidate: 3600 },
+    cache: "no-store",
   });
   if (!response.ok) {
     throw new Error(`Failed to load Supabase payload ${payloadKey}: ${response.status}`);
