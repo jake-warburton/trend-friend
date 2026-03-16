@@ -6992,6 +6992,7 @@ input {
 
 .history-panel .curated-list {
   gap: 0;
+  padding: 0 12px;
 }
 
 .history-panel .curated-item {
@@ -7007,10 +7008,6 @@ input {
 
 .history-panel .curated-item strong {
   font-size: var(--type-size-sm);
-}
-
-.history-panel .sidebar-section .curated-list {
-  padding: 0 2px;
 }
 
 /* ── Breaking Strip on Explorer Cards ─────────────────────── */
