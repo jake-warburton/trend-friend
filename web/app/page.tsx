@@ -43,14 +43,12 @@ export const metadata = {
     description:
       "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals — all in one dashboard.",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Signal Eye dashboard" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Signal Eye — Spot Emerging Trends Before They Peak",
     description:
       "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals.",
-    images: ["/og-image.png"],
   },
 };
 

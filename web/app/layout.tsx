@@ -41,14 +41,12 @@ export const metadata: Metadata = {
     description:
       "Spot emerging trends before they peak. 24+ data sources, real-time scoring, and breakout forecasts.",
     locale: "en_US",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Signal Eye dashboard" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Signal Eye — Trend Intelligence Platform",
     description:
       "Spot emerging trends before they peak. 24+ data sources, real-time scoring, and breakout forecasts.",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
