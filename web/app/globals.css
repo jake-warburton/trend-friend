@@ -6075,6 +6075,19 @@ input {
 
 /* Pricing */
 
+.pricing-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pricing-page .landing-pricing {
+  border-top: 0;
+  border-bottom: 0;
+  width: 100%;
+}
+
 .landing-pricing {
   padding: 5rem 2rem;
   background: var(--surface-faint);
