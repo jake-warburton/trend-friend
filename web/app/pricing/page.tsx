@@ -21,8 +21,8 @@ export default function PricingPage() {
             <ul className="landing-pricing-features">
               <li>Live trend explorer</li>
               <li>All filters and lens presets</li>
-              <li>Trend alerts</li>
               <li>Geographic coverage map</li>
+              <li>Breaking news feed</li>
             </ul>
             <Link href="/signup" className="landing-pricing-cta">
               Get started
