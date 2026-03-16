@@ -700,6 +700,7 @@ export type AdIntelligenceKeyword = {
   platforms: string[];
   topAdvertisers: string[];
   trendId: string | null;
+  category: string | null;
 };
 
 export type AdIntelligenceAdvertiser = {

@@ -23,6 +23,7 @@ POSTGRES_MIGRATIONS = [
     Migration("0013_source_family_snapshots", load_sql_migration("postgres_migrations/0013_source_family_snapshots.sql")),
     Migration("0014_profiles_and_subscriptions", load_sql_migration("postgres_migrations/0014_profiles_and_subscriptions.sql")),
     Migration("0015_advertising_score", load_sql_migration("postgres_migrations/0015_advertising_score.sql")),
+    Migration("0016_row_level_security", load_sql_migration("postgres_migrations/0016_row_level_security.sql")),
 ]
 
 

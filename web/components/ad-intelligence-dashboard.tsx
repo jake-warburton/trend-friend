@@ -9,10 +9,10 @@ import type { AdIntelligenceResponse, AdIntelligenceKeyword, AdIntelligenceAdver
 /* ── platform identity ─────────────────────────────────────────── */
 
 const PLATFORM_META: Record<string, { label: string; color: string; icon: string }> = {
-  google_keyword_planner: { label: "Google", color: "#4285f4", icon: "G" },
-  facebook_ad_library:    { label: "Meta",   color: "#0082fb", icon: "M" },
+  google_keyword_planner: { label: "YouTube", color: "#ff0000", icon: "Y" },
+  facebook_ad_library:    { label: "Meta",    color: "#0082fb", icon: "M" },
   google_ads_transparency:{ label: "Google Ads", color: "#34a853", icon: "A" },
-  tiktok_ads:             { label: "TikTok", color: "#fe2c55", icon: "T" },
+  tiktok_ads:             { label: "TikTok",  color: "#fe2c55", icon: "T" },
 };
 
 function platformLabel(source: string): string {
@@ -39,11 +39,6 @@ function competitionBarWidth(level: string): number {
   if (level === "MEDIUM") return 60;
   if (level === "LOW") return 30;
   return 10;
-}
-
-function cpcIntensity(cpc: number, maxCpc: number): number {
-  if (maxCpc <= 0) return 0.4;
-  return 0.4 + (cpc / maxCpc) * 0.6;
 }
 
 function formatVolume(v: number): string {
@@ -114,8 +109,9 @@ function CompetitionBar({ level }: { level: string }) {
 
 /* ── keyword table ──────────────────────────────────────────────── */
 
-function KeywordTable({ keywords, maxCpc }: { keywords: AdIntelligenceKeyword[]; maxCpc: number }) {
+function KeywordTable({ keywords }: { keywords: AdIntelligenceKeyword[] }) {
   if (!keywords.length) return null;
+  const hasCpc = keywords.some((k) => k.cpc > 0);
   return (
     <section className="adi-section">
       <div className="adi-section-head">
@@ -127,9 +123,12 @@ function KeywordTable({ keywords, maxCpc }: { keywords: AdIntelligenceKeyword[];
           <thead>
             <tr>
               <th className="adi-th adi-th-left">Keyword</th>
-              <th className="adi-th adi-th-right">CPC</th>
-              <th className="adi-th adi-th-right">Volume</th>
+              <th className="adi-th adi-th-left">Category</th>
+              {hasCpc && <th className="adi-th adi-th-right">CPC</th>}
+              {hasCpc && <th className="adi-th adi-th-right">Volume</th>}
               <th className="adi-th adi-th-left">Competition</th>
+              <th className="adi-th adi-th-right">YT Ads</th>
+              <th className="adi-th adi-th-left">Top Advertisers</th>
               <th className="adi-th adi-th-center">Platforms</th>
             </tr>
           </thead>
@@ -150,19 +149,37 @@ function KeywordTable({ keywords, maxCpc }: { keywords: AdIntelligenceKeyword[];
                     <span>{kw.keyword}</span>
                   )}
                 </td>
-                <td className="adi-td adi-td-mono adi-td-right">
-                  <span
-                    className="adi-cpc"
-                    style={{ opacity: cpcIntensity(kw.cpc, maxCpc) }}
-                  >
-                    ${kw.cpc.toFixed(2)}
-                  </span>
+                <td className="adi-td">
+                  {kw.category ? (
+                    <span className="adi-format-tag">{kw.category}</span>
+                  ) : (
+                    <span style={{ color: "var(--muted)", opacity: 0.5 }}>--</span>
+                  )}
                 </td>
-                <td className="adi-td adi-td-mono adi-td-right">
-                  {formatVolume(kw.searchVolume)}
-                </td>
+                {hasCpc && (
+                  <td className="adi-td adi-td-mono adi-td-right">
+                    <span className="adi-cpc">${kw.cpc.toFixed(2)}</span>
+                  </td>
+                )}
+                {hasCpc && (
+                  <td className="adi-td adi-td-mono adi-td-right">
+                    {formatVolume(kw.searchVolume)}
+                  </td>
+                )}
                 <td className="adi-td">
                   <CompetitionBar level={kw.competitionLevel} />
+                </td>
+                <td className="adi-td adi-td-mono adi-td-right">{kw.adDensity}{kw.adDensity === 1 ? " ad" : " ads"}</td>
+                <td className="adi-td">
+                  {kw.topAdvertisers.length > 0 ? (
+                    <span className="adi-tag-row">
+                      {kw.topAdvertisers.slice(0, 3).map((a) => (
+                        <span key={a} className="adi-format-tag">{a}</span>
+                      ))}
+                    </span>
+                  ) : (
+                    <span style={{ color: "var(--muted)", opacity: 0.5 }}>--</span>
+                  )}
                 </td>
                 <td className="adi-td adi-td-center">
                   <span className="adi-badge-row">
@@ -195,10 +212,9 @@ function AdvertiserTable({ advertisers }: { advertisers: AdIntelligenceAdvertise
           <thead>
             <tr>
               <th className="adi-th adi-th-left">Advertiser</th>
-              <th className="adi-th adi-th-center">Platform</th>
-              <th className="adi-th adi-th-right">Ads</th>
-              <th className="adi-th adi-th-left">Formats</th>
-              <th className="adi-th adi-th-left">Regions</th>
+              <th className="adi-th adi-th-center">Source</th>
+              <th className="adi-th adi-th-left">Format</th>
+              <th className="adi-th adi-th-right">Keyword appearances</th>
             </tr>
           </thead>
           <tbody>
@@ -212,22 +228,15 @@ function AdvertiserTable({ advertisers }: { advertisers: AdIntelligenceAdvertise
                 <td className="adi-td adi-td-center">
                   <PlatformBadge source={adv.platform} size="md" />
                 </td>
-                <td className="adi-td adi-td-mono adi-td-right adi-td-ads">
-                  {adv.adCount.toLocaleString()}
-                </td>
                 <td className="adi-td">
                   <span className="adi-tag-row">
-                    {adv.adFormats.map((f) => (
+                    {(adv.adFormats.length > 0 ? adv.adFormats : ["video"]).map((f) => (
                       <span key={f} className="adi-format-tag">{f}</span>
                     ))}
                   </span>
                 </td>
-                <td className="adi-td">
-                  <span className="adi-tag-row">
-                    {adv.regions.map((r) => (
-                      <span key={r} className="adi-region-tag">{r}</span>
-                    ))}
-                  </span>
+                <td className="adi-td adi-td-mono adi-td-right">
+                  {adv.adCount} {adv.adCount === 1 ? "search" : "searches"}
                 </td>
               </tr>
             ))}
@@ -379,11 +388,12 @@ export function AdIntelligenceDashboard() {
     );
   }
 
-  const maxCpc = Math.max(...data.topKeywords.map((k) => k.cpc), 1);
   const totalAds = data.platformSummary.reduce((s, p) => s + p.adCount, 0);
-  const avgCpc = data.topKeywords.length > 0
+  const hasCpc = data.topKeywords.some((k) => k.cpc > 0);
+  const avgCpc = hasCpc && data.topKeywords.length > 0
     ? (data.topKeywords.reduce((s, k) => s + k.cpc, 0) / data.topKeywords.length).toFixed(2)
-    : "0.00";
+    : null;
+  const totalPlatforms = data.platformSummary.length;
   const topPlatform = data.platformSummary[0]
     ? platformLabel(data.platformSummary[0].platform)
     : "N/A";
@@ -393,24 +403,25 @@ export function AdIntelligenceDashboard() {
       <header className="adi-header">
         <div className="adi-header-top">
           <h1 className="adi-title">Ad Intelligence</h1>
-          {data.generatedAt && (
-            <span className="adi-updated">{timeAgo(data.generatedAt)}</span>
-          )}
         </div>
         <p className="adi-subtitle">
-          Keyword costs, advertiser activity, and platform distribution
+          See who is advertising around trending topics, which platforms they target, and what keywords they compete on
         </p>
       </header>
 
       <div className="adi-stats-row">
         <StatCard label="Keywords" value={data.topKeywords.length} />
-        <StatCard label="Avg CPC" value={`$${avgCpc}`} accent="var(--accent)" />
+        {avgCpc ? (
+          <StatCard label="Avg CPC" value={`$${avgCpc}`} accent="var(--accent)" />
+        ) : (
+          <StatCard label="Platforms" value={totalPlatforms} />
+        )}
         <StatCard label="Advertisers" value={data.topAdvertisers.length} />
         <StatCard label="Total Ads" value={totalAds} />
         <StatCard label="Top Platform" value={topPlatform} />
       </div>
 
-      <KeywordTable keywords={data.topKeywords} maxCpc={maxCpc} />
+      <KeywordTable keywords={data.topKeywords} />
       <AdvertiserTable advertisers={data.topAdvertisers} />
       <PlatformCards platforms={data.platformSummary} />
     </div>

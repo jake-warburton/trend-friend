@@ -2,19 +2,10 @@
 
 This file is the current index of work that is still intentionally deferred after the local-first, share-flow, alerts, and geo-summary iterations completed on March 10, 2026.
 
-It complements older planning docs rather than replacing them.
-
 ## Primary Backlogs
 
-- Business and product roadmap: [context/business/ROADMAP.md](/Users/jakewarburton/Documents/repos/signal-eye/context/business/ROADMAP.md)
-- Engineering and architecture backlog: [context/stack/IMPLEMENTATION_BACKLOG.md](/Users/jakewarburton/Documents/repos/signal-eye/context/stack/IMPLEMENTATION_BACKLOG.md)
-
-## Existing Detailed Plans Still Relevant
-
-- Broader feature roadmap: [docs/IMPROVEMENT_PLANS.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/IMPROVEMENT_PLANS.md)
-- Earlier web/dashboard deferrals: [docs/NEXT_PHASE.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/NEXT_PHASE.md)
-- Dashboard V2 contract and rollout context: [docs/DASHBOARD_V2_PLAN.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/DASHBOARD_V2_PLAN.md)
-- Competitor-inspired feature ranking: [docs/FEATURE_IMPLEMENTATION_PLAN.md](/Users/jakewarburton/Documents/repos/signal-eye/docs/FEATURE_IMPLEMENTATION_PLAN.md)
+- Business and product roadmap: `context/business/ROADMAP.md`
+- Engineering and architecture backlog: `context/stack/IMPLEMENTATION_BACKLOG.md`
 
 ## Completed (March 2026)
 

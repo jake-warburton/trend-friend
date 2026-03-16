@@ -33,6 +33,12 @@ class GoogleAdsTransparencySourceAdapter(SourceAdapter):
         if not self.settings.serpapi_key:
             raise RuntimeError("SERPAPI_KEY not configured")
 
+        # google_ads_transparency engine is not available on SerpApi free tier.
+        # Skip the live call to conserve the monthly search budget; the adapter
+        # will fall back to sample data automatically.
+        if not getattr(self.settings, "serpapi_paid_tier", False):
+            raise RuntimeError("Google Ads Transparency requires SerpApi paid tier")
+
         items: list[RawSourceItem] = []
         now = datetime.now(tz=timezone.utc)
         per_advertiser = max(self.settings.max_items_per_source // len(_SEARCH_ADVERTISERS), 2)

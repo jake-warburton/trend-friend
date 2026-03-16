@@ -745,6 +745,7 @@ class AdIntelligenceKeywordPayload:
     platforms: list[str]
     top_advertisers: list[str]
     trend_id: str | None
+    category: str | None
 
 
 @dataclass(frozen=True)
@@ -792,6 +793,7 @@ class AdIntelligencePayload:
                     "platforms": kw.platforms,
                     "topAdvertisers": kw.top_advertisers,
                     "trendId": kw.trend_id,
+                    "category": kw.category,
                 }
                 for kw in self.top_keywords
             ],

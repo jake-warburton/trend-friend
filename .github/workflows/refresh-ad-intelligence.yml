@@ -3,6 +3,8 @@ name: Refresh Ad Intelligence
 on:
   workflow_dispatch:
   schedule:
+    # Daily — scrapes top 8 trends not yet scraped this month, then moves on.
+    # ~8 SerpApi calls/day, data accumulates. Resets monthly.
     - cron: "0 23 * * *"
 
 concurrency:

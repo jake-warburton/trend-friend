@@ -3,6 +3,23 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/server/auth-service";
 import { buildEnrichmentProviderStatuses } from "@/lib/settings";
+import { loadBreakingFeed, loadDashboardOverview } from "@/lib/trends";
+import { FreshnessCards } from "@/components/freshness-cards";
+import type { AdIntelligenceResponse } from "@/lib/types";
+
+async function loadAdIntelligenceTimestamp(): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${process.env.SIGNAL_EYE_FRONTEND_URL ?? "http://localhost:3000"}/api/ad-intelligence`,
+      { next: { revalidate: 0 } },
+    );
+    if (!res.ok) return null;
+    const data: AdIntelligenceResponse = await res.json();
+    return data.generatedAt ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export default async function AdminPage() {
   const { user } = await getCurrentUser();
@@ -13,6 +30,33 @@ export default async function AdminPage() {
   }
 
   const providerStatuses = buildEnrichmentProviderStatuses(process.env);
+
+  const [overview, breakingFeed, adIntelTimestamp] = await Promise.all([
+    loadDashboardOverview().catch(() => null),
+    loadBreakingFeed().catch(() => null),
+    loadAdIntelligenceTimestamp(),
+  ]);
+
+  const freshnessItems = [
+    {
+      key: "refresh-data",
+      label: "Refresh Data",
+      timestamp: overview?.generatedAt ?? null,
+      description: "Main ingestion pipeline. Fetches from 22+ sources, scores trends, exports JSON payloads. Runs on a schedule via GitHub Actions. Affects explorer, trend detail, categories, and all dashboard pages.",
+    },
+    {
+      key: "refresh-twitter",
+      label: "Refresh Twitter",
+      timestamp: breakingFeed?.updatedAt ?? null,
+      description: "Fetches recent tweets from tracked accounts via twscrape and publishes the breaking feed. Runs on a separate GitHub Actions schedule.",
+    },
+    {
+      key: "refresh-ads",
+      label: "Refresh Ads",
+      timestamp: adIntelTimestamp,
+      description: "Collects ad keyword data, advertiser activity, and platform distribution for trending topics. Runs as a separate GitHub Actions workflow.",
+    },
+  ];
 
   return (
     <main className="detail-page">
@@ -31,6 +75,14 @@ export default async function AdminPage() {
 
       <section className="detail-panel settings-panel">
         <div className="settings-grid">
+          <article className="settings-card settings-card-wide">
+            <header>
+              <p className="eyebrow">Data</p>
+              <h2>Data freshness</h2>
+            </header>
+            <FreshnessCards items={freshnessItems} />
+          </article>
+
           <article className="settings-card settings-card-wide">
             <header>
               <p className="eyebrow">Data</p>

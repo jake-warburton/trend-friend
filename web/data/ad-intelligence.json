@@ -1,90 +1,162 @@
 {
-  "generatedAt": "2026-03-16T21:03:43.969017Z",
+  "generatedAt": "2026-03-16T22:20:28.514415Z",
   "topKeywords": [
     {
-      "keyword": "cloud security",
-      "cpc": 12.3,
-      "searchVolume": 74000,
+      "keyword": "AI Agents",
+      "cpc": 0.0,
+      "searchVolume": 0,
       "competitionLevel": "HIGH",
-      "adDensity": 59.89,
+      "adDensity": 5,
       "platforms": [
         "google_keyword_planner"
       ],
-      "topAdvertisers": [],
-      "trendId": "cloud-security"
+      "topAdvertisers": [
+        "Auth0",
+        "Lenovo",
+        "Tricentis",
+        "Wall Street Quants",
+        "nexos.ai"
+      ],
+      "trendId": "ai-agents",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "AI/ML"
     },
     {
-      "keyword": "low-code platform",
-      "cpc": 8.75,
-      "searchVolume": 33000,
+      "keyword": "AI Productivity Suite Enhanced",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Claude",
+        "Moveworks",
+        "Simplilearn",
+        "Wall Street Quants",
+        "monday.com"
+      ],
+      "trendId": "ai-productivity-suite-enhanced",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "AI/ML"
+    },
+    {
+      "keyword": "Large Language Models",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "BlossomUp",
+        "Excelsior University",
+        "Moveworks",
+        "MyIQ",
+        "Wall Street Quants"
+      ],
+      "trendId": "large-language-models",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "AI/ML"
+    },
+    {
+      "keyword": "Library Datasets",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Moveworks",
+        "Simplilearn",
+        "Snowflake",
+        "Solidigm",
+        "Wall Street Quants"
+      ],
+      "trendId": "library-datasets",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "Data"
+    },
+    {
+      "keyword": "Safetensors",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Codecademy",
+        "Excelsior University",
+        "Glean",
+        "Moveworks",
+        "Solidigm"
+      ],
+      "trendId": "safetensors",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "Tech"
+    },
+    {
+      "keyword": "Webdev",
+      "cpc": 0.0,
+      "searchVolume": 0,
       "competitionLevel": "MEDIUM",
-      "adDensity": 39.54,
+      "adDensity": 4,
       "platforms": [
         "google_keyword_planner"
       ],
-      "topAdvertisers": [],
-      "trendId": "low-code-platform"
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "Moveworks",
+        "Tricentis",
+        "Wall Street Quants"
+      ],
+      "trendId": "webdev",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "Tech"
     },
     {
-      "keyword": "AI automation",
-      "cpc": 4.5,
-      "searchVolume": 110000,
-      "competitionLevel": "HIGH",
-      "adDensity": 22.69,
+      "keyword": "Gradio",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 2,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Infiniti",
+        "Simplilearn"
+      ],
+      "trendId": "gradio",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "Tech"
+    },
+    {
+      "keyword": "Iran War",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "NONE",
+      "adDensity": 0,
       "platforms": [
         "google_keyword_planner"
       ],
       "topAdvertisers": [],
-      "trendId": "ai-automation"
+      "trendId": "iran-war",
+      "scrapedAt": "2026-03-16T22:20:28.514415Z",
+      "category": "News"
     }
   ],
   "topAdvertisers": [
     {
-      "name": "Google",
-      "platform": "google_ads_transparency",
-      "adCount": 150,
-      "adFormats": [
-        "image",
-        "responsive",
-        "text",
-        "video"
-      ],
-      "regions": [
-        "DE",
-        "GB",
-        "US"
-      ]
-    },
-    {
-      "name": "Microsoft",
-      "platform": "google_ads_transparency",
-      "adCount": 95,
-      "adFormats": [
-        "image",
-        "text",
-        "video"
-      ],
-      "regions": [
-        "GB",
-        "US"
-      ]
-    },
-    {
-      "name": "Salesforce",
-      "platform": "google_ads_transparency",
-      "adCount": 60,
-      "adFormats": [
-        "image",
-        "text"
-      ],
-      "regions": [
-        "US"
-      ]
-    },
-    {
-      "name": "AI Studio Pro",
-      "platform": "tiktok_ads",
-      "adCount": 1,
+      "name": "Moveworks",
+      "platform": "google_keyword_planner",
+      "adCount": 5,
       "adFormats": [
         "video"
       ],
@@ -93,30 +165,63 @@
       ]
     },
     {
-      "name": "CloudSecure",
-      "platform": "facebook_ad_library",
-      "adCount": 1,
+      "name": "Wall Street Quants",
+      "platform": "google_keyword_planner",
+      "adCount": 5,
       "adFormats": [
-        "feed"
+        "video"
       ],
       "regions": [
         "US"
       ]
     },
     {
-      "name": "DataFlow",
-      "platform": "facebook_ad_library",
-      "adCount": 1,
+      "name": "Simplilearn",
+      "platform": "google_keyword_planner",
+      "adCount": 3,
       "adFormats": [
-        "feed"
+        "video"
       ],
       "regions": [
         "US"
       ]
     },
     {
-      "name": "FinApp",
-      "platform": "tiktok_ads",
+      "name": "Excelsior University",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Solidigm",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Tricentis",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Adobe Photoshop",
+      "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
         "video"
@@ -126,8 +231,8 @@
       ]
     },
     {
-      "name": "LearnCode",
-      "platform": "tiktok_ads",
+      "name": "Auth0",
+      "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
         "video"
@@ -137,11 +242,110 @@
       ]
     },
     {
-      "name": "TechCorp",
-      "platform": "facebook_ad_library",
+      "name": "BlossomUp",
+      "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
-        "feed"
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Claude",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Codecademy",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Glean",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Infiniti",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Lenovo",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "MyIQ",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Snowflake",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "monday.com",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "nexos.ai",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
       ],
       "regions": [
         "US"
@@ -150,28 +354,10 @@
   ],
   "platformSummary": [
     {
-      "platform": "facebook_ad_library",
-      "adCount": 3,
-      "keywordCount": 3,
-      "advertiserCount": 3
-    },
-    {
-      "platform": "google_ads_transparency",
-      "adCount": 3,
-      "keywordCount": 0,
-      "advertiserCount": 3
-    },
-    {
       "platform": "google_keyword_planner",
-      "adCount": 3,
-      "keywordCount": 3,
-      "advertiserCount": 0
-    },
-    {
-      "platform": "tiktok_ads",
-      "adCount": 3,
-      "keywordCount": 3,
-      "advertiserCount": 3
+      "adCount": 8,
+      "keywordCount": 8,
+      "advertiserCount": 18
     }
   ]
 }
