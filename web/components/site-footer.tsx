@@ -31,7 +31,7 @@ export function SiteFooter() {
           <div className="site-footer-col">
             <h4>Connect</h4>
             <a
-              href="https://x.com/SignalEye"
+              href="https://x.com/SignalEyeLive"
               target="_blank"
               rel="noopener noreferrer"
             >
