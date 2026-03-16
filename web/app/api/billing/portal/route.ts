@@ -24,7 +24,7 @@ export async function POST() {
     const frontendUrl = process.env.SIGNAL_EYE_FRONTEND_URL ?? "https://www.signaleye.live";
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
-      return_url: `${frontendUrl}/billing`,
+      return_url: `${frontendUrl}/settings`,
     });
 
     return NextResponse.json({ url: session.url });

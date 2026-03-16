@@ -20,7 +20,7 @@ export function SiteFooter() {
             <h4>Product</h4>
             <Link href="/explore">Explorer</Link>
             <Link href="/pricing">Pricing</Link>
-            <Link href="/billing">Billing</Link>
+            <Link href="/">About us</Link>
           </div>
           <div className="site-footer-col">
             <h4>Account</h4>

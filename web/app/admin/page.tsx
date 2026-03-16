@@ -13,7 +13,8 @@ import { EstimatedMetricsToggle } from "@/components/estimated-metrics-toggle";
 export default async function AdminPage() {
   const { user } = await getCurrentUser();
 
-  if (!user?.isAdmin) {
+  const ADMIN_USER_IDS = ["9d291cd1-dc49-403e-bed8-1f9f17703664"];
+  if (!user || !ADMIN_USER_IDS.includes(user.id)) {
     redirect("/explore");
   }
 

@@ -1,6 +1,32 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useAuth } from "@/components/auth-provider";
 
 export function PricingTable() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    if (!user) {
+      window.location.href = "/login?next=/pricing";
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/billing/checkout", { method: "POST" });
+      if (res.ok) {
+        const { url } = await res.json();
+        if (url) window.location.href = url;
+      }
+    } catch {
+      // fallback
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="landing-pricing">
       <h2>Start free. Go deeper when you&apos;re ready.</h2>
@@ -30,12 +56,14 @@ export function PricingTable() {
             <li>CSV export</li>
             <li>Ad Intelligence</li>
           </ul>
-          <Link
-            href="/billing"
+          <button
             className="landing-pricing-cta landing-pricing-cta-primary"
+            onClick={handleUpgrade}
+            disabled={loading}
+            type="button"
           >
-            Upgrade to Pro
-          </Link>
+            {loading ? "Loading..." : "Upgrade to Pro"}
+          </button>
         </article>
       </div>
     </section>

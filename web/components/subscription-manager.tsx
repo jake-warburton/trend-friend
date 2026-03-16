@@ -87,7 +87,7 @@ export function SubscriptionManager() {
         <p className="detail-copy" style={{ marginBottom: 12 }}>
           You are on the <strong>Free</strong> plan.
         </p>
-        <a className="auth-submit-button" href="/billing" style={{ textDecoration: "none", display: "inline-block" }}>
+        <a className="auth-submit-button" href="/pricing" style={{ textDecoration: "none", display: "inline-block" }}>
           Upgrade to Pro
         </a>
       </div>

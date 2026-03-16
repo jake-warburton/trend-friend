@@ -51,6 +51,7 @@ import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
 import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
 import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
+import { UpgradeModal, useUpgradeGate } from "@/components/upgrade-modal";
 import {
   confidenceBucketForTrend,
   trendMatchesAudience,
@@ -333,6 +334,7 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { modalOpen: upgradeModalOpen, closeModal: closeUpgradeModal, requirePro } = useUpgradeGate();
   const [deferredData, setDeferredData] = useState<ExploreDeferredData | null>(
     null,
   );
@@ -1885,17 +1887,17 @@ export function DashboardShell({
           <div className="section-heading" id="explorer-heading">
             <h2>Explorer</h2>
             <div className="section-heading-actions">
-              <a
+              <button
                 className="mini-action-button export-button"
-                href={exportHref}
-                download="signal-eye-export.csv"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = exportHref;
+                type="button"
+                onClick={() => {
+                  requirePro(() => {
+                    window.location.href = exportHref;
+                  });
                 }}
               >
                 Export CSV
-              </a>
+              </button>
               <span className="section-heading-meta">
                 {filteredTrends.length} live · page {safePage} of {totalPages}
               </span>
@@ -3494,6 +3496,7 @@ export function DashboardShell({
           </div>
         </article>
       </section>
+      <UpgradeModal open={upgradeModalOpen} onClose={closeUpgradeModal} feature="CSV export" />
     </main>
   );
 }
