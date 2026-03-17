@@ -8090,15 +8090,19 @@ dialog::backdrop {
 .social-geo-tooltip {
   position: absolute;
   transform: translate(-50%, -100%);
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
   padding: 10px 14px;
   pointer-events: none;
   z-index: 10;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  min-width: 140px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  min-width: 150px;
   max-width: 220px;
+}
+
+.social-geo-tooltip-below {
+  transform: translate(-50%, 16px);
 }
 
 .social-geo-tooltip-title {
@@ -8106,6 +8110,7 @@ dialog::backdrop {
   font-weight: 700;
   display: block;
   margin-bottom: 4px;
+  color: #fff;
 }
 
 .social-geo-tooltip-list {
@@ -8113,7 +8118,7 @@ dialog::backdrop {
   margin: 0;
   padding: 0;
   font-size: 11px;
-  color: var(--copy-secondary);
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
 }
 

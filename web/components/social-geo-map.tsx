@@ -152,7 +152,7 @@ export function SocialGeoMap({ trends, selectedLocation, onLocationChange }: Soc
         </ComposableMap>
         {tooltip && (
           <div
-            className="social-geo-tooltip"
+            className={`social-geo-tooltip${tooltip.y < 120 ? " social-geo-tooltip-below" : ""}`}
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <strong className="social-geo-tooltip-title">{tooltip.location}</strong>
