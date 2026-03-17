@@ -819,19 +819,15 @@ export function DashboardShell({
     safePage * EXPLORER_PAGE_SIZE,
   );
 
-  const prevFilteredRef = useRef(filteredTrends);
-  const filterResetMountRef = useRef(true);
+  // Reset page to 1 when any filter changes (but not on data load or mount).
+  const filterFingerprint = `${keyword}|${selectedSource}|${selectedCategory}|${selectedStage}|${selectedConfidence}|${selectedLens}|${selectedMetaTrend}|${selectedAudience}|${selectedMarket}|${selectedLanguage}|${selectedGeoCountry}|${minimumScore}|${sortBy}|${sortDirection}|${selectedStatus}|${hideRecurring}`;
+  const prevFilterFingerprint = useRef(filterFingerprint);
   useEffect(() => {
-    if (filterResetMountRef.current) {
-      filterResetMountRef.current = false;
-      prevFilteredRef.current = filteredTrends;
-      return;
-    }
-    if (prevFilteredRef.current !== filteredTrends) {
-      prevFilteredRef.current = filteredTrends;
+    if (prevFilterFingerprint.current !== filterFingerprint) {
+      prevFilterFingerprint.current = filterFingerprint;
       setCurrentPage(1);
     }
-  }, [filteredTrends]);
+  }, [filterFingerprint]);
 
   // -- Sync explorer filter state → URL (replaceState to avoid history spam) --
   useEffect(() => {
@@ -852,7 +848,7 @@ export function DashboardShell({
     if (sortDirection !== "asc") params.set("dir", sortDirection);
     if (selectedStatus !== "all") params.set("status", selectedStatus);
     if (hideRecurring) params.set("hideRecurring", "1");
-    if (safePage > 1) params.set("page", String(safePage));
+    if (currentPage > 1) params.set("page", String(currentPage));
     const qs = params.toString();
     const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(window.history.state, "", url);
@@ -860,7 +856,7 @@ export function DashboardShell({
     keyword, selectedSource, selectedCategory, selectedStage, selectedConfidence,
     selectedLens, selectedMetaTrend, selectedAudience, selectedMarket,
     selectedLanguage, selectedGeoCountry, minimumScore, sortBy, sortDirection,
-    selectedStatus, hideRecurring, safePage,
+    selectedStatus, hideRecurring, currentPage,
   ]);
 
   function goToPage(page: number) {
