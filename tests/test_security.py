@@ -72,3 +72,14 @@ class LoginRateLimitAPITests(unittest.TestCase):
             json={"username": "ratelimited", "password": "wrongpw123"},
         )
         self.assertEqual(response.status_code, 429)
+
+
+class RefreshSecretTests(unittest.TestCase):
+    """Test refresh secret uses constant-time comparison."""
+
+    def test_verify_uses_hmac_compare(self) -> None:
+        """Ensure the function uses hmac.compare_digest (check via source)."""
+        import inspect
+        from app.api.routers.refresh import _verify_refresh_secret
+        source = inspect.getsource(_verify_refresh_secret)
+        self.assertIn("hmac.compare_digest", source)

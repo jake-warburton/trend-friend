@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 import logging
 import threading
 from typing import Optional
@@ -67,7 +68,7 @@ def _verify_refresh_secret(settings: Settings, provided_secret: Optional[str]) -
 
     if not settings.refresh_secret:
         return
-    if provided_secret != settings.refresh_secret:
+    if not provided_secret or not hmac.compare_digest(provided_secret, settings.refresh_secret):
         raise HTTPException(status_code=403, detail="Invalid refresh secret")
 
 
