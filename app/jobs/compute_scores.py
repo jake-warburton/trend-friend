@@ -243,7 +243,7 @@ def run_ad_intelligence_pipeline(settings: Settings) -> None:
 
     now = datetime.now(tz=timezone.utc)
     trend_slugs = {slugify(s.topic) for s in ranked_scores}
-    trend_categories = {slugify(s.topic): s.category for s in ranked_scores if s.category}
+    trend_categories = {slugify(s.topic): s.category for s in ranked_scores if getattr(s, "category", None)}
     new_payload_dict = build_ad_intelligence_payload(
         generated_at=now,
         ad_items=ad_items,
