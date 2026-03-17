@@ -15,7 +15,12 @@ type ScreenshotManifest = Record<string, string>;
 
 function loadScreenshotManifest(): ScreenshotManifest | null {
   try {
-    const manifestPath = join(process.cwd(), "public", "screenshots", "manifest.json");
+    const manifestPath = join(
+      process.cwd(),
+      "public",
+      "screenshots",
+      "manifest.json",
+    );
     return JSON.parse(readFileSync(manifestPath, "utf-8"));
   } catch {
     return null;
@@ -23,7 +28,7 @@ function loadScreenshotManifest(): ScreenshotManifest | null {
 }
 
 export const metadata = {
-  title: "Signal Eye — Spot Emerging Trends Before They Peak",
+  title: "Signal Eye — Trend, Social and Ad intelligence",
   description:
     "Spot emerging trends before they peak. Signal Eye monitors 24+ data sources — Reddit, GitHub, TikTok, Google Trends, arXiv, and more — to surface rising topics with momentum scoring, breakout predictions, and market signals.",
   keywords: [
@@ -81,10 +86,18 @@ function getScreenshotSet(
   if (!manifest) return FALLBACK_SCREENSHOT_SETS[themeKey];
   const suffix = themeKey === DARK_THEME ? "dark" : "light";
   return {
-    explorer: manifest[`explorer-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].explorer,
-    trendDetail: manifest[`trend-detail-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].trendDetail,
-    adIntelligence: manifest[`ad-intelligence-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].adIntelligence,
-    socialIntelligence: manifest[`social-intelligence-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].socialIntelligence,
+    explorer:
+      manifest[`explorer-${suffix}`] ??
+      FALLBACK_SCREENSHOT_SETS[themeKey].explorer,
+    trendDetail:
+      manifest[`trend-detail-${suffix}`] ??
+      FALLBACK_SCREENSHOT_SETS[themeKey].trendDetail,
+    adIntelligence:
+      manifest[`ad-intelligence-${suffix}`] ??
+      FALLBACK_SCREENSHOT_SETS[themeKey].adIntelligence,
+    socialIntelligence:
+      manifest[`social-intelligence-${suffix}`] ??
+      FALLBACK_SCREENSHOT_SETS[themeKey].socialIntelligence,
   };
 }
 
@@ -107,11 +120,14 @@ export default async function Page() {
           <h1>
             Spot the next big thing
             <br />
-            <span className="landing-hero-accent">before everyone else does.</span>
+            <span className="landing-hero-accent">
+              before everyone else does.
+            </span>
           </h1>
           <p className="landing-subheadline">
-            Signal Eye tracks 18+ live data sources — Hacker News, Reddit, GitHub, arXiv, YouTube, Google Trends and
-            more — to surface emerging trends the moment they start gaining momentum.
+            Signal Eye tracks 18+ live data sources — Hacker News, Reddit,
+            GitHub, arXiv, YouTube, Google Trends and more — to surface emerging
+            trends the moment they start gaining momentum.
           </p>
           <div className="landing-cta-group">
             <Link href="/signup" className="landing-cta-primary">
@@ -121,7 +137,9 @@ export default async function Page() {
               See live trends
             </Link>
           </div>
-          <p className="landing-cta-note">No credit card required. Free tier available.</p>
+          <p className="landing-cta-note">
+            No credit card required. Free tier available.
+          </p>
         </div>
       </section>
 
@@ -158,14 +176,17 @@ export default async function Page() {
 
       <section className="landing-problem">
         <div className="landing-problem-content">
-          <h2>By the time a trend is obvious, you&apos;ve already missed it.</h2>
+          <h2>
+            By the time a trend is obvious, you&apos;ve already missed it.
+          </h2>
           <p>
-            Everyone uses the same tools. Everyone watches the same feeds. So everyone reacts at the same time — too
-            late to get ahead.
+            Everyone uses the same tools. Everyone watches the same feeds. So
+            everyone reacts at the same time — too late to get ahead.
           </p>
           <p>
-            Signal Eye tracks weak signals across developer forums, research papers, package registries, prediction
-            markets, and social platforms to find what&apos;s gaining momentum <em>now</em>, not next month.
+            Signal Eye tracks weak signals across developer forums, research
+            papers, package registries, prediction markets, and social platforms
+            to find what&apos;s gaining momentum <em>now</em>, not next month.
           </p>
         </div>
       </section>
@@ -177,23 +198,26 @@ export default async function Page() {
             <span className="landing-step-number">01</span>
             <h3>Aggregate</h3>
             <p>
-              We continuously ingest data from 18+ sources: Reddit, Hacker News, GitHub, arXiv, npm, PyPI, Product
-              Hunt, YouTube, Google Trends, Polymarket, Wikipedia and more.
+              We continuously ingest data from 18+ sources: Reddit, Hacker News,
+              GitHub, arXiv, npm, PyPI, Product Hunt, YouTube, Google Trends,
+              Polymarket, Wikipedia and more.
             </p>
           </article>
           <article className="landing-step">
             <span className="landing-step-number">02</span>
             <h3>Score</h3>
             <p>
-              Every topic gets a transparent trend score based on growth velocity, cross-source validation, and stage
-              classification: Nascent, Rising, Breakout, Validated, Cooling.
+              Every topic gets a transparent trend score based on growth
+              velocity, cross-source validation, and stage classification:
+              Nascent, Rising, Breakout, Validated, Cooling.
             </p>
           </article>
           <article className="landing-step">
             <span className="landing-step-number">03</span>
             <h3>Act</h3>
             <p>
-              Filter by use case — SEO, content, product ideas, investment — and get directly to what matters for you.
+              Filter by use case — SEO, content, product ideas, investment — and
+              get directly to what matters for you.
             </p>
           </article>
         </div>
@@ -203,7 +227,8 @@ export default async function Page() {
         <div className="landing-features-intro">
           <h2>Everything you need to move first.</h2>
           <p className="landing-features-lead">
-            A complete toolkit for discovering, tracking, and acting on emerging trends across the internet.
+            A complete toolkit for discovering, tracking, and acting on emerging
+            trends across the internet.
           </p>
         </div>
         <div className="landing-features-showcase">
@@ -219,34 +244,52 @@ export default async function Page() {
           <div className="landing-features-list">
             <article className="landing-feature-card">
               <h3>Multi-source explorer</h3>
-              <p>Browse and filter ranked trends across every source, stage, audience, market, and language.</p>
+              <p>
+                Browse and filter ranked trends across every source, stage,
+                audience, market, and language.
+              </p>
             </article>
             <article className="landing-feature-card">
               <h3>Trend score & history</h3>
               <p>
-                See not just where a trend is, but where it&apos;s been — score history charts, seasonality analysis, geo
-                distribution.
+                See not just where a trend is, but where it&apos;s been — score
+                history charts, seasonality analysis, geo distribution.
               </p>
             </article>
             <article className="landing-feature-card">
               <h3>Lens presets</h3>
-              <p>Switch between Discovery, SEO, Content, Product, and Investment views with one click.</p>
+              <p>
+                Switch between Discovery, SEO, Content, Product, and Investment
+                views with one click.
+              </p>
             </article>
             <article className="landing-feature-card">
               <h3>Watchlists & alerts</h3>
-              <p>Save topics to watchlists and get notified when a trend crosses your score threshold.</p>
+              <p>
+                Save topics to watchlists and get notified when a trend crosses
+                your score threshold.
+              </p>
             </article>
             <article className="landing-feature-card">
               <h3>Market footprint</h3>
-              <p>See real-world evidence: top Google results, YouTube coverage, and search volume data.</p>
+              <p>
+                See real-world evidence: top Google results, YouTube coverage,
+                and search volume data.
+              </p>
             </article>
             <article className="landing-feature-card">
               <h3>Shareable collections</h3>
-              <p>Publish watchlists to the community or share private links with an expiry date.</p>
+              <p>
+                Publish watchlists to the community or share private links with
+                an expiry date.
+              </p>
             </article>
             <article className="landing-feature-card">
               <h3>API & CSV export</h3>
-              <p>Integrate trend data into your own tools and workflows. <em className="landing-pro-badge">Pro</em></p>
+              <p>
+                Integrate trend data into your own tools and workflows.{" "}
+                <em className="landing-pro-badge">Pro</em>
+              </p>
             </article>
           </div>
         </div>
@@ -258,29 +301,31 @@ export default async function Page() {
           <article className="landing-persona-card">
             <h3>Content creators</h3>
             <p>
-              Know what your audience will care about next week, not last week. Plan content around trends that are
-              rising, not already peaking.
+              Know what your audience will care about next week, not last week.
+              Plan content around trends that are rising, not already peaking.
             </p>
           </article>
           <article className="landing-persona-card">
             <h3>Indie hackers & builders</h3>
             <p>
-              Spot underserved problems before the market gets crowded. Signal Eye&apos;s Build Ideas lens surfaces
-              developer trends with low competition and rising demand.
+              Spot underserved problems before the market gets crowded. Signal
+              Eye&apos;s Build Ideas lens surfaces developer trends with low
+              competition and rising demand.
             </p>
           </article>
           <article className="landing-persona-card">
             <h3>Founders & investors</h3>
             <p>
-              Get a read on emerging categories and market momentum before it shows up in TechCrunch. Validate thesis
-              ideas with cross-source signal data.
+              Get a read on emerging categories and market momentum before it
+              shows up in TechCrunch. Validate thesis ideas with cross-source
+              signal data.
             </p>
           </article>
           <article className="landing-persona-card">
             <h3>Marketers & SEO teams</h3>
             <p>
-              Find keywords and topics with genuine momentum behind them. Move before your competitors even know the
-              trend exists.
+              Find keywords and topics with genuine momentum behind them. Move
+              before your competitors even know the trend exists.
             </p>
           </article>
         </div>
@@ -289,7 +334,10 @@ export default async function Page() {
       <section className="landing-app-preview">
         <div className="landing-preview-content">
           <h2>See it in action</h2>
-          <p>Real-time trend scoring, source health monitoring, and community watchlists — all in one interface.</p>
+          <p>
+            Real-time trend scoring, Social and Ad intelligence, all in one
+            tool.
+          </p>
         </div>
         <div className="landing-preview-screenshots">
           <LandingScreenshot
@@ -319,7 +367,8 @@ export default async function Page() {
             Start for free
           </Link>
           <p className="landing-final-note">
-            Join founders, creators, and investors who spotted their next opportunity in the signal, not the noise.
+            Join founders, creators, and investors who spotted their next
+            opportunity in the signal, not the noise.
           </p>
         </div>
       </section>
@@ -349,7 +398,9 @@ function LandingScreenshot({
   return (
     <div className={frameClassName}>
       <div className="landing-screenshot-bar">
-        <span /><span /><span />
+        <span />
+        <span />
+        <span />
       </div>
       <Image
         alt={alt}
