@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime
 
 from app.models import NormalizedSignal, TopicAggregate
 from app.topics.display import build_display_name
@@ -77,26 +78,24 @@ def topics_likely_match(
 def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggregate]:
     """Aggregate clusters into inspectable topic summaries."""
 
+    def _naive(dt: datetime) -> datetime:
+        """Strip timezone info for safe comparison (assume UTC)."""
+        return dt.replace(tzinfo=None) if dt.tzinfo else dt
+
     aggregates: list[TopicAggregate] = []
     for topic_name, topic_signals in merge_similar_topics(signals).items():
         source_counts: dict[str, int] = defaultdict(int)
         signal_counts: dict[str, int] = defaultdict(int)
         total_signal_value = 0.0
-        latest_timestamp = topic_signals[0].timestamp
+        latest_timestamp = _naive(topic_signals[0].timestamp)
         evidence: list[str] = []
         for signal in topic_signals:
             source_counts[signal.source] += 1
             signal_counts[signal.signal_type] += 1
             total_signal_value += signal.value
-            try:
-                if signal.timestamp > latest_timestamp:
-                    latest_timestamp = signal.timestamp
-            except TypeError:
-                # Mixed naive/aware datetimes — normalize both to naive UTC
-                a = signal.timestamp.replace(tzinfo=None) if signal.timestamp.tzinfo else signal.timestamp
-                b = latest_timestamp.replace(tzinfo=None) if latest_timestamp.tzinfo else latest_timestamp
-                if a > b:
-                    latest_timestamp = signal.timestamp
+            naive_ts = _naive(signal.timestamp)
+            if naive_ts > latest_timestamp:
+                latest_timestamp = naive_ts
             if signal.evidence not in evidence:
                 evidence.append(signal.evidence)
         aggregates.append(
