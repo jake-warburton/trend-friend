@@ -1,17 +1,41 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { loadTrendDetails } from "@/lib/trends";
 import { buildMetaTrendDirectory } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
+import { JsonLd, buildCollectionPageJsonLd } from "@/components/json-ld";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
+
+export const metadata: Metadata = {
+  title: "Meta-Trends",
+  description: "Explore macro-level meta-trends connecting related emerging signals across categories. See how individual trends cluster into larger movements.",
+  alternates: { canonical: `${SITE_URL}/meta-trends` },
+  openGraph: {
+    title: "Meta-Trends",
+    description: "Explore macro-level meta-trends connecting related emerging signals.",
+  },
+  twitter: { card: "summary_large_image" },
+};
 
 export default async function MetaTrendsPage() {
   const details = await loadTrendDetails();
   const directory = buildMetaTrendDirectory(details.trends);
 
+  const jsonLd = buildCollectionPageJsonLd({
+    url: `${SITE_URL}/meta-trends`,
+    name: "Meta-Trends",
+    description: "Macro-level meta-trends connecting related emerging signals across categories.",
+    numberOfItems: directory.length,
+  });
+
   return (
-    <main className="detail-page">
+    <>
+      <JsonLd data={jsonLd} />
+      <main className="detail-page">
       <section className="detail-hero">
         <div>
           <Link className="detail-back-link" href="/explore">
@@ -55,5 +79,6 @@ export default async function MetaTrendsPage() {
         </section>
       </section>
     </main>
+    </>
   );
 }

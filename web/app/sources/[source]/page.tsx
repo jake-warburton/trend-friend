@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
 import { classifySourceYield, describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { filterAndSortSourceRuns, normalizeSourceRunFilter, normalizeSourceRunSort } from "@/lib/source-runs";
 import { loadSourceSummary } from "@/lib/trends";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 
 type SourcePageProps = {
   params: Promise<{
@@ -15,7 +19,23 @@ type SourcePageProps = {
   }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
+
+export async function generateMetadata({ params }: SourcePageProps): Promise<Metadata> {
+  const { source } = await params;
+  const summary = await loadSourceSummary(source);
+  if (!summary) return { title: "Source Not Found" };
+
+  const label = formatSourceLabel(source);
+  const description = `${label} source health — tracking ${summary.trendCount ?? 0} trends. See run history, top trends, and signal quality metrics.`;
+  return {
+    title: `${label} — Source Health`,
+    description,
+    alternates: { canonical: `${SITE_URL}/sources/${source}` },
+    openGraph: { title: `${label} — Source Health`, description },
+    twitter: { card: "summary_large_image" },
+  };
+}
 
 export default async function SourcePage({ params, searchParams }: SourcePageProps) {
   const { source } = await params;
@@ -25,6 +45,21 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
   if (summary === null) {
     notFound();
   }
+
+  const label = formatSourceLabel(source);
+  const jsonLd = [
+    buildCollectionPageJsonLd({
+      name: `${label} — Source Health`,
+      description: `Signal quality and trend tracking for ${label}`,
+      url: `${SITE_URL}/sources/${source}`,
+      numberOfItems: summary.trendCount ?? 0,
+    }),
+    buildBreadcrumbJsonLd([
+      { name: "Home", url: SITE_URL },
+      { name: "Sources", url: `${SITE_URL}/explore` },
+      { name: label, url: `${SITE_URL}/sources/${source}` },
+    ]),
+  ];
 
   const selectedFilter = normalizeSourceRunFilter(resolvedSearchParams?.filter);
   const selectedSort = normalizeSourceRunSort(resolvedSearchParams?.sort);
@@ -47,13 +82,14 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
 
   return (
     <main className="detail-page">
+      <JsonLd data={jsonLd} />
       <section className="detail-hero">
         <div>
           <Link className="detail-back-link" href="/explore">
             Back to overview
           </Link>
           <p className="eyebrow">Source health</p>
-          <h1>{formatSourceLabel(summary.source)}</h1>
+          <h1>{label}</h1>
           <p className="detail-copy">
             {formatSourceFamilyLabel(summary.family)} family · {summary.signalCount} signals across {summary.trendCount} trends. Latest fetch{" "}
             {summary.latestFetchAt ? formatTimestamp(summary.latestFetchAt) : "not recorded"}.

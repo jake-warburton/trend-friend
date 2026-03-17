@@ -16,7 +16,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.SIGNAL_EYE_FRONTEND_URL ?? "https://signaleye.live"
+    process.env.SIGNAL_EYE_FRONTEND_URL ?? "https://www.signaleye.live"
   ),
   title: {
     default: "Signal Eye — Trend Intelligence Platform",

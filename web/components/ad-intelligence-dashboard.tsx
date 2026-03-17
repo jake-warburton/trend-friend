@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useScreenshotMode } from "@/lib/use-screenshot-mode";
 import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
@@ -356,48 +355,6 @@ function PlatformCards({ platforms }: { platforms: AdIntelligencePlatformSummary
   );
 }
 
-/* ── paywall gate ───────────────────────────────────────────────── */
-
-function ProGate() {
-  return (
-    <div className="adi-gate">
-      <div className="adi-gate-inner">
-        <div className="adi-gate-badge">PRO</div>
-        <h1 className="adi-gate-title">Ad Intelligence</h1>
-        <p className="adi-gate-copy">
-          Keyword CPC data, advertiser breakdowns, and cross-platform ad activity — available on Pro.
-        </p>
-        <div className="adi-gate-preview">
-          <div className="adi-gate-blur" />
-          <table className="adi-table" style={{ opacity: 0.3 }}>
-            <thead>
-              <tr>
-                <th className="adi-th adi-th-left">Keyword</th>
-                <th className="adi-th adi-th-right">CPC</th>
-                <th className="adi-th adi-th-right">Volume</th>
-                <th className="adi-th adi-th-left">Competition</th>
-              </tr>
-            </thead>
-            <tbody>
-              {["AI automation", "cloud security", "low-code platform"].map((kw) => (
-                <tr key={kw} className="adi-row">
-                  <td className="adi-td">{kw}</td>
-                  <td className="adi-td adi-td-right adi-td-mono">$--.--</td>
-                  <td className="adi-td adi-td-right adi-td-mono">---,---</td>
-                  <td className="adi-td"><CompetitionBar level="MEDIUM" /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <a href="/pricing" className="adi-gate-cta">
-          Upgrade to Pro
-        </a>
-      </div>
-    </div>
-  );
-}
-
 /* ── skeleton ───────────────────────────────────────────────────── */
 
 function Skeleton() {
@@ -422,36 +379,24 @@ function Skeleton() {
 /* ── main dashboard ─────────────────────────────────────────────── */
 
 export function AdIntelligenceDashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const { isPro, loading: profileLoading } = useProfile();
-  const router = useRouter();
   const isScreenshot = useScreenshotMode();
   const [data, setData] = useState<AdIntelligenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const shouldShow = isScreenshot || (isPro && !authLoading && !profileLoading);
+
   useEffect(() => {
-    if (isScreenshot) {
-      fetch("/api/ad-intelligence")
-        .then((res) => res.ok ? res.json() : null)
-        .then((json) => { if (json) setData(json); })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-      return;
-    }
-    if (authLoading || profileLoading) return;
-    if (!user || !isPro) {
-      router.replace(user ? "/pricing" : "/login?next=/ad-intelligence");
-      return;
-    }
+    if (!shouldShow) { setLoading(false); return; }
     fetch("/api/ad-intelligence")
-      .then((res) => res.json())
-      .then((json) => setData(json))
+      .then((res) => res.ok ? res.json() : null)
+      .then((json) => { if (json) setData(json); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isPro, profileLoading, authLoading, user, router, isScreenshot]);
+  }, [shouldShow]);
 
-  if (!isScreenshot && (authLoading || profileLoading || loading)) return <Skeleton />;
-  if (!isScreenshot && !isPro) return <ProGate />;
+  if (!shouldShow) return null;
   if (loading) return <Skeleton />;
 
   if (!data) {
@@ -475,31 +420,34 @@ export function AdIntelligenceDashboard() {
     : "N/A";
 
   return (
-    <div className="adi-wrap">
-      <header className="adi-header">
-        <div className="adi-header-top">
-          <h1 className="adi-title">Ad Intelligence</h1>
+    <>
+      <style>{`.adi-teaser { display: none !important; }`}</style>
+      <div className="adi-wrap">
+        <header className="adi-header">
+          <div className="adi-header-top">
+            <h1 className="adi-title">Ad Intelligence</h1>
+          </div>
+          <p className="adi-subtitle">
+            See who is advertising around trending topics, which platforms they target, and what keywords they compete on
+          </p>
+        </header>
+
+        <div className="adi-stats-row">
+          <StatCard label="Keywords" value={data.topKeywords.length} />
+          {avgCpc ? (
+            <StatCard label="Avg CPC" value={`$${avgCpc}`} accent="var(--accent)" />
+          ) : (
+            <StatCard label="Platforms" value={totalPlatforms} />
+          )}
+          <StatCard label="Advertisers" value={data.topAdvertisers.length} />
+          <StatCard label="Total Ads" value={totalAds} />
+          <StatCard label="Top Platform" value={topPlatform} />
         </div>
-        <p className="adi-subtitle">
-          See who is advertising around trending topics, which platforms they target, and what keywords they compete on
-        </p>
-      </header>
 
-      <div className="adi-stats-row">
-        <StatCard label="Keywords" value={data.topKeywords.length} />
-        {avgCpc ? (
-          <StatCard label="Avg CPC" value={`$${avgCpc}`} accent="var(--accent)" />
-        ) : (
-          <StatCard label="Platforms" value={totalPlatforms} />
-        )}
-        <StatCard label="Advertisers" value={data.topAdvertisers.length} />
-        <StatCard label="Total Ads" value={totalAds} />
-        <StatCard label="Top Platform" value={topPlatform} />
+        <KeywordTable keywords={data.topKeywords} />
+        <AdvertiserTable advertisers={data.topAdvertisers} />
+        <PlatformCards platforms={data.platformSummary} />
       </div>
-
-      <KeywordTable keywords={data.topKeywords} />
-      <AdvertiserTable advertisers={data.topAdvertisers} />
-      <PlatformCards platforms={data.platformSummary} />
-    </div>
+    </>
   );
 }

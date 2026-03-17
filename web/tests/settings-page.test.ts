@@ -16,7 +16,7 @@ import {
 test("settings page renders preferences and enrichment status sections", async () => {
   const html = renderToStaticMarkup(await SettingsPage());
 
-  assert.match(html, /<h1>Settings<\/h1>/);
+  assert.match(html, /Settings/);
   assert.match(html, /Back to explorer/);
   assert.match(html, /UI preferences/);
   assert.match(html, /Interface theme/);

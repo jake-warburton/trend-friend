@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+// SCREENSHOT_BYPASS_AUTH bypasses the Supabase cookies() call in requirePro
+// so that GET() can be called from outside a Next.js request scope in tests.
+process.env.SCREENSHOT_BYPASS_AUTH = "1";
+
 import { GET, handleExportGet } from "@/app/api/export/route";
 import type { TrendDetailRecord, TrendExplorerRecord } from "@/lib/types";
 import { confidenceBucketForTrend, trendMatchesAudience, trendMatchesMarket, trendMatchesLanguage } from "@/lib/trend-filters";

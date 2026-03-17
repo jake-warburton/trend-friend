@@ -21,6 +21,9 @@ import { TrendScoreChart } from "@/components/trend-score-chart";
 import { ScoreBreakdownChart } from "@/components/score-breakdown-chart";
 import { GeoMapClient } from "@/components/geo-map-client";
 import { PlatformIntelligence } from "@/components/platform-intelligence";
+import { JsonLd, buildArticleJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 
 type TrendDetailPageProps = {
   params: Promise<{
@@ -73,6 +76,9 @@ export async function generateMetadata({ params }: TrendDetailPageProps): Promis
     title: `${displayName} — Trend Intelligence`,
     description,
     keywords,
+    alternates: {
+      canonical: `${SITE_URL}/trends/${slug}`,
+    },
     openGraph: {
       title: `${displayName} — Trend Intelligence | Signal Eye`,
       description,
@@ -220,8 +226,25 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   const sourceInsights = buildSourceContributionInsights(trend.sourceContributions, sourceSummary.sources);
   const visibleMarketFootprint = trend.marketFootprint.filter((metric) => !metric.isEstimated);
 
+  const articleDescription = trend.wikipediaDescription ?? trend.summary ?? `${trend.name} is an emerging trend tracked by Signal Eye.`;
+  const jsonLd = [
+    buildArticleJsonLd({
+      headline: `${trend.name} — Trend Analysis`,
+      description: articleDescription,
+      url: `${SITE_URL}/trends/${trend.id}`,
+      imageUrl: trend.wikipediaThumbnailUrl ?? undefined,
+    }),
+    buildBreadcrumbJsonLd([
+      { name: "Home", url: SITE_URL },
+      { name: "Explore", url: `${SITE_URL}/explore` },
+      { name: formatCategory(trend.category), url: `${SITE_URL}/categories/${slugifyBrowseValue(trend.category)}` },
+      { name: trend.name, url: `${SITE_URL}/trends/${trend.id}` },
+    ]),
+  ];
+
   return (
     <main className="detail-page" data-screenshot-target="trend-detail">
+      <JsonLd data={jsonLd} />
       <section className="detail-hero">
         <div>
           <Link className="detail-back-link" href="/explore">
@@ -229,8 +252,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </Link>
           <p className="eyebrow">Trend detail</p>
           <div className="detail-pill-row">
-            <span className="trend-date-chip">{formatCategory(trend.category)}</span>
-            <span className="trend-date-chip">{trend.metaTrend}</span>
+            <Link className="trend-date-chip" href={`/categories/${slugifyBrowseValue(trend.category)}`}>{formatCategory(trend.category)}</Link>
+            <Link className="trend-date-chip" href={`/meta-trends/${slugifyBrowseValue(trend.metaTrend)}`}>{trend.metaTrend}</Link>
             <span className="trend-date-chip">{formatLabel(trend.stage)}</span>
             <span className="trend-date-chip">{Math.round(trend.confidence * 100)}% confidence</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>
