@@ -252,3 +252,12 @@ class AuthAPITests(unittest.TestCase):
 
         me_response = self.client.get("/api/v1/auth/me")
         self.assertEqual(me_response.status_code, 401)
+
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true", "SIGNAL_EYE_ENVIRONMENT": "production"})
+    def test_logout_cookie_uses_secure_flag_in_production(self) -> None:
+        """Logout must set secure flag consistent with login."""
+        self.client.post("/api/v1/auth/register", json={"username": "u1", "password": "password123"})
+        response = self.client.post("/api/v1/auth/logout")
+        self.assertEqual(response.status_code, 200)
+        cookie_header = response.headers.get("set-cookie", "")
+        self.assertIn("Secure", cookie_header)

@@ -131,12 +131,13 @@ def logout_user(
     if token:
         repo = UserRepository(db)
         repo.revoke_session_by_hash(hash_session_token(token))
+    is_production = os.getenv("SIGNAL_EYE_ENVIRONMENT", "production") != "development"
     response.delete_cookie(
         SESSION_COOKIE_NAME,
         path="/",
         httponly=True,
-        samesite="lax",
-        secure=os.getenv("SIGNAL_EYE_SECURE_COOKIES", "false").lower() == "true",
+        samesite="strict",
+        secure=is_production,
     )
     return {"ok": True}
 
@@ -231,7 +232,7 @@ def _set_session_cookie(response: Response, token: str) -> None:
         SESSION_COOKIE_NAME,
         token,
         httponly=True,
-        samesite="lax",
+        samesite="strict",
         secure=is_production,
         max_age=7 * 24 * 60 * 60,
         path="/",
