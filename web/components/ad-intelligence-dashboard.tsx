@@ -41,6 +41,13 @@ function competitionBarWidth(level: string): number {
   return 10;
 }
 
+function formatCategory(raw: string): string {
+  // Already formatted (e.g. "AI/ML", "Tech")
+  if (!raw.includes("-")) return raw;
+  // Slug like "developer-tools" → "Developer Tools"
+  return raw.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
 function formatVolume(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
@@ -110,13 +117,51 @@ function CompetitionBar({ level }: { level: string }) {
 /* ── keyword table ──────────────────────────────────────────────── */
 
 function KeywordTable({ keywords }: { keywords: AdIntelligenceKeyword[] }) {
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [advertiserFilter, setAdvertiserFilter] = useState("");
   if (!keywords.length) return null;
-  const hasCpc = keywords.some((k) => k.cpc > 0);
+
+  const categories = Array.from(new Set(keywords.map((k) => k.category).filter(Boolean))).sort();
+  const allAdvertisers = Array.from(new Set(keywords.flatMap((k) => k.topAdvertisers))).sort();
+
+  let filtered = keywords;
+  if (categoryFilter) {
+    filtered = filtered.filter((k) => k.category === categoryFilter);
+  }
+  if (advertiserFilter) {
+    filtered = filtered.filter((k) => k.topAdvertisers.includes(advertiserFilter));
+  }
+  const hasCpc = filtered.some((k) => k.cpc > 0);
+
   return (
     <section className="adi-section">
       <div className="adi-section-head">
         <h2 className="adi-section-title">Keywords</h2>
-        <span className="adi-section-count">{keywords.length}</span>
+        <span className="adi-section-count">{filtered.length}</span>
+        {categories.length > 1 && (
+          <select
+            className="adi-filter-select"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c!}>{formatCategory(c!)}</option>
+            ))}
+          </select>
+        )}
+        {allAdvertisers.length > 1 && (
+          <select
+            className="adi-filter-select"
+            value={advertiserFilter}
+            onChange={(e) => setAdvertiserFilter(e.target.value)}
+          >
+            <option value="">All advertisers</option>
+            {allAdvertisers.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+        )}
       </div>
       <div className="adi-table-wrap">
         <table className="adi-table">
@@ -133,7 +178,7 @@ function KeywordTable({ keywords }: { keywords: AdIntelligenceKeyword[] }) {
             </tr>
           </thead>
           <tbody>
-            {keywords.map((kw, i) => (
+            {filtered.map((kw, i) => (
               <tr
                 key={kw.keyword}
                 className="adi-row"
@@ -151,7 +196,7 @@ function KeywordTable({ keywords }: { keywords: AdIntelligenceKeyword[] }) {
                 </td>
                 <td className="adi-td">
                   {kw.category ? (
-                    <span className="adi-format-tag">{kw.category}</span>
+                    <span className="adi-format-tag">{formatCategory(kw.category)}</span>
                   ) : (
                     <span style={{ color: "var(--muted)", opacity: 0.5 }}>--</span>
                   )}
@@ -200,12 +245,25 @@ function KeywordTable({ keywords }: { keywords: AdIntelligenceKeyword[] }) {
 /* ── advertiser table ───────────────────────────────────────────── */
 
 function AdvertiserTable({ advertisers }: { advertisers: AdIntelligenceAdvertiser[] }) {
+  const [filter, setFilter] = useState("");
   if (!advertisers.length) return null;
+
+  const filtered = filter
+    ? advertisers.filter((a) => a.name.toLowerCase().includes(filter.toLowerCase()))
+    : advertisers;
+
   return (
     <section className="adi-section">
       <div className="adi-section-head">
         <h2 className="adi-section-title">Advertisers</h2>
-        <span className="adi-section-count">{advertisers.length}</span>
+        <span className="adi-section-count">{filtered.length}</span>
+        <input
+          className="adi-filter-input"
+          type="text"
+          placeholder="Filter advertisers..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
       </div>
       <div className="adi-table-wrap">
         <table className="adi-table">
@@ -218,7 +276,7 @@ function AdvertiserTable({ advertisers }: { advertisers: AdIntelligenceAdvertise
             </tr>
           </thead>
           <tbody>
-            {advertisers.map((adv, i) => (
+            {filtered.map((adv, i) => (
               <tr
                 key={`${adv.name}-${adv.platform}`}
                 className="adi-row"
@@ -240,6 +298,13 @@ function AdvertiserTable({ advertisers }: { advertisers: AdIntelligenceAdvertise
                 </td>
               </tr>
             ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td className="adi-td" colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>
+                  No advertisers match "{filter}"
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

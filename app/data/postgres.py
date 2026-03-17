@@ -24,6 +24,7 @@ POSTGRES_MIGRATIONS = [
     Migration("0014_profiles_and_subscriptions", load_sql_migration("postgres_migrations/0014_profiles_and_subscriptions.sql")),
     Migration("0015_advertising_score", load_sql_migration("postgres_migrations/0015_advertising_score.sql")),
     Migration("0016_row_level_security", load_sql_migration("postgres_migrations/0016_row_level_security.sql")),
+    Migration("0017_newsletter_opt_in", load_sql_migration("postgres_migrations/0017_newsletter_opt_in.sql")),
 ]
 
 

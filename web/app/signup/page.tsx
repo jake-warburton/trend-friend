@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +30,10 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: { full_name: displayName || undefined },
+        data: {
+          full_name: displayName || undefined,
+          newsletter_opt_in: newsletterOptIn,
+        },
       },
     });
 
@@ -162,6 +166,15 @@ export default function SignupPage() {
               placeholder="At least 8 characters"
             />
           </div>
+          <label className="auth-checkbox-label">
+            <input
+              type="checkbox"
+              checked={newsletterOptIn}
+              onChange={(e) => setNewsletterOptIn(e.target.checked)}
+              className="auth-checkbox"
+            />
+            <span>Subscribe to our newsletter to get notified when new features are available</span>
+          </label>
           <button className="auth-submit-button" type="submit" disabled={loading}>
             {loading ? "Creating account\u2026" : "Create account"}
           </button>

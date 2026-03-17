@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 
 import { LogoutButton } from "@/components/logout-button";
+import { NewsletterToggle } from "@/components/newsletter-toggle";
 import { SubscriptionManager } from "@/components/subscription-manager";
 import { SettingsPreferences } from "@/components/settings-preferences";
 import {
@@ -71,6 +72,24 @@ export default async function SettingsPage() {
           </div>
           <div className="settings-section-body">
             <SubscriptionManager />
+          </div>
+        </article>
+
+        <article className="settings-section">
+          <div className="settings-section-header">
+            <div className="settings-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="settings-section-title">Newsletter</h2>
+              <p className="settings-section-desc">Stay up to date with new features and updates.</p>
+            </div>
+          </div>
+          <div className="settings-section-body">
+            <NewsletterToggle />
           </div>
         </article>
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-16T22:20:28.514415Z",
+  "generatedAt": "2026-03-16T23:22:59.345865Z",
   "topKeywords": [
     {
       "keyword": "AI Agents",
@@ -42,6 +42,66 @@
       "category": "AI/ML"
     },
     {
+      "keyword": "Bitcoin",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Creative Planning",
+        "ELLIPAL",
+        "FOREX.com",
+        "Fidelity Investments",
+        "OANDA FX Data Services"
+      ],
+      "trendId": "bitcoin",
+      "category": "fintech-crypto",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Chrome Devtools",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "Audi",
+        "Google Chrome",
+        "Moveworks",
+        "Olive Garden"
+      ],
+      "trendId": "chrome-devtools",
+      "category": "developer-tools",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "FreeBSD",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "ManageEngine",
+        "Moveworks",
+        "UC Berkeley",
+        "Wall Street Quants"
+      ],
+      "trendId": "freebsd",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
       "keyword": "Large Language Models",
       "cpc": 0.0,
       "searchVolume": 0,
@@ -82,6 +142,126 @@
       "category": "Data"
     },
     {
+      "keyword": "Linux",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "ManageEngine",
+        "Nintendo of America",
+        "Solidigm",
+        "Wall Street Quants"
+      ],
+      "trendId": "linux",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Machinelearning",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "HubSpot",
+        "MyIQ",
+        "Solidigm",
+        "Stanford University",
+        "Tricentis"
+      ],
+      "trendId": "machinelearning",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Meal Prep",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Factor",
+        "Front Porch Pantry",
+        "Gatorade",
+        "HelloFresh",
+        "No Carbs Challenge"
+      ],
+      "trendId": "meal-prep",
+      "category": "health-fitness",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Modality Text",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Crest",
+        "ElevenLabs",
+        "Olive Garden",
+        "RITZ Crackers",
+        "Simplilearn"
+      ],
+      "trendId": "modality-text",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Model Context Protocol",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Atlassian",
+        "Pepsi",
+        "RITZ Crackers",
+        "Simplilearn",
+        "Wall Street Quants"
+      ],
+      "trendId": "model-context-protocol",
+      "category": "AI/ML",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Qwen3 5",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Augment.org",
+        "Pepsi",
+        "RITZ Crackers",
+        "United Way",
+        "Wall Street Quants"
+      ],
+      "trendId": "qwen3-5",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
       "keyword": "Safetensors",
       "cpc": 0.0,
       "searchVolume": 0,
@@ -100,6 +280,161 @@
       "trendId": "safetensors",
       "scrapedAt": "2026-03-16T22:20:28.514415Z",
       "category": "Tech"
+    },
+    {
+      "keyword": "TypeScript",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "Moveworks",
+        "Simplilearn",
+        "UC Berkeley",
+        "Wall Street Quants"
+      ],
+      "trendId": "typescript",
+      "category": "developer-tools",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Vibecoding",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Bitdefender",
+        "HubSpot",
+        "Moveworks",
+        "Solidigm",
+        "Wall Street Quants"
+      ],
+      "trendId": "vibecoding",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Video Generation",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "HIGH",
+      "adDensity": 5,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Artlist",
+        "Envato",
+        "Moveworks",
+        "Wall Street Quants",
+        "Wispr Flow"
+      ],
+      "trendId": "video-generation",
+      "category": "consumer-tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "COM Markdown",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 4,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "HubSpot",
+        "Moveworks",
+        "Simplilearn"
+      ],
+      "trendId": "com-markdown",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Mcp-server",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 4,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "HubSpot",
+        "Ideals Virtual Data Room",
+        "Moveworks",
+        "Solidigm"
+      ],
+      "trendId": "mcp-server",
+      "category": "infrastructure-cloud",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Meshroom Node",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 4,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Esma Artistique",
+        "Olive Garden",
+        "RITZ Crackers",
+        "Simplilearn"
+      ],
+      "trendId": "meshroom-node",
+      "category": "developer-tools",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Nemotron H",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 4,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Felix & Friends",
+        "G-SHOCK",
+        "Moveworks",
+        "Wall Street Quants"
+      ],
+      "trendId": "nemotron-h",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Transformers",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 4,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Crest",
+        "Nintendo of America",
+        "RITZ Crackers",
+        "Walt Disney World"
+      ],
+      "trendId": "transformers",
+      "category": "AI/ML",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
     },
     {
       "keyword": "Webdev",
@@ -121,6 +456,60 @@
       "category": "Tech"
     },
     {
+      "keyword": "Workflow DevKit",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 4,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Adobe Photoshop",
+        "Moveworks",
+        "RITZ Crackers",
+        "monday.com"
+      ],
+      "trendId": "workflow-devkit",
+      "category": "enterprise-saas",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Https Cloud",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 3,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Crest",
+        "Infinitely Virtual",
+        "RITZ Crackers"
+      ],
+      "trendId": "https-cloud",
+      "category": "infrastructure-cloud",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "Academy Awards",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 2,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Crest",
+        "RITZ Crackers"
+      ],
+      "trendId": "academy-awards",
+      "category": "culture-entertainment",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
       "keyword": "Gradio",
       "cpc": 0.0,
       "searchVolume": 0,
@@ -138,6 +527,40 @@
       "category": "Tech"
     },
     {
+      "keyword": "React",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 2,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Pepsi",
+        "RITZ Crackers"
+      ],
+      "trendId": "react",
+      "category": "Tech",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
+      "keyword": "World Baseball Classic",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "MEDIUM",
+      "adDensity": 2,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "Crest",
+        "Disney+"
+      ],
+      "trendId": "world-baseball-classic",
+      "category": "News",
+      "scrapedAt": "2026-03-16T23:22:59.345865Z"
+    },
+    {
       "keyword": "Iran War",
       "cpc": 0.0,
       "searchVolume": 0,
@@ -153,6 +576,17 @@
     }
   ],
   "topAdvertisers": [
+    {
+      "name": "RITZ Crackers",
+      "platform": "google_keyword_planner",
+      "adCount": 6,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
     {
       "name": "Moveworks",
       "platform": "google_keyword_planner",
@@ -176,6 +610,17 @@
       ]
     },
     {
+      "name": "Crest",
+      "platform": "google_keyword_planner",
+      "adCount": 3,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
       "name": "Simplilearn",
       "platform": "google_keyword_planner",
       "adCount": 3,
@@ -187,7 +632,51 @@
       ]
     },
     {
+      "name": "Adobe Photoshop",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
       "name": "Excelsior University",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "HubSpot",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Olive Garden",
+      "platform": "google_keyword_planner",
+      "adCount": 2,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Pepsi",
       "platform": "google_keyword_planner",
       "adCount": 2,
       "adFormats": [
@@ -220,7 +709,40 @@
       ]
     },
     {
-      "name": "Adobe Photoshop",
+      "name": "Artlist",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Atlassian",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Audi",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Augment.org",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -232,6 +754,17 @@
     },
     {
       "name": "Auth0",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Bitdefender",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -275,7 +808,7 @@
       ]
     },
     {
-      "name": "Glean",
+      "name": "Creative Planning",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -286,7 +819,7 @@
       ]
     },
     {
-      "name": "Infiniti",
+      "name": "Disney+",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -297,7 +830,7 @@
       ]
     },
     {
-      "name": "Lenovo",
+      "name": "ELLIPAL",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -308,7 +841,7 @@
       ]
     },
     {
-      "name": "MyIQ",
+      "name": "ElevenLabs",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -319,7 +852,7 @@
       ]
     },
     {
-      "name": "Snowflake",
+      "name": "Envato",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -330,7 +863,7 @@
       ]
     },
     {
-      "name": "monday.com",
+      "name": "Esma Artistique",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -341,7 +874,29 @@
       ]
     },
     {
-      "name": "nexos.ai",
+      "name": "FOREX.com",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Factor",
+      "platform": "google_keyword_planner",
+      "adCount": 1,
+      "adFormats": [
+        "video"
+      ],
+      "regions": [
+        "US"
+      ]
+    },
+    {
+      "name": "Felix & Friends",
       "platform": "google_keyword_planner",
       "adCount": 1,
       "adFormats": [
@@ -355,9 +910,9 @@
   "platformSummary": [
     {
       "platform": "google_keyword_planner",
-      "adCount": 8,
+      "adCount": 32,
       "keywordCount": 8,
-      "advertiserCount": 18
+      "advertiserCount": 22
     }
   ]
 }

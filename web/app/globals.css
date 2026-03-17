@@ -5352,6 +5352,23 @@ dialog::backdrop {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+.auth-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--type-size-sm);
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.auth-checkbox {
+  margin-top: 2px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .auth-submit-button {
   position: relative;
   width: 100%;
@@ -8145,6 +8162,40 @@ dialog::backdrop {
 
 .adi-gate-cta:hover {
   opacity: 0.85;
+}
+
+/* ── filters ── */
+
+.adi-filter-input,
+.adi-filter-select {
+  margin-left: auto;
+  font-size: var(--type-size-xs);
+  font-family: inherit;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-inset);
+  color: var(--copy);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.adi-filter-input:focus,
+.adi-filter-select:focus {
+  border-color: var(--accent);
+}
+
+.adi-filter-input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.adi-filter-input {
+  width: 160px;
+}
+
+.adi-filter-select {
+  cursor: pointer;
 }
 
 /* ── animation ── */
