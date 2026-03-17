@@ -140,7 +140,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("[stripe-webhook] error processing event:", event.type, err);
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
