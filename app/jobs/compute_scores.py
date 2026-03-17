@@ -185,7 +185,7 @@ def run_ad_intelligence_pipeline(settings: Settings) -> None:
     cutoff = now - timedelta(days=30)
     existing_json = PublishedPayloadRepository(connection).get_payload("ad-intelligence.json")
     if existing_json is not None:
-        existing_payload = _json.loads(existing_json)
+        existing_payload = existing_json if isinstance(existing_json, dict) else _json.loads(existing_json)
         for kw in existing_payload.get("topKeywords", []):
             scraped_at = kw.get("scrapedAt", "")
             if scraped_at:
@@ -254,7 +254,7 @@ def run_ad_intelligence_pipeline(settings: Settings) -> None:
     payload_repo = PublishedPayloadRepository(connection)
     existing_json = payload_repo.get_payload("ad-intelligence.json")
     if existing_json is not None:
-        existing_dict = json.loads(existing_json)
+        existing_dict = existing_json if isinstance(existing_json, dict) else json.loads(existing_json)
         merged = merge_ad_intelligence_payloads(existing_dict, new_payload_dict)
     else:
         merged = new_payload_dict
