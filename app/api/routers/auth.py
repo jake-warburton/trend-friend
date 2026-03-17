@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
@@ -217,11 +219,12 @@ def _user_response(user: User) -> dict:
 
 
 def _set_session_cookie(response: Response, token: str) -> None:
+    is_production = os.getenv("SIGNAL_EYE_ENVIRONMENT", "production") != "development"
     response.set_cookie(
         SESSION_COOKIE_NAME,
         token,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=is_production,
         path="/",
     )

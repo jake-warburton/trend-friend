@@ -24,10 +24,15 @@ _CACHE_ROUTES: dict[str, float] = {
 def create_app() -> FastAPI:
     """Build and configure the FastAPI application."""
 
+    enable_docs = os.getenv("SIGNAL_EYE_ENABLE_DOCS", "").lower() == "true"
+
     application = FastAPI(
         title="Signal Eye API",
         description="REST API for the Signal Eye trend intelligence platform.",
         version="1.0.0",
+        docs_url="/docs" if enable_docs else None,
+        redoc_url="/redoc" if enable_docs else None,
+        openapi_url="/openapi.json" if enable_docs else None,
     )
 
     allowed_origins = os.getenv(
@@ -39,8 +44,8 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Trend-Friend-Refresh-Secret"],
     )
 
     rate_limit_enabled = os.getenv("SIGNAL_EYE_RATE_LIMIT", "true").lower() == "true"
