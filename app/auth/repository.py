@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
 from app.data.connection import DatabaseConnection
@@ -184,15 +184,19 @@ class UserRepository:
         return self._session_from_row(row)
 
     def get_session_by_hash(self, token_hash: str) -> UserSession | None:
-        """Return an active session by token hash."""
+        """Return an active session by token hash.
 
+        Rejects sessions older than 30 days.
+        """
+
+        max_age_cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
         row = self.connection.execute(
             """
             SELECT id, user_id, token_hash, created_at, last_used_at, revoked
             FROM user_sessions
-            WHERE token_hash = ? AND revoked = 0
+            WHERE token_hash = ? AND revoked = 0 AND created_at > ?
             """,
-            (token_hash,),
+            (token_hash, max_age_cutoff),
         ).fetchone()
         if row is None:
             return None

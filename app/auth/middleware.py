@@ -129,7 +129,7 @@ def require_auth(user: Optional[User] = Depends(get_current_user)) -> User:
             username="anonymous",
             password_hash="",
             display_name="Anonymous",
-            is_admin=True,
+            is_admin=False,
             created_at=__import__("datetime").datetime.now(__import__("datetime").timezone.utc),
         )
     if user is None:
@@ -153,11 +153,11 @@ def _synthetic_admin_profile() -> UserProfile:
         id="anonymous",
         display_name="Anonymous",
         username=None,
-        is_admin=True,
-        account_tier="pro",
+        is_admin=False,
+        account_tier="free",
         stripe_customer_id=None,
         stripe_subscription_id=None,
-        subscription_status="active",
+        subscription_status="none",
         current_period_end=None,
         created_at=now,
         updated_at=now,
