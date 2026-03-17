@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendDetails, loadTrendExplorer } from "@/lib/trends";
 import { findCategoryGroup, slugifyBrowseValue } from "@/lib/trend-browse";
 import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
 
@@ -11,6 +11,17 @@ type CategoryPageProps = {
 };
 
 export const revalidate = 172800;
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  try {
+    const explorer = await loadTrendExplorer();
+    const categories = new Set(explorer.trends.map((t) => t.category).filter(Boolean));
+    return Array.from(categories).map((category) => ({ slug: slugifyBrowseValue(category) }));
+  } catch {
+    return [];
+  }
+}
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 

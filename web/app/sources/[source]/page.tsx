@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
 import { classifySourceYield, describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { filterAndSortSourceRuns, normalizeSourceRunFilter, normalizeSourceRunSort } from "@/lib/source-runs";
-import { loadSourceSummary } from "@/lib/trends";
+import { loadSourceSummary, loadTrendExplorer } from "@/lib/trends";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 
@@ -20,6 +20,17 @@ type SourcePageProps = {
 };
 
 export const revalidate = 172800;
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  try {
+    const explorer = await loadTrendExplorer();
+    const sources = new Set(explorer.trends.flatMap((t) => t.sources).filter(Boolean));
+    return Array.from(sources).map((source) => ({ source }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: SourcePageProps): Promise<Metadata> {
   const { source } = await params;

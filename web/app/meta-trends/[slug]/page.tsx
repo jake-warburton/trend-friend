@@ -2,12 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendDetails, loadTrendExplorer } from "@/lib/trends";
 import { findMetaTrendGroup, slugifyBrowseValue } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
 
 export const revalidate = 172800;
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  try {
+    const explorer = await loadTrendExplorer();
+    const metaTrends = new Set(explorer.trends.map((t) => t.metaTrend).filter(Boolean));
+    return Array.from(metaTrends).map((mt) => ({ slug: slugifyBrowseValue(mt) }));
+  } catch {
+    return [];
+  }
+}
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 

@@ -6,7 +6,7 @@ import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/ty
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink, normalizeEvidenceUrl } from "@/lib/evidence-links";
 import { slugifyBrowseValue } from "@/lib/trend-browse";
-import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
+import { loadSourceSummaries, loadTrendDetail, loadTrendExplorer, loadTrendHistory } from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
 import {
@@ -32,6 +32,15 @@ type TrendDetailPageProps = {
 };
 
 export const revalidate = 172800;
+
+export async function generateStaticParams() {
+  try {
+    const explorer = await loadTrendExplorer();
+    return explorer.trends.map((trend) => ({ slug: trend.id }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: TrendDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
