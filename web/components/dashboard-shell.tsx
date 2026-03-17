@@ -820,7 +820,13 @@ export function DashboardShell({
   );
 
   const prevFilteredRef = useRef(filteredTrends);
+  const filterResetMountRef = useRef(true);
   useEffect(() => {
+    if (filterResetMountRef.current) {
+      filterResetMountRef.current = false;
+      prevFilteredRef.current = filteredTrends;
+      return;
+    }
     if (prevFilteredRef.current !== filteredTrends) {
       prevFilteredRef.current = filteredTrends;
       setCurrentPage(1);
