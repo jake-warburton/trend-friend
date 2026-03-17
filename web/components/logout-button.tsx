@@ -1,15 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/components/auth-provider";
 
-export function LogoutButton() {
-  const { user, signOut } = useAuth();
-  const router = useRouter();
+type LogoutButtonInnerProps = {
+  user: User;
+  signOut: () => Promise<void>;
+};
 
-  if (!user) {
-    return <p className="detail-copy">You are not signed in.</p>;
-  }
+function LogoutButtonInner({ user, signOut }: LogoutButtonInnerProps) {
+  const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
@@ -26,4 +27,14 @@ export function LogoutButton() {
       </button>
     </div>
   );
+}
+
+export function LogoutButton() {
+  const { user, signOut } = useAuth();
+
+  if (!user) {
+    return <p className="detail-copy">You are not signed in.</p>;
+  }
+
+  return <LogoutButtonInner user={user} signOut={signOut} />;
 }

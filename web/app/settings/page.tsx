@@ -6,6 +6,7 @@ import { NewsletterToggle } from "@/components/newsletter-toggle";
 import { SubscriptionManager } from "@/components/subscription-manager";
 import { SettingsPreferences } from "@/components/settings-preferences";
 import {
+  buildEnrichmentProviderStatuses,
   LIGHT_THEME,
   readThemePreference,
   THEME_COOKIE,
@@ -20,6 +21,8 @@ export default async function SettingsPage() {
   } catch {
     selectedTheme = LIGHT_THEME;
   }
+
+  const enrichmentStatuses = buildEnrichmentProviderStatuses(process.env);
 
   return (
     <main className="detail-page">
@@ -45,7 +48,7 @@ export default async function SettingsPage() {
               </svg>
             </div>
             <div>
-              <h2 className="settings-section-title">Appearance</h2>
+              <h2 className="settings-section-title">UI preferences</h2>
               <p className="settings-section-desc">Choose the palette used across the app.</p>
             </div>
           </div>
@@ -54,6 +57,34 @@ export default async function SettingsPage() {
               initialTheme={selectedTheme}
               themes={THEME_OPTIONS}
             />
+          </div>
+        </article>
+
+        <article className="settings-section">
+          <div className="settings-section-header">
+            <div className="settings-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="settings-section-title">Enrichment status</h2>
+              <p className="settings-section-desc">External data providers used to enrich trend signals.</p>
+            </div>
+          </div>
+          <div className="settings-section-body">
+            <ul className="settings-enrichment-list">
+              {enrichmentStatuses.map((provider) => (
+                <li key={provider.key} className="settings-enrichment-item">
+                  <span className={`settings-enrichment-dot ${provider.configured ? "settings-enrichment-dot-ok" : "settings-enrichment-dot-missing"}`} />
+                  <div>
+                    <strong className="settings-enrichment-label">{provider.label}</strong>
+                    <p className="settings-enrichment-detail">{provider.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </article>
 
