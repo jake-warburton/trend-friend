@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
 import { BreakingFeedSection } from "@/components/explorer/breaking-feed-section";
@@ -77,12 +77,15 @@ export function SocialIntelligenceDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { isPro, loading: profileLoading } = useProfile();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isScreenshot = searchParams.get("screenshot") === "1";
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[] | null>(null);
   const [breakingFeed, setBreakingFeed] = useState<BreakingFeed | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isScreenshot) { setLoading(false); return; }
     if (authLoading || profileLoading) return;
     if (!user || !isPro) {
       router.replace(user ? "/pricing" : "/login?next=/social-intelligence");
@@ -99,19 +102,11 @@ export function SocialIntelligenceDashboard() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isPro, profileLoading, authLoading, user, router]);
+  }, [isPro, profileLoading, authLoading, user, router, isScreenshot]);
 
+  if (isScreenshot) return <ProGate />;
   if (authLoading || profileLoading || loading) return <Skeleton />;
   if (!isPro) return <ProGate />;
-
-  const locationCounts: Record<string, number> = {};
-  if (trendingTopics) {
-    for (const t of trendingTopics) {
-      if (t.category === "place" && t.location !== "Worldwide") {
-        locationCounts[t.location] = (locationCounts[t.location] ?? 0) + 1;
-      }
-    }
-  }
 
   return (
     <div className="social-intel-wrap">
@@ -120,7 +115,7 @@ export function SocialIntelligenceDashboard() {
         <p>Real-time trending topics and breaking news from curated X accounts.</p>
       </div>
       <SocialGeoMap
-        locationCounts={locationCounts}
+        trends={trendingTopics ?? []}
         selectedLocation={selectedLocation}
         onLocationChange={setSelectedLocation}
       />
