@@ -5,17 +5,12 @@ import { getCurrentUser } from "@/lib/server/auth-service";
 import { buildEnrichmentProviderStatuses } from "@/lib/settings";
 import { loadBreakingFeed, loadDashboardOverview } from "@/lib/trends";
 import { FreshnessCards } from "@/components/freshness-cards";
-import type { AdIntelligenceResponse } from "@/lib/types";
+import { readAdIntelligence } from "@/lib/trends";
 
 async function loadAdIntelligenceTimestamp(): Promise<string | null> {
   try {
-    const res = await fetch(
-      `${process.env.SIGNAL_EYE_FRONTEND_URL ?? "http://localhost:3000"}/api/ad-intelligence`,
-      { next: { revalidate: 0 } },
-    );
-    if (!res.ok) return null;
-    const data: AdIntelligenceResponse = await res.json();
-    return data.generatedAt ?? null;
+    const data = await readAdIntelligence();
+    return data?.generatedAt ?? null;
   } catch {
     return null;
   }
