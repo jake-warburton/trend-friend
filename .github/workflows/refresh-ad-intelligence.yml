@@ -20,7 +20,8 @@ jobs:
       SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
       SIGNAL_EYE_ENABLE_AD_INTELLIGENCE_SOURCES: "true"
       SIGNAL_EYE_WEB_DATA_PATH: web/data
-      SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+      # SERPAPI_KEY temporarily disabled while pipeline bugs are fixed
+      # SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
       GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
       GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
       GOOGLE_ADS_DEVELOPER_TOKEN: ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
