@@ -38,7 +38,7 @@ def share_watchlist(
 
     is_public = body.get("public", False)
     expires_at = _parse_expires_at(body.get("expiresAt"))
-    token = secrets.token_urlsafe(16)
+    token = secrets.token_urlsafe(32)
     share = repo.create_share(
         watchlist_id=watchlist_id,
         share_token=token,
@@ -163,7 +163,7 @@ def rotate_watchlist_share(
     share = repo.rotate_share_token(
         share_id,
         user.id if auth_enabled() else None,
-        secrets.token_urlsafe(16),
+        secrets.token_urlsafe(32),
     )
     if share is None:
         raise HTTPException(status_code=404, detail="Share link not found")

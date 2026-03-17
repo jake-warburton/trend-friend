@@ -301,7 +301,7 @@ def share_payload(
 
     share = watchlist_repository.create_share(
         watchlist_id=watchlist_id,
-        share_token=secrets.token_urlsafe(16),
+        share_token=secrets.token_urlsafe(32),
         is_public=public,
         show_creator=show_creator,
         expires_at=datetime.fromisoformat(expires_at.replace("Z", "+00:00")) if expires_at else None,
@@ -434,7 +434,7 @@ def rotate_share_payload(
     share = watchlist_repository.rotate_share_token(
         share_id,
         owner_user_id=None,
-        next_share_token=secrets.token_urlsafe(16),
+        next_share_token=secrets.token_urlsafe(32),
     )
     if share is None:
         return {"error": "Share link not found"}
