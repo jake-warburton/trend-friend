@@ -21,7 +21,7 @@ export async function handleSharedWatchlistGet(
     const payload = await dependencies.getSharedWatchlist(token);
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Shared watchlist unavailable";
+    const message = "Shared watchlist unavailable";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

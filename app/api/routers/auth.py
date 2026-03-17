@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
 from app.auth.middleware import SESSION_COOKIE_NAME, get_current_profile, require_admin, require_auth
-from app.auth.passwords import hash_password, needs_rehash, verify_password
+from app.auth.passwords import hash_password, verify_password
 from app.auth.repository import UserRepository
 from app.auth.tokens import generate_api_key, generate_session_token, hash_session_token
 from app.data.connection import DatabaseConnection
@@ -67,11 +67,14 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
 
     repo = UserRepository(db)
     user = repo.get_user_by_username(username)
-    if user is None or not verify_password(password, user.password_hash):
+    if user is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Transparently upgrade legacy password hashes on successful login
-    if needs_rehash(user.password_hash):
+    is_valid, needs_rehash = verify_password(password, user.password_hash)
+    if not is_valid:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if needs_rehash:
         repo.update_password_hash(user.id, hash_password(password))
 
     token = generate_session_token()
@@ -222,12 +225,13 @@ def _user_response(user: User) -> dict:
 
 
 def _set_session_cookie(response: Response, token: str) -> None:
+    is_production = os.getenv("SIGNAL_EYE_ENVIRONMENT", "production") != "development"
     response.set_cookie(
         SESSION_COOKIE_NAME,
         token,
         httponly=True,
         samesite="lax",
-        secure=os.getenv("SIGNAL_EYE_SECURE_COOKIES", "false").lower() == "true",
+        secure=is_production,
         max_age=7 * 24 * 60 * 60,
         path="/",
     )

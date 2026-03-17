@@ -27,6 +27,7 @@ from app.exports.files import (
     TREND_EXPLORER_V2_FILENAME,
     TREND_HISTORY_FILENAME,
     write_export_payloads,
+    write_json,
 )
 from app.exports.serializers import (
     build_ad_intelligence_payload,
@@ -69,6 +70,10 @@ def export_web_data_payloads(settings: Settings) -> None:
     detail_records = repository.list_trend_detail_records(limit=settings.ranking_limit)
     detail_records = _enrich_with_wikipedia(detail_records)
 
+    # Load breaking feed for cross-referencing
+    from app.exports.serializers import _build_breaking_index
+    breaking_index = _build_breaking_index(connection)
+
     latest_payload = build_latest_trends_payload(
         generated_at=latest_captured_at or generated_at,
         scores=latest_scores,
@@ -77,10 +82,12 @@ def export_web_data_payloads(settings: Settings) -> None:
     explorer_payload = build_trend_explorer_payload(
         generated_at=latest_captured_at or generated_at,
         trends=explorer_records,
+        breaking_index=breaking_index,
     )
     detail_payload = build_trend_detail_index_payload(
         generated_at=latest_captured_at or generated_at,
         trends=detail_records,
+        breaking_index=breaking_index,
     )
     overview_payload = build_dashboard_overview_payload(
         generated_at=latest_captured_at or generated_at,
@@ -104,17 +111,23 @@ def export_web_data_payloads(settings: Settings) -> None:
             for snapshot in snapshots
         ],
     )
-    ad_intelligence_payload = build_ad_intelligence_payload(
-        generated_at=latest_captured_at or generated_at,
-        signals=signals,
-    )
+    # Prefer pre-built ad intelligence payload (built from RawSourceItem with
+    # full metadata in the ad pipeline) over the lossy signal-based fallback.
+    cached_ad_json = published_payload_repository.get_payload("ad-intelligence.json")
+    if cached_ad_json is not None:
+        ad_intelligence_payload_dict = json.loads(cached_ad_json)
+    else:
+        ad_intelligence_payload_dict = build_ad_intelligence_payload(
+            generated_at=latest_captured_at or generated_at,
+            signals=signals,
+        ).to_dict()
+
     latest_payload_dict = latest_payload.to_dict()
     history_payload_dict = history_payload.to_dict()
     overview_payload_dict = overview_payload.to_dict()
     explorer_payload_dict = explorer_payload.to_dict()
     detail_payload_dict = detail_payload.to_dict()
     source_summary_payload_dict = source_summary_payload.to_dict()
-    ad_intelligence_payload_dict = ad_intelligence_payload.to_dict()
 
     write_export_payloads(
         settings.web_data_path,
@@ -124,8 +137,11 @@ def export_web_data_payloads(settings: Settings) -> None:
         explorer_payload,
         detail_payload,
         source_summary_payload,
-        ad_intelligence_payload,
+        # Pass None — we write ad intelligence JSON directly below
     )
+    # Write ad intelligence JSON file separately (may be cached or freshly built)
+    write_json(settings.web_data_path / AD_INTELLIGENCE_FILENAME, ad_intelligence_payload_dict)
+
     published_payload_repository.replace_payloads(
         [
             (LATEST_TRENDS_FILENAME, latest_payload_dict["generatedAt"], json.dumps(latest_payload_dict)),

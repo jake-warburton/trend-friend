@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { requirePro } from "@/lib/server/require-pro";
 import {
   confidenceBucketForTrend,
   trendMatchesAudience,
@@ -226,6 +227,8 @@ export async function handleExportGet(
 }
 
 export async function GET(request: Request = new Request("http://localhost/api/export")) {
+  const check = await requirePro();
+  if (!check.authorized) return check.response;
   return handleExportGet(request);
 }
 

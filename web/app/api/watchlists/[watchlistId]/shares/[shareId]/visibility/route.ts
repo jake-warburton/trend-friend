@@ -33,7 +33,7 @@ export async function handleShareVisibilityPost(
     );
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Share visibility update failed";
+    const message = "Share visibility update failed";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

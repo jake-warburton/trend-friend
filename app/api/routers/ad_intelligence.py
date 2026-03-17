@@ -34,6 +34,7 @@ def get_ad_intelligence(
     if cached is not None:
         return json.loads(cached)
 
+    # Fallback: build from signals (lossy — no metadata)
     signal_repo = SignalRepository(db)
     signals = signal_repo.list_signals()
     payload = build_ad_intelligence_payload(

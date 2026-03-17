@@ -1,0 +1,221 @@
+{
+  "generatedAt": "2026-03-16T22:07:43.952003Z",
+  "source": "google_search",
+  "description": "Google Search landscape data (organic results, related searches). Not ad data \u2014 collected via SerpApi Google Search engine.",
+  "topics": [
+    {
+      "keyword": "Library Datasets",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 20,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "library-datasets",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "AI Productivity Suite Enhanced",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 18,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "ai-productivity-suite-enhanced",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "AI",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "TechCorp"
+      ],
+      "trendId": "ai",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "AI Agents",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "ai-agents",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "Iran War",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "iran-war",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "Large Language Models",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "large-language-models",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "Safetensors",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "safetensors",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "cloud computing",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "cloud-computing",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "cybersecurity",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "CloudSecure"
+      ],
+      "trendId": "cybersecurity",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "fintech",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "fintech",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "machine learning",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 16,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "machine-learning",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "SaaS",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 14,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [
+        "DataFlow"
+      ],
+      "trendId": "saas",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "Webdev",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 14,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "webdev",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    },
+    {
+      "keyword": "automation",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 14,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "automation",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "blockchain",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 14,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "blockchain",
+      "scrapedAt": "2026-03-16T22:02:09.383543+00:00"
+    },
+    {
+      "keyword": "Gradio",
+      "cpc": 0.0,
+      "searchVolume": 0,
+      "competitionLevel": "LOW",
+      "adDensity": 12,
+      "platforms": [
+        "google_keyword_planner"
+      ],
+      "topAdvertisers": [],
+      "trendId": "gradio",
+      "scrapedAt": "2026-03-16T22:07:43.952003Z"
+    }
+  ]
+}

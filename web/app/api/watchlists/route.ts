@@ -19,7 +19,7 @@ export async function handleWatchlistsGet(
     });
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Watchlist request failed";
+    const message = "Watchlist request failed";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });
@@ -41,7 +41,7 @@ export async function handleWatchlistsPost(
     });
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Watchlist request failed";
+    const message = "Watchlist request failed";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

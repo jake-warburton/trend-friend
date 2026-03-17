@@ -29,7 +29,6 @@ type PlatformIntelligenceProps = {
   marketFootprint: TrendMarketMetric[];
   evidenceItems: TrendEvidenceItem[];
   sourceInsights: SourceContributionInsight[];
-  showEstimatedMetrics: boolean;
 };
 
 const SOURCE_FAMILIES: Record<string, string> = {
@@ -53,6 +52,7 @@ const SOURCE_FAMILIES: Record<string, string> = {
   producthunt: "launch",
   chrome_web_store: "launch",
   apple_charts: "launch",
+  google_play: "launch",
   polymarket: "market",
   coingecko: "market",
   tiktok: "social",
@@ -82,6 +82,7 @@ const SIGNAL_TYPES: Record<string, string> = {
   producthunt: "social",
   chrome_web_store: "social",
   apple_charts: "social",
+  google_play: "social",
   polymarket: "search",
   coingecko: "search",
   tiktok: "social",
@@ -138,6 +139,7 @@ function formatSourceLabel(source: string): string {
     producthunt: "Product Hunt",
     chrome_web_store: "Chrome Web Store",
     apple_charts: "App Store",
+    google_play: "Google Play",
     polymarket: "Polymarket",
     coingecko: "CoinGecko",
     tiktok: "TikTok",
@@ -154,7 +156,7 @@ function normalizeEvidenceUrl(url: string): string {
 }
 
 function buildPlatformDossiers(props: PlatformIntelligenceProps): PlatformDossier[] {
-  const { sourceContributions, sourceBreakdown, marketFootprint, evidenceItems, sourceInsights, showEstimatedMetrics } = props;
+  const { sourceContributions, sourceBreakdown, marketFootprint, evidenceItems, sourceInsights } = props;
 
   // Collect all unique sources
   const allSources = new Set<string>();
@@ -171,7 +173,7 @@ function buildPlatformDossiers(props: PlatformIntelligenceProps): PlatformDossie
     const insight = sourceInsights.find((i) => i.source === source) ?? null;
     const metrics = marketFootprint.filter((m) => {
       if (m.source !== source) return false;
-      if (!showEstimatedMetrics && m.isEstimated) return false;
+      if (m.isEstimated) return false;
       return true;
     });
     const evidence = evidenceItems.filter((e) => e.source === source);
@@ -271,24 +273,89 @@ function PlatformCard({ dossier, rank }: { dossier: PlatformDossier; rank: numbe
           {/* Market metrics */}
           {dossier.metrics.length > 0 && (
             <div className="pi-metrics">
-              {dossier.metrics.map((metric) => (
-                <div className="pi-metric" key={`${metric.source}-${metric.metricKey}`}>
-                  <div className="pi-metric-value">
-                    {metric.provenanceUrl ? (
-                      <a href={metric.provenanceUrl} target="_blank" rel="noreferrer" className="pi-metric-link">
-                        {metric.valueDisplay}
-                      </a>
-                    ) : (
-                      metric.valueDisplay
-                    )}
+              {dossier.metrics.map((metric) => {
+                // Skip description metrics in card view
+                if (metric.metricKey.endsWith("_description")) return null;
+
+                // Icon metrics — render as image
+                if (metric.metricKey.endsWith("_icon_url") && metric.valueDisplay) {
+                  return (
+                    <div className="pi-metric pi-metric-icon" key={`${metric.source}-${metric.metricKey}`}>
+                      <img
+                        src={metric.valueDisplay}
+                        alt={metric.label}
+                        width={48}
+                        height={48}
+                        style={{ borderRadius: 10 }}
+                      />
+                      <div className="pi-metric-label">{metric.label}</div>
+                    </div>
+                  );
+                }
+
+                // Screenshot metrics — render as thumbnail gallery
+                if (metric.metricKey.endsWith("_screenshots") && metric.valueDisplay) {
+                  let urls: string[] = [];
+                  try { urls = JSON.parse(metric.valueDisplay); } catch {}
+                  if (urls.length > 0) {
+                    return (
+                      <div className="pi-metric pi-metric-screenshots" key={`${metric.source}-${metric.metricKey}`}>
+                        <div className="pi-metric-label">{metric.label} ({urls.length})</div>
+                        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingTop: 4 }}>
+                          {urls.slice(0, 5).map((url, i) => (
+                            <img
+                              key={i}
+                              src={url}
+                              alt={`Screenshot ${i + 1}`}
+                              style={{ height: 80, borderRadius: 6, flexShrink: 0 }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+
+                // Boolean badge metrics (ads, IAP)
+                if (metric.unit === "boolean") {
+                  return (
+                    <div className="pi-metric" key={`${metric.source}-${metric.metricKey}`}>
+                      <div className="pi-metric-value">
+                        <span style={{
+                          display: "inline-block",
+                          padding: "2px 8px",
+                          borderRadius: 12,
+                          fontSize: "0.8em",
+                          backgroundColor: metric.valueNumeric > 0 ? "var(--badge-warn, #f59e0b)" : "var(--badge-ok, #10b981)",
+                          color: "#fff",
+                        }}>
+                          {metric.valueDisplay}
+                        </span>
+                      </div>
+                      <div className="pi-metric-label">{metric.label}</div>
+                    </div>
+                  );
+                }
+
+                // Default generic rendering
+                return (
+                  <div className="pi-metric" key={`${metric.source}-${metric.metricKey}`}>
+                    <div className="pi-metric-value">
+                      {metric.provenanceUrl ? (
+                        <a href={metric.provenanceUrl} target="_blank" rel="noreferrer" className="pi-metric-link">
+                          {metric.valueDisplay}
+                        </a>
+                      ) : (
+                        metric.valueDisplay
+                      )}
+                    </div>
+                    <div className="pi-metric-label">{metric.label}</div>
+                    <div className="pi-metric-meta">
+                      {metric.period}
+                    </div>
                   </div>
-                  <div className="pi-metric-label">{metric.label}</div>
-                  <div className="pi-metric-meta">
-                    {metric.period}
-                    {metric.isEstimated && <span className="pi-estimated-tag">est.</span>}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

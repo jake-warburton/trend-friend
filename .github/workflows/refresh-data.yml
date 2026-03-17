@@ -59,3 +59,10 @@ jobs:
           python3 scripts/check_supabase.py
           python3 scripts/run_ingestion.py
           python3 scripts/export_web_data.py
+
+      - name: Invalidate Vercel cache
+        if: success()
+        run: |
+          curl -s -X POST "https://www.signaleye.live/api/revalidate" -H "x-revalidate-secret: ${REVALIDATE_SECRET}" || true
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}

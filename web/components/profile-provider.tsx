@@ -33,17 +33,17 @@ export function useProfile() {
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const [fetchedForUserId, setFetchedForUserId] = useState<string | null>(null);
   const [accountTier, setAccountTier] = useState<AccountTier>("free");
   const [isAdmin, setIsAdmin] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState("none");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
+      setFetchedForUserId(null);
       setAccountTier("free");
       setIsAdmin(false);
       setSubscriptionStatus("none");
-      setLoading(false);
       return;
     }
 
@@ -59,9 +59,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           setAccountTier(data.account_tier === "pro" ? "pro" : "free");
           setSubscriptionStatus(data.subscription_status ?? "none");
         }
-        setLoading(false);
+        setFetchedForUserId(user.id);
       });
   }, [user]);
+
+  // Derived synchronously: loading is true whenever the profile hasn't been
+  // fetched for the current user yet. This avoids the one-frame gap where
+  // useEffect hasn't fired but the user has already changed.
+  const loading = user ? fetchedForUserId !== user.id : false;
 
   const isPro =
     isAdmin ||

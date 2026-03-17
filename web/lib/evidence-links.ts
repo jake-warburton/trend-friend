@@ -78,6 +78,7 @@ function getSourcePriority(source: string): number {
 }
 
 export function normalizeEvidenceUrl(url: string): string {
+  if (/^(javascript|data|vbscript):/i.test(url.trim())) return "#";
   if (/^https?:\/\//i.test(url)) return url;
   return `https://${url}`;
 }

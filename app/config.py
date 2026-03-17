@@ -34,6 +34,7 @@ class Settings:
     github_token: Optional[str]
     twitter_bearer_token: Optional[str]
     twitter_scrape_accounts: Optional[str]
+    twitter_cookies_json: Optional[str]
     youtube_api_key: Optional[str]
     google_search_metrics_url: Optional[str]
     google_search_metrics_token: Optional[str]
@@ -54,6 +55,7 @@ class Settings:
     tiktok_ads_client_key: Optional[str]
     tiktok_ads_client_secret: Optional[str]
     enable_ad_intelligence_sources: bool
+    enable_google_play_source: bool
 
 
 def load_settings() -> Settings:
@@ -83,6 +85,7 @@ def load_settings() -> Settings:
         github_token=os.getenv("GITHUB_TOKEN"),
         twitter_bearer_token=os.getenv("TWITTER_BEARER_TOKEN"),
         twitter_scrape_accounts=os.getenv("TWITTER_SCRAPE_ACCOUNTS"),
+        twitter_cookies_json=os.getenv("TWITTER_COOKIES_JSON"),
         youtube_api_key=os.getenv("YOUTUBE_API_KEY"),
         google_search_metrics_url=os.getenv("SIGNAL_EYE_GOOGLE_SEARCH_METRICS_URL"),
         google_search_metrics_token=os.getenv("SIGNAL_EYE_GOOGLE_SEARCH_METRICS_TOKEN"),
@@ -103,6 +106,7 @@ def load_settings() -> Settings:
         tiktok_ads_client_key=os.getenv("TIKTOK_ADS_CLIENT_KEY"),
         tiktok_ads_client_secret=os.getenv("TIKTOK_ADS_CLIENT_SECRET"),
         enable_ad_intelligence_sources=os.getenv("SIGNAL_EYE_ENABLE_AD_INTELLIGENCE_SOURCES", "false").lower() == "true",
+        enable_google_play_source=os.getenv("SIGNAL_EYE_ENABLE_GOOGLE_PLAY_SOURCE", "true").lower() == "true",
     )
 
 

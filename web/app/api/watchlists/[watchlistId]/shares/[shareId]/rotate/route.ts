@@ -31,7 +31,7 @@ export async function handleRotateSharePost(
     );
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Share rotation failed";
+    const message = "Share rotation failed";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

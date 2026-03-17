@@ -15,8 +15,21 @@ from app.exports.contracts import BreakingFeedPayload, BreakingItemPayload, Brea
 from app.exports.serializers import build_breaking_feed_payload
 from app.models import RawSourceItem
 from app.topics.extract import extract_candidate_topics_for_item
+from app.topics.display import fallback_display_name
 
 LOGGER = logging.getLogger(__name__)
+
+# Minimum topic quality: skip very short or generic-looking topics
+MIN_TOPIC_WORDS = 1
+MIN_TOPIC_LENGTH = 3
+
+# Words that produce garbage topics when they appear as the entire topic
+_GARBAGE_TOPICS = frozenset({
+    "temporarily", "announces", "announced", "expected", "reportedly",
+    "effective", "apparently", "previously", "currently", "immediately",
+    "according", "confirmed", "continues", "following", "including",
+    "remaining", "regarding", "resulting", "beginning", "described",
+})
 
 BREAKING_WINDOW_HOURS = 2
 BREAKING_FEED_KEY = "breaking-feed.json"
@@ -80,19 +93,22 @@ def build_breaking_items(
             age = (now - ts).total_seconds() / 60.0
             min_age = min(min_age, age)
 
+            raw_ts = tweet["timestamp"]
+            ts_str = raw_ts.isoformat() if hasattr(raw_ts, "isoformat") else str(raw_ts)
             tweet_payloads.append(BreakingTweetPayload(
                 account=handle,
                 text=tweet["text"],
                 tweet_id=tweet["tweet_id"],
-                timestamp=tweet["timestamp"],
+                timestamp=ts_str,
                 engagement=tweet["engagement"],
             ))
 
         account_count = len(accounts)
         score = compute_breaking_score(max_tier, total_engagement, min_age, account_count)
 
+        display_topic = fallback_display_name(topic)
         items.append(BreakingItemPayload(
-            topic=topic,
+            topic=display_topic,
             breaking_score=round(score, 2),
             corroborated=account_count >= 2,
             account_count=account_count,
@@ -145,6 +161,12 @@ def run_breaking_feed_pipeline(
             tweets_with_topics.append((tweet, topics))
 
     grouped = group_tweets_by_topic(tweets_with_topics)
+    # Filter out garbage topics before scoring
+    grouped = {
+        topic: tweets for topic, tweets in grouped.items()
+        if len(topic) >= MIN_TOPIC_LENGTH
+        and not all(word in _GARBAGE_TOPICS for word in topic.split())
+    }
     items = build_breaking_items(grouped, now)
     feed = build_breaking_feed_payload(now, items)
     feed_dict = feed.to_dict()

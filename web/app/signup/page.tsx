@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [newsletterOptIn, setNewsletterOptIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [confirmationSent, setConfirmationSent] = useState(false);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +26,14 @@ export default function SignupPage() {
     }
 
     const supabase = createSupabaseBrowserClient();
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: displayName || undefined },
+        data: {
+          full_name: displayName || undefined,
+          newsletter_opt_in: newsletterOptIn,
+        },
       },
     });
 
@@ -38,7 +43,25 @@ export default function SignupPage() {
       return;
     }
 
-    setConfirmationSent(true);
+    // If session returned, signup is complete — redirect
+    if (data.session) {
+      router.push("/explore");
+      return;
+    }
+
+    // No session — try signing in directly (handles case where confirmation is disabled
+    // but Supabase didn't return a session, or user already exists)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (!signInError) {
+      router.push("/explore");
+      return;
+    }
+
+    setError("Account created. Please check your email to confirm, then sign in.");
     setLoading(false);
   };
 
@@ -53,34 +76,6 @@ export default function SignupPage() {
       setError(authError.message);
     }
   };
-
-  if (confirmationSent) {
-    return (
-      <main className="auth-page">
-        <div className="auth-card">
-          <div className="auth-confirmation">
-            <div className="auth-confirmation-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 2L11 13" />
-                <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-              </svg>
-            </div>
-            <h2>Check your email</h2>
-            <p>
-              We&apos;ve sent a confirmation link to <strong>{email}</strong>.
-              Click the link to activate your account.
-            </p>
-            <Link className="auth-back-link" href="/login">
-              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 12L6 8L10 4" />
-              </svg>
-              Back to sign in
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="auth-page">
@@ -171,6 +166,15 @@ export default function SignupPage() {
               placeholder="At least 8 characters"
             />
           </div>
+          <label className="auth-checkbox-label">
+            <input
+              type="checkbox"
+              checked={newsletterOptIn}
+              onChange={(e) => setNewsletterOptIn(e.target.checked)}
+              className="auth-checkbox"
+            />
+            <span>Subscribe to our newsletter to get notified when new features are available</span>
+          </label>
           <button className="auth-submit-button" type="submit" disabled={loading}>
             {loading ? "Creating account\u2026" : "Create account"}
           </button>

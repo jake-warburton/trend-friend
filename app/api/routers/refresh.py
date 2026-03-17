@@ -44,7 +44,7 @@ def trigger_refresh(
         }
     except Exception as error:
         LOGGER.exception("Refresh failed: %s", error)
-        raise HTTPException(status_code=500, detail=str(error)) from error
+        raise HTTPException(status_code=500, detail="An internal error occurred during refresh") from error
     finally:
         release_refresh_lock()
 

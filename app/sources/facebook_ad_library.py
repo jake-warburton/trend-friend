@@ -73,6 +73,7 @@ class FacebookAdLibrarySourceAdapter(SourceAdapter):
                                 "ad_format": "feed",
                                 "spend_estimate": None,
                                 "platform": "facebook",
+                                "search_keyword": keyword,
                             },
                         )
                     )
@@ -102,6 +103,7 @@ class FacebookAdLibrarySourceAdapter(SourceAdapter):
                         "ad_format": "feed",
                         "spend_estimate": None,
                         "platform": "facebook",
+                        "search_keyword": str(entry.get("search_keyword", "")),
                     },
                 )
             )
@@ -110,7 +112,7 @@ class FacebookAdLibrarySourceAdapter(SourceAdapter):
     @staticmethod
     def sample_payload() -> list[dict]:
         return [
-            {"id": "fb-1", "title": "Ad by TechCorp: Transform your business with AI-powered automation", "url": "https://www.facebook.com/ads/library/?id=1001", "ad_copy": "Transform your business with AI-powered automation", "advertiser": "TechCorp", "engagement_score": 15.0},
-            {"id": "fb-2", "title": "Ad by CloudSecure: Enterprise security made simple", "url": "https://www.facebook.com/ads/library/?id=1002", "ad_copy": "Enterprise security made simple", "advertiser": "CloudSecure", "engagement_score": 12.0},
-            {"id": "fb-3", "title": "Ad by DataFlow: Real-time analytics platform", "url": "https://www.facebook.com/ads/library/?id=1003", "ad_copy": "Real-time analytics for modern teams", "advertiser": "DataFlow", "engagement_score": 10.0},
+            {"id": "fb-1", "title": "Ad by TechCorp: Transform your business with AI-powered automation", "url": "https://www.facebook.com/ads/library/?id=1001", "ad_copy": "Transform your business with AI-powered automation", "advertiser": "TechCorp", "engagement_score": 15.0, "search_keyword": "AI"},
+            {"id": "fb-2", "title": "Ad by CloudSecure: Enterprise security made simple", "url": "https://www.facebook.com/ads/library/?id=1002", "ad_copy": "Enterprise security made simple", "advertiser": "CloudSecure", "engagement_score": 12.0, "search_keyword": "cybersecurity"},
+            {"id": "fb-3", "title": "Ad by DataFlow: Real-time analytics platform", "url": "https://www.facebook.com/ads/library/?id=1003", "ad_copy": "Real-time analytics for modern teams", "advertiser": "DataFlow", "engagement_score": 10.0, "search_keyword": "SaaS"},
         ]

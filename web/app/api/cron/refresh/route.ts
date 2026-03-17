@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const payload = await refreshData();
     return NextResponse.json({ ok: true, ...payload });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Refresh failed";
+    const message = "Refresh failed";
     return NextResponse.json({ ok: false, error: message }, { status: getRefreshErrorStatus(error) });
   }
 }

@@ -803,7 +803,19 @@ async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {
   return fallback;
 }
 
-async function readSupabasePayload<T>(payloadKey: string): Promise<T> {
+const supabasePayloadCache = new Map<string, { data: unknown; expiresAt: number }>();
+const SUPABASE_CACHE_TTL_MS = 3_600_000; // 1 hour
+
+export function clearSupabasePayloadCache() {
+  supabasePayloadCache.clear();
+}
+
+async function readSupabasePayload<T>(payloadKey: string, ttlMs = SUPABASE_CACHE_TTL_MS): Promise<T> {
+  const cached = supabasePayloadCache.get(payloadKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data as T;
+  }
+
   const response = await fetch(buildSupabasePayloadUrl(payloadKey), {
     method: "GET",
     headers: {
@@ -821,7 +833,14 @@ async function readSupabasePayload<T>(payloadKey: string): Promise<T> {
     throw new Error(`Missing Supabase payload ${payloadKey}`);
   }
   const payload = rows[0]?.payload_json;
-  return typeof payload === "string" ? (JSON.parse(payload) as T) : (payload as T);
+  const result = typeof payload === "string" ? (JSON.parse(payload) as T) : (payload as T);
+
+  supabasePayloadCache.set(payloadKey, {
+    data: result,
+    expiresAt: Date.now() + ttlMs,
+  });
+
+  return result;
 }
 
 function buildSupabasePayloadUrl(payloadKey: string): string {
@@ -835,7 +854,7 @@ function buildSupabasePayloadUrl(payloadKey: string): string {
 export async function loadBreakingFeed(): Promise<BreakingFeed | null> {
   if (SUPABASE_PAYLOADS_ENABLED) {
     try {
-      return await readSupabasePayload<BreakingFeed>("breaking-feed.json");
+      return await readSupabasePayload<BreakingFeed>("breaking-feed.json", 60_000);
     } catch { /* fall through */ }
   }
   return null;

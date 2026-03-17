@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { NavBar } from "@/components/nav-bar";
+import { SiteFooter } from "@/components/site-footer";
 import { AuthProvider } from "@/components/auth-provider";
 import { ProfileProvider } from "@/components/profile-provider";
 import {
@@ -14,6 +15,9 @@ import {
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.SIGNAL_EYE_FRONTEND_URL ?? "https://signaleye.live"
+  ),
   title: {
     default: "Signal Eye — Trend Intelligence Platform",
     template: "%s | Signal Eye",
@@ -74,6 +78,7 @@ export default async function RootLayout({
           <ProfileProvider>
             <NavBar />
             {children}
+            <SiteFooter />
           </ProfileProvider>
         </AuthProvider>
         <Analytics />

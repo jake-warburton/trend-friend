@@ -12,6 +12,8 @@ _CHART_ENDPOINTS = {
     "music": "https://rss.applemarketingtools.com/api/v2/us/music/most-played/50/songs.json",
     "podcasts": "https://rss.applemarketingtools.com/api/v2/us/podcasts/top/50/podcasts.json",
     "apps": "https://rss.applemarketingtools.com/api/v2/us/apps/top-free/50/apps.json",
+    "apps_paid": "https://rss.applemarketingtools.com/api/v2/us/apps/top-paid/50/apps.json",
+    "apps_grossing": "https://rss.applemarketingtools.com/api/v2/us/apps/top-grossing/50/apps.json",
 }
 
 
@@ -70,9 +72,13 @@ class AppleChartsSourceAdapter(SourceAdapter):
                 "chart_type": chart_type,
                 "position": str(position),
             }
+            metadata["app_id"] = str(entry_id)
+            artwork_url = str(entry.get("artworkUrl100", ""))
+            if artwork_url:
+                metadata["artwork_url"] = artwork_url
             if chart_type in ("music", "podcasts") and artist_or_dev:
                 metadata["artist"] = artist_or_dev
-            elif chart_type == "apps" and artist_or_dev:
+            elif chart_type.startswith("apps") and artist_or_dev:
                 metadata["developer"] = artist_or_dev
 
             items.append(
@@ -176,6 +182,56 @@ class AppleChartsSourceAdapter(SourceAdapter):
                             "developerName": "Meta Platforms",
                             "name": "Threads",
                             "url": "https://apps.apple.com/us/app/threads/3",
+                        },
+                    ],
+                }
+            },
+            "apps_paid": {
+                "feed": {
+                    "title": "Top Paid Apps",
+                    "results": [
+                        {
+                            "id": "app-paid-1",
+                            "developerName": "Lightricks",
+                            "name": "Facetune",
+                            "url": "https://apps.apple.com/us/app/facetune/1",
+                        },
+                        {
+                            "id": "app-paid-2",
+                            "developerName": "Savage Interactive",
+                            "name": "Procreate",
+                            "url": "https://apps.apple.com/us/app/procreate/2",
+                        },
+                        {
+                            "id": "app-paid-3",
+                            "developerName": "LumaTouch",
+                            "name": "LumaFusion",
+                            "url": "https://apps.apple.com/us/app/lumafusion/3",
+                        },
+                    ],
+                }
+            },
+            "apps_grossing": {
+                "feed": {
+                    "title": "Top Grossing Apps",
+                    "results": [
+                        {
+                            "id": "app-gross-1",
+                            "developerName": "King",
+                            "name": "Candy Crush Saga",
+                            "url": "https://apps.apple.com/us/app/candy-crush-saga/1",
+                        },
+                        {
+                            "id": "app-gross-2",
+                            "developerName": "Roblox Corporation",
+                            "name": "Roblox",
+                            "url": "https://apps.apple.com/us/app/roblox/2",
+                        },
+                        {
+                            "id": "app-gross-3",
+                            "developerName": "Disney",
+                            "name": "Disney+",
+                            "url": "https://apps.apple.com/us/app/disney-plus/3",
                         },
                     ],
                 }

@@ -55,10 +55,12 @@ from app.exports.contracts import (
     BreakingFeedPayload,
     BreakingItemPayload,
     BreakingTweetPayload,
+    TrendBreakingPayload,
 )
 from app.models import (
     NormalizedSignal,
     PipelineRun,
+    RawSourceItem,
     RelatedTrend,
     SourceIngestionRun,
     SourceFamilySnapshot,
@@ -70,9 +72,53 @@ from app.models import (
     TrendExplorerRecord,
     TrendScoreResult,
 )
+from app.data.connection import DatabaseConnection
 from app.sources.catalog import source_family_for_source
 from app.topics.categorize import categorize_topic
 from app.topics.display import build_display_name, fallback_display_name
+
+
+def _build_breaking_index(
+    connection: DatabaseConnection,
+) -> dict[str, BreakingItemPayload]:
+    """Load the published breaking feed and build a topic -> item lookup."""
+
+    import json
+
+    from app.data.repositories import PublishedPayloadRepository
+
+    repo = PublishedPayloadRepository(connection)
+    raw = repo.get_payload("breaking-feed.json")
+    if not raw:
+        return {}
+
+    try:
+        feed = json.loads(raw) if isinstance(raw, str) else raw
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+    index: dict[str, BreakingItemPayload] = {}
+    for item in feed.get("items", []):
+        topic = item.get("topic", "").strip().lower()
+        if topic:
+            tweets = [
+                BreakingTweetPayload(
+                    account=t.get("account", ""),
+                    text=t.get("text", ""),
+                    tweet_id=t.get("tweetId", ""),
+                    timestamp=t.get("timestamp", ""),
+                    engagement=t.get("engagement", 0),
+                )
+                for t in item.get("tweets", [])
+            ]
+            index[topic] = BreakingItemPayload(
+                topic=item.get("topic", ""),
+                breaking_score=item.get("breakingScore", 0),
+                corroborated=item.get("corroborated", False),
+                account_count=item.get("accountCount", 0),
+                tweets=tweets,
+            )
+    return index
 
 
 def build_latest_trends_payload(
@@ -108,24 +154,34 @@ def build_trend_history_payload(
 def build_trend_explorer_payload(
     generated_at: datetime,
     trends: list[TrendExplorerRecord],
+    breaking_index: dict[str, BreakingItemPayload] | None = None,
 ) -> TrendExplorerPayload:
     """Create the explorer payload for Dashboard V2."""
 
+    idx = breaking_index or {}
     return TrendExplorerPayload(
         generated_at=to_timestamp(generated_at),
-        trends=[serialize_explorer_trend(trend) for trend in trends],
+        trends=[
+            serialize_explorer_trend(trend, breaking=idx.get(trend.id))
+            for trend in trends
+        ],
     )
 
 
 def build_trend_detail_index_payload(
     generated_at: datetime,
     trends: list[TrendDetailRecord],
+    breaking_index: dict[str, BreakingItemPayload] | None = None,
 ) -> TrendDetailIndexPayload:
     """Create the detail index payload for Dashboard V2."""
 
+    idx = breaking_index or {}
     return TrendDetailIndexPayload(
         generated_at=to_timestamp(generated_at),
-        trends=[serialize_detail_trend(trend) for trend in trends],
+        trends=[
+            serialize_detail_trend(trend, breaking=idx.get(trend.id))
+            for trend in trends
+        ],
     )
 
 
@@ -309,7 +365,10 @@ def serialize_trend(score: TrendScoreResult, rank: int) -> TrendRecord:
     )
 
 
-def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordPayload:
+def serialize_explorer_trend(
+    trend: TrendExplorerRecord,
+    breaking: BreakingItemPayload | None = None,
+) -> TrendExplorerRecordPayload:
     """Convert an internal explorer record into the public V2 contract."""
 
     return TrendExplorerRecordPayload(
@@ -387,10 +446,23 @@ def serialize_explorer_trend(trend: TrendExplorerRecord) -> TrendExplorerRecordP
             else None
         ),
         forecast_direction=trend.forecast_direction,
+        breaking=(
+            TrendBreakingPayload(
+                breaking_score=breaking.breaking_score,
+                corroborated=breaking.corroborated,
+                account_count=breaking.account_count,
+                tweets=breaking.tweets,
+            )
+            if breaking is not None
+            else None
+        ),
     )
 
 
-def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload:
+def serialize_detail_trend(
+    trend: TrendDetailRecord,
+    breaking: BreakingItemPayload | None = None,
+) -> TrendDetailRecordPayload:
     """Convert an internal detail record into the public V2 contract."""
 
     return TrendDetailRecordPayload(
@@ -578,6 +650,16 @@ def serialize_detail_trend(trend: TrendDetailRecord) -> TrendDetailRecordPayload
         wikipedia_description=trend.wikipedia_description,
         wikipedia_thumbnail_url=trend.wikipedia_thumbnail_url,
         wikipedia_page_url=trend.wikipedia_page_url,
+        breaking=(
+            TrendBreakingPayload(
+                breaking_score=breaking.breaking_score,
+                corroborated=breaking.corroborated,
+                account_count=breaking.account_count,
+                tweets=breaking.tweets,
+            )
+            if breaking is not None
+            else None
+        ),
     )
 
 
@@ -1015,17 +1097,297 @@ def build_breaking_feed_payload(
     )
 
 
+def merge_ad_intelligence_payloads(
+    existing: dict[str, object],
+    new: dict[str, object],
+    max_keywords: int = 30,
+    max_advertisers: int = 30,
+) -> dict[str, object]:
+    """Merge a new ad intelligence payload into an existing one.
+
+    Accumulates keywords and advertisers across runs rather than
+    replacing, so the dataset grows over time.  Deduplicates by
+    keyword name and (advertiser, platform) pair.  When a keyword or
+    advertiser appears in both, the newer entry wins.
+    """
+
+    merged_at = new.get("generatedAt", existing.get("generatedAt", ""))
+
+    # --- Keywords: dedup by keyword, prefer new, stamp scrapedAt ---
+    scraped_now = new.get("generatedAt", "")
+    kw_by_name: dict[str, dict] = {}
+    for kw in existing.get("topKeywords", []):
+        kw_by_name[kw["keyword"]] = kw
+    for kw in new.get("topKeywords", []):
+        kw["scrapedAt"] = scraped_now  # track when this keyword was scraped
+        kw_by_name[kw["keyword"]] = kw  # newer wins
+    merged_keywords = sorted(
+        kw_by_name.values(),
+        key=lambda k: (-k.get("adDensity", 0), k["keyword"]),
+    )[:max_keywords]
+
+    # --- Advertisers: dedup by (name, platform), prefer new ---
+    adv_by_key: dict[tuple[str, str], dict] = {}
+    for adv in existing.get("topAdvertisers", []):
+        adv_by_key[(adv["name"], adv["platform"])] = adv
+    for adv in new.get("topAdvertisers", []):
+        key = (adv["name"], adv["platform"])
+        if key in adv_by_key:
+            # Accumulate ad count
+            old = adv_by_key[key]
+            adv["adCount"] = max(adv.get("adCount", 0), old.get("adCount", 0))
+            adv["adFormats"] = sorted(set(old.get("adFormats", []) + adv.get("adFormats", [])))
+            adv["regions"] = sorted(set(old.get("regions", []) + adv.get("regions", [])))
+        adv_by_key[key] = adv
+    merged_advertisers = sorted(
+        adv_by_key.values(),
+        key=lambda a: (-a.get("adCount", 0), a["name"]),
+    )[:max_advertisers]
+
+    # --- Platform summary: merge by platform ---
+    plat_by_name: dict[str, dict] = {}
+    for p in existing.get("platformSummary", []):
+        plat_by_name[p["platform"]] = p
+    for p in new.get("platformSummary", []):
+        if p["platform"] in plat_by_name:
+            old = plat_by_name[p["platform"]]
+            p["adCount"] = old.get("adCount", 0) + p.get("adCount", 0)
+            p["keywordCount"] = max(old.get("keywordCount", 0), p.get("keywordCount", 0))
+            p["advertiserCount"] = max(old.get("advertiserCount", 0), p.get("advertiserCount", 0))
+        plat_by_name[p["platform"]] = p
+    merged_platforms = sorted(
+        plat_by_name.values(),
+        key=lambda p: (-p.get("adCount", 0), p["platform"]),
+    )
+
+    return {
+        "generatedAt": merged_at,
+        "topKeywords": merged_keywords,
+        "topAdvertisers": merged_advertisers,
+        "platformSummary": merged_platforms,
+    }
+
+
 def build_ad_intelligence_payload(
+    generated_at: datetime,
+    ad_items: list[RawSourceItem] | None = None,
+    trend_slugs: set[str] | None = None,
+    trend_categories: dict[str, str] | None = None,
+    signals: list[NormalizedSignal] | None = None,
+) -> AdIntelligencePayload:
+    """Create the ad intelligence payload from raw source items.
+
+    When *ad_items* is provided, builds from ``RawSourceItem.metadata``
+    which contains real CPC, search_volume, competition_level, and
+    advertiser data.  Falls back to the legacy *signals* path (lossy)
+    when *ad_items* is not available.
+    """
+
+    if ad_items is not None:
+        return _build_ad_payload_from_items(generated_at, ad_items, trend_slugs, trend_categories)
+
+    # Legacy fallback — signals have lost metadata, so values are zeroed.
+    return _build_ad_payload_from_signals(generated_at, signals or [])
+
+
+def _build_ad_payload_from_items(
+    generated_at: datetime,
+    ad_items: list[RawSourceItem],
+    trend_slugs: set[str] | None,
+    trend_categories: dict[str, str] | None = None,
+) -> AdIntelligencePayload:
+    """Build payload directly from RawSourceItem metadata."""
+
+    categories = trend_categories or {}
+    keyword_stats: dict[str, dict[str, object]] = {}
+    advertiser_stats: dict[tuple[str, str], dict[str, object]] = {}
+    platform_stats: dict[str, dict[str, object]] = {}
+
+    for item in ad_items:
+        meta = item.metadata or {}
+        source = item.source
+
+        # --- Platform stats accumulator ---
+        if source not in platform_stats:
+            platform_stats[source] = {
+                "keywords": set(),
+                "advertisers": set(),
+                "ad_count": 0,
+            }
+        platform_stats[source]["ad_count"] += 1
+
+        # --- Keywords (from google_keyword_planner) ---
+        if source == "google_keyword_planner":
+            keyword = meta.get("search_keyword", "")
+            if not keyword:
+                continue
+            # SerpApi-backed adapter: no CPC/volume, uses ad_count + competition
+            cpc = float(meta.get("cpc", 0))
+            search_volume = int(meta.get("search_volume", 0))
+            ad_count_for_kw = int(meta.get("ad_count", 0))
+            competition = str(meta.get("competition_level", "unknown"))
+            slug = slugify(keyword)
+            trend_id = slug if trend_slugs and slug in trend_slugs else None
+
+            # Pull advertisers discovered from SerpApi ads results
+            meta_advertisers = meta.get("top_advertisers", [])
+
+            category = categories.get(slug) or categories.get(keyword) or None
+
+            if keyword not in keyword_stats:
+                keyword_stats[keyword] = {
+                    "keyword": keyword,
+                    "cpc": cpc,
+                    "search_volume": search_volume,
+                    "competition_level": competition,
+                    "ad_density": item.engagement_score,
+                    "platforms": {source},
+                    "top_advertisers": set(meta_advertisers) if isinstance(meta_advertisers, list) else set(),
+                    "trend_id": trend_id,
+                    "ad_count": ad_count_for_kw,
+                    "category": category,
+                }
+            else:
+                kw = keyword_stats[keyword]
+                kw["cpc"] = max(kw["cpc"], cpc)
+                kw["search_volume"] = max(kw["search_volume"], search_volume)
+                kw["ad_count"] = max(kw["ad_count"], ad_count_for_kw)
+                if kw["competition_level"] == "unknown":
+                    kw["competition_level"] = competition
+                kw["ad_density"] = max(kw["ad_density"], item.engagement_score)
+                kw["platforms"].add(source)
+                if isinstance(meta_advertisers, list):
+                    kw["top_advertisers"].update(meta_advertisers)
+
+            platform_stats[source]["keywords"].add(keyword)
+
+            # Build advertiser entries from keyword planner's YouTube ad data.
+            # YouTube ads are always video format.
+            yt_ad_count = int(meta.get("youtube_ad_count", 0))
+            ad_format = "video" if yt_ad_count > 0 else ""
+
+            for adv_name in meta_advertisers:
+                adv_key = (adv_name, source)
+                if adv_key not in advertiser_stats:
+                    advertiser_stats[adv_key] = {
+                        "name": adv_name,
+                        "platform": source,
+                        "ad_count": 1,
+                        "ad_formats": {ad_format} if ad_format else set(),
+                        "regions": {"US"},
+                    }
+                else:
+                    advertiser_stats[adv_key]["ad_count"] += 1
+                    if ad_format:
+                        advertiser_stats[adv_key]["ad_formats"].add(ad_format)
+                platform_stats[source]["advertisers"].add(adv_name)
+
+        # --- Advertisers (from google_ads_transparency, facebook, tiktok) ---
+        advertiser = meta.get("advertiser", "")
+        if advertiser:
+            key = (advertiser, source)
+            ad_count = int(meta.get("ad_count", 1))
+            ad_formats = meta.get("ad_formats", [])
+            if isinstance(ad_formats, str):
+                ad_formats = [ad_formats]
+            ad_format = meta.get("ad_format", "")
+            if ad_format and ad_format not in ad_formats:
+                ad_formats.append(ad_format)
+            regions = meta.get("regional_targeting", ["US"])
+            if isinstance(regions, str):
+                regions = [regions]
+
+            if key not in advertiser_stats:
+                advertiser_stats[key] = {
+                    "name": advertiser,
+                    "platform": source,
+                    "ad_count": ad_count,
+                    "ad_formats": set(ad_formats),
+                    "regions": set(regions),
+                }
+            else:
+                adv = advertiser_stats[key]
+                adv["ad_count"] += ad_count
+                adv["ad_formats"].update(ad_formats)
+                adv["regions"].update(regions)
+
+            platform_stats[source]["advertisers"].add(advertiser)
+
+            # Link advertisers to keywords they appear under
+            search_kw = meta.get("search_keyword", "")
+            if search_kw and search_kw in keyword_stats:
+                keyword_stats[search_kw]["top_advertisers"].add(advertiser)
+            if search_kw:
+                platform_stats[source]["keywords"].add(search_kw)
+
+    # --- Assemble keyword payloads ---
+    top_keywords = sorted(
+        keyword_stats.values(),
+        key=lambda kw: (-kw["ad_density"], -kw.get("ad_count", 0), kw["keyword"]),
+    )[:20]
+
+    keyword_payloads = [
+        AdIntelligenceKeywordPayload(
+            keyword=kw["keyword"],
+            cpc=round(kw["cpc"], 2),
+            search_volume=kw["search_volume"],
+            competition_level=kw["competition_level"],
+            ad_density=round(kw["ad_density"], 2),
+            platforms=sorted(kw["platforms"]),
+            top_advertisers=sorted(kw["top_advertisers"])[:5],
+            trend_id=kw["trend_id"],
+            category=kw.get("category"),
+        )
+        for kw in top_keywords
+    ]
+
+    # --- Assemble advertiser payloads ---
+    top_advertisers = sorted(
+        advertiser_stats.values(),
+        key=lambda a: (-a["ad_count"], a["name"]),
+    )[:20]
+
+    advertiser_payloads = [
+        AdIntelligenceAdvertiserPayload(
+            name=adv["name"],
+            platform=adv["platform"],
+            ad_count=adv["ad_count"],
+            ad_formats=sorted(adv["ad_formats"]),
+            regions=sorted(adv["regions"]),
+        )
+        for adv in top_advertisers
+    ]
+
+    # --- Assemble platform summary ---
+    platform_payloads = [
+        AdIntelligencePlatformSummaryPayload(
+            platform=platform,
+            ad_count=stats["ad_count"],
+            keyword_count=len(stats["keywords"]),
+            advertiser_count=len(stats["advertisers"]),
+        )
+        for platform, stats in sorted(
+            platform_stats.items(),
+            key=lambda item: (-item[1]["ad_count"], item[0]),
+        )
+    ]
+
+    return AdIntelligencePayload(
+        generated_at=to_timestamp(generated_at),
+        top_keywords=keyword_payloads,
+        top_advertisers=advertiser_payloads,
+        platform_summary=platform_payloads,
+    )
+
+
+def _build_ad_payload_from_signals(
     generated_at: datetime,
     signals: list[NormalizedSignal],
 ) -> AdIntelligencePayload:
-    """Create the ad intelligence payload from ingested signals."""
-
-    from app.sources.catalog import source_family_for_source
+    """Legacy fallback: build from NormalizedSignal (lossy — no metadata)."""
 
     keyword_stats: dict[str, dict[str, object]] = {}
-    advertiser_stats: dict[tuple[str, str], dict[str, object]] = {}
-    platform_stats: dict[str, dict[str, set[str]]] = {}
+    platform_stats: dict[str, dict[str, object]] = {}
 
     for signal in signals:
         family = source_family_for_source(signal.source)
@@ -1074,11 +1436,10 @@ def build_ad_intelligence_payload(
             platforms=sorted(kw["platforms"]),
             top_advertisers=sorted(kw["top_advertisers"]),
             trend_id=kw["trend_id"],
+            category=None,
         )
         for kw in top_keywords
     ]
-
-    advertiser_payloads: list[AdIntelligenceAdvertiserPayload] = []
 
     platform_payloads = [
         AdIntelligencePlatformSummaryPayload(
@@ -1096,6 +1457,6 @@ def build_ad_intelligence_payload(
     return AdIntelligencePayload(
         generated_at=to_timestamp(generated_at),
         top_keywords=keyword_payloads,
-        top_advertisers=advertiser_payloads,
+        top_advertisers=[],
         platform_summary=platform_payloads,
     )

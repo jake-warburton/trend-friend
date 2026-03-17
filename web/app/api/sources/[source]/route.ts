@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { loadSourceSummary } from "@/lib/trends";
 
+export const revalidate = 2400;
+
 type RouteContext = {
   params: Promise<{ source: string }>;
 };

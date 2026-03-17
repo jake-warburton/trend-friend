@@ -1,7 +1,7 @@
-"""Password hashing using hashlib (no external dependencies).
+"""Password hashing using PBKDF2-HMAC-SHA256 (stdlib, no external dependencies).
 
-Uses PBKDF2-HMAC-SHA256 with 600,000 iterations (OWASP recommendation).
-Supports transparent verification of legacy SHA-256 hashes.
+Stored format: pbkdf2$<iterations>$<hex_salt>$<hex_digest>
+Legacy format:  <hex_salt>:<sha256_hex_digest>
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ _PBKDF2_DKLEN = 64
 
 
 def hash_password(password: str) -> str:
-    """Hash a password with a random salt using PBKDF2-HMAC-SHA256."""
+    """Hash a password with a random salt using PBKDF2."""
 
     salt = os.urandom(16)
     digest = hashlib.pbkdf2_hmac(
@@ -25,56 +25,38 @@ def hash_password(password: str) -> str:
         _PBKDF2_ITERATIONS,
         dklen=_PBKDF2_DKLEN,
     )
-    return f"pbkdf2:{salt.hex()}:{digest.hex()}"
+    return f"pbkdf2${_PBKDF2_ITERATIONS}${salt.hex()}${digest.hex()}"
 
 
-def _is_legacy_sha256(password_hash: str) -> bool:
-    """Return True if the hash is in the old SHA-256 salt:hexdigest format."""
+def verify_password(password: str, password_hash: str) -> tuple[bool, bool]:
+    """Verify a password against a stored hash.
 
+    Returns a tuple of (is_valid, needs_rehash).
+    needs_rehash is True when the password was verified against the legacy
+    SHA-256 format and should be re-hashed with PBKDF2 on next opportunity.
+    """
+
+    # New PBKDF2 format: pbkdf2$<iterations>$<hex_salt>$<hex_digest>
+    if password_hash.startswith("pbkdf2$"):
+        parts = password_hash.split("$", 3)
+        if len(parts) != 4:
+            return False, False
+        _, iterations_str, hex_salt, stored_hex = parts
+        salt = bytes.fromhex(hex_salt)
+        digest = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode(),
+            salt,
+            int(iterations_str),
+            dklen=_PBKDF2_DKLEN,
+        )
+        return hmac.compare_digest(digest.hex(), stored_hex), False
+
+    # Legacy SHA-256 format: <hex_salt>:<sha256_hex_digest>
     parts = password_hash.split(":", 1)
     if len(parts) != 2:
-        return False
-    # Old format is "salt_hex:sha256_hex" — SHA-256 digest is always 64 hex chars
-    # and the hash does NOT start with a scheme prefix.
-    _salt, digest = parts
-    return not password_hash.startswith(("pbkdf2:", "scrypt:")) and len(digest) == 64
-
-
-def _verify_legacy(password: str, password_hash: str) -> bool:
-    """Verify against old SHA-256 salt:digest format."""
-
-    salt, stored_digest = password_hash.split(":", 1)
+        return False, False
+    salt, stored_digest = parts
     digest = hashlib.sha256(f"{salt}:{password}".encode()).hexdigest()
-    return hmac.compare_digest(digest, stored_digest)
-
-
-def _verify_pbkdf2(password: str, password_hash: str) -> bool:
-    """Verify against pbkdf2:salt_hex:digest_hex format."""
-
-    parts = password_hash.split(":")
-    if len(parts) != 3 or parts[0] != "pbkdf2":
-        return False
-    salt = bytes.fromhex(parts[1])
-    stored_digest = parts[2]
-    digest = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode(),
-        salt,
-        _PBKDF2_ITERATIONS,
-        dklen=_PBKDF2_DKLEN,
-    )
-    return hmac.compare_digest(digest.hex(), stored_digest)
-
-
-def verify_password(password: str, password_hash: str) -> bool:
-    """Verify a password against a stored hash (supports both legacy SHA-256 and PBKDF2)."""
-
-    if _is_legacy_sha256(password_hash):
-        return _verify_legacy(password, password_hash)
-    return _verify_pbkdf2(password, password_hash)
-
-
-def needs_rehash(password_hash: str) -> bool:
-    """Return True if the hash uses the old SHA-256 format and should be upgraded."""
-
-    return _is_legacy_sha256(password_hash)
+    is_valid = hmac.compare_digest(digest, stored_digest)
+    return is_valid, is_valid  # needs_rehash only if password is valid

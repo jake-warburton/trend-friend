@@ -167,6 +167,45 @@ def run_ad_intelligence_pipeline(settings: Settings) -> None:
     LOGGER.info("Starting ad intelligence pipeline")
     started_at = perf_counter()
 
+    # Load current trending topics so the keyword adapter scrapes what's
+    # actually on /trends rather than a hardcoded list.
+    import json as _json
+    from app.data.repositories import PublishedPayloadRepository
+
+    connection = connect_primary_database(settings)
+    repository = TrendScoreRepository(connection)
+    _, current_scores = repository.list_latest_snapshot(limit=settings.ranking_limit)
+    trend_topics = [score.topic for score in current_scores]
+
+    # Check which keywords were scraped within the last 30 days so we
+    # skip them and cover new trends instead.
+    from datetime import timedelta
+    already_scraped: set[str] = set()
+    now = datetime.now(tz=timezone.utc)
+    cutoff = now - timedelta(days=30)
+    existing_json = PublishedPayloadRepository(connection).get_payload("ad-intelligence.json")
+    if existing_json is not None:
+        existing_payload = _json.loads(existing_json)
+        for kw in existing_payload.get("topKeywords", []):
+            scraped_at = kw.get("scrapedAt", "")
+            if scraped_at:
+                try:
+                    scraped_dt = datetime.fromisoformat(scraped_at.replace("Z", "+00:00"))
+                    if scraped_dt > cutoff:
+                        already_scraped.add(kw["keyword"].lower())
+                except (ValueError, TypeError):
+                    pass
+
+    connection.close()
+    LOGGER.info(
+        "Loaded %d trend topics for ad intelligence keywords (%d already scraped)",
+        len(trend_topics), len(already_scraped),
+    )
+
+    # Attach to settings so the keyword adapter can read them.
+    settings._ad_intel_trend_topics = trend_topics  # type: ignore[attr-defined]
+    settings._ad_intel_already_scraped = already_scraped  # type: ignore[attr-defined]
+
     ad_items, ad_source_runs = fetch_ad_intelligence_items(settings)
     if not ad_items:
         LOGGER.info("No ad intelligence items fetched, skipping re-score")
@@ -194,6 +233,34 @@ def run_ad_intelligence_pipeline(settings: Settings) -> None:
     repository.replace_scores(
         ranked_scores + rank_experimental_topics(scores, published_scores=ranked_scores, limit=settings.experimental_ranking_limit),
         published_topics=published_topics,
+    )
+
+    # Build ad intelligence payload from raw items and merge with any
+    # existing payload so data accumulates across runs rather than resetting.
+    import json
+    from app.data.repositories import PublishedPayloadRepository
+    from app.exports.serializers import build_ad_intelligence_payload, merge_ad_intelligence_payloads, slugify
+
+    now = datetime.now(tz=timezone.utc)
+    trend_slugs = {slugify(s.topic) for s in ranked_scores}
+    trend_categories = {slugify(s.topic): s.category for s in ranked_scores if s.category}
+    new_payload_dict = build_ad_intelligence_payload(
+        generated_at=now,
+        ad_items=ad_items,
+        trend_slugs=trend_slugs,
+        trend_categories=trend_categories,
+    ).to_dict()
+
+    payload_repo = PublishedPayloadRepository(connection)
+    existing_json = payload_repo.get_payload("ad-intelligence.json")
+    if existing_json is not None:
+        existing_dict = json.loads(existing_json)
+        merged = merge_ad_intelligence_payloads(existing_dict, new_payload_dict)
+    else:
+        merged = new_payload_dict
+
+    payload_repo.replace_payloads(
+        [("ad-intelligence.json", merged["generatedAt"], json.dumps(merged))]
     )
 
     connection.close()

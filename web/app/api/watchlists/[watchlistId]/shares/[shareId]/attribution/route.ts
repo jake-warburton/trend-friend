@@ -33,7 +33,7 @@ export async function handleShareAttributionPost(
     );
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Share attribution update failed";
+    const message = "Share attribution update failed";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

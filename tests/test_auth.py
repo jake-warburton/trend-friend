@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import sqlite3
 import unittest
 from unittest.mock import patch
 
-from app.auth.passwords import hash_password, needs_rehash, verify_password
+from app.auth.passwords import hash_password, verify_password
 from app.auth.tokens import generate_api_key, generate_session_token, hash_api_key
 from app.auth.repository import UserRepository
 from app.data.database import initialize_database
@@ -17,11 +18,15 @@ class PasswordTests(unittest.TestCase):
 
     def test_hash_and_verify(self) -> None:
         hashed = hash_password("my-secure-password")
-        self.assertTrue(verify_password("my-secure-password", hashed))
+        is_valid, needs_rehash = verify_password("my-secure-password", hashed)
+        self.assertTrue(is_valid)
+        self.assertFalse(needs_rehash)
 
     def test_wrong_password_fails(self) -> None:
         hashed = hash_password("my-secure-password")
-        self.assertFalse(verify_password("wrong-password", hashed))
+        is_valid, needs_rehash = verify_password("wrong-password", hashed)
+        self.assertFalse(is_valid)
+        self.assertFalse(needs_rehash)
 
     def test_different_hashes_per_call(self) -> None:
         h1 = hash_password("same-password")
@@ -30,33 +35,34 @@ class PasswordTests(unittest.TestCase):
 
     def test_pbkdf2_format(self) -> None:
         hashed = hash_password("test-password")
-        self.assertTrue(hashed.startswith("pbkdf2:"))
-        parts = hashed.split(":")
-        self.assertEqual(len(parts), 3)
+        self.assertTrue(hashed.startswith("pbkdf2$"))
+        parts = hashed.split("$")
+        self.assertEqual(len(parts), 4)
 
-    def test_legacy_sha256_still_verifies(self) -> None:
-        """Old SHA-256 hashes must still verify for backward compatibility."""
+    def test_legacy_sha256_verify(self) -> None:
+        """Verify that legacy SHA-256 hashes still work and flag rehash."""
         import hashlib as _hashlib
         import os as _os
 
         salt = _os.urandom(16).hex()
         digest = _hashlib.sha256(f"{salt}:legacy-password".encode()).hexdigest()
         legacy_hash = f"{salt}:{digest}"
-        self.assertTrue(verify_password("legacy-password", legacy_hash))
-        self.assertFalse(verify_password("wrong-password", legacy_hash))
 
-    def test_needs_rehash_true_for_legacy(self) -> None:
+        is_valid, needs_rehash = verify_password("legacy-password", legacy_hash)
+        self.assertTrue(is_valid)
+        self.assertTrue(needs_rehash)
+
+    def test_legacy_sha256_wrong_password(self) -> None:
         import hashlib as _hashlib
         import os as _os
 
         salt = _os.urandom(16).hex()
-        digest = _hashlib.sha256(f"{salt}:pw".encode()).hexdigest()
+        digest = _hashlib.sha256(f"{salt}:legacy-password".encode()).hexdigest()
         legacy_hash = f"{salt}:{digest}"
-        self.assertTrue(needs_rehash(legacy_hash))
 
-    def test_needs_rehash_false_for_pbkdf2(self) -> None:
-        hashed = hash_password("my-password")
-        self.assertFalse(needs_rehash(hashed))
+        is_valid, needs_rehash = verify_password("wrong-password", legacy_hash)
+        self.assertFalse(is_valid)
+        self.assertFalse(needs_rehash)
 
 
 class TokenTests(unittest.TestCase):
@@ -172,6 +178,8 @@ class AuthAPITests(unittest.TestCase):
 
         self.app.dependency_overrides[get_db] = override_db
         self.client = TestClient(self.app)
+        # Use development mode so secure cookies work over HTTP in tests
+        os.environ["SIGNAL_EYE_ENVIRONMENT"] = "development"
 
         from app.api.rate_limit import response_cache
         response_cache.clear()

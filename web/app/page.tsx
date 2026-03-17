@@ -3,6 +3,7 @@ import { join } from "node:path";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { PricingTable } from "@/components/pricing-table";
 import {
   DARK_THEME,
   LIGHT_THEME,
@@ -22,7 +23,7 @@ function loadScreenshotManifest(): ScreenshotManifest | null {
 }
 
 export const metadata = {
-  title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
+  title: "Signal Eye — Spot Emerging Trends Before They Peak",
   description:
     "Spot emerging trends before they peak. Signal Eye monitors 24+ data sources — Reddit, GitHub, TikTok, Google Trends, arXiv, and more — to surface rising topics with momentum scoring, breakout predictions, and market signals.",
   keywords: [
@@ -38,14 +39,14 @@ export const metadata = {
     "treendly alternative",
   ],
   openGraph: {
-    title: "Signal Eye — Trend Intelligence for Founders, Creators & Investors",
+    title: "Signal Eye — Spot Emerging Trends Before They Peak",
     description:
       "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals — all in one dashboard.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Signal Eye — Trend Intelligence Platform",
+    title: "Signal Eye — Spot Emerging Trends Before They Peak",
     description:
       "Monitor 24+ data sources for emerging trends. Momentum scoring, breakout predictions, and market signals.",
   },
@@ -308,40 +309,7 @@ export default async function Page() {
         </div>
       </section>
 
-      <section className="landing-pricing">
-        <h2>Start free. Go deeper when you&apos;re ready.</h2>
-        <div className="landing-pricing-grid">
-          <article className="landing-pricing-card">
-            <h3>Free</h3>
-            <p className="landing-pricing-price">$0<span>/month</span></p>
-            <ul className="landing-pricing-features">
-              <li>Live trend explorer</li>
-              <li>All filters and lens presets</li>
-              <li>Community watchlists</li>
-              <li>Up to 3 saved watchlists</li>
-            </ul>
-            <Link href="/signup" className="landing-pricing-cta">
-              Get started
-            </Link>
-          </article>
-          <article className="landing-pricing-card landing-pricing-card-featured">
-            <h3>Pro</h3>
-            <p className="landing-pricing-price">[Price]<span>/month</span></p>
-            <ul className="landing-pricing-features">
-              <li>Everything in Free</li>
-              <li>Unlimited watchlists and alerts</li>
-              <li>Advanced trend analytics</li>
-              <li>Priority data refresh</li>
-              <li>Market footprint enrichment</li>
-              <li>CSV export and API access</li>
-              <li>Community leaderboard features</li>
-            </ul>
-            <Link href="/signup" className="landing-pricing-cta landing-pricing-cta-primary">
-              Upgrade to Pro
-            </Link>
-          </article>
-        </div>
-      </section>
+      <PricingTable />
 
       <section className="landing-final-cta">
         <div className="landing-final-cta-inner">

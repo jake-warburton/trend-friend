@@ -230,6 +230,14 @@ export type TrendExplorerRecord = {
   recentHistory?: TrendHistoryPoint[];
   seasonality?: SeasonalitySummary | null;
   forecastDirection?: string | null;
+  breaking?: TrendBreaking | null;
+};
+
+export type TrendBreaking = {
+  breakingScore: number;
+  corroborated: boolean;
+  accountCount: number;
+  tweets: BreakingTweet[];
 };
 
 export type TrendExplorerResponse = {
@@ -360,6 +368,7 @@ export type TrendDetailRecord = {
   wikipediaDescription?: string | null;
   wikipediaThumbnailUrl?: string | null;
   wikipediaPageUrl?: string | null;
+  breaking?: TrendBreaking | null;
 };
 
 export type TrendDetailIndexResponse = {
@@ -691,6 +700,7 @@ export type AdIntelligenceKeyword = {
   platforms: string[];
   topAdvertisers: string[];
   trendId: string | null;
+  category: string | null;
 };
 
 export type AdIntelligenceAdvertiser = {

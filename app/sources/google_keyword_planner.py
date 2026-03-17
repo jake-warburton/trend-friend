@@ -1,19 +1,29 @@
-"""Google Keyword Planner source adapter."""
+"""Google Keyword Planner source adapter (SerpApi-backed).
+
+Uses SerpApi's Google Search engine to discover which advertisers are
+bidding on trend-relevant keywords, and Google Trends for relative
+interest data.  This replaces the direct Google Ads API integration
+which requires a Manager account + developer token approval.
+"""
 
 from __future__ import annotations
 
 import logging
-from math import log10
 from datetime import datetime, timezone
+from urllib.parse import quote_plus
 
 from app.models import RawSourceItem
 from app.sources.base import SourceAdapter
 
 LOGGER = logging.getLogger(__name__)
 
+_SERPAPI_URL = "https://serpapi.com/search.json"
+
+_KEYWORDS_PER_RUN = 8
+
 
 class GoogleKeywordPlannerSourceAdapter(SourceAdapter):
-    """Fetch keyword intelligence from Google Keyword Planner API."""
+    """Fetch keyword intelligence via SerpApi Google Search + Trends."""
 
     source_name = "google_keyword_planner"
 
@@ -24,75 +34,133 @@ class GoogleKeywordPlannerSourceAdapter(SourceAdapter):
             self.log_fallback(error)
             return self._normalize_sample(self.sample_payload())
 
-    def _fetch_keywords(self) -> list[RawSourceItem]:
-        """Fetch keyword data from Google Ads Keyword Planner API."""
-
-        if not all([
-            self.settings.google_ads_client_id,
-            self.settings.google_ads_developer_token,
-            self.settings.google_ads_refresh_token,
-            self.settings.google_ads_customer_id,
-        ]):
-            raise RuntimeError("Google Ads credentials not configured")
-
+    def _check_serpapi_budget(self, min_remaining: int = 20) -> None:
+        """Raise if SerpApi search budget is too low to proceed."""
         try:
-            from google.ads.googleads.client import GoogleAdsClient
-        except ImportError:
-            raise RuntimeError("google-ads package not installed")
+            import urllib.request, json as _json
+            url = f"https://serpapi.com/account.json?api_key={self.settings.serpapi_key}"
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                account = _json.loads(resp.read())
+            remaining = account.get("total_searches_left", 0)
+            if remaining < min_remaining:
+                raise RuntimeError(
+                    f"SerpApi budget too low: {remaining} searches remaining "
+                    f"(minimum {min_remaining} required)"
+                )
+            LOGGER.info("SerpApi budget check: %d searches remaining", remaining)
+        except RuntimeError:
+            raise
+        except Exception as exc:
+            LOGGER.warning("SerpApi budget check failed, proceeding anyway: %s", exc)
 
-        credentials = {
-            "developer_token": self.settings.google_ads_developer_token,
-            "client_id": self.settings.google_ads_client_id,
-            "client_secret": self.settings.google_ads_client_secret or "",
-            "refresh_token": self.settings.google_ads_refresh_token,
-            "login_customer_id": self.settings.google_ads_customer_id,
-        }
-        client = GoogleAdsClient.load_from_dict(credentials)
-        keyword_plan_idea_service = client.get_service("KeywordPlanIdeaService")
+    @staticmethod
+    def _pick_keywords_for_run(
+        trend_topics: list[str],
+        already_scraped: set[str] | None = None,
+    ) -> list[str]:
+        """Pick the top trending keywords we haven't scraped this month.
 
-        request = client.get_type("GenerateKeywordIdeasRequest")
-        request.customer_id = self.settings.google_ads_customer_id
-        request.language = client.get_service("GoogleAdsService").language_constant_path("1000")
-        request.geo_target_constants = [
-            client.get_service("GoogleAdsService").geo_target_constant_path("2840")
-        ]
-        request.keyword_plan_network = client.enums.KeywordPlanNetworkEnum.GOOGLE_SEARCH
-        request.keyword_seed.keywords.extend([
-            "AI", "machine learning", "blockchain", "cloud computing",
-            "cybersecurity", "fintech", "SaaS", "automation",
-        ])
+        Takes the first ``_KEYWORDS_PER_RUN`` topics from *trend_topics*
+        that are not in *already_scraped*, so each run covers new ground
+        and the merged payload accumulates over time.
+        """
+        if not trend_topics:
+            return []
+        seen = already_scraped or set()
+        batch = []
+        for topic in trend_topics:
+            if topic.lower() not in seen:
+                batch.append(topic)
+                if len(batch) >= _KEYWORDS_PER_RUN:
+                    break
+        # If all top topics are already scraped, re-scrape the top ones
+        # to refresh their data.
+        if not batch:
+            batch = trend_topics[:_KEYWORDS_PER_RUN]
+        return batch
+
+    def _fetch_keywords(self) -> list[RawSourceItem]:
+        if not self.settings.serpapi_key:
+            raise RuntimeError("SERPAPI_KEY not configured")
+
+        trend_topics: list[str] = getattr(self.settings, "_ad_intel_trend_topics", [])
+        already_scraped: set[str] = getattr(self.settings, "_ad_intel_already_scraped", set())
+        keywords = self._pick_keywords_for_run(trend_topics, already_scraped)
+        if not keywords:
+            raise RuntimeError("No trend topics available for ad intelligence")
+        LOGGER.info(
+            "Ad intelligence keyword batch: %s (%d already scraped, %d trends total)",
+            keywords, len(already_scraped), len(trend_topics),
+        )
+
+        # 1 call per keyword: YouTube only (returns real ad data on free tier)
+        self._check_serpapi_budget(min_remaining=len(keywords) + 10)
 
         items: list[RawSourceItem] = []
         now = datetime.now(tz=timezone.utc)
-        response = keyword_plan_idea_service.generate_keyword_ideas(request=request)
 
-        for idea in response:
-            keyword = idea.text
-            metrics = idea.keyword_idea_metrics
-            cpc_micros = metrics.average_cpc_in_micros or 0
-            cpc = cpc_micros / 1_000_000
-            search_volume = metrics.avg_monthly_searches or 0
-            competition = metrics.competition.name if metrics.competition else "UNSPECIFIED"
-            engagement = cpc * log10(search_volume + 1) if search_volume > 0 else 0.0
+        for keyword in keywords:
+            try:
+                yt_data = self.get_json(
+                    f"{_SERPAPI_URL}?engine=youtube&search_query={quote_plus(keyword)}"
+                    f"&api_key={self.settings.serpapi_key}",
+                )
+            except Exception as exc:
+                LOGGER.warning("SerpApi YouTube Search failed for '%s': %s", keyword, exc)
+                continue
+
+            yt_ads = yt_data.get("ads_results", [])
+            ad_count = len(yt_ads)
+
+            advertisers: list[str] = []
+            for ad in yt_ads[:10]:
+                channel = ad.get("channel", {})
+                name = channel.get("name", "") if isinstance(channel, dict) else ""
+                if name and name not in advertisers:
+                    advertisers.append(name)
+
+            # Competition heuristic based on YouTube ad count
+            if ad_count >= 5:
+                competition = "HIGH"
+            elif ad_count >= 2:
+                competition = "MEDIUM"
+            elif ad_count >= 1:
+                competition = "LOW"
+            else:
+                competition = "NONE"
+
+            engagement = ad_count
+
+            ad_copies = []
+            for ad in yt_ads[:5]:
+                channel = ad.get("channel", {})
+                ad_copies.append({
+                    "title": ad.get("title", ""),
+                    "advertiser": channel.get("name", "") if isinstance(channel, dict) else "",
+                    "description": ad.get("description", ""),
+                    "position": ad.get("position_on_page", 0),
+                    "platform": "youtube",
+                })
 
             items.append(
                 RawSourceItem(
                     source=self.source_name,
-                    external_id=f"gkp-{hash(keyword) & 0xFFFFFFFF:08x}",
-                    title=f"Keyword: {keyword} (CPC: ${cpc:.2f}, Vol: {search_volume:,})",
-                    url=f"https://ads.google.com/aw/keywordplanner/ideas?keyword={keyword.replace(' ', '+')}",
+                    external_id=f"gkp-yt-{hash(keyword) & 0xFFFFFFFF:08x}",
+                    title=f"Keyword: {keyword} ({ad_count} YouTube ads, competition: {competition})",
+                    url=f"https://www.youtube.com/results?search_query={quote_plus(keyword)}",
                     timestamp=now,
-                    engagement_score=engagement,
+                    engagement_score=round(engagement, 2),
                     metadata={
-                        "cpc": round(cpc, 2),
-                        "search_volume": search_volume,
+                        "search_keyword": keyword,
+                        "ad_count": ad_count,
+                        "youtube_ad_count": ad_count,
+                        "has_ads": ad_count > 0,
                         "competition_level": competition,
-                        "keyword_suggestions": [],
+                        "top_advertisers": advertisers,
+                        "ad_copies": ad_copies,
                     },
                 )
             )
-            if len(items) >= self.settings.max_items_per_source:
-                break
 
         self.raw_item_count = len(items)
         self.kept_item_count = len(items)
@@ -102,9 +170,6 @@ class GoogleKeywordPlannerSourceAdapter(SourceAdapter):
         items: list[RawSourceItem] = []
         now = datetime.now(tz=timezone.utc)
         for entry in payload[:self.settings.max_items_per_source]:
-            cpc = float(entry.get("cpc", 0))
-            volume = int(entry.get("search_volume", 0))
-            engagement = cpc * log10(volume + 1) if volume > 0 else 0.0
             items.append(
                 RawSourceItem(
                     source=self.source_name,
@@ -112,12 +177,16 @@ class GoogleKeywordPlannerSourceAdapter(SourceAdapter):
                     title=str(entry["title"]),
                     url=str(entry.get("url", "")),
                     timestamp=now,
-                    engagement_score=engagement,
+                    engagement_score=float(entry.get("engagement_score", 10.0)),
                     metadata={
-                        "cpc": cpc,
-                        "search_volume": volume,
+                        "search_keyword": str(entry.get("search_keyword", "")),
+                        "ad_count": int(entry.get("ad_count", 0)),
+                        "has_ads": bool(entry.get("has_ads", False)),
                         "competition_level": str(entry.get("competition_level", "MEDIUM")),
-                        "keyword_suggestions": [],
+                        "top_advertisers": entry.get("top_advertisers", []),
+                        "related_keywords": entry.get("related_keywords", []),
+                        "organic_result_count": int(entry.get("organic_result_count", 0)),
+                        "ad_copies": entry.get("ad_copies", []),
                     },
                 )
             )
@@ -126,7 +195,56 @@ class GoogleKeywordPlannerSourceAdapter(SourceAdapter):
     @staticmethod
     def sample_payload() -> list[dict]:
         return [
-            {"id": "gkp-1", "title": "Keyword: AI automation (CPC: $4.50, Vol: 110,000)", "url": "https://ads.google.com/aw/keywordplanner/ideas?keyword=AI+automation", "cpc": 4.50, "search_volume": 110000, "competition_level": "HIGH"},
-            {"id": "gkp-2", "title": "Keyword: cloud security (CPC: $12.30, Vol: 74,000)", "url": "https://ads.google.com/aw/keywordplanner/ideas?keyword=cloud+security", "cpc": 12.30, "search_volume": 74000, "competition_level": "HIGH"},
-            {"id": "gkp-3", "title": "Keyword: low-code platform (CPC: $8.75, Vol: 33,000)", "url": "https://ads.google.com/aw/keywordplanner/ideas?keyword=low-code+platform", "cpc": 8.75, "search_volume": 33000, "competition_level": "MEDIUM"},
+            {
+                "id": "gkp-serp-1",
+                "title": "Keyword: AI (6 ads, competition: HIGH)",
+                "url": "https://www.google.com/search?q=AI",
+                "search_keyword": "AI",
+                "ad_count": 6,
+                "has_ads": True,
+                "competition_level": "HIGH",
+                "top_advertisers": ["Google Cloud", "IBM Watson", "Microsoft Azure"],
+                "related_keywords": ["AI tools", "AI chatbot", "AI image generator"],
+                "organic_result_count": 10,
+                "engagement_score": 110.0,
+            },
+            {
+                "id": "gkp-serp-2",
+                "title": "Keyword: cybersecurity (4 ads, competition: HIGH)",
+                "url": "https://www.google.com/search?q=cybersecurity",
+                "search_keyword": "cybersecurity",
+                "ad_count": 4,
+                "has_ads": True,
+                "competition_level": "HIGH",
+                "top_advertisers": ["CrowdStrike", "Palo Alto Networks", "Fortinet"],
+                "related_keywords": ["cybersecurity jobs", "cybersecurity certification"],
+                "organic_result_count": 10,
+                "engagement_score": 80.0,
+            },
+            {
+                "id": "gkp-serp-3",
+                "title": "Keyword: SaaS (2 ads, competition: MEDIUM)",
+                "url": "https://www.google.com/search?q=SaaS",
+                "search_keyword": "SaaS",
+                "ad_count": 2,
+                "has_ads": True,
+                "competition_level": "MEDIUM",
+                "top_advertisers": ["HubSpot", "Salesforce"],
+                "related_keywords": ["SaaS meaning", "SaaS companies"],
+                "organic_result_count": 10,
+                "engagement_score": 50.0,
+            },
+            {
+                "id": "gkp-serp-4",
+                "title": "Keyword: machine learning (3 ads, competition: MEDIUM)",
+                "url": "https://www.google.com/search?q=machine+learning",
+                "search_keyword": "machine learning",
+                "ad_count": 3,
+                "has_ads": True,
+                "competition_level": "MEDIUM",
+                "top_advertisers": ["Coursera", "Google Cloud"],
+                "related_keywords": ["machine learning course", "ML models"],
+                "organic_result_count": 10,
+                "engagement_score": 65.0,
+            },
         ]

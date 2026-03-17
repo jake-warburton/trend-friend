@@ -64,6 +64,13 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
         0.80,
         ("culture", "consumer-tech", "gaming", "entertainment"),
     ),
+    "google_play": SourceDefinition(
+        "google_play",
+        "social",
+        "launch",
+        0.78,
+        ("consumer-tech", "gaming", "entertainment"),
+    ),
     "tiktok": SourceDefinition(
         "tiktok",
         "social",

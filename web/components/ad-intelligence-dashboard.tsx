@@ -1,17 +1,436 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
-import type { AdIntelligenceResponse } from "@/lib/types";
+import type { AdIntelligenceResponse, AdIntelligenceKeyword, AdIntelligenceAdvertiser, AdIntelligencePlatformSummary } from "@/lib/types";
+
+/* ── platform identity ─────────────────────────────────────────── */
+
+const PLATFORM_META: Record<string, { label: string; color: string; icon: string }> = {
+  google_keyword_planner: { label: "YouTube", color: "#ff0000", icon: "Y" },
+  facebook_ad_library:    { label: "Meta",    color: "#0082fb", icon: "M" },
+  google_ads_transparency:{ label: "Google Ads", color: "#34a853", icon: "A" },
+  tiktok_ads:             { label: "TikTok",  color: "#fe2c55", icon: "T" },
+};
+
+function platformLabel(source: string): string {
+  return PLATFORM_META[source]?.label ?? source;
+}
+function platformColor(source: string): string {
+  return PLATFORM_META[source]?.color ?? "var(--accent)";
+}
+function platformIcon(source: string): string {
+  return PLATFORM_META[source]?.icon ?? "?";
+}
+
+/* ── helpers ────────────────────────────────────────────────────── */
+
+function competitionColor(level: string): string {
+  if (level === "HIGH") return "var(--danger-text, #ff6b6b)";
+  if (level === "MEDIUM") return "var(--warning-text, #ffc56e)";
+  if (level === "LOW") return "var(--success-text, #7fe0a7)";
+  return "var(--muted)";
+}
+
+function competitionBarWidth(level: string): number {
+  if (level === "HIGH") return 100;
+  if (level === "MEDIUM") return 60;
+  if (level === "LOW") return 30;
+  return 10;
+}
+
+function formatCategory(raw: string): string {
+  // Already formatted (e.g. "AI/ML", "Tech")
+  if (!raw.includes("-")) return raw;
+  // Slug like "developer-tools" → "Developer Tools"
+  return raw.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+function formatVolume(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+  return v.toLocaleString();
+}
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+/* ── sub-components ─────────────────────────────────────────────── */
+
+function PlatformBadge({ source, size = "sm" }: { source: string; size?: "sm" | "md" }) {
+  const color = platformColor(source);
+  const icon = platformIcon(source);
+  const dim = size === "md" ? 22 : 16;
+  return (
+    <span
+      className="adi-platform-badge"
+      title={platformLabel(source)}
+      style={{
+        background: color,
+        width: dim,
+        height: dim,
+        fontSize: size === "md" ? 11 : 9,
+      }}
+    >
+      {icon}
+    </span>
+  );
+}
+
+function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
+  return (
+    <div className="adi-stat-card">
+      <span className="adi-stat-label">{label}</span>
+      <span className="adi-stat-value" style={accent ? { color: accent } : undefined}>
+        {value}
+      </span>
+      {sub && <span className="adi-stat-sub">{sub}</span>}
+    </div>
+  );
+}
+
+function CompetitionBar({ level }: { level: string }) {
+  const w = competitionBarWidth(level);
+  const color = competitionColor(level);
+  return (
+    <span className="adi-comp-bar-wrap">
+      <span
+        className="adi-comp-bar-fill"
+        style={{ width: `${w}%`, background: color }}
+      />
+      <span className="adi-comp-bar-label" style={{ color }}>
+        {level}
+      </span>
+    </span>
+  );
+}
+
+/* ── keyword table ──────────────────────────────────────────────── */
+
+function KeywordTable({ keywords }: { keywords: AdIntelligenceKeyword[] }) {
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [advertiserFilter, setAdvertiserFilter] = useState("");
+  if (!keywords.length) return null;
+
+  const categories = Array.from(new Set(keywords.map((k) => k.category).filter(Boolean))).sort();
+  const allAdvertisers = Array.from(new Set(keywords.flatMap((k) => k.topAdvertisers))).sort();
+
+  let filtered = keywords;
+  if (categoryFilter) {
+    filtered = filtered.filter((k) => k.category === categoryFilter);
+  }
+  if (advertiserFilter) {
+    filtered = filtered.filter((k) => k.topAdvertisers.includes(advertiserFilter));
+  }
+  const hasCpc = filtered.some((k) => k.cpc > 0);
+
+  return (
+    <section className="adi-section">
+      <div className="adi-section-head">
+        <h2 className="adi-section-title">Keywords</h2>
+        <span className="adi-section-count">{filtered.length}</span>
+        {categories.length > 1 && (
+          <select
+            className="adi-filter-select"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c!}>{formatCategory(c!)}</option>
+            ))}
+          </select>
+        )}
+        {allAdvertisers.length > 1 && (
+          <select
+            className="adi-filter-select"
+            value={advertiserFilter}
+            onChange={(e) => setAdvertiserFilter(e.target.value)}
+          >
+            <option value="">All advertisers</option>
+            {allAdvertisers.map((a) => (
+              <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+        )}
+      </div>
+      <div className="adi-table-wrap">
+        <table className="adi-table">
+          <thead>
+            <tr>
+              <th className="adi-th adi-th-left">Keyword</th>
+              <th className="adi-th adi-th-left">Category</th>
+              {hasCpc && <th className="adi-th adi-th-right">CPC</th>}
+              {hasCpc && <th className="adi-th adi-th-right">Volume</th>}
+              <th className="adi-th adi-th-left">Competition</th>
+              <th className="adi-th adi-th-right">YT Ads</th>
+              <th className="adi-th adi-th-left">Top Advertisers</th>
+              <th className="adi-th adi-th-center">Platforms</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((kw, i) => (
+              <tr
+                key={kw.keyword}
+                className="adi-row"
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
+                <td className="adi-td adi-td-keyword">
+                  {kw.trendId ? (
+                    <a href={`/trends/${kw.trendId}`} className="adi-keyword-link">
+                      {kw.keyword}
+                      <span className="adi-link-arrow">&rarr;</span>
+                    </a>
+                  ) : (
+                    <span>{kw.keyword}</span>
+                  )}
+                </td>
+                <td className="adi-td">
+                  {kw.category ? (
+                    <span className="adi-format-tag">{formatCategory(kw.category)}</span>
+                  ) : (
+                    <span style={{ color: "var(--muted)", opacity: 0.5 }}>--</span>
+                  )}
+                </td>
+                {hasCpc && (
+                  <td className="adi-td adi-td-mono adi-td-right">
+                    <span className="adi-cpc">${kw.cpc.toFixed(2)}</span>
+                  </td>
+                )}
+                {hasCpc && (
+                  <td className="adi-td adi-td-mono adi-td-right">
+                    {formatVolume(kw.searchVolume)}
+                  </td>
+                )}
+                <td className="adi-td">
+                  <CompetitionBar level={kw.competitionLevel} />
+                </td>
+                <td className="adi-td adi-td-mono adi-td-right">{kw.adDensity}{kw.adDensity === 1 ? " ad" : " ads"}</td>
+                <td className="adi-td">
+                  {kw.topAdvertisers.length > 0 ? (
+                    <span className="adi-tag-row">
+                      {kw.topAdvertisers.slice(0, 3).map((a) => (
+                        <span key={a} className="adi-format-tag">{a}</span>
+                      ))}
+                    </span>
+                  ) : (
+                    <span style={{ color: "var(--muted)", opacity: 0.5 }}>--</span>
+                  )}
+                </td>
+                <td className="adi-td adi-td-center">
+                  <span className="adi-badge-row">
+                    {kw.platforms.map((p) => (
+                      <PlatformBadge key={p} source={p} />
+                    ))}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/* ── advertiser table ───────────────────────────────────────────── */
+
+function AdvertiserTable({ advertisers }: { advertisers: AdIntelligenceAdvertiser[] }) {
+  const [filter, setFilter] = useState("");
+  if (!advertisers.length) return null;
+
+  const filtered = filter
+    ? advertisers.filter((a) => a.name.toLowerCase().includes(filter.toLowerCase()))
+    : advertisers;
+
+  return (
+    <section className="adi-section">
+      <div className="adi-section-head">
+        <h2 className="adi-section-title">Advertisers</h2>
+        <span className="adi-section-count">{filtered.length}</span>
+        <input
+          className="adi-filter-input"
+          type="text"
+          placeholder="Filter advertisers..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+      </div>
+      <div className="adi-table-wrap">
+        <table className="adi-table">
+          <thead>
+            <tr>
+              <th className="adi-th adi-th-left">Advertiser</th>
+              <th className="adi-th adi-th-center">Source</th>
+              <th className="adi-th adi-th-left">Format</th>
+              <th className="adi-th adi-th-right">Keyword appearances</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((adv, i) => (
+              <tr
+                key={`${adv.name}-${adv.platform}`}
+                className="adi-row"
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
+                <td className="adi-td adi-td-advertiser">{adv.name}</td>
+                <td className="adi-td adi-td-center">
+                  <PlatformBadge source={adv.platform} size="md" />
+                </td>
+                <td className="adi-td">
+                  <span className="adi-tag-row">
+                    {(adv.adFormats.length > 0 ? adv.adFormats : ["video"]).map((f) => (
+                      <span key={f} className="adi-format-tag">{f}</span>
+                    ))}
+                  </span>
+                </td>
+                <td className="adi-td adi-td-mono adi-td-right">
+                  {adv.adCount} {adv.adCount === 1 ? "search" : "searches"}
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td className="adi-td" colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>
+                  No advertisers match "{filter}"
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/* ── platform cards ─────────────────────────────────────────────── */
+
+function PlatformCards({ platforms }: { platforms: AdIntelligencePlatformSummary[] }) {
+  if (!platforms.length) return null;
+  const maxAds = Math.max(...platforms.map((p) => p.adCount), 1);
+  return (
+    <section className="adi-section">
+      <div className="adi-section-head">
+        <h2 className="adi-section-title">Platforms</h2>
+      </div>
+      <div className="adi-platform-grid">
+        {platforms.map((p, i) => {
+          const color = platformColor(p.platform);
+          const barPct = Math.round((p.adCount / maxAds) * 100);
+          return (
+            <div
+              key={p.platform}
+              className="adi-platform-card"
+              style={{ animationDelay: `${i * 60}ms`, borderColor: `${color}22` }}
+            >
+              <div className="adi-platform-card-head">
+                <PlatformBadge source={p.platform} size="md" />
+                <span className="adi-platform-card-name">{platformLabel(p.platform)}</span>
+              </div>
+              <div className="adi-platform-card-bar">
+                <div
+                  className="adi-platform-card-bar-fill"
+                  style={{ width: `${barPct}%`, background: color }}
+                />
+              </div>
+              <div className="adi-platform-card-stats">
+                <span><strong>{p.adCount}</strong> ads</span>
+                <span><strong>{p.keywordCount}</strong> keywords</span>
+                <span><strong>{p.advertiserCount}</strong> advertisers</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ── paywall gate ───────────────────────────────────────────────── */
+
+function ProGate() {
+  return (
+    <div className="adi-gate">
+      <div className="adi-gate-inner">
+        <div className="adi-gate-badge">PRO</div>
+        <h1 className="adi-gate-title">Ad Intelligence</h1>
+        <p className="adi-gate-copy">
+          Keyword CPC data, advertiser breakdowns, and cross-platform ad activity — available on Pro.
+        </p>
+        <div className="adi-gate-preview">
+          <div className="adi-gate-blur" />
+          <table className="adi-table" style={{ opacity: 0.3 }}>
+            <thead>
+              <tr>
+                <th className="adi-th adi-th-left">Keyword</th>
+                <th className="adi-th adi-th-right">CPC</th>
+                <th className="adi-th adi-th-right">Volume</th>
+                <th className="adi-th adi-th-left">Competition</th>
+              </tr>
+            </thead>
+            <tbody>
+              {["AI automation", "cloud security", "low-code platform"].map((kw) => (
+                <tr key={kw} className="adi-row">
+                  <td className="adi-td">{kw}</td>
+                  <td className="adi-td adi-td-right adi-td-mono">$--.--</td>
+                  <td className="adi-td adi-td-right adi-td-mono">---,---</td>
+                  <td className="adi-td"><CompetitionBar level="MEDIUM" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <a href="/pricing" className="adi-gate-cta">
+          Upgrade to Pro
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ── skeleton ───────────────────────────────────────────────────── */
+
+function Skeleton() {
+  return (
+    <div className="adi-wrap">
+      <div className="adi-header">
+        <div className="skeleton-pulse" style={{ width: 200, height: 26, borderRadius: 6 }} />
+        <div className="skeleton-pulse" style={{ width: 300, height: 14, borderRadius: 4, marginTop: 8 }} />
+      </div>
+      <div className="adi-stats-row">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="adi-stat-card">
+            <div className="skeleton-pulse" style={{ width: 60, height: 12, borderRadius: 4 }} />
+            <div className="skeleton-pulse" style={{ width: 80, height: 28, borderRadius: 6, marginTop: 8 }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── main dashboard ─────────────────────────────────────────────── */
 
 export function AdIntelligenceDashboard() {
+  const { user, loading: authLoading } = useAuth();
   const { isPro, loading: profileLoading } = useProfile();
+  const router = useRouter();
   const [data, setData] = useState<AdIntelligenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isPro) {
-      setLoading(false);
+    if (authLoading || profileLoading) return;
+    if (!user || !isPro) {
+      router.replace(user ? "/pricing" : "/login?next=/ad-intelligence");
       return;
     }
     fetch("/api/ad-intelligence")
@@ -19,232 +438,57 @@ export function AdIntelligenceDashboard() {
       .then((json) => setData(json))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isPro]);
+  }, [isPro, profileLoading, authLoading, user, router]);
 
-  if (profileLoading || loading) {
-    return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-64" />
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-96" />
-          <div className="grid grid-cols-4 gap-4 mt-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isPro) {
-    return (
-      <div className="p-8 max-w-2xl mx-auto text-center">
-        <h1 className="text-3xl font-bold mb-4">Ad Intelligence</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
-          See what your competitors are paying for
-        </p>
-        <div className="relative rounded-xl border border-gray-200 dark:border-gray-700 p-8 mb-8 overflow-hidden">
-          <div className="absolute inset-0 backdrop-blur-md bg-white/60 dark:bg-gray-900/60 z-10" />
-          <div className="relative z-0 opacity-40 space-y-3">
-            <div className="grid grid-cols-4 gap-4">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded p-4">
-                <div className="text-sm text-gray-500">Tracked Keywords</div>
-                <div className="text-2xl font-bold">247</div>
-              </div>
-              <div className="bg-gray-100 dark:bg-gray-800 rounded p-4">
-                <div className="text-sm text-gray-500">Avg CPC</div>
-                <div className="text-2xl font-bold">$6.42</div>
-              </div>
-              <div className="bg-gray-100 dark:bg-gray-800 rounded p-4">
-                <div className="text-sm text-gray-500">Advertisers</div>
-                <div className="text-2xl font-bold">89</div>
-              </div>
-              <div className="bg-gray-100 dark:bg-gray-800 rounded p-4">
-                <div className="text-sm text-gray-500">Top Platform</div>
-                <div className="text-2xl font-bold">Google</div>
-              </div>
-            </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-2">Keyword</th>
-                  <th className="text-right py-2">CPC</th>
-                  <th className="text-right py-2">Volume</th>
-                  <th className="text-right py-2">Competition</th>
-                </tr>
-              </thead>
-              <tbody>
-                {["AI automation", "cloud security", "low-code platform"].map((kw) => (
-                  <tr key={kw} className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-2">{kw}</td>
-                    <td className="text-right">$--</td>
-                    <td className="text-right">--</td>
-                    <td className="text-right">--</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-lg font-semibold mb-3">Unlock Ad Intelligence</p>
-              <a
-                href="/billing"
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Upgrade to Pro
-              </a>
-            </div>
-          </div>
-        </div>
-        <p className="text-sm text-gray-500">
-          Pro members get full access to keyword CPC data, advertiser breakdowns, ad copy trends, and cross-platform ad activity.
-        </p>
-      </div>
-    );
-  }
+  if (authLoading || profileLoading || loading) return <Skeleton />;
+  if (!isPro) return <ProGate />;
 
   if (!data) {
     return (
-      <div className="p-8 text-center text-gray-500">
-        No ad intelligence data available yet.
+      <div className="adi-wrap">
+        <p style={{ color: "var(--muted)", textAlign: "center", padding: 48 }}>
+          No ad intelligence data available yet.
+        </p>
       </div>
     );
   }
 
-  const totalKeywords = data.topKeywords.length;
-  const avgCpc = totalKeywords > 0
-    ? (data.topKeywords.reduce((sum, k) => sum + k.cpc, 0) / totalKeywords).toFixed(2)
-    : "0.00";
-  const totalAdvertisers = data.topAdvertisers.length;
-  const topPlatform = data.platformSummary[0]?.platform ?? "N/A";
+  const totalAds = data.platformSummary.reduce((s, p) => s + p.adCount, 0);
+  const hasCpc = data.topKeywords.some((k) => k.cpc > 0);
+  const avgCpc = hasCpc && data.topKeywords.length > 0
+    ? (data.topKeywords.reduce((s, k) => s + k.cpc, 0) / data.topKeywords.length).toFixed(2)
+    : null;
+  const totalPlatforms = data.platformSummary.length;
+  const topPlatform = data.platformSummary[0]
+    ? platformLabel(data.platformSummary[0].platform)
+    : "N/A";
 
   return (
-    <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Ad Intelligence</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Keyword CPC data, advertiser breakdowns, and cross-platform ad activity
+    <div className="adi-wrap">
+      <header className="adi-header">
+        <div className="adi-header-top">
+          <h1 className="adi-title">Ad Intelligence</h1>
+        </div>
+        <p className="adi-subtitle">
+          See who is advertising around trending topics, which platforms they target, and what keywords they compete on
         </p>
+      </header>
+
+      <div className="adi-stats-row">
+        <StatCard label="Keywords" value={data.topKeywords.length} />
+        {avgCpc ? (
+          <StatCard label="Avg CPC" value={`$${avgCpc}`} accent="var(--accent)" />
+        ) : (
+          <StatCard label="Platforms" value={totalPlatforms} />
+        )}
+        <StatCard label="Advertisers" value={data.topAdvertisers.length} />
+        <StatCard label="Total Ads" value={totalAds} />
+        <StatCard label="Top Platform" value={topPlatform} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Tracked Keywords</div>
-          <div className="text-2xl font-bold mt-1">{totalKeywords}</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Avg CPC</div>
-          <div className="text-2xl font-bold mt-1">${avgCpc}</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Advertisers</div>
-          <div className="text-2xl font-bold mt-1">{totalAdvertisers}</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Top Platform</div>
-          <div className="text-2xl font-bold mt-1">{topPlatform}</div>
-        </div>
-      </div>
-
-      {data.topKeywords.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="font-semibold">Top Keywords</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <th className="text-left px-4 py-2 font-medium">Keyword</th>
-                  <th className="text-right px-4 py-2 font-medium">CPC</th>
-                  <th className="text-right px-4 py-2 font-medium">Search Volume</th>
-                  <th className="text-right px-4 py-2 font-medium">Competition</th>
-                  <th className="text-right px-4 py-2 font-medium">Ad Density</th>
-                  <th className="text-left px-4 py-2 font-medium">Platforms</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.topKeywords.map((kw) => (
-                  <tr key={kw.keyword} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
-                    <td className="px-4 py-2">
-                      {kw.trendId ? (
-                        <a href={`/trends/${kw.trendId}`} className="text-blue-600 hover:underline">{kw.keyword}</a>
-                      ) : (
-                        kw.keyword
-                      )}
-                    </td>
-                    <td className="text-right px-4 py-2">${kw.cpc.toFixed(2)}</td>
-                    <td className="text-right px-4 py-2">{kw.searchVolume.toLocaleString()}</td>
-                    <td className="text-right px-4 py-2">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs ${
-                        kw.competitionLevel === "HIGH" ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" :
-                        kw.competitionLevel === "MEDIUM" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" :
-                        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                      }`}>
-                        {kw.competitionLevel}
-                      </span>
-                    </td>
-                    <td className="text-right px-4 py-2">{kw.adDensity}</td>
-                    <td className="px-4 py-2">{kw.platforms.join(", ")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {data.topAdvertisers.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="font-semibold">Top Advertisers</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                  <th className="text-left px-4 py-2 font-medium">Advertiser</th>
-                  <th className="text-left px-4 py-2 font-medium">Platform</th>
-                  <th className="text-right px-4 py-2 font-medium">Ad Count</th>
-                  <th className="text-left px-4 py-2 font-medium">Formats</th>
-                  <th className="text-left px-4 py-2 font-medium">Regions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.topAdvertisers.map((adv) => (
-                  <tr key={`${adv.name}-${adv.platform}`} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
-                    <td className="px-4 py-2 font-medium">{adv.name}</td>
-                    <td className="px-4 py-2">{adv.platform}</td>
-                    <td className="text-right px-4 py-2">{adv.adCount}</td>
-                    <td className="px-4 py-2">{adv.adFormats.join(", ")}</td>
-                    <td className="px-4 py-2">{adv.regions.join(", ")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {data.platformSummary.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="font-semibold">Platform Distribution</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-            {data.platformSummary.map((p) => (
-              <div key={p.platform} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                <div className="font-medium">{p.platform}</div>
-                <div className="text-sm text-gray-500 mt-1">
-                  {p.adCount} ads · {p.keywordCount} keywords · {p.advertiserCount} advertisers
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <KeywordTable keywords={data.topKeywords} />
+      <AdvertiserTable advertisers={data.topAdvertisers} />
+      <PlatformCards platforms={data.platformSummary} />
     </div>
   );
 }

@@ -19,7 +19,7 @@ export async function handleNotificationChannelTestPost(
     });
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Notification channel request failed";
+    const message = "Notification channel request failed";
     return NextResponse.json({ error: message }, { status: getErrorStatus(error) });
   }
 }

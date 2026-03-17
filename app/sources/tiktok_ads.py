@@ -63,6 +63,7 @@ class TikTokAdsSourceAdapter(SourceAdapter):
                         "advertiser": advertiser,
                         "targeting_info": {},
                         "ad_format": ad_format,
+                        "search_keyword": advertiser,
                     },
                 )
             )
@@ -91,6 +92,7 @@ class TikTokAdsSourceAdapter(SourceAdapter):
                         "advertiser": str(entry.get("advertiser", "")),
                         "targeting_info": {},
                         "ad_format": "video",
+                        "search_keyword": str(entry.get("search_keyword", entry.get("advertiser", ""))),
                     },
                 )
             )
@@ -99,7 +101,7 @@ class TikTokAdsSourceAdapter(SourceAdapter):
     @staticmethod
     def sample_payload() -> list[dict]:
         return [
-            {"id": "ttad-1", "title": "TikTok Ad by AI Studio Pro", "url": "https://library.tiktok.com/ads/detail/1001", "advertiser": "AI Studio Pro", "impressions": 500000, "engagement_score": 12.0},
-            {"id": "ttad-2", "title": "TikTok Ad by FinApp", "url": "https://library.tiktok.com/ads/detail/1002", "advertiser": "FinApp", "impressions": 250000, "engagement_score": 9.0},
-            {"id": "ttad-3", "title": "TikTok Ad by LearnCode", "url": "https://library.tiktok.com/ads/detail/1003", "advertiser": "LearnCode", "impressions": 120000, "engagement_score": 7.5},
+            {"id": "ttad-1", "title": "TikTok Ad by AI Studio Pro", "url": "https://library.tiktok.com/ads/detail/1001", "advertiser": "AI Studio Pro", "impressions": 500000, "engagement_score": 12.0, "search_keyword": "AI Studio Pro"},
+            {"id": "ttad-2", "title": "TikTok Ad by FinApp", "url": "https://library.tiktok.com/ads/detail/1002", "advertiser": "FinApp", "impressions": 250000, "engagement_score": 9.0, "search_keyword": "FinApp"},
+            {"id": "ttad-3", "title": "TikTok Ad by LearnCode", "url": "https://library.tiktok.com/ads/detail/1003", "advertiser": "LearnCode", "impressions": 120000, "engagement_score": 7.5, "search_keyword": "LearnCode"},
         ]
