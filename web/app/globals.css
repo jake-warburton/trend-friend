@@ -6109,6 +6109,10 @@ dialog::backdrop {
   overflow-x: hidden;
 }
 
+.landing-page + .site-footer {
+  margin-top: 0;
+}
+
 /* Hero */
 
 .landing-hero {
