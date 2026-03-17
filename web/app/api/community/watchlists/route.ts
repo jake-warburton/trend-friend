@@ -10,7 +10,7 @@ export async function GET() {
     const payload = await listPublicWatchlists();
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Community watchlists unavailable";
+    const message = "Community watchlists unavailable";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

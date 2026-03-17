@@ -4844,6 +4844,7 @@ dialog::backdrop {
 
   .explorer-card {
     --explorer-left-inset: 5px;
+    --explorer-evidence-label-width: 0px;
     padding: 9px 12px 9px 12px;
     border-radius: 0;
   }
@@ -4973,14 +4974,12 @@ dialog::backdrop {
   }
 
   .evidence-main-row {
-    grid-template-columns: 1fr;
-    gap: 2px;
+    display: block;
+    overflow: hidden;
   }
 
   .explorer-evidence-label {
-    width: auto;
-    min-width: auto;
-    font-size: 0.46rem;
+    display: none;
   }
 
   .evidence-preview-inline span,
@@ -4989,6 +4988,7 @@ dialog::backdrop {
     -webkit-line-clamp: 2;
     word-break: break-word;
     overflow-wrap: anywhere;
+    max-width: 100%;
   }
 
   .evidence-meta-row {
