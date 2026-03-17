@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  buildAudienceFilterOptions,
   buildCommunityExportHref,
   buildCommunitySpotlights,
   buildSharedWatchlistExportHref,
+} from "@/components/explorer/community";
+import {
+  buildAudienceFilterOptions,
   buildLanguageFilterOptions,
   buildMarketFilterOptions,
   isThesisPresetApplied,
@@ -14,7 +16,7 @@ import {
   trendMatchesAudience,
   trendMatchesLanguage,
   trendMatchesMarket,
-} from "@/components/dashboard-shell";
+} from "@/components/explorer/filters";
 import type { PublicWatchlistsResponse, TrendDetailRecord } from "@/lib/types";
 
 test("buildCommunitySpotlights returns popular, search-driven, and global entries when available", () => {
