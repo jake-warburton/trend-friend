@@ -31,12 +31,10 @@ export async function GET() {
       accountTier: profile?.account_tier ?? "free",
       subscriptionStatus: profile?.subscription_status ?? "none",
       currentPeriodEnd: profile?.current_period_end ?? null,
-      stripeCustomerId: profile?.stripe_customer_id ?? null,
       cancelAtPeriodEnd,
     });
   } catch (err) {
     console.error("[billing/status] error:", err);
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load billing status" }, { status: 500 });
   }
 }

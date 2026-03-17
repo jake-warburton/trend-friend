@@ -28,7 +28,7 @@ export async function POST() {
     return NextResponse.json({ resubscribed: true });
   } catch (err) {
     console.error("[billing/resubscribe] error:", err);
-    const message = err instanceof Error ? err.message : "Internal server error";
+    const message = "Failed to resubscribe";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

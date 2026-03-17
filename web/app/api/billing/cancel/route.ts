@@ -28,7 +28,7 @@ export async function POST() {
     return NextResponse.json({ canceled: true });
   } catch (err) {
     console.error("[billing/cancel] error:", err);
-    const message = err instanceof Error ? err.message : "Internal server error";
+    const message = "Failed to cancel subscription";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
