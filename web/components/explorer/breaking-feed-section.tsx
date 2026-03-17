@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { BreakingFeed } from "@/lib/types";
 
 export function BreakingFeedSection({ feed }: { feed: BreakingFeed | null }) {
-  const ITEMS_PER_PAGE = 4;
+  const ITEMS_PER_PAGE = 3;
   const [page, setPage] = useState(0);
 
   if (feed == null) {
@@ -17,7 +17,7 @@ export function BreakingFeedSection({ feed }: { feed: BreakingFeed | null }) {
           </div>
         </div>
         <div className="breaking-feed-items">
-          {Array.from({ length: 4 }, (_, i) => (
+          {Array.from({ length: 3 }, (_, i) => (
             <article className="breaking-feed-item skeleton-pulse" key={i}>
               <div className="breaking-feed-item-header">
                 <span className="skeleton-line" style={{ width: "40%" }} />
