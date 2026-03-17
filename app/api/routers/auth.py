@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
 from app.auth.middleware import SESSION_COOKIE_NAME, get_current_profile, require_admin, require_auth
-from app.auth.passwords import hash_password, verify_password
+from app.auth.passwords import hash_password, needs_rehash, verify_password
 from app.auth.repository import UserRepository
 from app.auth.tokens import generate_api_key, generate_session_token, hash_session_token
 from app.data.connection import DatabaseConnection
@@ -68,6 +70,10 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
     if user is None or not verify_password(password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    # Transparently upgrade legacy password hashes on successful login
+    if needs_rehash(user.password_hash):
+        repo.update_password_hash(user.id, hash_password(password))
+
     token = generate_session_token()
     repo.create_session(user.id, hash_session_token(token))
     _set_session_cookie(response, token)
@@ -121,7 +127,13 @@ def logout_user(
     if token:
         repo = UserRepository(db)
         repo.revoke_session_by_hash(hash_session_token(token))
-    response.delete_cookie(SESSION_COOKIE_NAME, path="/", httponly=True, samesite="lax")
+    response.delete_cookie(
+        SESSION_COOKIE_NAME,
+        path="/",
+        httponly=True,
+        samesite="lax",
+        secure=os.getenv("SIGNAL_EYE_SECURE_COOKIES", "false").lower() == "true",
+    )
     return {"ok": True}
 
 
@@ -215,6 +227,7 @@ def _set_session_cookie(response: Response, token: str) -> None:
         token,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=os.getenv("SIGNAL_EYE_SECURE_COOKIES", "false").lower() == "true",
+        max_age=7 * 24 * 60 * 60,
         path="/",
     )

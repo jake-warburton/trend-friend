@@ -6,7 +6,7 @@ import sqlite3
 import unittest
 from unittest.mock import patch
 
-from app.auth.passwords import hash_password, verify_password
+from app.auth.passwords import hash_password, needs_rehash, verify_password
 from app.auth.tokens import generate_api_key, generate_session_token, hash_api_key
 from app.auth.repository import UserRepository
 from app.data.database import initialize_database
@@ -27,6 +27,36 @@ class PasswordTests(unittest.TestCase):
         h1 = hash_password("same-password")
         h2 = hash_password("same-password")
         self.assertNotEqual(h1, h2)  # different salts
+
+    def test_pbkdf2_format(self) -> None:
+        hashed = hash_password("test-password")
+        self.assertTrue(hashed.startswith("pbkdf2:"))
+        parts = hashed.split(":")
+        self.assertEqual(len(parts), 3)
+
+    def test_legacy_sha256_still_verifies(self) -> None:
+        """Old SHA-256 hashes must still verify for backward compatibility."""
+        import hashlib as _hashlib
+        import os as _os
+
+        salt = _os.urandom(16).hex()
+        digest = _hashlib.sha256(f"{salt}:legacy-password".encode()).hexdigest()
+        legacy_hash = f"{salt}:{digest}"
+        self.assertTrue(verify_password("legacy-password", legacy_hash))
+        self.assertFalse(verify_password("wrong-password", legacy_hash))
+
+    def test_needs_rehash_true_for_legacy(self) -> None:
+        import hashlib as _hashlib
+        import os as _os
+
+        salt = _os.urandom(16).hex()
+        digest = _hashlib.sha256(f"{salt}:pw".encode()).hexdigest()
+        legacy_hash = f"{salt}:{digest}"
+        self.assertTrue(needs_rehash(legacy_hash))
+
+    def test_needs_rehash_false_for_pbkdf2(self) -> None:
+        hashed = hash_password("my-password")
+        self.assertFalse(needs_rehash(hashed))
 
 
 class TokenTests(unittest.TestCase):
