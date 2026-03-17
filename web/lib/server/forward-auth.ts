@@ -4,9 +4,14 @@ export async function buildForwardedAuthHeaders(request: Request): Promise<Heade
   // Try to extract Supabase access token from server client
   try {
     const supabase = await createSupabaseServerClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      return { authorization: `Bearer ${session.access_token}` };
+    // Validate the JWT server-side first (getUser() makes a network call to Supabase)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      // Token is validated; now read session from cookie to get access_token for forwarding
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        return { authorization: `Bearer ${session.access_token}` };
+      }
     }
   } catch {
     // Fall through to legacy header forwarding

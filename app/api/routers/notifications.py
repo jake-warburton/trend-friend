@@ -25,9 +25,31 @@ def _owner_user_id(user: User) -> int | None:
 
 
 def _validate_webhook_url(destination: str) -> None:
+    import ipaddress
+    import socket
+
     parsed = urlparse(destination)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise HTTPException(status_code=422, detail="destination must be a valid http or https URL")
+
+    hostname = parsed.hostname or ""
+
+    # Block obviously internal hostnames
+    blocked_hostnames = {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "metadata.google.internal"}
+    if hostname.lower() in blocked_hostnames:
+        raise HTTPException(status_code=422, detail="webhook destination must not target internal hosts")
+
+    # Resolve and block private/reserved IP ranges
+    try:
+        for info in socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM):
+            addr = ipaddress.ip_address(info[4][0])
+            if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+                raise HTTPException(
+                    status_code=422,
+                    detail="webhook destination must not resolve to a private or reserved IP address",
+                )
+    except socket.gaierror:
+        raise HTTPException(status_code=422, detail="webhook destination hostname could not be resolved")
 
 
 @router.get("/notifications/channels")

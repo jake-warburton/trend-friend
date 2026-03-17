@@ -2531,16 +2531,12 @@ export function DashboardShell({
                   audienceBadge ?? null,
                   trend.metaTrend,
                 ].filter((item): item is string => Boolean(item));
-                const collapsedSourceInsights = detail
+                const sourceInsights = detail
                   ? buildSourceContributionInsights(
                       detail.sourceContributions,
                       overview.sources,
-                    ).slice(0, 2)
+                    ).slice(0, 5)
                   : [];
-                const collapsedDriverSummary =
-                  formatCollapsedSourceDriverSummary(collapsedSourceInsights);
-                const collapsedCorroborationSummary =
-                  formatCollapsedCorroborationSummary(detail, trend);
                 return (
                   <article
                     className={
