@@ -125,7 +125,7 @@ export default async function Page() {
             </span>
           </h1>
           <p className="landing-subheadline">
-            Signal Eye tracks 18+ live data sources — Hacker News, Reddit,
+            Signal Eye tracks 24+ live data sources — Hacker News, Reddit,
             GitHub, arXiv, YouTube, Google Trends and more — to surface emerging
             trends the moment they start gaining momentum.
           </p>
@@ -156,7 +156,7 @@ export default async function Page() {
       <section className="landing-stats">
         <div className="landing-stats-grid">
           <div className="landing-stat-item">
-            <strong>18+</strong>
+            <strong>24+</strong>
             <span>data sources monitored</span>
           </div>
           <div className="landing-stat-item">
