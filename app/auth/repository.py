@@ -189,7 +189,7 @@ class UserRepository:
         Rejects sessions older than 30 days.
         """
 
-        max_age_cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+        max_age_cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
         row = self.connection.execute(
             """
             SELECT id, user_id, token_hash, created_at, last_used_at, revoked
