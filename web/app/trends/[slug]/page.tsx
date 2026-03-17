@@ -252,8 +252,8 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
           </Link>
           <p className="eyebrow">Trend detail</p>
           <div className="detail-pill-row">
-            <span className="trend-date-chip">{formatCategory(trend.category)}</span>
-            <span className="trend-date-chip">{trend.metaTrend}</span>
+            <Link className="trend-date-chip" href={`/categories/${slugifyBrowseValue(trend.category)}`}>{formatCategory(trend.category)}</Link>
+            <Link className="trend-date-chip" href={`/meta-trends/${slugifyBrowseValue(trend.metaTrend)}`}>{trend.metaTrend}</Link>
             <span className="trend-date-chip">{formatLabel(trend.stage)}</span>
             <span className="trend-date-chip">{Math.round(trend.confidence * 100)}% confidence</span>
             <span className={trendStatusClassName(trend.status)}>{formatTrendStatus(trend.status)}</span>

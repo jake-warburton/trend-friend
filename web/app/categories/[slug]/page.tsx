@@ -40,6 +40,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  const relatedMetaTrends = [...new Set(group.trends.map((t) => t.metaTrend).filter(Boolean))];
+
   const jsonLd = [
     buildCollectionPageJsonLd({
       name: `${group.label} Trends`,
@@ -113,6 +115,30 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             </div>
           </section>
         </section>
+
+        {relatedMetaTrends.length > 0 && (
+          <section style={{ marginTop: 32 }}>
+            <h2 style={{ fontSize: 16, marginBottom: 12 }}>Related Meta-Trends</h2>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {relatedMetaTrends.map((mt) => (
+                <Link
+                  key={mt}
+                  href={`/meta-trends/${slugifyBrowseValue(mt)}`}
+                  style={{
+                    padding: "6px 14px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    textDecoration: "none",
+                    color: "var(--foreground)",
+                  }}
+                >
+                  {mt}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </>
   );
