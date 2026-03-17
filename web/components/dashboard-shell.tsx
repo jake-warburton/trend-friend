@@ -1,8 +1,5 @@
 "use client";
 
-import { Input } from "@base-ui/react/input";
-import { NumberField } from "@base-ui/react/number-field";
-import { Select } from "@base-ui/react/select";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
@@ -14,34 +11,16 @@ import {
   useTransition,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GeoMapClient } from "@/components/geo-map-client";
 import { detectChangedTrendIds, hasOverviewChanged } from "@/lib/auto-refresh";
-import { formatCategoryLabel } from "@/lib/category-labels";
 import type { OverviewRefreshMeta } from "@/lib/auto-refresh";
 import { buildExplorerGeoMapData, trendMatchesGeo } from "@/lib/explorer-geo";
-import {
-  formatForecastConfidence,
-  getExplorerForecastBadge,
-} from "@/lib/forecast-ui";
-import {
-  getPrimaryEvidenceLink,
-  normalizeEvidenceUrl,
-  summarizeEvidencePreview,
-} from "@/lib/evidence-links";
-import { formatCountryLabel, getRegionName } from "@/lib/geo-map-data";
 import { buildSourceImpactRows } from "@/lib/source-impact";
 import {
-  buildSourceContributionInsights,
   buildSourceFamilyHistoryInsightsFromSnapshots,
   buildSourceFamilyHistoryInsights,
   buildSourceFamilyInsights,
-  formatSourceFamilyLabel,
-  formatSourceLabel,
-  getSourceFreshnessBadge,
-  summarizeTopSourceDrivers,
 } from "@/lib/source-health";
-import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
-import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
+import { isRecurringTrend } from "@/lib/seasonality-ui";
 import { UpgradeModal, useUpgradeGate } from "@/components/upgrade-modal";
 import {
   confidenceBucketForTrend,
@@ -54,58 +33,37 @@ import type {
   BreakingFeed,
   ExploreDeferredData,
   ExploreInitialData,
-  SourceSummaryResponse,
-  TrendDetailIndexResponse,
   TrendDetailRecord,
-  TrendExplorerRecord,
-  TrendHistoryResponse,
 } from "@/lib/types";
-import type { ThesisPreset, ExplorerActiveFilter, ThesisPresetFilterState } from "@/components/explorer/types";
+import type { ThesisPreset } from "@/components/explorer/types";
 import {
   OVERVIEW_POLL_INTERVAL_MS,
   UPDATED_TRENDS_FLASH_MS,
-  EMPTY_GENERATED_AT,
   EMPTY_HISTORY,
   EMPTY_DETAIL_INDEX,
   EMPTY_SOURCE_SUMMARY,
-  SOURCE_FILTER_OPTIONS,
   DEFAULT_CATEGORY_OPTION,
-  DEFAULT_AUDIENCE_OPTION,
-  DEFAULT_MARKET_OPTION,
-  DEFAULT_LANGUAGE_OPTION,
-  DEFAULT_STAGE_OPTION,
-  DEFAULT_CONFIDENCE_OPTION,
   DEFAULT_META_TREND_OPTION,
-  STAGE_OPTIONS,
-  CONFIDENCE_OPTIONS,
-  LENS_OPTIONS,
-  SORT_OPTIONS,
   DEFAULT_SORT_DIRECTIONS,
-  DEFAULT_STATUS_OPTION,
-  STATUS_OPTIONS,
   EXPLORER_PAGE_SIZE,
 } from "@/components/explorer/constants";
 import { THESIS_PRESETS, THESIS_PRESET_ICONS } from "@/components/explorer/thesis-presets";
-import { getSourceColor, buildConicGradient } from "@/components/explorer/source-palette";
 import {
-  buildTrendCardKey, formatDateOnly,
-  formatRankChange, formatMomentum, formatMomentumHeadline,
-  formatMomentumDetail, formatScoreMix, formatCollapsedSourceDriverSummary,
-  formatCollapsedCorroborationSummary, movementClassName, compareDates,
+  buildTrendCardKey, compareDates,
   formatCategory,
-  formatTrendStatus, trendStatusClassName, formatVolatility, volatilityClassName,
-  scaleValue, formatPercent,
-  formatAudiencePrefix, formatAudienceLabel,
-  formatConfidenceLabel, formatConfidenceBucketLabel, formatStageLabel,
-  buildTrendAudienceBadge, summarizeTrendAudience, formatLanguageLabel,
-  formatExplorerSortLabel, formatStatusLabel, getOpportunityScoreForLens,
-  formatLensLabel, getOptionLabel, formatGeoCountryLabel,
+  getOpportunityScoreForLens,
 } from "@/components/explorer/format";
 import {
   listActiveExplorerFilters, isThesisPresetApplied, shouldClearActiveThesisPreset,
   buildAudienceFilterOptions, buildMarketFilterOptions, buildLanguageFilterOptions,
 } from "@/components/explorer/filters";
 import { BreakingFeedSection } from "@/components/explorer/breaking-feed-section";
+import { ExplorerCard } from "@/components/explorer/explorer-card";
+import { ExplorerFilters } from "@/components/explorer/explorer-filters";
+import { ExplorerPagination } from "@/components/explorer/explorer-pagination";
+import { ExplorerSidebar } from "@/components/explorer/explorer-sidebar";
+import { AnalyticsStrip } from "@/components/explorer/analytics-strip";
+import { GeoFootprint } from "@/components/explorer/geo-footprint";
 
 type DashboardShellProps = {
   initialData: ExploreInitialData;
@@ -308,57 +266,6 @@ export function DashboardShell({
       sortBy,
       sortDirection,
     ],
-  );
-  const selectedSourceLabel = getOptionLabel(
-    SOURCE_FILTER_OPTIONS,
-    selectedSource,
-    "All sources",
-  );
-  const selectedCategoryLabel = getOptionLabel(
-    categoryOptions,
-    selectedCategory,
-    "All categories",
-  );
-  const selectedStageLabel = getOptionLabel(
-    STAGE_OPTIONS,
-    selectedStage,
-    "All stages",
-  );
-  const selectedConfidenceLabel = getOptionLabel(
-    CONFIDENCE_OPTIONS,
-    selectedConfidence,
-    "All confidence",
-  );
-  const selectedLensLabel = getOptionLabel(
-    LENS_OPTIONS,
-    selectedLens,
-    "All lenses",
-  );
-  const selectedMetaTrendLabel = getOptionLabel(
-    metaTrendOptions,
-    selectedMetaTrend,
-    "All meta trends",
-  );
-  const selectedAudienceLabel = getOptionLabel(
-    audienceOptions,
-    selectedAudience,
-    "All audiences",
-  );
-  const selectedMarketLabel = getOptionLabel(
-    marketOptions,
-    selectedMarket,
-    "All markets",
-  );
-  const selectedLanguageLabel = getOptionLabel(
-    languageOptions,
-    selectedLanguage,
-    "All languages",
-  );
-  const selectedSortLabel = getOptionLabel(SORT_OPTIONS, sortBy, "Rank");
-  const selectedStatusLabel = getOptionLabel(
-    STATUS_OPTIONS,
-    selectedStatus,
-    "All statuses",
   );
   const activeThesisPresetKey = useMemo(
     () =>
@@ -655,7 +562,7 @@ export function DashboardShell({
     setExpandedTrendId((prev) => (prev === trendId ? null : trendId));
   }
 
-  function clearExplorerFilter(filterKey: ExplorerActiveFilter["key"]) {
+  function clearExplorerFilter(filterKey: string) {
     if (filterKey === "keyword") {
       setKeyword("");
       return;
@@ -945,62 +852,14 @@ export function DashboardShell({
       {/* ── Breaking Feed ─────────────────────────────────── */}
       <BreakingFeedSection feed={breakingFeed} />
 
-      {hasDeferredData && explorerGeoMapData.length > 0 ? (
-        <section className="explorer-geo-strip">
-          <div className="explorer-geo-panel">
-            <div className="explorer-geo-panel-head">
-              <div>
-                <strong>Geographic footprint</strong>
-                <p className="source-summary-copy">
-                  {explorerGeoMapData.length} countr
-                  {explorerGeoMapData.length === 1 ? "y" : "ies"} across{" "}
-                  {filteredTrends.length} visible trend
-                  {filteredTrends.length === 1 ? "" : "s"}
-                </p>
-              </div>
-              {selectedGeoCountry !== "all" ? (
-                <button
-                  className="mini-action-button"
-                  onClick={() => setSelectedGeoCountry("all")}
-                  type="button"
-                >
-                  Clear geo filter
-                </button>
-              ) : (
-                <span className="section-heading-meta">
-                  Click a country to filter
-                </span>
-              )}
-            </div>
-            <GeoMapClient
-              height={320}
-              mapData={explorerGeoMapData}
-              onCountrySelect={(countryCode) =>
-                setSelectedGeoCountry((current) =>
-                  current === countryCode ? "all" : countryCode,
-                )
-              }
-              selectedCountryCode={
-                selectedGeoCountry !== "all" ? selectedGeoCountry : null
-              }
-            />
-          </div>
-        </section>
-      ) : deferredDataState === "loading" ? (
-        <section className="explorer-geo-strip">
-          <div className="explorer-geo-panel">
-            <div className="explorer-geo-panel-head">
-              <div>
-                <strong>Geographic footprint</strong>
-                <p className="source-summary-copy">
-                  Loading geographic coverage...
-                </p>
-              </div>
-            </div>
-            <div className="geo-map-skeleton skeleton-pulse" style={{ height: 320 }} />
-          </div>
-        </section>
-      ) : null}
+      <GeoFootprint
+        geoMapData={explorerGeoMapData}
+        filteredTrendCount={filteredTrends.length}
+        selectedGeoCountry={selectedGeoCountry}
+        onGeoCountryChange={setSelectedGeoCountry}
+        isLoading={deferredDataState === "loading"}
+        isReady={hasDeferredData && explorerGeoMapData.length > 0}
+      />
 
       <section className="content-grid">
         <div className="ranking-panel">
@@ -1058,515 +917,46 @@ export function DashboardShell({
 
             </section>
 
-            <details className="advanced-filters-panel">
-              <summary>
-                <span>Advanced filters</span>
-                <small>
-                  {activeExplorerFilters.length > 0
-                    ? `${activeExplorerFilters.length} active`
-                    : "Keyword, source, scoring, and audience controls"}
-                </small>
-                <span aria-hidden="true" className="advanced-filters-chevron">
-                  ▾
-                </span>
-              </summary>
-              <section className="advanced-filters-grid filters-panel-wide">
-                <label className="filter-field">
-                  <span>Keyword</span>
-                  <Input
-                    className="text-input"
-                    placeholder="AI agents, robotics, battery..."
-                    value={keyword}
-                    onChange={(event) => setKeyword(event.target.value)}
-                  />
-                </label>
-
-                <label className="filter-field">
-                  <span>Source</span>
-                  <Select.Root
-                    value={selectedSource}
-                    onValueChange={(value) => setSelectedSource(value ?? "all")}
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedSourceLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {SOURCE_FILTER_OPTIONS.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Category</span>
-                  <Select.Root
-                    value={selectedCategory}
-                    onValueChange={(value) =>
-                      setSelectedCategory(value ?? "all")
-                    }
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedCategoryLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {categoryOptions.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Stage</span>
-                  <Select.Root
-                    value={selectedStage}
-                    onValueChange={(value) => setSelectedStage(value ?? "all")}
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedStageLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {STAGE_OPTIONS.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Status</span>
-                  <Select.Root
-                    value={selectedStatus}
-                    onValueChange={(value) =>
-                      setSelectedStatus(value ?? "all")
-                    }
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedStatusLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {STATUS_OPTIONS.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Confidence</span>
-                  <Select.Root
-                    value={selectedConfidence}
-                    onValueChange={(value) =>
-                      setSelectedConfidence(value ?? "all")
-                    }
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedConfidenceLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {CONFIDENCE_OPTIONS.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Lens</span>
-                  <Select.Root
-                    value={selectedLens}
-                    onValueChange={(value) => setSelectedLens(value ?? "all")}
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedLensLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {LENS_OPTIONS.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Meta trend</span>
-                  <Select.Root
-                    value={selectedMetaTrend}
-                    onValueChange={(value) =>
-                      setSelectedMetaTrend(value ?? "all")
-                    }
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedMetaTrendLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {metaTrendOptions.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Audience</span>
-                  <Select.Root
-                    value={selectedAudience}
-                    onValueChange={(value) =>
-                      setSelectedAudience(value ?? "all")
-                    }
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedAudienceLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {audienceOptions.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Market</span>
-                  <Select.Root
-                    value={selectedMarket}
-                    onValueChange={(value) => setSelectedMarket(value ?? "all")}
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedMarketLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {marketOptions.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Language</span>
-                  <Select.Root
-                    value={selectedLanguage}
-                    onValueChange={(value) =>
-                      setSelectedLanguage(value ?? "all")
-                    }
-                  >
-                    <Select.Trigger className="select-trigger">
-                      <span>{selectedLanguageLabel}</span>
-                      <Select.Icon className="select-icon">▼</Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Positioner
-                        className="select-positioner"
-                        sideOffset={8}
-                      >
-                        <Select.Popup className="select-popup">
-                          <Select.List className="select-list">
-                            {languageOptions.map((option) => (
-                              <Select.Item
-                                className="select-item"
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <Select.ItemText>
-                                  {option.label}
-                                </Select.ItemText>
-                              </Select.Item>
-                            ))}
-                          </Select.List>
-                        </Select.Popup>
-                      </Select.Positioner>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
-
-                <label className="filter-field">
-                  <span>Sort</span>
-                  <span
-                    style={{
-                      display: "flex",
-                      gap: "0.25rem",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Select.Root
-                      value={sortBy}
-                      onValueChange={(value) =>
-                        handleSortChange(value ?? "rank")
-                      }
-                    >
-                      <Select.Trigger className="select-trigger">
-                        <span>{selectedSortLabel}</span>
-                        <Select.Icon className="select-icon">▼</Select.Icon>
-                      </Select.Trigger>
-                      <Select.Portal>
-                        <Select.Positioner
-                          className="select-positioner"
-                          sideOffset={8}
-                        >
-                          <Select.Popup className="select-popup">
-                            <Select.List className="select-list">
-                              {SORT_OPTIONS.map((option) => (
-                                <Select.Item
-                                  className="select-item"
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  <Select.ItemText>
-                                    {option.label}
-                                  </Select.ItemText>
-                                </Select.Item>
-                              ))}
-                            </Select.List>
-                          </Select.Popup>
-                        </Select.Positioner>
-                      </Select.Portal>
-                    </Select.Root>
-                    <button
-                      className="toggle-chip"
-                      type="button"
-                      onClick={() =>
-                        setSortDirection((d) =>
-                          d === "asc" ? "desc" : "asc",
-                        )
-                      }
-                      title={
-                        sortDirection === "asc" ? "Ascending" : "Descending"
-                      }
-                      style={{ minWidth: "2rem", textAlign: "center" }}
-                    >
-                      {sortDirection === "asc" ? "\u2191" : "\u2193"}
-                    </button>
-                  </span>
-                </label>
-
-                <label className="filter-field">
-                  <span>Minimum score</span>
-                  <NumberField.Root
-                    className="number-field"
-                    min={0}
-                    value={minimumScore}
-                    onValueChange={setMinimumScore}
-                  >
-                    <NumberField.Group className="number-group">
-                      <NumberField.Decrement className="number-button">
-                        -
-                      </NumberField.Decrement>
-                      <NumberField.Input className="number-input" />
-                      <NumberField.Increment className="number-button">
-                        +
-                      </NumberField.Increment>
-                    </NumberField.Group>
-                  </NumberField.Root>
-                </label>
-
-                <label className="filter-field filter-checkbox-field">
-                  <span>Seasonality</span>
-                  <button
-                    className={
-                      hideRecurring
-                        ? "toggle-chip toggle-chip-active"
-                        : "toggle-chip"
-                    }
-                    onClick={() => setHideRecurring((current) => !current)}
-                    type="button"
-                  >
-                    {hideRecurring ? "Hiding recurring" : "Hide recurring"}
-                  </button>
-                </label>
-              </section>
-            </details>
-
-            {activeExplorerFilters.length > 0 ? (
-              <section
-                className="explorer-active-filters"
-                aria-label="Active explorer filters"
-              >
-                <div className="community-chip-group">
-                  {activeExplorerFilters.map((filter) => (
-                    <button
-                      className="community-filter-chip"
-                      key={filter.key}
-                      onClick={() => clearExplorerFilter(filter.key)}
-                      type="button"
-                    >
-                      {filter.label}: {filter.value}{" "}
-                      <span aria-hidden="true">x</span>
-                    </button>
-                  ))}
-                </div>
-                <button
-                  className="source-summary-copy detail-button-link"
-                  onClick={clearAllExplorerFilters}
-                  type="button"
-                >
-                  Clear all
-                </button>
-              </section>
-            ) : null}
+            <ExplorerFilters
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              selectedSource={selectedSource}
+              onSourceChange={(v) => setSelectedSource(v ?? "all")}
+              selectedCategory={selectedCategory}
+              onCategoryChange={(v) => setSelectedCategory(v ?? "all")}
+              selectedStage={selectedStage}
+              onStageChange={(v) => setSelectedStage(v ?? "all")}
+              selectedStatus={selectedStatus}
+              onStatusChange={(v) => setSelectedStatus(v ?? "all")}
+              selectedConfidence={selectedConfidence}
+              onConfidenceChange={(v) => setSelectedConfidence(v ?? "all")}
+              selectedLens={selectedLens}
+              onLensChange={(v) => setSelectedLens(v ?? "all")}
+              selectedMetaTrend={selectedMetaTrend}
+              onMetaTrendChange={(v) => setSelectedMetaTrend(v ?? "all")}
+              selectedAudience={selectedAudience}
+              onAudienceChange={(v) => setSelectedAudience(v ?? "all")}
+              selectedMarket={selectedMarket}
+              onMarketChange={(v) => setSelectedMarket(v ?? "all")}
+              selectedLanguage={selectedLanguage}
+              onLanguageChange={(v) => setSelectedLanguage(v ?? "all")}
+              sortBy={sortBy}
+              onSortChange={(v) => handleSortChange(v ?? "rank")}
+              sortDirection={sortDirection}
+              onSortDirectionToggle={() => setSortDirection((d) => d === "asc" ? "desc" : "asc")}
+              minimumScore={minimumScore}
+              onMinimumScoreChange={setMinimumScore}
+              hideRecurring={hideRecurring}
+              onHideRecurringToggle={() => setHideRecurring((c) => !c)}
+              categoryOptions={categoryOptions}
+              metaTrendOptions={metaTrendOptions}
+              audienceOptions={audienceOptions}
+              marketOptions={marketOptions}
+              languageOptions={languageOptions}
+              activeFilters={activeExplorerFilters}
+              onClearFilter={clearExplorerFilter}
+              onClearAllFilters={clearAllExplorerFilters}
+            />
 
             <div className="explorer-legend" aria-hidden="true">
               <span>Trend</span>
@@ -1581,453 +971,38 @@ export function DashboardShell({
                 </p>
               </div>
             ) : (
-              paginatedTrends.map((trend, index) => {
-                const forecastBadge = getExplorerForecastBadge(
-                  trend.forecastDirection,
-                );
-                const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
-                const detail = detailsByTrendId.get(trend.id);
-                const primaryEvidenceLink = getPrimaryEvidenceLink(detail);
-                const wikipediaLink = getWikipediaLinkFromDetail(detail);
-                const audienceBadge = buildTrendAudienceBadge(
-                  detail?.audienceSummary ?? [],
-                );
-                const audienceSummary = summarizeTrendAudience(
-                  detail?.audienceSummary ?? [],
-                );
-                const evidencePreviewText = primaryEvidenceLink
-                  ? summarizeEvidencePreview(
-                      primaryEvidenceLink.evidence,
-                      primaryEvidenceLink.source,
-                    )
-                  : summarizeEvidencePreview(trend.evidencePreview[0] ?? "");
-                const evidenceMeta = [
-                  primaryEvidenceLink
-                    ? formatSourceLabel(primaryEvidenceLink.source)
-                    : null,
-                  audienceSummary,
-                ]
-                  .filter((item): item is string => Boolean(item))
-                  .join(" · ");
-                const compactSummaryParts = [
-                  formatStageLabel(trend.stage),
-                  formatConfidenceLabel(trend.confidence),
-                  formatTrendStatus(trend.status),
-                  formatVolatility(trend.volatility),
-                  forecastBadge?.label ?? null,
-                  seasonalityBadge?.label ?? null,
-                  audienceBadge ?? null,
-                  trend.metaTrend,
-                ].filter((item): item is string => Boolean(item));
-                const sourceInsights = detail
-                  ? buildSourceContributionInsights(
-                      detail.sourceContributions,
-                      overview.sources,
-                    ).slice(0, 5)
-                  : [];
-                return (
-                  <article
-                    className={
-                      changedTrendIds.includes(trend.id)
-                        ? "explorer-card explorer-card-updated"
-                        : "explorer-card"
-                    }
-                    data-status={trend.status}
-                    key={buildTrendCardKey(trend, index)}
-                  >
-                    <div className="explorer-card-top">
-                      <div className="trend-cell explorer-card-head">
-                        <div className="explorer-card-title-line">
-                          <span className="explorer-rank-chip">
-                            #{trend.rank}
-                          </span>
-                          <div className="trend-title-row">
-                            <strong>
-                              <Link
-                                className="trend-link"
-                                href={`/trends/${trend.id}`}
-                              >
-                                {trend.name}
-                              </Link>
-                            </strong>
-                          </div>
-                        </div>
-                        <div className="explorer-card-meta">
-                          <span>
-                            {trend.firstSeenAt
-                              ? `Since ${formatDateOnly(trend.firstSeenAt)}`
-                              : "This run"}
-                          </span>
-                          <span>Sources: {trend.sources.length}</span>
-                          <span>{formatCategory(trend.category)}</span>
-                        </div>
-                        <div className="explorer-card-summary">
-                          <span>{compactSummaryParts.join(" / ")}</span>
-                        </div>
-                        {sourceInsights.length > 0 && (
-                          <div className="explorer-source-bars">
-                            {sourceInsights.map((insight) => (
-                              <span
-                                key={insight.source}
-                                className="explorer-source-pip"
-                                title={`${insight.title} ${insight.scoreSharePercent.toFixed(0)}%`}
-                                style={{
-                                  flex: `${insight.scoreSharePercent} 0 0`,
-                                  opacity: 0.5 + (insight.scoreSharePercent / 100) * 0.5,
-                                }}
-                              >
-                                {insight.title}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="explorer-metrics-row">
-                        <div className="explorer-metrics-panel">
-                          <div className="explorer-metric-card">
-                            <span className="explorer-metric-label">
-                              Trend strength
-                            </span>
-                            <strong className="explorer-metric-value">
-                              {trend.score.total.toFixed(1)}
-                            </strong>
-                            <small className="explorer-metric-copy">
-                              {formatScoreMix(trend.score)}
-                            </small>
-                          </div>
-
-                          <div className="explorer-metric-card">
-                            <span className="explorer-metric-label">
-                              Change vs last run
-                            </span>
-                            <strong
-                              className={`explorer-metric-value ${movementClassName(trend.rankChange)}`}
-                            >
-                              {formatMomentumHeadline(trend)}
-                            </strong>
-                            <small className="explorer-metric-copy">
-                              {formatMomentumDetail(trend)}
-                            </small>
-                          </div>
-
-                          <div className="explorer-metric-card">
-                            <span className="explorer-metric-label">
-                              Evidence base
-                            </span>
-                            <strong className="explorer-metric-value">
-                              {trend.coverage.signalCount} signal
-                              {trend.coverage.signalCount === 1 ? "" : "s"}
-                            </strong>
-                            <small className="explorer-metric-copy">
-                              {trend.coverage.sourceCount} source{trend.coverage.sourceCount === 1 ? "" : "s"}
-                            </small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="explorer-card-bottom">
-                      <div className="evidence-preview evidence-preview-inline">
-                        <div className="evidence-main-row">
-                          <span className="explorer-evidence-label">
-                            Latest signal
-                          </span>
-                          {primaryEvidenceLink?.evidenceUrl ? (
-                            <a
-                              className="trend-link"
-                              href={normalizeEvidenceUrl(primaryEvidenceLink.evidenceUrl)}
-                              rel="noreferrer"
-                              target="_blank"
-                            >
-                              {evidencePreviewText}
-                            </a>
-                          ) : (
-                            <span>{evidencePreviewText}</span>
-                          )}
-                        </div>
-                        {evidenceMeta || wikipediaLink ? (
-                          <div className="evidence-meta-row">
-                            {evidenceMeta ? (
-                              <span className="source-summary-copy">
-                                {evidenceMeta}
-                              </span>
-                            ) : null}
-                            {wikipediaLink ? (
-                              <a
-                                className="trend-link source-summary-copy"
-                                href={wikipediaLink.url}
-                                rel="noreferrer"
-                                target="_blank"
-                              >
-                                Background: {wikipediaLink.title}
-                              </a>
-                            ) : null}
-                          </div>
-                        ) : null}
-                      </div>
-                      {trend.breaking && trend.breaking.tweets.length > 0 && (
-                        <div className="explorer-breaking-strip">
-                          <div className="explorer-breaking-header">
-                            <span className="breaking-feed-dot" aria-hidden="true" />
-                            <span className="explorer-breaking-label">Breaking</span>
-                            <span className="breaking-feed-score">{trend.breaking.breakingScore.toFixed(1)}</span>
-                            {trend.breaking.corroborated && (
-                              <span className="breaking-feed-corroborated">Corroborated</span>
-                            )}
-                          </div>
-                          <ul className="explorer-breaking-tweets">
-                            {trend.breaking.tweets.slice(0, 2).map((tweet) => (
-                              <li key={tweet.tweetId}>
-                                <a
-                                  href={`https://x.com/i/status/${tweet.tweetId}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="breaking-feed-tweet-link"
-                                >
-                                  <span className="breaking-feed-account">@{tweet.account}</span>
-                                  <span className="breaking-feed-tweet-text">{tweet.text}</span>
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-
-                  </article>
-                );
-              })
+              paginatedTrends.map((trend, index) => (
+                <ExplorerCard
+                  key={buildTrendCardKey(trend, index)}
+                  trend={trend}
+                  index={index}
+                  detail={detailsByTrendId.get(trend.id)}
+                  sources={overview.sources}
+                  isUpdated={changedTrendIds.includes(trend.id)}
+                />
+              ))
             )}
-            {totalPages > 1 && (
-              <nav className="explorer-pagination" aria-label="Explorer pagination">
-                <button
-                  className="explorer-pagination-button"
-                  disabled={safePage <= 1}
-                  onClick={() => goToPage(1)}
-                  type="button"
-                  aria-label="First page"
-                >
-                  &laquo;
-                </button>
-                <button
-                  className="explorer-pagination-button"
-                  disabled={safePage <= 1}
-                  onClick={() => goToPage(Math.max(1, safePage - 1))}
-                  type="button"
-                  aria-label="Previous page"
-                >
-                  &lsaquo;
-                </button>
-                {(() => {
-                  const pages: number[] = [];
-                  const windowSize = 2;
-                  const start = Math.max(1, safePage - windowSize);
-                  const end = Math.min(totalPages, safePage + windowSize);
-                  if (start > 1) pages.push(1);
-                  if (start > 2) pages.push(-1);
-                  for (let i = start; i <= end; i++) pages.push(i);
-                  if (end < totalPages - 1) pages.push(-2);
-                  if (end < totalPages) pages.push(totalPages);
-                  return pages.map((p) =>
-                    p < 0 ? (
-                      <span className="explorer-pagination-ellipsis" key={p}>
-                        &hellip;
-                      </span>
-                    ) : (
-                      <button
-                        className={
-                          p === safePage
-                            ? "explorer-pagination-button explorer-pagination-current"
-                            : "explorer-pagination-button"
-                        }
-                        key={p}
-                        onClick={() => goToPage(p)}
-                        type="button"
-                        aria-current={p === safePage ? "page" : undefined}
-                      >
-                        {p}
-                      </button>
-                    ),
-                  );
-                })()}
-                <button
-                  className="explorer-pagination-button"
-                  disabled={safePage >= totalPages}
-                  onClick={() => goToPage(Math.min(totalPages, safePage + 1))}
-                  type="button"
-                  aria-label="Next page"
-                >
-                  &rsaquo;
-                </button>
-                <button
-                  className="explorer-pagination-button"
-                  disabled={safePage >= totalPages}
-                  onClick={() => goToPage(totalPages)}
-                  type="button"
-                  aria-label="Last page"
-                >
-                  &raquo;
-                </button>
-              </nav>
-            )}
+            <ExplorerPagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              onPageChange={goToPage}
+            />
           </div>
         </div>
 
-        <aside className="history-panel">
-          <div className="section-heading">
-            <h2>Discover</h2>
-          </div>
-
-          <details className="sidebar-section" open>
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Categories</h2>
-              </div>
-            </summary>
-            <div className="curated-list">
-              {overview.sections.metaTrends.slice(0, 6).map((trend) => (
-                <Link className="curated-item" href={`/categories/${trend.category}`} key={trend.category}>
-                  <span>{formatCategory(trend.category)}</span>
-                  <small>{trend.trendCount} trends · avg {trend.averageScore.toFixed(1)}</small>
-                </Link>
-              ))}
-              <Link className="curated-item" href="/meta-trends">
-                <span>Browse meta trends</span>
-                <small>Open the cross-category trend directory</small>
-              </Link>
-            </div>
-          </details>
-
-          <details className="sidebar-section">
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Breakout</h2>
-              </div>
-            </summary>
-            <div className="curated-list">
-              {overview.sections.breakoutTrends.slice(0, 4).map((trend) => (
-                <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
-                  <span>{trend.name}</span>
-                  <strong>#{trend.rank}</strong>
-                </Link>
-              ))}
-            </div>
-          </details>
-
-          <details className="sidebar-section">
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Rising</h2>
-              </div>
-            </summary>
-            <div className="curated-list">
-              {overview.sections.risingTrends.slice(0, 4).map((trend) => (
-                <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
-                  <span>{trend.name}</span>
-                  <strong>{trend.scoreTotal.toFixed(1)}</strong>
-                </Link>
-              ))}
-            </div>
-          </details>
-
-          <details className="sidebar-section">
-            <summary>
-              <div className="section-heading section-heading-spaced">
-                <h2>Experimental</h2>
-              </div>
-            </summary>
-            <div className="curated-list">
-              {overview.sections.experimentalTrends.slice(0, 4).map((trend) => (
-                <Link className="curated-item" href={`/trends/${trend.id}`} key={trend.id}>
-                  <span>{trend.name}</span>
-                  <strong>{trend.scoreTotal.toFixed(1)}</strong>
-                </Link>
-              ))}
-            </div>
-          </details>
-
-
-        </aside>
+        <ExplorerSidebar
+          metaTrends={overview.sections.metaTrends}
+          breakoutTrends={overview.sections.breakoutTrends}
+          risingTrends={overview.sections.risingTrends}
+          experimentalTrends={overview.sections.experimentalTrends}
+        />
       </section>
 
-      <section className="analytics-strip">
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Top scores</h2>
-          </div>
-          <div className="mini-bar-list">
-            {overview.charts.topTrendScores
-              .slice(0, 6)
-              .map((datum) => (
-                <div className="mini-bar-row" key={datum.label}>
-                  <span>{datum.label}</span>
-                  <div className="mini-bar-track">
-                    <div
-                      className="mini-bar-fill"
-                      style={{
-                        width: `${scaleValue(datum.value, overview.charts.topTrendScores)}%`,
-                      }}
-                    />
-                  </div>
-                  <strong>{datum.value.toFixed(1)}</strong>
-                </div>
-              ))}
-          </div>
-        </article>
-
-        <article className="analytics-card analytics-card-pie">
-          <div className="section-heading">
-            <h2>Source share</h2>
-          </div>
-          <div className="pie-chart-wrap-full">
-            <div
-              className="pie-chart-large"
-              style={{
-                background: buildConicGradient(
-                  overview.charts.sourceShare,
-                ),
-              }}
-            />
-            <div className="pie-chart-legend-grid">
-              {overview.charts.sourceShare.map((datum, index) => (
-                <div className="pie-legend-item" key={datum.label}>
-                  <span
-                    className="pie-legend-dot"
-                    style={{ background: getSourceColor(index) }}
-                  />
-                  <span className="pie-legend-label">{datum.label}</span>
-                  <span className="pie-legend-pct">
-                    {formatPercent(datum.value, overview.charts.sourceShare)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </article>
-
-        <article className="analytics-card">
-          <div className="section-heading">
-            <h2>Status mix</h2>
-          </div>
-          <div className="mini-bar-list">
-            {overview.charts.statusBreakdown.map((datum) => (
-              <div className="mini-bar-row" key={datum.label}>
-                <span>{datum.label}</span>
-                <div className="mini-bar-track">
-                  <div
-                    className="mini-bar-fill mini-bar-fill-muted"
-                    style={{
-                      width: `${scaleValue(datum.value, overview.charts.statusBreakdown)}%`,
-                    }}
-                  />
-                </div>
-                <strong>{datum.value.toFixed(0)}</strong>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
+      <AnalyticsStrip
+        topTrendScores={overview.charts.topTrendScores}
+        sourceShare={overview.charts.sourceShare}
+        statusBreakdown={overview.charts.statusBreakdown}
+      />
       <UpgradeModal open={upgradeModalOpen} onClose={closeUpgradeModal} feature="CSV export" />
     </main>
   );
