@@ -35,10 +35,14 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if enable_docs else None,
     )
 
-    allowed_origins = os.getenv(
-        "SIGNAL_EYE_CORS_ORIGINS",
-        "http://localhost:3000",
-    ).split(",")
+    allowed_origins = [
+        origin.strip()
+        for origin in os.getenv(
+            "SIGNAL_EYE_CORS_ORIGINS",
+            "http://localhost:3000",
+        ).split(",")
+        if origin.strip()
+    ]
 
     application.add_middleware(
         CORSMiddleware,
@@ -46,6 +50,7 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-Trend-Friend-Refresh-Secret"],
+        max_age=3600,
     )
 
     rate_limit_enabled = os.getenv("SIGNAL_EYE_RATE_LIMIT", "true").lower() == "true"
