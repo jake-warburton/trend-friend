@@ -7367,6 +7367,148 @@ dialog::backdrop {
   }
 }
 
+/* ── Trending Carousel ────────────────────────────────────── */
+
+.trending-carousel {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--analytics-background);
+  overflow: hidden;
+}
+
+.trending-carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 8px;
+  flex-wrap: wrap;
+}
+
+.trending-carousel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trending-carousel-icon {
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.trending-carousel-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.trending-carousel-count {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--badge-background, rgba(128, 128, 128, 0.15));
+  color: var(--copy-secondary);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.trending-carousel-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.trending-carousel-tab {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--copy-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.trending-carousel-tab:hover {
+  border-color: var(--accent);
+  color: var(--copy);
+}
+
+.trending-carousel-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.trending-carousel-track {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.trending-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.trending-carousel-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+  text-decoration: none;
+  color: var(--copy);
+  flex-shrink: 0;
+  font-size: 13px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  animation: topTrendReveal 0.3s ease both;
+}
+
+.trending-carousel-chip:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.trending-chip-rank {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--copy-secondary);
+  min-width: 16px;
+}
+
+.trending-chip-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.trending-chip-flag {
+  font-size: 14px;
+}
+
+.trending-chip-volume {
+  font-size: 11px;
+  color: var(--copy-secondary);
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+@media (max-width: 640px) {
+  .trending-carousel-header {
+    padding: 10px 12px 6px;
+  }
+
+  .trending-carousel-track {
+    padding: 6px 12px 12px;
+  }
+}
+
 /* ── Breaking Feed ────────────────────────────────────────── */
 
 .breaking-feed-section {

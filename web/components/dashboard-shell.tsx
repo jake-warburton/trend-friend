@@ -58,6 +58,7 @@ import {
   buildAudienceFilterOptions, buildMarketFilterOptions, buildLanguageFilterOptions,
 } from "@/components/explorer/filters";
 import { BreakingFeedSection } from "@/components/explorer/breaking-feed-section";
+import { TrendingCarousel } from "@/components/explorer/trending-carousel";
 import { ExplorerCard } from "@/components/explorer/explorer-card";
 import { ExplorerFilters } from "@/components/explorer/explorer-filters";
 import { ExplorerPagination } from "@/components/explorer/explorer-pagination";
@@ -118,6 +119,7 @@ export function DashboardShell({
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [hideRecurring, setHideRecurring] = useState(false);
   const [breakingFeed, setBreakingFeed] = useState<BreakingFeed | null>(null);
+  const [trendingTopics, setTrendingTopics] = useState<Array<{name: string; category: string; location: string; tweet_volume: number | null; domain_context: string | null; fetched_at: string}> | null>(null);
   const [overviewMeta, setOverviewMeta] = useState({
     generatedAt: initialData.overview.generatedAt,
     lastRunAt: initialData.overview.operations.lastRunAt,
@@ -788,6 +790,19 @@ export function DashboardShell({
   }, []);
 
   useEffect(() => {
+    async function fetchTrendingTopics() {
+      try {
+        const response = await fetch("/api/trends/hashtags");
+        if (response.ok) {
+          const data = await response.json();
+          setTrendingTopics(data.trends ?? []);
+        }
+      } catch { /* ignore */ }
+    }
+    void fetchTrendingTopics();
+  }, []);
+
+  useEffect(() => {
     if (screenshotMode) {
       return;
     }
@@ -848,6 +863,9 @@ export function DashboardShell({
           </Link>
         ))}
       </section>
+
+      {/* ── Trending on X ──────────────────────────────────── */}
+      <TrendingCarousel trends={trendingTopics} />
 
       {/* ── Breaking Feed ─────────────────────────────────── */}
       <BreakingFeedSection feed={breakingFeed} />
