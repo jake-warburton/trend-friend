@@ -8047,6 +8047,46 @@ dialog::backdrop {
   margin: 4px 0 0;
 }
 
+.social-geo-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--analytics-background);
+  overflow: hidden;
+}
+
+.social-geo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 0;
+}
+
+.social-geo-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.social-geo-clear {
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.social-geo-clear:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.social-geo-map {
+  padding: 8px 16px 12px;
+}
+
 /* ── Ad Intelligence ─────────────────────────────────────── */
 
 .adi-wrap {

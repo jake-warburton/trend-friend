@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -7,6 +8,11 @@ import { useProfile } from "@/components/profile-provider";
 import { BreakingFeedSection } from "@/components/explorer/breaking-feed-section";
 import { TrendingCarousel } from "@/components/explorer/trending-carousel";
 import type { BreakingFeed } from "@/lib/types";
+
+const SocialGeoMap = dynamic(
+  () => import("@/components/social-geo-map").then((mod) => mod.SocialGeoMap),
+  { ssr: false, loading: () => <div className="skeleton-pulse" style={{ width: "100%", height: 280, borderRadius: 12 }} /> },
+);
 
 interface TrendingTopic {
   name: string;
@@ -73,6 +79,7 @@ export function SocialIntelligenceDashboard() {
   const router = useRouter();
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[] | null>(null);
   const [breakingFeed, setBreakingFeed] = useState<BreakingFeed | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,13 +104,27 @@ export function SocialIntelligenceDashboard() {
   if (authLoading || profileLoading || loading) return <Skeleton />;
   if (!isPro) return <ProGate />;
 
+  const locationCounts: Record<string, number> = {};
+  if (trendingTopics) {
+    for (const t of trendingTopics) {
+      if (t.category === "place" && t.location !== "Worldwide") {
+        locationCounts[t.location] = (locationCounts[t.location] ?? 0) + 1;
+      }
+    }
+  }
+
   return (
     <div className="social-intel-wrap">
       <div className="social-intel-header">
         <h1>Social Intelligence</h1>
         <p>Real-time trending topics and breaking news from curated X accounts.</p>
       </div>
-      <TrendingCarousel trends={trendingTopics} />
+      <SocialGeoMap
+        locationCounts={locationCounts}
+        selectedLocation={selectedLocation}
+        onLocationChange={setSelectedLocation}
+      />
+      <TrendingCarousel trends={trendingTopics} selectedLocation={selectedLocation} />
       <BreakingFeedSection feed={breakingFeed} />
     </div>
   );

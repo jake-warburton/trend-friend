@@ -13,6 +13,7 @@ interface TrendingTopic {
 
 interface TrendingCarouselProps {
   trends: TrendingTopic[] | null;
+  selectedLocation?: string | null;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -22,6 +23,18 @@ const CATEGORY_LABELS: Record<string, string> = {
   sports: "Sports",
   entertainment: "Entertainment",
   place: "By Location",
+};
+
+export const LOCATION_TO_COUNTRY_CODE: Record<string, string> = {
+  "United States": "US",
+  "United Kingdom": "GB",
+  Australia: "AU",
+  Canada: "CA",
+  Germany: "DE",
+  France: "FR",
+  Japan: "JP",
+  India: "IN",
+  Brazil: "BR",
 };
 
 const LOCATION_FLAGS: Record<string, string> = {
@@ -54,15 +67,20 @@ function deduplicateTrends(trends: TrendingTopic[]): TrendingTopic[] {
   });
 }
 
-export function TrendingCarousel({ trends }: TrendingCarouselProps) {
+export function TrendingCarousel({ trends, selectedLocation }: TrendingCarouselProps) {
   const [activeFilter, setActiveFilter] = useState<string>("trending");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   if (trends == null || trends.length === 0) return null;
 
+  // When a location is selected from the map, auto-switch to "place" tab
+  const effectiveFilter = selectedLocation ? "place" : activeFilter;
+
   const categories = [...new Set(trends.map((t) => t.category))];
   const filtered = deduplicateTrends(
-    trends.filter((t) => t.category === activeFilter),
+    trends
+      .filter((t) => t.category === effectiveFilter)
+      .filter((t) => !selectedLocation || t.location === selectedLocation),
   );
 
   if (filtered.length === 0) return null;
