@@ -32,11 +32,11 @@ class PasswordTests(unittest.TestCase):
         h2 = hash_password("same-password")
         self.assertNotEqual(h1, h2)  # different salts
 
-    def test_scrypt_format(self) -> None:
+    def test_pbkdf2_format(self) -> None:
         hashed = hash_password("test-password")
-        self.assertTrue(hashed.startswith("scrypt$"))
+        self.assertTrue(hashed.startswith("pbkdf2$"))
         parts = hashed.split("$")
-        self.assertEqual(len(parts), 3)
+        self.assertEqual(len(parts), 4)
 
     def test_legacy_sha256_verify(self) -> None:
         """Verify that legacy SHA-256 hashes still work and flag rehash."""

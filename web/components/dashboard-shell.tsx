@@ -2576,19 +2576,23 @@ export function DashboardShell({
                         <div className="explorer-card-summary">
                           <span>{compactSummaryParts.join(" / ")}</span>
                         </div>
-                        {trend.summary ? (
-                          <p className="source-summary-copy">{trend.summary}</p>
-                        ) : null}
-                        {collapsedDriverSummary ? (
-                          <div className="explorer-card-driver-line">
-                            <span>{collapsedDriverSummary}</span>
+                        {sourceInsights.length > 0 && (
+                          <div className="explorer-source-bars">
+                            {sourceInsights.map((insight) => (
+                              <span
+                                key={insight.source}
+                                className="explorer-source-pip"
+                                title={`${insight.title} ${insight.scoreSharePercent.toFixed(0)}%`}
+                                style={{
+                                  flex: `${insight.scoreSharePercent} 0 0`,
+                                  opacity: 0.5 + (insight.scoreSharePercent / 100) * 0.5,
+                                }}
+                              >
+                                {insight.title}
+                              </span>
+                            ))}
                           </div>
-                        ) : null}
-                        {collapsedCorroborationSummary ? (
-                          <div className="explorer-card-support-line">
-                            <span>{collapsedCorroborationSummary}</span>
-                          </div>
-                        ) : null}
+                        )}
                       </div>
 
                       <div className="explorer-metrics-row">
@@ -2628,29 +2632,10 @@ export function DashboardShell({
                               {trend.coverage.signalCount === 1 ? "" : "s"}
                             </strong>
                             <small className="explorer-metric-copy">
-                              Backed by {trend.coverage.sourceCount} source
-                              {trend.coverage.sourceCount === 1 ? "" : "s"}
+                              {trend.coverage.sourceCount} source{trend.coverage.sourceCount === 1 ? "" : "s"}
                             </small>
                           </div>
                         </div>
-
-                        <button
-                          className={
-                            expandedTrendId === trend.id
-                              ? "explorer-expand-toggle explorer-expand-toggle-open"
-                              : "explorer-expand-toggle"
-                          }
-                          onClick={() => handleToggleExpand(trend.id)}
-                          aria-expanded={expandedTrendId === trend.id}
-                          aria-label={
-                            expandedTrendId === trend.id
-                              ? "Collapse detail"
-                              : "Expand detail"
-                          }
-                          type="button"
-                        >
-                          {expandedTrendId === trend.id ? "\u2212" : "+"}
-                        </button>
                       </div>
                     </div>
 
@@ -2722,310 +2707,6 @@ export function DashboardShell({
                       )}
                     </div>
 
-                    <div
-                      className={
-                        expandedTrendId === trend.id
-                          ? "explorer-expand-wrap explorer-expand-wrap-open"
-                          : "explorer-expand-wrap"
-                      }
-                    >
-                      <div className="explorer-expand-panel">
-                        {expandedTrendId === trend.id &&
-                          (() => {
-                            if (!detail) {
-                              return (
-                                <p className="chart-empty">
-                                  {deferredDataState === "loading"
-                                    ? "Loading deeper trend detail..."
-                                    : "Detailed enrichment is not available for this trend yet."}
-                                </p>
-                              );
-                            }
-                            const maxScore = Math.max(
-                              detail.score.social,
-                              detail.score.developer,
-                              detail.score.knowledge,
-                              detail.score.search,
-                              detail.score.advertising ?? 0,
-                              detail.score.diversity,
-                              1,
-                            );
-                            const topContribs = buildSourceContributionInsights(
-                              detail.sourceContributions,
-                              overview.sources,
-                            ).slice(0, 5);
-                            const maxContrib = Math.max(
-                              ...topContribs.map((c) => c.scoreSharePercent),
-                              1,
-                            );
-                            const firstRelated =
-                              detail.relatedTrends[0] ?? null;
-                            return (
-                              <>
-                                <div className="explorer-expand-grid">
-                                  <div className="explorer-expand-section">
-                                    <strong>Score mix</strong>
-                                    <div className="mini-bar-list">
-                                      {(
-                                        [
-                                          ["Social", detail.score.social],
-                                          ["Developer", detail.score.developer],
-                                          ["Knowledge", detail.score.knowledge],
-                                          ["Search", detail.score.search],
-                                          ["Advertising", detail.score.advertising ?? 0],
-                                          ["Diversity", detail.score.diversity],
-                                        ] as const
-                                      ).map(([label, value]) => (
-                                        <div
-                                          className="mini-bar-row"
-                                          key={label}
-                                        >
-                                          <span>{label}</span>
-                                          <div className="mini-bar-track">
-                                            <div
-                                              className="mini-bar-fill"
-                                              style={{
-                                                width: `${(value / maxScore) * 100}%`,
-                                              }}
-                                            />
-                                          </div>
-                                          <strong>{value.toFixed(1)}</strong>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  <div className="explorer-expand-section">
-                                    <strong>Why this ranks here</strong>
-                                    <p className="explorer-expand-reason">
-                                      {summarizeTopSourceDrivers(
-                                        detail.sourceContributions,
-                                      )}
-                                    </p>
-                                    <div className="source-row explorer-expand-source-row">
-                                      {trend.sources.map((source) => (
-                                        <span
-                                          className="source-badge"
-                                          key={source}
-                                        >
-                                          {formatSourceLabel(source)}
-                                        </span>
-                                      ))}
-                                    </div>
-                                    <div className="mini-bar-list">
-                                      {topContribs.map((contrib) => (
-                                        <div
-                                          className="source-contribution-item"
-                                          key={contrib.source}
-                                        >
-                                          <div className="mini-bar-row">
-                                            <span>{contrib.title}</span>
-                                            <div className="mini-bar-track">
-                                              <div
-                                                className="mini-bar-fill mini-bar-fill-muted"
-                                                style={{
-                                                  width: `${(contrib.scoreSharePercent / maxContrib) * 100}%`,
-                                                }}
-                                              />
-                                            </div>
-                                            <strong>
-                                              {contrib.scoreSharePercent.toFixed(
-                                                1,
-                                              )}
-                                              %
-                                            </strong>
-                                          </div>
-                                          <div className="source-contribution-meta">
-                                            <span>
-                                              {contrib.signalCount} signals
-                                            </span>
-                                            <span>{contrib.mixSummary}</span>
-                                          </div>
-                                          <div className="source-contribution-meta">
-                                            <span
-                                              className={contributionHealthClassName(
-                                                contrib.status,
-                                              )}
-                                            >
-                                              {contrib.statusLabel}
-                                            </span>
-                                            {(() => {
-                                              const freshness =
-                                                getSourceFreshnessBadge(
-                                                  contrib.fetchedAt,
-                                                );
-                                              return freshness ? (
-                                                <span
-                                                  className={`source-freshness-badge source-freshness-badge-${freshness.tone}`}
-                                                >
-                                                  {freshness.label}
-                                                </span>
-                                              ) : null;
-                                            })()}
-                                            <span>{contrib.fetchSummary}</span>
-                                            {contrib.fetchedAt ? (
-                                              <span>
-                                                {formatCompactTimestamp(
-                                                  contrib.fetchedAt,
-                                                )}
-                                              </span>
-                                            ) : null}
-                                          </div>
-                                          {contrib.warning ? (
-                                            <p className="source-warning-copy source-contribution-warning">
-                                              {contrib.warning}
-                                            </p>
-                                          ) : null}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  <div className="explorer-expand-section">
-                                    <strong>Outlook</strong>
-                                    <div className="explorer-expand-outlook">
-                                      <div>
-                                        <small>Stage</small>
-                                        <strong>
-                                          {formatStageLabel(trend.stage)}
-                                        </strong>
-                                        <small>
-                                          {formatConfidenceLabel(
-                                            trend.confidence,
-                                          )}
-                                        </small>
-                                      </div>
-                                      <div>
-                                        <small>Breakout</small>
-                                        <strong>
-                                          {
-                                            detail.breakoutPrediction
-                                              .predictedDirection
-                                          }
-                                        </strong>
-                                        <small>
-                                          {(
-                                            detail.breakoutPrediction
-                                              .confidence * 100
-                                          ).toFixed(0)}
-                                          % confidence
-                                        </small>
-                                      </div>
-                                      <div>
-                                        <small>
-                                          {selectedLens === "all"
-                                            ? "Opportunity"
-                                            : `${formatLensLabel(selectedLens)} lens`}
-                                        </small>
-                                        <strong>
-                                          {getOpportunityScoreForLens(
-                                            detail,
-                                            selectedLens,
-                                          ).toFixed(1)}
-                                        </strong>
-                                      </div>
-                                      {detail.forecast &&
-                                        detail.forecast.predictedScores.length >
-                                          0 && (
-                                          <div>
-                                            <small>Forecast</small>
-                                            <strong>
-                                              {detail.forecast.predictedScores[
-                                                detail.forecast.predictedScores
-                                                  .length - 1
-                                              ] >= trend.score.total
-                                                ? "\u2191 Up"
-                                                : "\u2193 Down"}
-                                            </strong>
-                                            <small>
-                                              {formatForecastConfidence(
-                                                detail.forecast.confidence,
-                                              )}{" "}
-                                              confidence
-                                            </small>
-                                          </div>
-                                        )}
-                                    </div>
-                                    {detail.opportunity.reasoning[0] && (
-                                      <p className="explorer-expand-reason">
-                                        {detail.opportunity.reasoning[0]}
-                                      </p>
-                                    )}
-                                    {detail.whyNow[0] ? (
-                                      <p className="explorer-expand-reason">
-                                        {detail.whyNow[0]}
-                                      </p>
-                                    ) : null}
-                                    {wikipediaLink ? (
-                                      <p className="explorer-expand-reason">
-                                        Wikipedia pageviews are concentrated on{" "}
-                                        <a
-                                          className="trend-link"
-                                          href={wikipediaLink.url}
-                                          rel="noreferrer"
-                                          target="_blank"
-                                        >
-                                          {wikipediaLink.title}
-                                        </a>
-                                        . Treat Wikipedia-only movement as
-                                        context until another source
-                                        corroborates it.
-                                      </p>
-                                    ) : null}
-                                  </div>
-                                </div>
-
-                                {detail.geoSummary.length > 0 && (
-                                  <div className="explorer-expand-geo-wrap">
-                                    <div className="explorer-expand-geo">
-                                      <LazyGeoMapCompact
-                                        data={detail.geoSummary}
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-
-                                <div className="explorer-expand-actions">
-                                  <Link
-                                    className="mini-action-button"
-                                    href={`/trends/${trend.id}`}
-                                  >
-                                    Full detail
-                                  </Link>
-                                  {firstRelated && (
-                                    <Link
-                                      className="mini-action-button"
-                                      href={`/trends/${firstRelated.id}`}
-                                    >
-                                      Compare: {firstRelated.name}
-                                    </Link>
-                                  )}
-                                  {primaryEvidenceLink?.evidenceUrl && (
-                                    <a
-                                      className="mini-action-button"
-                                      href={normalizeEvidenceUrl(primaryEvidenceLink.evidenceUrl)}
-                                      rel="noreferrer"
-                                      target="_blank"
-                                    >
-                                      Open source
-                                    </a>
-                                  )}
-                                  {wikipediaLink && (
-                                    <a
-                                      className="mini-action-button"
-                                      href={wikipediaLink.url}
-                                      rel="noreferrer"
-                                      target="_blank"
-                                    >
-                                      Open wiki
-                                    </a>
-                                  )}
-                                </div>
-                              </>
-                            );
-                          })()}
-                      </div>
-                    </div>
                   </article>
                 );
               })

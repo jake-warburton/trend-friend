@@ -1,6 +1,6 @@
-"""Password hashing using hashlib.scrypt (no external dependencies).
+"""Password hashing using PBKDF2-HMAC-SHA256 (stdlib, no external dependencies).
 
-Stored format: scrypt$<hex_salt>$<hex_digest>
+Stored format: pbkdf2$<iterations>$<hex_salt>$<hex_digest>
 Legacy format:  <hex_salt>:<sha256_hex_digest>
 """
 
@@ -10,26 +10,22 @@ import hashlib
 import hmac
 import os
 
-# scrypt parameters
-_SCRYPT_N = 16384
-_SCRYPT_R = 8
-_SCRYPT_P = 1
-_SCRYPT_DKLEN = 64
+_PBKDF2_ITERATIONS = 600_000
+_PBKDF2_DKLEN = 64
 
 
 def hash_password(password: str) -> str:
-    """Hash a password with a random salt using scrypt."""
+    """Hash a password with a random salt using PBKDF2."""
 
     salt = os.urandom(16)
-    digest = hashlib.scrypt(
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
         password.encode(),
-        salt=salt,
-        n=_SCRYPT_N,
-        r=_SCRYPT_R,
-        p=_SCRYPT_P,
-        dklen=_SCRYPT_DKLEN,
+        salt,
+        _PBKDF2_ITERATIONS,
+        dklen=_PBKDF2_DKLEN,
     )
-    return f"scrypt${salt.hex()}${digest.hex()}"
+    return f"pbkdf2${_PBKDF2_ITERATIONS}${salt.hex()}${digest.hex()}"
 
 
 def verify_password(password: str, password_hash: str) -> tuple[bool, bool]:
@@ -37,23 +33,22 @@ def verify_password(password: str, password_hash: str) -> tuple[bool, bool]:
 
     Returns a tuple of (is_valid, needs_rehash).
     needs_rehash is True when the password was verified against the legacy
-    SHA-256 format and should be re-hashed with scrypt on next opportunity.
+    SHA-256 format and should be re-hashed with PBKDF2 on next opportunity.
     """
 
-    # New scrypt format: scrypt$<hex_salt>$<hex_digest>
-    if password_hash.startswith("scrypt$"):
-        parts = password_hash.split("$", 2)
-        if len(parts) != 3:
+    # New PBKDF2 format: pbkdf2$<iterations>$<hex_salt>$<hex_digest>
+    if password_hash.startswith("pbkdf2$"):
+        parts = password_hash.split("$", 3)
+        if len(parts) != 4:
             return False, False
-        _, hex_salt, stored_hex = parts
+        _, iterations_str, hex_salt, stored_hex = parts
         salt = bytes.fromhex(hex_salt)
-        digest = hashlib.scrypt(
+        digest = hashlib.pbkdf2_hmac(
+            "sha256",
             password.encode(),
-            salt=salt,
-            n=_SCRYPT_N,
-            r=_SCRYPT_R,
-            p=_SCRYPT_P,
-            dklen=_SCRYPT_DKLEN,
+            salt,
+            int(iterations_str),
+            dklen=_PBKDF2_DKLEN,
         )
         return hmac.compare_digest(digest.hex(), stored_hex), False
 

@@ -2430,6 +2430,8 @@ input {
   border-top: 1px solid var(--border);
   border-radius: 0;
   background: transparent;
+  overflow: hidden;
+  max-width: 100%;
   box-shadow: none;
   transition: border-color 140ms ease, background-color 140ms ease;
 }
@@ -2621,6 +2623,34 @@ input {
   line-height: 1.3;
 }
 
+.explorer-source-bars {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+  height: 18px;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.explorer-source-pip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  background: var(--accent-soft);
+  border-radius: 3px;
+  font-size: 0.52rem;
+  font-weight: var(--type-weight-medium);
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 5px;
+  transition: opacity 0.2s;
+}
+
 .explorer-card-driver-line span,
 .explorer-card-support-line span {
   display: block;
@@ -2799,6 +2829,8 @@ input {
   padding-left: var(--explorer-left-inset);
   border-top: 1px solid color-mix(in srgb, var(--inset-divider) 70%, transparent);
   padding-top: 10px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .forecast-note {
@@ -3116,6 +3148,8 @@ input {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .explorer-evidence-label {
@@ -3137,6 +3171,8 @@ input {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   font-size: 0.66rem;
   line-height: 1.3;
 }
@@ -4934,6 +4970,34 @@ dialog::backdrop {
   .community-meta,
   .community-pagination {
     grid-template-columns: 1fr;
+  }
+
+  .evidence-main-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .explorer-evidence-label {
+    width: auto;
+    min-width: auto;
+    font-size: 0.46rem;
+  }
+
+  .evidence-preview-inline span,
+  .evidence-preview-inline a {
+    font-size: 0.58rem;
+    -webkit-line-clamp: 2;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .evidence-meta-row {
+    padding-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .explorer-card-bottom {
+    overflow: hidden;
   }
 }
 
@@ -7619,7 +7683,7 @@ dialog::backdrop {
   display: flex;
   justify-content: space-between;
   gap: 40px;
-  max-width: 1400px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 40px 24px 32px;
 }
@@ -7680,7 +7744,7 @@ dialog::backdrop {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  max-width: 1400px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 16px 24px;
   border-top: 1px solid var(--border);
