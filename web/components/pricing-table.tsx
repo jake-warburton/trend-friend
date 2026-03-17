@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { isPro, type BillingStatus } from "@/lib/subscription";
 
 export const PRO_FEATURES = [
   "Everything in Free",
@@ -14,6 +15,27 @@ export const PRO_FEATURES = [
 export function PricingTable() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setBillingStatus(null);
+      return;
+    }
+    fetch("/api/billing/status")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setBillingStatus(data); })
+      .catch(() => {});
+  }, [user]);
+
+  const userIsPro = isPro(billingStatus);
+  const renewalDate = billingStatus?.currentPeriodEnd
+    ? new Date(billingStatus.currentPeriodEnd).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -63,14 +85,21 @@ export function PricingTable() {
               <li key={f}>{f}</li>
             ))}
           </ul>
-          <button
-            className="landing-pricing-cta landing-pricing-cta-primary"
-            onClick={handleUpgrade}
-            disabled={loading}
-            type="button"
-          >
-            {loading ? "Loading..." : "Upgrade to Pro"}
-          </button>
+          {userIsPro ? (
+            <p className="landing-pricing-cta billing-renew-note">
+              Thank you for subscribing to Pro.
+              {renewalDate && <> Renews on <strong>{renewalDate}</strong>.</>}
+            </p>
+          ) : (
+            <button
+              className="landing-pricing-cta landing-pricing-cta-primary"
+              onClick={handleUpgrade}
+              disabled={loading}
+              type="button"
+            >
+              {loading ? "Loading..." : "Upgrade to Pro"}
+            </button>
+          )}
         </article>
       </div>
     </section>

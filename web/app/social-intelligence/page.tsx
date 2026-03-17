@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Real-time Twitter/X trending topics, breaking news from curated accounts, and hashtag tracking across 10+ countries.",
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default function SocialIntelligencePage() {
   return <SocialIntelligenceDashboard />;
