@@ -56,22 +56,22 @@ const FALLBACK_SCREENSHOT_SETS = {
   [LIGHT_THEME]: {
     explorer: "/screenshots/explorer-light-v2.png",
     trendDetail: "/screenshots/trend-detail-light-v2.png",
-    sourceHealth: "/screenshots/source-health-light-v2.png",
-    exploreGeo: "/screenshots/explore-geo-light-v2.png",
+    adIntelligence: "/screenshots/ad-intelligence-light-v2.png",
+    socialIntelligence: "/screenshots/social-intelligence-light-v2.png",
   },
   [DARK_THEME]: {
     explorer: "/screenshots/explorer-dark-v2.png",
     trendDetail: "/screenshots/trend-detail-dark-v2.png",
-    sourceHealth: "/screenshots/source-health-dark-v2.png",
-    exploreGeo: "/screenshots/explore-geo-dark-v2.png",
+    adIntelligence: "/screenshots/ad-intelligence-dark-v2.png",
+    socialIntelligence: "/screenshots/social-intelligence-dark-v2.png",
   },
 } as const;
 
 type ScreenshotSet = {
   explorer: string;
   trendDetail: string;
-  sourceHealth: string;
-  exploreGeo: string;
+  adIntelligence: string;
+  socialIntelligence: string;
 };
 
 function getScreenshotSet(
@@ -83,8 +83,8 @@ function getScreenshotSet(
   return {
     explorer: manifest[`explorer-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].explorer,
     trendDetail: manifest[`trend-detail-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].trendDetail,
-    sourceHealth: manifest[`source-health-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].sourceHealth,
-    exploreGeo: manifest[`explore-geo-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].exploreGeo,
+    adIntelligence: manifest[`ad-intelligence-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].adIntelligence,
+    socialIntelligence: manifest[`social-intelligence-${suffix}`] ?? FALLBACK_SCREENSHOT_SETS[themeKey].socialIntelligence,
   };
 }
 
@@ -293,17 +293,17 @@ export default async function Page() {
         </div>
         <div className="landing-preview-screenshots">
           <LandingScreenshot
-            alt="Signal Eye source health dashboard"
+            alt="Signal Eye ad intelligence dashboard"
             className="landing-screenshot-frame-sm"
-            height={1180}
-            src={screenshotSet.sourceHealth}
+            height={1080}
+            src={screenshotSet.adIntelligence}
             width={1440}
           />
           <LandingScreenshot
-            alt="Signal Eye explorer geographic footprint"
+            alt="Signal Eye social intelligence dashboard"
             className="landing-screenshot-frame-sm"
             height={1080}
-            src={screenshotSet.exploreGeo}
+            src={screenshotSet.socialIntelligence}
             width={1440}
           />
         </div>

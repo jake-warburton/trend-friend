@@ -32,9 +32,10 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect routes that require authentication
+  // Protect routes that require authentication (bypass for screenshot captures)
+  const isScreenshot = request.nextUrl.searchParams.get("screenshot") === "1";
   const isProtected = PROTECTED_ROUTES.some((route) => request.nextUrl.pathname.startsWith(route));
-  if (isProtected && !user) {
+  if (isProtected && !user && !isScreenshot) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", request.nextUrl.pathname);

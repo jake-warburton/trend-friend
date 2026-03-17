@@ -46,23 +46,29 @@ const SHOTS = [
     settleDelayMs: 1000,
   },
   {
-    name: "explore-geo",
-    path: "/explore?screenshot=1",
+    name: "ad-intelligence",
+    path: "/ad-intelligence?screenshot=1",
     viewport: { width: 1440, height: 1080 },
-    waitFor: '[data-screenshot-target="explore"] .explorer-geo-strip .geo-map-container svg',
+    waitFor: ".adi-gate .adi-gate-inner",
     capture: "page",
-    scrollTo: '[data-screenshot-target="explore"] .explorer-geo-strip',
-    scrollOffset: -120,
-    settleDelayMs: 2000,
+    settleDelayMs: 1500,
   },
-] ;
+  {
+    name: "social-intelligence",
+    path: "/social-intelligence?screenshot=1",
+    viewport: { width: 1440, height: 1080 },
+    waitFor: ".adi-gate .adi-gate-inner",
+    capture: "page",
+    settleDelayMs: 1500,
+  },
+];
 
 const MANIFEST_FILE = join(OUTPUT_DIR, "manifest.json");
 
 async function main() {
   await mkdir(OUTPUT_DIR, { recursive: true });
-  run("npm", ["run", "build"]);
-  const server = startServer();
+  const externalServer = await isServerRunning(`${BASE_URL}/`);
+  const server = externalServer ? null : startDevServer();
 
   const timestamp = Date.now();
   const manifest = {};
@@ -87,7 +93,7 @@ async function main() {
     await writeFile(MANIFEST_FILE, JSON.stringify(manifest, null, 2) + "\n");
     console.log(`Wrote manifest to ${MANIFEST_FILE}`);
   } finally {
-    await stopServer(server);
+    if (server) await stopServer(server);
   }
 }
 
@@ -102,10 +108,10 @@ function run(command, args) {
   }
 }
 
-function startServer() {
+function startDevServer() {
   const child = spawn(
     "npm",
-    ["run", "start", "--", "--hostname", HOST, "--port", PORT],
+    ["run", "dev", "--", "--hostname", HOST, "--port", PORT],
     {
       cwd: WEB_ROOT,
       env: {
@@ -128,6 +134,15 @@ function killProcessGroup(child, signal = "SIGTERM") {
     process.kill(-child.pid, signal);
   } catch {
     // process group already gone
+  }
+}
+
+async function isServerRunning(url) {
+  try {
+    const response = await fetch(url);
+    return response.ok;
+  } catch {
+    return false;
   }
 }
 
