@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@base-ui/react/button";
 import { Input } from "@base-ui/react/input";
 import { NumberField } from "@base-ui/react/number-field";
 import { Select } from "@base-ui/react/select";
@@ -37,20 +36,12 @@ import {
   buildSourceFamilyHistoryInsights,
   buildSourceFamilyInsights,
   formatSourceFamilyLabel,
-  buildSourceWatchlist,
   formatSourceLabel,
   getSourceFreshnessBadge,
   summarizeTopSourceDrivers,
 } from "@/lib/source-health";
-import {
-  maskWebhookDestination,
-  summarizeNotificationDelivery,
-} from "@/lib/notification-ui";
 import { getSeasonalityBadge, isRecurringTrend } from "@/lib/seasonality-ui";
-import { summarizeShareUsage, wasOpenedRecently } from "@/lib/share-analytics";
-import { describeSourceYield, summarizeSourceYield } from "@/lib/source-yield";
 import { getWikipediaLinkFromDetail } from "@/lib/wikipedia";
-import { downloadTrendsCsv, downloadWatchlistCsv } from "@/lib/csv-download";
 import { UpgradeModal, useUpgradeGate } from "@/components/upgrade-modal";
 import {
   confidenceBucketForTrend,
@@ -60,25 +51,14 @@ import {
 } from "@/lib/trend-filters";
 
 import type {
-  AlertEvent,
-  AlertEventsResponse,
-  AuthStatusResponse,
   BreakingFeed,
   ExploreDeferredData,
   ExploreInitialData,
-  NotificationChannel,
-  NotificationChannelsResponse,
-  PublicWatchlistSummary,
-  PublicWatchlistsResponse,
   SourceSummaryResponse,
   TrendDetailIndexResponse,
   TrendDetailRecord,
   TrendExplorerRecord,
   TrendHistoryResponse,
-  TrendThesis,
-  TrendThesisMatch,
-  Watchlist,
-  WatchlistResponse,
 } from "@/lib/types";
 import type { ThesisPreset, ExplorerActiveFilter, ThesisPresetFilterState } from "@/components/explorer/types";
 import {
@@ -103,40 +83,28 @@ import {
   DEFAULT_SORT_DIRECTIONS,
   DEFAULT_STATUS_OPTION,
   STATUS_OPTIONS,
-  WATCHLISTS_ENABLED,
   EXPLORER_PAGE_SIZE,
 } from "@/components/explorer/constants";
 import { THESIS_PRESETS, THESIS_PRESET_ICONS } from "@/components/explorer/thesis-presets";
 import { getSourceColor, buildConicGradient } from "@/components/explorer/source-palette";
 import {
-  formatTimestamp, buildTrendCardKey, formatCompactTimestamp, formatDateOnly,
-  buildShareActivityMap, formatRankChange, formatMomentum, formatMomentumHeadline,
+  buildTrendCardKey, formatDateOnly,
+  formatRankChange, formatMomentum, formatMomentumHeadline,
   formatMomentumDetail, formatScoreMix, formatCollapsedSourceDriverSummary,
   formatCollapsedCorroborationSummary, movementClassName, compareDates,
-  formatSourceStatus, formatCategory, sourceHealthClassName, contributionHealthClassName,
-  formatWatchSeverity, formatDuration, formatShareTokenLabel, formatShareActivityTimestamp,
+  formatCategory,
   formatTrendStatus, trendStatusClassName, formatVolatility, volatilityClassName,
-  scaleValue, formatPercent, formatAlertRuleType, formatSourceContributionSummary,
-  formatAudienceSummary, formatAudiencePrefix, formatAudienceLabel,
+  scaleValue, formatPercent,
+  formatAudiencePrefix, formatAudienceLabel,
   formatConfidenceLabel, formatConfidenceBucketLabel, formatStageLabel,
   buildTrendAudienceBadge, summarizeTrendAudience, formatLanguageLabel,
   formatExplorerSortLabel, formatStatusLabel, getOpportunityScoreForLens,
-  formatLensLabel, summarizeThesisFilters, getOptionLabel, formatGeoCountryLabel,
-  isDataStale,
+  formatLensLabel, getOptionLabel, formatGeoCountryLabel,
 } from "@/components/explorer/format";
 import {
   listActiveExplorerFilters, isThesisPresetApplied, shouldClearActiveThesisPreset,
   buildAudienceFilterOptions, buildMarketFilterOptions, buildLanguageFilterOptions,
 } from "@/components/explorer/filters";
-import {
-  buildShareExpiryIso, defaultShareExpiryPreset, resolveShareExpiryIso,
-  resolveDefaultShareExpiryDays, sharePresetToDays, formatShareDurationLabel,
-  formatWatchlistDefaultShareExpiry, formatShareDefaultOptionLabel,
-  fillShareHistory, formatShareExpirySummary,
-} from "@/components/explorer/shares";
-import {
-  buildCommunitySpotlights, buildCommunityExportHref, buildSharedWatchlistExportHref,
-} from "@/components/explorer/community";
 import { BreakingFeedSection } from "@/components/explorer/breaking-feed-section";
 
 type DashboardShellProps = {
@@ -191,46 +159,6 @@ export function DashboardShell({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [hideRecurring, setHideRecurring] = useState(false);
-  const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(
-    null,
-  );
-  const [watchlistError, setWatchlistError] = useState<string | null>(null);
-  const [watchlistName, setWatchlistName] = useState("");
-  const [authStatus, setAuthStatus] = useState<AuthStatusResponse>({
-    authEnabled: false,
-    user: null,
-  });
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [authUsername, setAuthUsername] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [authDisplayName, setAuthDisplayName] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authPending, setAuthPending] = useState(false);
-  const [shareExpiryPreset, setShareExpiryPreset] = useState<string>("none");
-  const [alertThreshold, setAlertThreshold] = useState<number | null>(25);
-  const [thesisName, setThesisName] = useState("");
-  const [notifyOnMatch, setNotifyOnMatch] = useState(true);
-  const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
-  const [alertCount, setAlertCount] = useState(0);
-  const [shareNotice, setShareNotice] = useState<string | null>(null);
-  const [notificationNotice, setNotificationNotice] = useState<string | null>(
-    null,
-  );
-  const [notificationError, setNotificationError] = useState<string | null>(
-    null,
-  );
-  const [notificationChannels, setNotificationChannels] = useState<
-    NotificationChannel[]
-  >([]);
-  const [notificationDestination, setNotificationDestination] = useState("");
-  const [notificationLabel, setNotificationLabel] = useState("");
-  const [notificationPending, setNotificationPending] = useState(false);
-  const [actionNotice, setActionNotice] = useState<string | null>(null);
-  const [actionPending, setActionPending] = useState(false);
-  const [watchlistLoading, setWatchlistLoading] = useState(true);
-  const [publicWatchlists, setPublicWatchlists] = useState<
-    PublicWatchlistSummary[]
-  >([]);
   const [breakingFeed, setBreakingFeed] = useState<BreakingFeed | null>(null);
   const [overviewMeta, setOverviewMeta] = useState({
     generatedAt: initialData.overview.generatedAt,
@@ -258,9 +186,6 @@ export function DashboardShell({
   const updatedBadgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const alertsDetailsRef = useRef<HTMLDetailsElement>(null);
-  const runsDetailsRef = useRef<HTMLDetailsElement>(null);
-  const sourcesDetailsRef = useRef<HTMLDetailsElement>(null);
   const screenshotMode = searchParams.get("screenshot") === "1";
   const screenshotPanel = searchParams.get("panel");
   const screenshotTrendId = searchParams.get("trend");
@@ -270,45 +195,7 @@ export function DashboardShell({
   const details = deferredData?.details ?? EMPTY_DETAIL_INDEX;
   const sourceSummary = deferredData?.sourceSummary ?? EMPTY_SOURCE_SUMMARY;
   const hasDeferredData = deferredDataState === "ready";
-  const defaultWatchlist = watchlistData?.watchlists[0] ?? null;
-  const savedTheses = watchlistData?.theses ?? [];
-  const savedThesisMatches = watchlistData?.thesisMatches ?? [];
-  const watchlistsRequireAuth =
-    authStatus.authEnabled && authStatus.user == null;
-  const shareActivityById = buildShareActivityMap(defaultWatchlist);
   const deferredKeyword = useDeferredValue(keyword);
-
-  const shareUsageSummary = useMemo(
-    () => summarizeShareUsage(defaultWatchlist?.shares ?? []),
-    [defaultWatchlist?.shares],
-  );
-  const communitySpotlights = useMemo(
-    () => buildCommunitySpotlights(publicWatchlists),
-    [publicWatchlists],
-  );
-  const sourceWatchlist = useMemo(
-    () =>
-      overview.sourceWatch != null && overview.sourceWatch.length > 0
-        ? overview.sourceWatch
-        : buildSourceWatchlist(overview.sources),
-    [overview.sourceWatch, overview.sources],
-  );
-  const latestPipelineRun = overview.operations.recentRuns[0] ?? null;
-  const thesisMatchesById = useMemo(() => {
-    const map = new Map<number, TrendThesisMatch[]>();
-    for (const match of savedThesisMatches) {
-      const matches = map.get(match.thesisId) ?? [];
-      matches.push(match);
-      map.set(match.thesisId, matches);
-    }
-    return map;
-  }, [savedThesisMatches]);
-
-  function showActionNotice(message: string) {
-    setActionNotice(message);
-    setWatchlistError(null);
-    setTimeout(() => setActionNotice(null), 3000);
-  }
 
   const categoryOptions = useMemo(() => {
     const categories = Array.from(
@@ -873,17 +760,6 @@ export function DashboardShell({
   }
 
 
-  useEffect(() => {
-    if (!WATCHLISTS_ENABLED) {
-      setWatchlistLoading(false);
-      return;
-    }
-    void loadAuthStatus();
-    void loadWatchlists();
-    void loadAlertEvents();
-    void loadPublicWatchlists();
-    void loadNotificationChannels();
-  }, []);
 
   useEffect(() => {
     if (screenshotTrendId) {
@@ -891,17 +767,6 @@ export function DashboardShell({
     }
   }, [screenshotTrendId]);
 
-  useEffect(() => {
-    if (screenshotPanel === "sources" && sourcesDetailsRef.current) {
-      sourcesDetailsRef.current.open = true;
-    }
-    if (screenshotPanel === "runs" && runsDetailsRef.current) {
-      runsDetailsRef.current.open = true;
-    }
-    if (screenshotPanel === "alerts" && alertsDetailsRef.current) {
-      alertsDetailsRef.current.open = true;
-    }
-  }, [screenshotPanel, deferredDataState]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -1051,643 +916,6 @@ export function DashboardShell({
     };
   }, [router, screenshotMode, startAutoRefresh]);
 
-  useEffect(() => {
-    setShareExpiryPreset(defaultShareExpiryPreset(defaultWatchlist));
-  }, [defaultWatchlist]);
-
-  async function loadWatchlists() {
-    try {
-      const response = await fetch("/api/watchlists");
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(
-          payload.error ?? `Watchlists unavailable (${response.status})`,
-        );
-      }
-      const payload = (await response.json()) as WatchlistResponse;
-      setWatchlistData(payload);
-      setAuthStatus({
-        authEnabled: payload.authEnabled ?? false,
-        user: payload.currentUser ?? null,
-      });
-      setWatchlistError(null);
-    } catch (error) {
-      setWatchlistError(
-        error instanceof Error ? error.message : "Watchlists unavailable",
-      );
-    } finally {
-      setWatchlistLoading(false);
-    }
-  }
-
-  async function loadAuthStatus() {
-    try {
-      const response = await fetch("/api/auth/me", { cache: "no-store" });
-      if (!response.ok) {
-        return;
-      }
-      setAuthStatus((await response.json()) as AuthStatusResponse);
-    } catch {
-      // ignore auth lookup failures in local mode
-    }
-  }
-
-  async function handleCreateWatchlist() {
-    if (watchlistName.trim().length === 0) {
-      return;
-    }
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch("/api/watchlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "create-watchlist",
-          name: watchlistName.trim(),
-        }),
-      });
-      if (response.ok) {
-        setWatchlistData((await response.json()) as WatchlistResponse);
-        setWatchlistName("");
-        showActionNotice("Watchlist created");
-        return;
-      }
-      setWatchlistError("Could not create watchlist");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleAuthSubmit() {
-    if (authUsername.trim().length === 0 || authPassword.length === 0) {
-      setAuthError("Username and password are required");
-      return;
-    }
-    setAuthPending(true);
-    setAuthError(null);
-    try {
-      const response = await fetch(`/api/auth/${authMode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: authUsername.trim(),
-          password: authPassword,
-          displayName: authDisplayName.trim() || authUsername.trim(),
-        }),
-      });
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        setAuthError(
-          payload.error ??
-            `${authMode === "login" ? "Login" : "Registration"} failed`,
-        );
-        return;
-      }
-      const payload = (await response.json()) as AuthStatusResponse;
-      setAuthStatus(payload);
-      setAuthPassword("");
-      setWatchlistError(null);
-      await loadWatchlists();
-      await loadAlertEvents();
-      showActionNotice(authMode === "login" ? "Signed in" : "Account created");
-    } finally {
-      setAuthPending(false);
-    }
-  }
-
-  async function handleLogout() {
-    setAuthPending(true);
-    setAuthError(null);
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setAuthStatus({ authEnabled: authStatus.authEnabled, user: null });
-      setWatchlistData(null);
-      setAlertEvents([]);
-      setAlertCount(0);
-      showActionNotice("Signed out");
-      await loadWatchlists();
-    } finally {
-      setAuthPending(false);
-    }
-  }
-
-  async function handleToggleTracked(trendId: string, trendName: string) {
-    if (defaultWatchlist == null) {
-      return;
-    }
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const isTracked = defaultWatchlist.items.some(
-        (item) => item.trendId === trendId,
-      );
-      const payload = isTracked
-        ? { action: "remove-item", watchlistId: defaultWatchlist.id, trendId }
-        : {
-            action: "add-item",
-            watchlistId: defaultWatchlist.id,
-            trendId,
-            trendName,
-          };
-      const response = await fetch("/api/watchlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (response.ok) {
-        setWatchlistData((await response.json()) as WatchlistResponse);
-        showActionNotice(
-          isTracked ? "Removed from watchlist" : "Added to watchlist",
-        );
-        return;
-      }
-      setWatchlistError("Could not update watchlist");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleCreateAlert() {
-    if (defaultWatchlist == null || alertThreshold == null) {
-      return;
-    }
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch("/api/alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          watchlistId: defaultWatchlist.id,
-          name: `Score >= ${alertThreshold}`,
-          ruleType: "score_above",
-          threshold: alertThreshold,
-        }),
-      });
-      if (response.ok) {
-        setWatchlistData((await response.json()) as WatchlistResponse);
-        showActionNotice("Alert rule created");
-        return;
-      }
-      setWatchlistError("Could not create alert");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleSaveThesis() {
-    if (defaultWatchlist == null || thesisName.trim().length === 0) {
-      return;
-    }
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch("/api/watchlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "create-thesis",
-          watchlistId: defaultWatchlist.id,
-          name: thesisName.trim(),
-          lens: selectedLens,
-          keywordQuery: keyword || null,
-          source: selectedSource === "all" ? null : selectedSource,
-          category: selectedCategory === "all" ? null : selectedCategory,
-          stage: selectedStage === "all" ? null : selectedStage,
-          confidence: selectedConfidence === "all" ? null : selectedConfidence,
-          metaTrend: selectedMetaTrend === "all" ? null : selectedMetaTrend,
-          audience: selectedAudience === "all" ? null : selectedAudience,
-          market: selectedMarket === "all" ? null : selectedMarket,
-          language: selectedLanguage === "all" ? null : selectedLanguage,
-          geoCountry: selectedGeoCountry === "all" ? null : selectedGeoCountry,
-          minimumScore: minimumScore ?? 0,
-          hideRecurring,
-          notifyOnMatch,
-        }),
-      });
-      if (!response.ok) {
-        setWatchlistError("Could not save thesis");
-        return;
-      }
-      setWatchlistData((await response.json()) as WatchlistResponse);
-      setThesisName("");
-      showActionNotice("Thesis saved");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleDeleteThesis(thesisId: number) {
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch("/api/watchlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete-thesis", thesisId }),
-      });
-      if (!response.ok) {
-        setWatchlistError("Could not remove thesis");
-        return;
-      }
-      setWatchlistData((await response.json()) as WatchlistResponse);
-      showActionNotice("Thesis removed");
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function loadAlertEvents() {
-    try {
-      const response = await fetch("/api/alerts?unread_only=true");
-      if (!response.ok) return;
-      const data = (await response.json()) as AlertEventsResponse;
-      setAlertEvents(data.alerts ?? []);
-      setAlertCount(data.alerts?.length ?? 0);
-    } catch {
-      // silently ignore — alerts are non-critical
-    }
-  }
-
-  async function loadPublicWatchlists() {
-    try {
-      const response = await fetch("/api/community/watchlists");
-      if (!response.ok) return;
-      const data = (await response.json()) as PublicWatchlistsResponse;
-      setPublicWatchlists(data.watchlists ?? []);
-    } catch {
-      // ignore non-critical public directory failures
-    }
-  }
-
-  async function loadNotificationChannels() {
-    try {
-      const response = await fetch("/api/notifications/channels", {
-        cache: "no-store",
-      });
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(
-          payload.error ??
-            `Notification channels unavailable (${response.status})`,
-        );
-      }
-      const data = (await response.json()) as NotificationChannelsResponse;
-      setNotificationChannels(data.channels ?? []);
-      setNotificationError(null);
-    } catch (error) {
-      setNotificationError(
-        error instanceof Error
-          ? error.message
-          : "Notification channels unavailable",
-      );
-    }
-  }
-
-  async function handleCreateNotificationChannel() {
-    if (notificationDestination.trim().length === 0) {
-      setNotificationError("Webhook URL is required");
-      return;
-    }
-    setNotificationPending(true);
-    setNotificationError(null);
-    setNotificationNotice(null);
-    try {
-      const response = await fetch("/api/notifications/channels", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          destination: notificationDestination.trim(),
-          label: notificationLabel.trim(),
-        }),
-      });
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        setNotificationError(payload.error ?? "Could not create webhook");
-        return;
-      }
-      setNotificationDestination("");
-      setNotificationLabel("");
-      setNotificationNotice("Webhook added");
-      await loadNotificationChannels();
-    } finally {
-      setNotificationPending(false);
-    }
-  }
-
-  async function handleTestNotificationChannel(channelId: number) {
-    setNotificationPending(true);
-    setNotificationError(null);
-    setNotificationNotice(null);
-    try {
-      const response = await fetch(
-        `/api/notifications/channels/${channelId}/test`,
-        {
-          method: "POST",
-        },
-      );
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: string;
-        statusCode?: number;
-      };
-      if (!response.ok) {
-        setNotificationError(
-          payload.error ?? "Could not send test notification",
-        );
-        return;
-      }
-      setNotificationNotice(
-        payload.statusCode != null
-          ? `Test sent (${payload.statusCode})`
-          : "Test sent",
-      );
-      await loadNotificationChannels();
-    } finally {
-      setNotificationPending(false);
-    }
-  }
-
-  async function handleDeleteNotificationChannel(channelId: number) {
-    setNotificationPending(true);
-    setNotificationError(null);
-    setNotificationNotice(null);
-    try {
-      const response = await fetch(`/api/notifications/channels/${channelId}`, {
-        method: "DELETE",
-      });
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: string;
-      };
-      if (!response.ok) {
-        setNotificationError(payload.error ?? "Could not delete webhook");
-        return;
-      }
-      setNotificationNotice("Webhook removed");
-      await loadNotificationChannels();
-    } finally {
-      setNotificationPending(false);
-    }
-  }
-
-  async function handleMarkAlertsRead() {
-    const unreadIds = alertEvents.filter((e) => !e.read).map((e) => e.id);
-    if (unreadIds.length === 0) return;
-    try {
-      await fetch("/api/alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "mark-read", eventIds: unreadIds }),
-      });
-      setAlertEvents([]);
-      setAlertCount(0);
-    } catch {
-      // silently ignore
-    }
-  }
-
-  async function handleCreateShare(
-    targetWatchlist: Watchlist,
-    isPublic: boolean,
-  ) {
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/share`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            public: isPublic,
-            showCreator: false,
-            expiresAt: resolveShareExpiryIso(shareExpiryPreset),
-            useDefaultExpiry: shareExpiryPreset === "default",
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        setWatchlistError("Could not create share link");
-        return;
-      }
-
-      const payload = (await response.json()) as { shareToken: string };
-      const shareUrl = `${window.location.origin}/shared/${payload.shareToken}`;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareNotice(`${isPublic ? "Public" : "Private"} link copied`);
-      } catch {
-        setShareNotice(shareUrl);
-      }
-      await loadWatchlists();
-      if (isPublic) {
-        await loadPublicWatchlists();
-      }
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleSaveDefaultShareExpiry(targetWatchlist: Watchlist) {
-    const defaultExpiryDays = resolveDefaultShareExpiryDays(
-      shareExpiryPreset,
-      targetWatchlist,
-    );
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/share-defaults`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ defaultExpiryDays }),
-        },
-      );
-      if (!response.ok) {
-        setWatchlistError("Could not save default share expiry");
-        return;
-      }
-      setWatchlistData((await response.json()) as WatchlistResponse);
-      showActionNotice(
-        defaultExpiryDays == null
-          ? "Default share expiry cleared"
-          : `Default share expiry set to ${formatShareDurationLabel(defaultExpiryDays)}`,
-      );
-      await loadPublicWatchlists();
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleRevokeShare(
-    targetWatchlist: Watchlist,
-    shareId: number,
-  ) {
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/shares/${shareId}/revoke`,
-        {
-          method: "POST",
-        },
-      );
-      if (!response.ok) {
-        setWatchlistError("Could not revoke share link");
-        return;
-      }
-      showActionNotice("Share link revoked");
-      await loadWatchlists();
-      await loadPublicWatchlists();
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleToggleShareVisibility(
-    targetWatchlist: Watchlist,
-    shareId: number,
-    isPublic: boolean,
-  ) {
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/shares/${shareId}/visibility`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ public: !isPublic }),
-        },
-      );
-      if (!response.ok) {
-        setWatchlistError("Could not update share visibility");
-        return;
-      }
-      showActionNotice(
-        !isPublic
-          ? "Share is now public"
-          : "Share removed from public directory",
-      );
-      await loadWatchlists();
-      await loadPublicWatchlists();
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleToggleShareAttribution(
-    targetWatchlist: Watchlist,
-    shareId: number,
-    showCreator: boolean,
-  ) {
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/shares/${shareId}/attribution`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ showCreator: !showCreator }),
-        },
-      );
-      if (!response.ok) {
-        setWatchlistError("Could not update share attribution");
-        return;
-      }
-      showActionNotice(
-        !showCreator ? "Creator name will be shown" : "Creator name hidden",
-      );
-      await loadWatchlists();
-      await loadPublicWatchlists();
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleSetShareExpiry(
-    targetWatchlist: Watchlist,
-    shareId: number,
-    preset: string,
-  ) {
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/shares/${shareId}/expiration`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            expiresAt: resolveShareExpiryIso(preset),
-          }),
-        },
-      );
-      if (!response.ok) {
-        setWatchlistError("Could not update share expiry");
-        return;
-      }
-      showActionNotice(
-        preset === "none" ? "Share expiry removed" : "Share expiry updated",
-      );
-      await loadWatchlists();
-      await loadPublicWatchlists();
-    } finally {
-      setActionPending(false);
-    }
-  }
-
-  async function handleRotateShare(
-    targetWatchlist: Watchlist,
-    shareId: number,
-  ) {
-    setShareNotice(null);
-    setActionPending(true);
-    setWatchlistError(null);
-    try {
-      const response = await fetch(
-        `/api/watchlists/${targetWatchlist.id}/shares/${shareId}/rotate`,
-        {
-          method: "POST",
-        },
-      );
-      if (!response.ok) {
-        setWatchlistError("Could not rotate share link");
-        return;
-      }
-      const payload = (await response.json()) as { shareToken: string };
-      const shareUrl = `${window.location.origin}/shared/${payload.shareToken}`;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareNotice("Rotated link copied");
-      } catch {
-        setShareNotice(shareUrl);
-      }
-      showActionNotice("Share link rotated");
-      await loadWatchlists();
-      await loadPublicWatchlists();
-    } finally {
-      setActionPending(false);
-    }
-  }
-
   return (
     <main
       className={
@@ -1828,41 +1056,6 @@ export function DashboardShell({
                 </div>
               </div>
 
-              {!watchlistsRequireAuth && defaultWatchlist != null ? (
-                <div className="filter-field filter-field-wide thesis-filter-block">
-                  <span>Save current thesis</span>
-                  <div className="thesis-save-panel">
-                    <Input
-                      className="text-input"
-                      placeholder="Name this thesis"
-                      value={thesisName}
-                      onChange={(event) => setThesisName(event.target.value)}
-                    />
-                    <div className="thesis-save-actions">
-                      <button
-                        className={
-                          notifyOnMatch
-                            ? "toggle-chip toggle-chip-active"
-                            : "toggle-chip"
-                        }
-                        onClick={() => setNotifyOnMatch((current) => !current)}
-                        type="button"
-                      >
-                        {notifyOnMatch
-                          ? "Notify on new matches"
-                          : "No notifications"}
-                      </button>
-                      <Button
-                        className="mini-action-button"
-                        disabled={actionPending}
-                        onClick={() => void handleSaveThesis()}
-                      >
-                        Save thesis
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
             </section>
 
             <details className="advanced-filters-panel">
@@ -2754,237 +1947,6 @@ export function DashboardShell({
             </div>
           </details>
 
-          {WATCHLISTS_ENABLED ? (
-            <>
-              <div className="snapshot-list">
-                <section className="snapshot-card">
-                  <header>
-                    <strong>Identity</strong>
-                    <span>
-                      {authStatus.authEnabled
-                        ? authStatus.user
-                          ? "Signed in"
-                          : "Required"
-                        : "Local mode"}
-                    </span>
-                  </header>
-                  {authStatus.authEnabled ? (
-                    authStatus.user ? (
-                      <>
-                        <p className="source-summary-copy">
-                          {authStatus.user.displayName} · @
-                          {authStatus.user.username}
-                        </p>
-                        <Button
-                          className="mini-action-button"
-                          disabled={authPending}
-                          onClick={() => void handleLogout()}
-                        >
-                          {authPending ? "Signing out..." : "Sign out"}
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="watchlist-form watchlist-form-stack">
-                          <Input
-                            className="text-input"
-                            placeholder="Username"
-                            value={authUsername}
-                            onChange={(event) =>
-                              setAuthUsername(event.target.value)
-                            }
-                          />
-                          {authMode === "register" ? (
-                            <Input
-                              className="text-input"
-                              placeholder="Display name"
-                              value={authDisplayName}
-                              onChange={(event) =>
-                                setAuthDisplayName(event.target.value)
-                              }
-                            />
-                          ) : null}
-                          <Input
-                            className="text-input"
-                            placeholder="Password"
-                            type="password"
-                            value={authPassword}
-                            onChange={(event) =>
-                              setAuthPassword(event.target.value)
-                            }
-                          />
-                        </div>
-                        <div className="watchlist-form">
-                          <Button
-                            className="mini-action-button"
-                            disabled={authPending}
-                            onClick={() => void handleAuthSubmit()}
-                          >
-                            {authPending
-                              ? authMode === "login"
-                                ? "Signing in..."
-                                : "Creating..."
-                              : authMode === "login"
-                                ? "Sign in"
-                                : "Register"}
-                          </Button>
-                          <Button
-                            className="mini-action-button"
-                            disabled={authPending}
-                            onClick={() => {
-                              setAuthMode((current) =>
-                                current === "login" ? "register" : "login",
-                              );
-                              setAuthError(null);
-                            }}
-                          >
-                            {authMode === "login"
-                              ? "Need account"
-                              : "Use login"}
-                          </Button>
-                        </div>
-                        {authError ? (
-                          <p className="source-error-copy">{authError}</p>
-                        ) : null}
-                      </>
-                    )
-                  ) : (
-                    <p className="empty-state-hint">
-                      Authentication is disabled in local-first mode. Watchlists
-                      stay machine-local.
-                    </p>
-                  )}
-                </section>
-              </div>
-
-              <details
-                className="sidebar-section"
-                ref={alertsDetailsRef}
-                open={alertCount > 0 ? true : undefined}
-              >
-                <summary>
-                  <div className="section-heading section-heading-spaced">
-                    <h2>
-                      Alerts
-                      {alertCount > 0 ? (
-                        <span className="alert-badge">{alertCount}</span>
-                      ) : null}
-                    </h2>
-                    {alertCount > 0 ? (
-                      <button
-                        className="mini-action-button"
-                        onClick={() => void handleMarkAlertsRead()}
-                        type="button"
-                      >
-                        Mark read
-                      </button>
-                    ) : null}
-                  </div>
-                </summary>
-
-                <div className="snapshot-list">
-                  {alertEvents.length === 0 ? (
-                    <p className="empty-state-hint">
-                      No unread alerts. Create alert rules above to get notified
-                      when trends cross score thresholds.
-                    </p>
-                  ) : (
-                    alertEvents.slice(0, 8).map((event) => (
-                      <section
-                        className="snapshot-card snapshot-card-alert"
-                        key={event.id}
-                      >
-                        <header>
-                          <strong>
-                            <Link
-                              className="trend-link"
-                              href={`/trends/${event.trendId}`}
-                            >
-                              {event.trendName}
-                            </Link>
-                          </strong>
-                          <span className="trend-status-pill trend-status-pill-breakout">
-                            {formatAlertRuleType(event.ruleType)}
-                          </span>
-                        </header>
-                        <p className="source-summary-copy">{event.message}</p>
-                        <p className="source-summary-copy">
-                          {formatCompactTimestamp(event.triggeredAt)}
-                        </p>
-                      </section>
-                    ))
-                  )}
-                </div>
-              </details>
-
-              <details
-                className="sidebar-section"
-                open={savedTheses.length > 0 ? true : undefined}
-              >
-                <summary>
-                  <div className="section-heading section-heading-spaced">
-                    <h2>Saved theses</h2>
-                  </div>
-                </summary>
-
-                <div className="snapshot-list">
-                  {savedTheses.length === 0 ? (
-                    <p className="empty-state-hint">
-                      Save a thesis from the current explorer filters to track
-                      matching trends over time.
-                    </p>
-                  ) : (
-                    savedTheses.map((thesis) => {
-                      const matches = thesisMatchesById.get(thesis.id) ?? [];
-                      return (
-                        <section className="snapshot-card" key={thesis.id}>
-                          <header>
-                            <strong>{thesis.name}</strong>
-                            <span>{thesis.activeMatchCount} matches</span>
-                          </header>
-                          <p className="source-summary-copy">
-                            {summarizeThesisFilters(thesis)}
-                          </p>
-                          {matches.length > 0 ? (
-                            <div className="community-chip-group">
-                              {matches.slice(0, 3).map((match) => (
-                                <Link
-                                  className="community-filter-chip"
-                                  href={`/trends/${match.trendId}`}
-                                  key={`${thesis.id}-${match.trendId}`}
-                                >
-                                  {match.trendName} ·{" "}
-                                  {match.lensScore.toFixed(1)}
-                                </Link>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="empty-state-hint">
-                              No active matches in the current ranking.
-                            </p>
-                          )}
-                          <div className="watchlist-form">
-                            <small className="source-summary-copy">
-                              {thesis.notifyOnMatch
-                                ? "Notifications on"
-                                : "Notifications off"}
-                            </small>
-                            <Button
-                              className="mini-action-button"
-                              disabled={actionPending}
-                              onClick={() => void handleDeleteThesis(thesis.id)}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </section>
-                      );
-                    })
-                  )}
-                </div>
-              </details>
-            </>
-          ) : null}
 
         </aside>
       </section>
@@ -3073,9 +2035,6 @@ export function DashboardShell({
 
 // Re-exports for backwards compatibility — consumers should migrate to @/components/explorer/*
 export {
-  buildCommunitySpotlights,
-  buildCommunityExportHref,
-  buildSharedWatchlistExportHref,
   buildAudienceFilterOptions,
   buildMarketFilterOptions,
   buildLanguageFilterOptions,
