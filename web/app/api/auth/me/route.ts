@@ -6,7 +6,7 @@ export async function GET() {
     const payload = await getCurrentUser();
     return NextResponse.json(payload);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Authentication lookup failed";
+    const message = "Authentication lookup failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
