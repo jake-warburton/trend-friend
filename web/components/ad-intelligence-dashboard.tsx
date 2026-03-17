@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useScreenshotMode } from "@/lib/use-screenshot-mode";
 import { useAuth } from "@/components/auth-provider";
 import { useProfile } from "@/components/profile-provider";
 import type { AdIntelligenceResponse, AdIntelligenceKeyword, AdIntelligenceAdvertiser, AdIntelligencePlatformSummary } from "@/lib/types";
@@ -424,11 +425,7 @@ export function AdIntelligenceDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { isPro, loading: profileLoading } = useProfile();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isScreenshot =
-    searchParams.get("screenshot") === "1" &&
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const isScreenshot = useScreenshotMode();
   const [data, setData] = useState<AdIntelligenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
