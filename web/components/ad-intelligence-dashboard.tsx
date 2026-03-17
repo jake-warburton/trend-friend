@@ -430,7 +430,14 @@ export function AdIntelligenceDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isScreenshot) { setLoading(false); return; }
+    if (isScreenshot) {
+      fetch("/api/ad-intelligence")
+        .then((res) => res.ok ? res.json() : null)
+        .then((json) => { if (json) setData(json); })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+      return;
+    }
     if (authLoading || profileLoading) return;
     if (!user || !isPro) {
       router.replace(user ? "/pricing" : "/login?next=/ad-intelligence");
@@ -443,9 +450,9 @@ export function AdIntelligenceDashboard() {
       .finally(() => setLoading(false));
   }, [isPro, profileLoading, authLoading, user, router, isScreenshot]);
 
-  if (isScreenshot) return <ProGate />;
-  if (authLoading || profileLoading || loading) return <Skeleton />;
-  if (!isPro) return <ProGate />;
+  if (!isScreenshot && (authLoading || profileLoading || loading)) return <Skeleton />;
+  if (!isScreenshot && !isPro) return <ProGate />;
+  if (loading) return <Skeleton />;
 
   if (!data) {
     return (
