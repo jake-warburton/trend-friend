@@ -180,6 +180,11 @@ def fetch_ad_intelligence_items(settings: Settings) -> tuple[list[RawSourceItem]
         futures = {executor.submit(_fetch_one, adapter): adapter for adapter in adapters}
         for future in as_completed(futures):
             items, run = future.result()
+            # Exclude fallback/sample data from ad intelligence — only real API data
+            if run.used_fallback:
+                LOGGER.info("Skipping %s fallback data from ad intelligence payload", run.source)
+                source_runs.append(run)
+                continue
             all_items.extend(items)
             source_runs.append(run)
 
