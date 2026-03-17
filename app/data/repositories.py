@@ -275,6 +275,46 @@ class TwitterTweetRepository:
         ]
 
 
+class TwitterTrendRepository:
+    """Persist and query Twitter trending topics."""
+
+    def __init__(self, connection: DatabaseConnection) -> None:
+        self.connection = connection
+
+    def insert_trends(self, trends: list[tuple[str, str, str, int | None, int | None, str | None, str | None, str | None, str | None, str]]) -> None:
+        """Insert trending topics. Each tuple: (name, category, location, woeid, tweet_volume, domain_context, grouped_trends, query, url, fetched_at)."""
+        self.connection.executemany(
+            """
+            INSERT INTO twitter_trends (name, category, location, woeid, tweet_volume, domain_context, grouped_trends, query, url, fetched_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            trends,
+        )
+        self.connection.commit()
+
+    def fetch_latest(self, limit: int = 200) -> list[dict]:
+        """Fetch the most recent trends."""
+        rows = self.connection.execute(
+            "SELECT name, category, location, woeid, tweet_volume, domain_context, grouped_trends, query, url, fetched_at FROM twitter_trends ORDER BY fetched_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        keys = ("name", "category", "location", "woeid", "tweet_volume", "domain_context", "grouped_trends", "query", "url", "fetched_at")
+        return [
+            {k: r[k] for k in keys} if isinstance(r, dict) else dict(zip(keys, r))
+            for r in rows
+        ]
+
+    def prune(self, keep_hours: int = 48) -> None:
+        """Delete trends older than keep_hours."""
+        from datetime import datetime, timedelta, timezone
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=keep_hours)).isoformat()
+        self.connection.execute(
+            "DELETE FROM twitter_trends WHERE fetched_at < ?",
+            (cutoff,),
+        )
+        self.connection.commit()
+
+
 class SourceIngestionRunRepository:
     """Persist and retrieve source ingestion outcomes."""
 
