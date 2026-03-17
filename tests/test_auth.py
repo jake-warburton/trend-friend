@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sqlite3
 import unittest
 from unittest.mock import patch
@@ -177,6 +178,8 @@ class AuthAPITests(unittest.TestCase):
 
         self.app.dependency_overrides[get_db] = override_db
         self.client = TestClient(self.app)
+        # Use development mode so secure cookies work over HTTP in tests
+        os.environ["SIGNAL_EYE_ENVIRONMENT"] = "development"
 
         from app.api.rate_limit import response_cache
         response_cache.clear()
