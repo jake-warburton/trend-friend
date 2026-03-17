@@ -129,6 +129,37 @@ class ResponseCache:
                 del self._entries[key]
 
 
+class LoginRateLimiter:
+    """Per-key sliding window rate limiter for login attempts."""
+
+    def __init__(self, max_attempts: int = 5, window_seconds: float = 900.0) -> None:
+        self.max_attempts = max_attempts
+        self.window_seconds = window_seconds
+        self._buckets: dict[str, list[float]] = defaultdict(list)
+        self._lock = threading.Lock()
+
+    def check(self, key: str) -> bool:
+        """Return True if the attempt is allowed, False if rate-limited."""
+
+        now = time.monotonic()
+        window_start = now - self.window_seconds
+
+        with self._lock:
+            timestamps = self._buckets[key]
+            self._buckets[key] = [t for t in timestamps if t > window_start]
+            if len(self._buckets[key]) >= self.max_attempts:
+                return False
+            self._buckets[key].append(now)
+            return True
+
+    def clear(self, key: str) -> None:
+        """Reset attempts for a key (call after successful login)."""
+
+        with self._lock:
+            self._buckets.pop(key, None)
+
+
 # Global instances
 rate_limiter = RateLimiter(requests_per_minute=60)
 response_cache = ResponseCache(default_ttl_seconds=30.0)
+login_rate_limiter = LoginRateLimiter(max_attempts=5, window_seconds=900.0)

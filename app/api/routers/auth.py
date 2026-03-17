@@ -7,6 +7,7 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
+from app.api.rate_limit import login_rate_limiter
 from app.auth.middleware import SESSION_COOKIE_NAME, get_current_profile, require_admin, require_auth
 from app.auth.passwords import hash_password, verify_password, _dummy_verify
 from app.auth.repository import UserRepository
@@ -65,6 +66,9 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
     if not username or not password:
         raise HTTPException(status_code=422, detail="username and password are required")
 
+    if not login_rate_limiter.check(username):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
+
     repo = UserRepository(db)
     user = repo.get_user_by_username(username)
     if user is None:
@@ -81,6 +85,7 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
     token = generate_session_token()
     repo.create_session(user.id, hash_session_token(token))
     _set_session_cookie(response, token)
+    login_rate_limiter.clear(username)
     return {
         "user": _user_response(user),
         "token": token,
