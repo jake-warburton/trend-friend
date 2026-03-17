@@ -78,7 +78,10 @@ export function SocialIntelligenceDashboard() {
   const { isPro, loading: profileLoading } = useProfile();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isScreenshot = searchParams.get("screenshot") === "1";
+  const isScreenshot =
+    searchParams.get("screenshot") === "1" &&
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[] | null>(null);
   const [breakingFeed, setBreakingFeed] = useState<BreakingFeed | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);

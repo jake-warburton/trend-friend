@@ -425,7 +425,10 @@ export function AdIntelligenceDashboard() {
   const { isPro, loading: profileLoading } = useProfile();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isScreenshot = searchParams.get("screenshot") === "1";
+  const isScreenshot =
+    searchParams.get("screenshot") === "1" &&
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
   const [data, setData] = useState<AdIntelligenceResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
