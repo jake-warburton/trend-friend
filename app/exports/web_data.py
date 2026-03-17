@@ -115,7 +115,7 @@ def export_web_data_payloads(settings: Settings) -> None:
     # full metadata in the ad pipeline) over the lossy signal-based fallback.
     cached_ad_json = published_payload_repository.get_payload("ad-intelligence.json")
     if cached_ad_json is not None:
-        ad_intelligence_payload_dict = json.loads(cached_ad_json)
+        ad_intelligence_payload_dict = cached_ad_json if isinstance(cached_ad_json, dict) else json.loads(cached_ad_json)
     else:
         ad_intelligence_payload_dict = build_ad_intelligence_payload(
             generated_at=latest_captured_at or generated_at,
