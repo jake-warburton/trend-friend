@@ -8024,6 +8024,31 @@ dialog::backdrop {
 
 /* ── Ad Intelligence Dashboard ──────────────────────────────── */
 
+/* ── Social Intelligence ──────────────────────────────────── */
+
+.social-intel-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.social-intel-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.social-intel-header p {
+  font-size: 14px;
+  color: var(--copy-secondary);
+  margin: 4px 0 0;
+}
+
+/* ── Ad Intelligence ─────────────────────────────────────── */
+
 .adi-wrap {
   max-width: 1080px;
   margin: 0 auto;

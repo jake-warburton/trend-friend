@@ -8,6 +8,7 @@ import { useProfile } from "@/components/profile-provider";
 
 const NAV_LINKS = [
   { label: "Explorer", href: "/explore", pro: false, desktopOnly: false },
+  { label: "Social Intelligence", href: "/social-intelligence", pro: true, desktopOnly: false },
   { label: "Ad Intelligence", href: "/ad-intelligence", pro: true, desktopOnly: false },
   { label: "Settings", href: "/settings", pro: false, desktopOnly: false },
 ] as const;

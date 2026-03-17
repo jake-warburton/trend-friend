@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth-provider";
 export const PRO_FEATURES = [
   "Everything in Free",
   "CSV export",
+  "Social Intelligence",
   "Ad Intelligence",
 ] as const;
 

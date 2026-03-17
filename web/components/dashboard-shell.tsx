@@ -24,8 +24,6 @@ import { useExplorerFilters } from "@/components/explorer/use-explorer-filters";
 import { useExplorerData } from "@/components/explorer/use-explorer-data";
 import { useLiveUpdates } from "@/components/explorer/use-live-updates";
 import { useFilteredTrends } from "@/components/explorer/use-filtered-trends";
-import { BreakingFeedSection } from "@/components/explorer/breaking-feed-section";
-import { TrendingCarousel } from "@/components/explorer/trending-carousel";
 import { ExplorerCard } from "@/components/explorer/explorer-card";
 import { ExplorerFilters } from "@/components/explorer/explorer-filters";
 import { ExplorerPagination } from "@/components/explorer/explorer-pagination";
@@ -43,7 +41,6 @@ export function DashboardShell({
   const searchParams = useSearchParams();
   const { modalOpen: upgradeModalOpen, closeModal: closeUpgradeModal, requirePro } = useUpgradeGate();
   const [isPending, startTransition] = useTransition();
-  const [trendingTopics, setTrendingTopics] = useState<Array<{name: string; category: string; location: string; tweet_volume: number | null; domain_context: string | null; fetched_at: string}> | null>(null);
 
   const screenshotMode = searchParams.get("screenshot") === "1";
   const screenshotPanel = searchParams.get("panel");
@@ -82,19 +79,6 @@ export function DashboardShell({
     }
   }, [screenshotTrendId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    async function fetchTrendingTopics() {
-      try {
-        const response = await fetch("/api/trends/hashtags");
-        if (response.ok) {
-          const data = await response.json();
-          setTrendingTopics(data.trends ?? []);
-        }
-      } catch { /* ignore */ }
-    }
-    void fetchTrendingTopics();
-  }, []);
-
   return (
     <main
       className={
@@ -120,12 +104,6 @@ export function DashboardShell({
           </Link>
         ))}
       </section>
-
-      {/* ── Trending on X ──────────────────────────────────── */}
-      <TrendingCarousel trends={trendingTopics} />
-
-      {/* ── Breaking Feed ─────────────────────────────────── */}
-      <BreakingFeedSection feed={liveUpdates.breakingFeed} />
 
       <GeoFootprint
         geoMapData={trends.explorerGeoMapData}
