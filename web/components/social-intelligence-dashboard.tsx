@@ -85,29 +85,28 @@ export function SocialIntelligenceDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = () =>
-      Promise.all([
-        fetch("/api/trends/hashtags").then((r) => r.ok ? r.json() : null),
-        fetch("/api/breaking").then((r) => r.ok ? r.json() : null),
-      ])
-        .then(([hashtagData, feedData]) => {
-          setTrendingTopics(hashtagData?.trends ?? []);
-          setBreakingFeed(feedData);
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-
-    if (isScreenshot) { fetchData(); return; }
+    if (isScreenshot) { setLoading(false); return; }
     if (authLoading || profileLoading) return;
     if (!user || !isPro) {
       router.replace(user ? "/pricing" : "/login?next=/social-intelligence");
       return;
     }
-    fetchData();
+
+    Promise.all([
+      fetch("/api/trends/hashtags").then((r) => r.ok ? r.json() : null),
+      fetch("/api/breaking").then((r) => r.ok ? r.json() : null),
+    ])
+      .then(([hashtagData, feedData]) => {
+        setTrendingTopics(hashtagData?.trends ?? []);
+        setBreakingFeed(feedData);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [isPro, profileLoading, authLoading, user, router, isScreenshot]);
 
-  if (!isScreenshot && (authLoading || profileLoading || loading)) return <Skeleton />;
-  if (!isScreenshot && !isPro) return <ProGate />;
+  if (isScreenshot) return <ProGate />;
+  if (authLoading || profileLoading || loading) return <Skeleton />;
+  if (!isPro) return <ProGate />;
 
   return (
     <div className="social-intel-wrap">
