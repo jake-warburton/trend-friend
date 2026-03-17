@@ -64,6 +64,11 @@ class PasswordTests(unittest.TestCase):
         self.assertFalse(is_valid)
         self.assertFalse(needs_rehash)
 
+    def test_dummy_verify_runs_pbkdf2(self) -> None:
+        """dummy_verify must exercise PBKDF2 so timing matches real verify."""
+        from app.auth.passwords import _dummy_verify
+        _dummy_verify("some-password")
+
 
 class TokenTests(unittest.TestCase):
     """Test token and API key generation."""
@@ -230,6 +235,14 @@ class AuthAPITests(unittest.TestCase):
         response = self.client.get("/api/v1/auth/me")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["user"]["username"], "user1")
+
+    def test_login_nonexistent_user_returns_401(self) -> None:
+        """Login with nonexistent user must return 401 (not crash)."""
+        response = self.client.post(
+            "/api/v1/auth/login",
+            json={"username": "ghost", "password": "password123"},
+        )
+        self.assertEqual(response.status_code, 401)
 
     @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_logout_revokes_session_cookie(self) -> None:
