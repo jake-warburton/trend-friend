@@ -342,22 +342,27 @@ export function DashboardShell({
     "loading" | "ready" | "error"
   >("loading");
   const [isPending, startTransition] = useTransition();
-  const [keyword, setKeyword] = useState("");
-  const [selectedSource, setSelectedSource] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedStage, setSelectedStage] = useState<string>("all");
-  const [selectedConfidence, setSelectedConfidence] = useState<string>("all");
-  const [selectedLens, setSelectedLens] = useState<string>("all");
-  const [selectedMetaTrend, setSelectedMetaTrend] = useState<string>("all");
-  const [selectedAudience, setSelectedAudience] = useState<string>("all");
-  const [selectedMarket, setSelectedMarket] = useState<string>("all");
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
-  const [selectedGeoCountry, setSelectedGeoCountry] = useState<string>("all");
-  const [minimumScore, setMinimumScore] = useState<number | null>(0);
-  const [sortBy, setSortBy] = useState<string>("rank");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [hideRecurring, setHideRecurring] = useState(false);
+  // -- Explorer filter state (initialized from URL search params) --
+  const _initParams = useMemo(() => new URLSearchParams(typeof window !== "undefined" ? window.location.search : ""), []);
+  const [keyword, setKeyword] = useState(() => _initParams.get("q") ?? "");
+  const [selectedSource, setSelectedSource] = useState<string>(() => _initParams.get("source") ?? "all");
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => _initParams.get("category") ?? "all");
+  const [selectedStage, setSelectedStage] = useState<string>(() => _initParams.get("stage") ?? "all");
+  const [selectedConfidence, setSelectedConfidence] = useState<string>(() => _initParams.get("confidence") ?? "all");
+  const [selectedLens, setSelectedLens] = useState<string>(() => _initParams.get("lens") ?? "all");
+  const [selectedMetaTrend, setSelectedMetaTrend] = useState<string>(() => _initParams.get("metaTrend") ?? "all");
+  const [selectedAudience, setSelectedAudience] = useState<string>(() => _initParams.get("audience") ?? "all");
+  const [selectedMarket, setSelectedMarket] = useState<string>(() => _initParams.get("market") ?? "all");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => _initParams.get("language") ?? "all");
+  const [selectedGeoCountry, setSelectedGeoCountry] = useState<string>(() => _initParams.get("geo") ?? "all");
+  const [minimumScore, setMinimumScore] = useState<number | null>(() => {
+    const v = _initParams.get("minScore");
+    return v !== null ? Number(v) : 0;
+  });
+  const [sortBy, setSortBy] = useState<string>(() => _initParams.get("sort") ?? "rank");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">(() => (_initParams.get("dir") === "desc" ? "desc" : "asc"));
+  const [selectedStatus, setSelectedStatus] = useState<string>(() => _initParams.get("status") ?? "all");
+  const [hideRecurring, setHideRecurring] = useState(() => _initParams.get("hideRecurring") === "1");
   const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(
     null,
   );
@@ -408,7 +413,10 @@ export function DashboardShell({
   >("idle");
   const [changedTrendIds, setChangedTrendIds] = useState<string[]>([]);
   const [expandedTrendId, setExpandedTrendId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const v = _initParams.get("page");
+    return v !== null ? Math.max(1, Number(v)) : 1;
+  });
   const EXPLORER_PAGE_SIZE = 20;
   const [, startAutoRefresh] = useTransition();
   const overviewMetaRef = useRef<OverviewRefreshMeta>({
@@ -818,6 +826,36 @@ export function DashboardShell({
       setCurrentPage(1);
     }
   }, [filteredTrends]);
+
+  // -- Sync explorer filter state → URL (replaceState to avoid history spam) --
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (keyword) params.set("q", keyword);
+    if (selectedSource !== "all") params.set("source", selectedSource);
+    if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedStage !== "all") params.set("stage", selectedStage);
+    if (selectedConfidence !== "all") params.set("confidence", selectedConfidence);
+    if (selectedLens !== "all") params.set("lens", selectedLens);
+    if (selectedMetaTrend !== "all") params.set("metaTrend", selectedMetaTrend);
+    if (selectedAudience !== "all") params.set("audience", selectedAudience);
+    if (selectedMarket !== "all") params.set("market", selectedMarket);
+    if (selectedLanguage !== "all") params.set("language", selectedLanguage);
+    if (selectedGeoCountry !== "all") params.set("geo", selectedGeoCountry);
+    if (minimumScore && minimumScore > 0) params.set("minScore", String(minimumScore));
+    if (sortBy !== "rank") params.set("sort", sortBy);
+    if (sortDirection !== "asc") params.set("dir", sortDirection);
+    if (selectedStatus !== "all") params.set("status", selectedStatus);
+    if (hideRecurring) params.set("hideRecurring", "1");
+    if (safePage > 1) params.set("page", String(safePage));
+    const qs = params.toString();
+    const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState(window.history.state, "", url);
+  }, [
+    keyword, selectedSource, selectedCategory, selectedStage, selectedConfidence,
+    selectedLens, selectedMetaTrend, selectedAudience, selectedMarket,
+    selectedLanguage, selectedGeoCountry, minimumScore, sortBy, sortDirection,
+    selectedStatus, hideRecurring, safePage,
+  ]);
 
   function goToPage(page: number) {
     setCurrentPage(page);
