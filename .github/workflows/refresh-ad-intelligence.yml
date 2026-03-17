@@ -20,8 +20,7 @@ jobs:
       SIGNAL_EYE_ENABLE_POSTGRES_RUNTIME: "true"
       SIGNAL_EYE_ENABLE_AD_INTELLIGENCE_SOURCES: "true"
       SIGNAL_EYE_WEB_DATA_PATH: web/data
-      # SERPAPI_KEY temporarily disabled while pipeline bugs are fixed
-      # SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+      SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
       GOOGLE_ADS_CLIENT_ID: ${{ secrets.GOOGLE_ADS_CLIENT_ID }}
       GOOGLE_ADS_CLIENT_SECRET: ${{ secrets.GOOGLE_ADS_CLIENT_SECRET }}
       GOOGLE_ADS_DEVELOPER_TOKEN: ${{ secrets.GOOGLE_ADS_DEVELOPER_TOKEN }}
@@ -49,6 +48,18 @@ jobs:
             echo "Missing required Actions secret: SIGNAL_EYE_DATABASE_URL"
             exit 1
           fi
+
+      - name: Clear stale dummy data from previous run
+        run: |
+          python3 -c "
+          import os, psycopg
+          url = os.environ['SIGNAL_EYE_DATABASE_URL']
+          with psycopg.connect(url) as conn:
+              conn.execute(\"DELETE FROM published_payloads WHERE payload_key = 'ad-intelligence.json'\")
+              conn.commit()
+              print('Cleared ad-intelligence.json payload')
+          "
+        continue-on-error: true
 
       - name: Run ad intelligence pipeline
         run: python3 scripts/run_ad_intelligence.py
