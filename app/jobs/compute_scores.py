@@ -203,8 +203,8 @@ def run_ad_intelligence_pipeline(settings: Settings) -> None:
     )
 
     # Attach to settings so the keyword adapter can read them.
-    settings._ad_intel_trend_topics = trend_topics  # type: ignore[attr-defined]
-    settings._ad_intel_already_scraped = already_scraped  # type: ignore[attr-defined]
+    object.__setattr__(settings, "_ad_intel_trend_topics", trend_topics)
+    object.__setattr__(settings, "_ad_intel_already_scraped", already_scraped)
 
     ad_items, ad_source_runs = fetch_ad_intelligence_items(settings)
     if not ad_items:
