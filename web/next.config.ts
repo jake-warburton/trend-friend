@@ -53,6 +53,78 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      {
+        source: "/explore",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/trends/:slug*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/categories/:slug*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/meta-trends/:slug*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/sources/:slug*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/social-intelligence",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/ad-intelligence",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=172800, stale-while-revalidate=86400",
+          },
+        ],
+      },
     ];
   },
 };

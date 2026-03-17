@@ -5,7 +5,7 @@ import { JsonLd, buildCollectionPageJsonLd } from "@/components/json-ld";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 
-export const revalidate = 300;
+export const revalidate = 172800;
 
 export const metadata: Metadata = {
   title: "Ad Intelligence",

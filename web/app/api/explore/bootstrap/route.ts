@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { loadExploreDeferredData } from "@/lib/trends";
 import type { ExploreDeferredData } from "@/lib/types";
 
-export const revalidate = 2400;
+export const revalidate = 172800;
 
 type ExploreBootstrapDependencies = {
   loadDeferredData: () => Promise<ExploreDeferredData>;

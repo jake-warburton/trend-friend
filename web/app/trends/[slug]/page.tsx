@@ -31,7 +31,7 @@ type TrendDetailPageProps = {
   }>;
 };
 
-export const revalidate = 300;
+export const revalidate = 172800;
 
 export async function generateMetadata({ params }: TrendDetailPageProps): Promise<Metadata> {
   const { slug } = await params;

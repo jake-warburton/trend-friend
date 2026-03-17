@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-static";
-export const revalidate = 300;
+export const revalidate = 172800;
 
 export default async function Page() {
   const initialData = await loadExploreInitialData();

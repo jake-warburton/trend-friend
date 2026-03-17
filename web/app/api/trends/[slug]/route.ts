@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { loadTrendDetail } from "@/lib/trends";
 
-export const revalidate = 2400;
+export const revalidate = 172800;
 
 type RouteContext = {
   params: Promise<{ slug: string }>;
