@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import threading
+from collections import OrderedDict
 from datetime import datetime, timezone
 
 import stripe
@@ -11,6 +13,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from app.api.dependencies import get_db
 from app.auth.profile_repository import ProfileRepository
 from app.data.connection import DatabaseConnection
+
+_processed_events: OrderedDict[str, None] = OrderedDict()
+_processed_events_lock = threading.Lock()
+_MAX_PROCESSED_EVENTS = 1000
 
 router = APIRouter(tags=["webhooks"])
 
@@ -35,6 +41,14 @@ async def stripe_webhook(
         raise HTTPException(status_code=400, detail="Invalid payload")
     except stripe.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
+
+    event_id = event["id"]
+    with _processed_events_lock:
+        if event_id in _processed_events:
+            return {"received": True}
+        _processed_events[event_id] = None
+        while len(_processed_events) > _MAX_PROCESSED_EVENTS:
+            _processed_events.popitem(last=False)
 
     repo = ProfileRepository(db)
     event_type = event["type"]

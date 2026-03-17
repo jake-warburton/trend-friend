@@ -3,14 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { clearSupabasePayloadCache } from "@/lib/trends";
 
-const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET || "";
-
 export async function POST(request: NextRequest) {
+  const revalidateSecret = process.env.REVALIDATE_SECRET;
+  if (!revalidateSecret) {
+    return NextResponse.json({ error: "REVALIDATE_SECRET not configured" }, { status: 503 });
+  }
   // Accept secret via header (preferred) or query param (legacy)
   const secret =
     request.headers.get("x-revalidate-secret") ??
     request.nextUrl.searchParams.get("secret");
-  if (!REVALIDATE_SECRET || secret !== REVALIDATE_SECRET) {
+  if (secret !== revalidateSecret) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 

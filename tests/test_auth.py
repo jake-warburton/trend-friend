@@ -64,6 +64,11 @@ class PasswordTests(unittest.TestCase):
         self.assertFalse(is_valid)
         self.assertFalse(needs_rehash)
 
+    def test_dummy_verify_runs_pbkdf2(self) -> None:
+        """dummy_verify must exercise PBKDF2 so timing matches real verify."""
+        from app.auth.passwords import _dummy_verify
+        _dummy_verify("some-password")
+
 
 class TokenTests(unittest.TestCase):
     """Test token and API key generation."""
@@ -231,6 +236,14 @@ class AuthAPITests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["user"]["username"], "user1")
 
+    def test_login_nonexistent_user_returns_401(self) -> None:
+        """Login with nonexistent user must return 401 (not crash)."""
+        response = self.client.post(
+            "/api/v1/auth/login",
+            json={"username": "ghost", "password": "password123"},
+        )
+        self.assertEqual(response.status_code, 401)
+
     @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true"})
     def test_logout_revokes_session_cookie(self) -> None:
         self.client.post("/api/v1/auth/register", json={"username": "user1", "password": "password123"})
@@ -239,3 +252,12 @@ class AuthAPITests(unittest.TestCase):
 
         me_response = self.client.get("/api/v1/auth/me")
         self.assertEqual(me_response.status_code, 401)
+
+    @patch.dict("os.environ", {"SIGNAL_EYE_AUTH_ENABLED": "true", "SIGNAL_EYE_ENVIRONMENT": "production"})
+    def test_logout_cookie_uses_secure_flag_in_production(self) -> None:
+        """Logout must set secure flag consistent with login."""
+        self.client.post("/api/v1/auth/register", json={"username": "u1", "password": "password123"})
+        response = self.client.post("/api/v1/auth/logout")
+        self.assertEqual(response.status_code, 200)
+        cookie_header = response.headers.get("set-cookie", "")
+        self.assertIn("Secure", cookie_header)

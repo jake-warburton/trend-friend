@@ -60,3 +60,19 @@ def verify_password(password: str, password_hash: str) -> tuple[bool, bool]:
     digest = hashlib.sha256(f"{salt}:{password}".encode()).hexdigest()
     is_valid = hmac.compare_digest(digest, stored_digest)
     return is_valid, is_valid  # needs_rehash only if password is valid
+
+
+# Fixed salt used only for timing-equalization on failed lookups.
+_DUMMY_SALT = bytes.fromhex("00" * 16)
+
+
+def _dummy_verify(password: str) -> None:
+    """Run a PBKDF2 hash to equalize timing when a user is not found."""
+
+    hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode(),
+        _DUMMY_SALT,
+        _PBKDF2_ITERATIONS,
+        dklen=_PBKDF2_DKLEN,
+    )

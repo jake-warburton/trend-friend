@@ -7,8 +7,9 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.api.dependencies import get_db
+from app.api.rate_limit import login_rate_limiter
 from app.auth.middleware import SESSION_COOKIE_NAME, get_current_profile, require_admin, require_auth
-from app.auth.passwords import hash_password, verify_password
+from app.auth.passwords import hash_password, verify_password, _dummy_verify
 from app.auth.repository import UserRepository
 from app.auth.tokens import generate_api_key, generate_session_token, hash_session_token
 from app.data.connection import DatabaseConnection
@@ -65,9 +66,13 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
     if not username or not password:
         raise HTTPException(status_code=422, detail="username and password are required")
 
+    if not login_rate_limiter.check(username):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
+
     repo = UserRepository(db)
     user = repo.get_user_by_username(username)
     if user is None:
+        _dummy_verify(password)
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     is_valid, needs_rehash = verify_password(password, user.password_hash)
@@ -80,6 +85,7 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
     token = generate_session_token()
     repo.create_session(user.id, hash_session_token(token))
     _set_session_cookie(response, token)
+    login_rate_limiter.clear(username)
     return {
         "user": _user_response(user),
         "token": token,
@@ -130,7 +136,14 @@ def logout_user(
     if token:
         repo = UserRepository(db)
         repo.revoke_session_by_hash(hash_session_token(token))
-    response.delete_cookie(SESSION_COOKIE_NAME, path="/", httponly=True, samesite="lax")
+    is_production = os.getenv("SIGNAL_EYE_ENVIRONMENT", "production") != "development"
+    response.delete_cookie(
+        SESSION_COOKIE_NAME,
+        path="/",
+        httponly=True,
+        samesite="strict",
+        secure=is_production,
+    )
     return {"ok": True}
 
 
@@ -224,7 +237,8 @@ def _set_session_cookie(response: Response, token: str) -> None:
         SESSION_COOKIE_NAME,
         token,
         httponly=True,
-        samesite="lax",
+        samesite="strict",
         secure=is_production,
+        max_age=7 * 24 * 60 * 60,
         path="/",
     )

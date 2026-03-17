@@ -28,6 +28,7 @@ def list_alerts(
 ) -> dict:
     """Return recent alert events."""
 
+    limit = max(1, min(limit, 500))
     repo = WatchlistRepository(db)
     events = repo.list_alert_events(
         unread_only=unread_only,

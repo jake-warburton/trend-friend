@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     supabase = getServiceSupabase();
   } catch (err) {
-    console.error("[stripe-webhook] service supabase init failed:", err);
+    console.error("[stripe-webhook] service supabase init failed");
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
   }
 
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("[stripe-webhook] error processing event:", event.type, err);
+    console.error("[stripe-webhook] error processing event:", event.type, err instanceof Error ? err.message : "unknown error");
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }

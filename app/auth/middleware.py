@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 from typing import Optional
 
 import jwt
@@ -16,6 +17,7 @@ from app.auth.tokens import hash_api_key, hash_session_token
 from app.models import User, UserProfile
 
 SESSION_COOKIE_NAME = "tf_session"
+SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 
 
 def auth_enabled() -> bool:
@@ -243,6 +245,14 @@ def _authenticate_session(token: str, db: DatabaseConnection) -> User:
     session = user_repo.get_session_by_hash(token_hash)
     if session is None:
         raise HTTPException(status_code=401, detail="Invalid session")
+
+    created = session.created_at
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=timezone.utc)
+    session_age = datetime.now(timezone.utc) - created
+    if session_age.total_seconds() > SESSION_MAX_AGE_SECONDS:
+        user_repo.revoke_session_by_hash(token_hash)
+        raise HTTPException(status_code=401, detail="Session expired")
 
     user = user_repo.get_user_by_id(session.user_id)
     if user is None:

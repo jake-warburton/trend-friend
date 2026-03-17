@@ -4,8 +4,12 @@ import { NextResponse } from "next/server";
 import { getRefreshErrorStatus, refreshData } from "@/lib/server/refresh-service";
 
 export async function GET(request: NextRequest) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ ok: false, error: "CRON_SECRET not configured" }, { status: 503 });
+  }
   const authHeader = request.headers.get("authorization");
-  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
