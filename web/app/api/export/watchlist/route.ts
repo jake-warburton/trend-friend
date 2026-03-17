@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { requirePro } from "@/lib/server/require-pro";
 import { buildForwardedAuthHeaders } from "@/lib/server/forward-auth";
 import { listWatchlists } from "@/lib/server/watchlist-service";
 import { loadTrendExplorer } from "@/lib/trends";
@@ -94,6 +95,9 @@ export function buildWatchlistCsv(
 }
 
 export async function GET(request: NextRequest) {
+  const check = await requirePro();
+  if (!check.authorized) return check.response;
+
   const idParam = request.nextUrl.searchParams.get("id");
   if (!idParam) {
     return NextResponse.json({ error: "Missing watchlist id" }, { status: 400 });

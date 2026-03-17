@@ -63,6 +63,6 @@ jobs:
       - name: Invalidate Vercel cache
         if: success()
         run: |
-          curl -s -X POST "https://www.signaleye.live/api/revalidate?secret=${REVALIDATE_SECRET}" || true
+          curl -s -X POST "https://www.signaleye.live/api/revalidate" -H "x-revalidate-secret: ${REVALIDATE_SECRET}" || true
         env:
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
