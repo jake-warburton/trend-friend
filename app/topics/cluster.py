@@ -88,8 +88,15 @@ def aggregate_topic_signals(signals: list[NormalizedSignal]) -> list[TopicAggreg
             source_counts[signal.source] += 1
             signal_counts[signal.signal_type] += 1
             total_signal_value += signal.value
-            if signal.timestamp > latest_timestamp:
-                latest_timestamp = signal.timestamp
+            try:
+                if signal.timestamp > latest_timestamp:
+                    latest_timestamp = signal.timestamp
+            except TypeError:
+                # Mixed naive/aware datetimes — normalize both to naive UTC
+                a = signal.timestamp.replace(tzinfo=None) if signal.timestamp.tzinfo else signal.timestamp
+                b = latest_timestamp.replace(tzinfo=None) if latest_timestamp.tzinfo else latest_timestamp
+                if a > b:
+                    latest_timestamp = signal.timestamp
             if signal.evidence not in evidence:
                 evidence.append(signal.evidence)
         aggregates.append(
