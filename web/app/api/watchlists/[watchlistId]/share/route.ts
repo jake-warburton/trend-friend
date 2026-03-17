@@ -37,7 +37,8 @@ export async function handleShareWatchlistPost(
     );
     return NextResponse.json(payload);
   } catch (error) {
-    const message = "Share request failed";
+    const message =
+      error instanceof WatchlistServiceError ? error.message : error instanceof ApiError ? error.message : "Share request failed";
     const status =
       error instanceof WatchlistServiceError ? error.status : error instanceof ApiError ? error.status : 500;
     return NextResponse.json({ error: message }, { status });

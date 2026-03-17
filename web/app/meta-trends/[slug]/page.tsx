@@ -1,15 +1,35 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { loadTrendDetails } from "@/lib/trends";
-import { findMetaTrendGroup } from "@/lib/trend-browse";
+import { findMetaTrendGroup, slugifyBrowseValue } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
+import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
+
+export const revalidate = 300;
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 
 type MetaTrendPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export async function generateMetadata({ params }: MetaTrendPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const details = await loadTrendDetails();
+  const group = details ? findMetaTrendGroup(details.trends, slug) : null;
+  if (!group) return { title: "Meta-Trend Not Found" };
+
+  const description = `${group.label} — a meta-trend connecting ${group.trendCount} related trends with an average momentum score of ${Math.round(group.averageScore)}.`;
+  return {
+    title: group.label,
+    description,
+    alternates: { canonical: `${SITE_URL}/meta-trends/${slugifyBrowseValue(slug)}` },
+    openGraph: { title: `${group.label} — Meta-Trend`, description },
+    twitter: { card: "summary_large_image" },
+  };
+}
 
 export default async function MetaTrendPage({ params }: MetaTrendPageProps) {
   const { slug } = await params;
@@ -20,8 +40,25 @@ export default async function MetaTrendPage({ params }: MetaTrendPageProps) {
     notFound();
   }
 
+  const relatedCategories = [...new Set(group.trends.map((t) => t.category).filter(Boolean))];
+
+  const collectionJsonLd = buildCollectionPageJsonLd({
+    url: `${SITE_URL}/meta-trends/${slugifyBrowseValue(slug)}`,
+    name: group.label,
+    description: group.description,
+    numberOfItems: group.trendCount,
+  });
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Home", url: SITE_URL },
+    { name: "Meta-Trends", url: `${SITE_URL}/meta-trends` },
+    { name: group.label, url: `${SITE_URL}/meta-trends/${slugifyBrowseValue(slug)}` },
+  ]);
+
   return (
-    <main className="detail-page">
+    <>
+      <JsonLd data={collectionJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
+      <main className="detail-page">
       <section className="detail-hero">
         <div>
           <Link className="detail-back-link" href="/meta-trends">
@@ -78,6 +115,31 @@ export default async function MetaTrendPage({ params }: MetaTrendPageProps) {
           </div>
         </section>
       </section>
+
+      {relatedCategories.length > 0 && (
+        <section style={{ marginTop: 32 }}>
+          <h2 style={{ fontSize: 16, marginBottom: 12 }}>Categories</h2>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {relatedCategories.map((cat) => (
+              <Link
+                key={cat}
+                href={`/categories/${slugifyBrowseValue(cat)}`}
+                style={{
+                  padding: "6px 14px",
+                  border: "1px solid var(--border)",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  textDecoration: "none",
+                  color: "var(--foreground)",
+                }}
+              >
+                {cat}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
+    </>
   );
 }
