@@ -68,6 +68,15 @@ class UserRepository:
         ).fetchall()
         return [self._user_from_row(row) for row in rows]
 
+    def update_password_hash(self, user_id: int, password_hash: str) -> None:
+        """Update the stored password hash for a user (e.g. after rehash)."""
+
+        self.connection.execute(
+            "UPDATE users SET password_hash = ? WHERE id = ?",
+            (password_hash, user_id),
+        )
+        self.connection.commit()
+
     def create_api_key(
         self,
         user_id: int,

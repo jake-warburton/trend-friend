@@ -65,8 +65,15 @@ def login_user(body: dict, response: Response, db: DatabaseConnection = Depends(
 
     repo = UserRepository(db)
     user = repo.get_user_by_username(username)
-    if user is None or not verify_password(password, user.password_hash):
+    if user is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    is_valid, needs_rehash = verify_password(password, user.password_hash)
+    if not is_valid:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if needs_rehash:
+        repo.update_password_hash(user.id, hash_password(password))
 
     token = generate_session_token()
     repo.create_session(user.id, hash_session_token(token))

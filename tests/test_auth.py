@@ -17,16 +17,51 @@ class PasswordTests(unittest.TestCase):
 
     def test_hash_and_verify(self) -> None:
         hashed = hash_password("my-secure-password")
-        self.assertTrue(verify_password("my-secure-password", hashed))
+        is_valid, needs_rehash = verify_password("my-secure-password", hashed)
+        self.assertTrue(is_valid)
+        self.assertFalse(needs_rehash)
 
     def test_wrong_password_fails(self) -> None:
         hashed = hash_password("my-secure-password")
-        self.assertFalse(verify_password("wrong-password", hashed))
+        is_valid, needs_rehash = verify_password("wrong-password", hashed)
+        self.assertFalse(is_valid)
+        self.assertFalse(needs_rehash)
 
     def test_different_hashes_per_call(self) -> None:
         h1 = hash_password("same-password")
         h2 = hash_password("same-password")
         self.assertNotEqual(h1, h2)  # different salts
+
+    def test_scrypt_format(self) -> None:
+        hashed = hash_password("test-password")
+        self.assertTrue(hashed.startswith("scrypt$"))
+        parts = hashed.split("$")
+        self.assertEqual(len(parts), 3)
+
+    def test_legacy_sha256_verify(self) -> None:
+        """Verify that legacy SHA-256 hashes still work and flag rehash."""
+        import hashlib as _hashlib
+        import os as _os
+
+        salt = _os.urandom(16).hex()
+        digest = _hashlib.sha256(f"{salt}:legacy-password".encode()).hexdigest()
+        legacy_hash = f"{salt}:{digest}"
+
+        is_valid, needs_rehash = verify_password("legacy-password", legacy_hash)
+        self.assertTrue(is_valid)
+        self.assertTrue(needs_rehash)
+
+    def test_legacy_sha256_wrong_password(self) -> None:
+        import hashlib as _hashlib
+        import os as _os
+
+        salt = _os.urandom(16).hex()
+        digest = _hashlib.sha256(f"{salt}:legacy-password".encode()).hexdigest()
+        legacy_hash = f"{salt}:{digest}"
+
+        is_valid, needs_rehash = verify_password("wrong-password", legacy_hash)
+        self.assertFalse(is_valid)
+        self.assertFalse(needs_rehash)
 
 
 class TokenTests(unittest.TestCase):
