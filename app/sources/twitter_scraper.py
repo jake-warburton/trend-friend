@@ -77,9 +77,10 @@ async def _scrape_with_twikit(
 
     account_lookup = _build_account_lookup()
 
-    # Fetch the home timeline — one API call gets all followed accounts' tweets
+    # Fetch the chronological "Following" timeline (not the algorithmic "For You"
+    # feed which is dominated by high-engagement accounts like @elonmusk).
     try:
-        timeline = await client.get_timeline(count=100)
+        timeline = await client.get_latest_timeline(count=100)
         tweets_list = list(timeline) if timeline else []
         LOGGER.info("Home timeline returned %d tweets", len(tweets_list))
     except Exception as exc:
