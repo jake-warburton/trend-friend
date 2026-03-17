@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { loadBreakingFeed } from "@/lib/trends";
 
-export const revalidate = 55;
+export const revalidate = 172800;
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const GITHUB_REPO = process.env.GITHUB_REPO || "trend-friend";

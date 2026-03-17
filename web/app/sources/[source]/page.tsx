@@ -19,7 +19,7 @@ type SourcePageProps = {
   }>;
 };
 
-export const revalidate = 600;
+export const revalidate = 172800;
 
 export async function generateMetadata({ params }: SourcePageProps): Promise<Metadata> {
   const { source } = await params;

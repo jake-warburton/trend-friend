@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { ApiError } from "@/lib/api-client";
 import { listPublicWatchlists, WatchlistServiceError } from "@/lib/server/watchlist-service";
 
-export const revalidate = 2400;
+export const revalidate = 172800;
 
 export async function GET() {
   try {

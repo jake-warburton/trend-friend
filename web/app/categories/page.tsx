@@ -5,7 +5,7 @@ import { loadTrendDetails } from "@/lib/trends";
 import { buildCategoryDirectory } from "@/lib/trend-browse";
 import { JsonLd, buildCollectionPageJsonLd } from "@/components/json-ld";
 
-export const revalidate = 600;
+export const revalidate = 172800;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 

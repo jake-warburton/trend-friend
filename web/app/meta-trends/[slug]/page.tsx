@@ -7,7 +7,7 @@ import { findMetaTrendGroup, slugifyBrowseValue } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
 
-export const revalidate = 300;
+export const revalidate = 172800;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live";
 
