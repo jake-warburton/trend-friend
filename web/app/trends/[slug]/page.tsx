@@ -105,13 +105,14 @@ export async function generateMetadata({ params }: TrendDetailPageProps): Promis
 
 export default async function TrendDetailPage({ params }: TrendDetailPageProps) {
   const { slug } = await params;
-  const [trend, history, sourceSummary] = await Promise.all([
+  const [trend, sourceSummary] = await Promise.all([
     loadTrendDetail(slug),
-    loadTrendHistory(),
     loadSourceSummaries(),
   ]);
 
   if (trend === null) {
+    // Only load the 2.2MB history file when we actually need it (trend not in current data)
+    const history = await loadTrendHistory();
     const recentTrend = findRecentTrendSnapshot(history, slug);
     if (recentTrend != null) {
       const historyPoints = buildRecentTrendHistory(history, slug);

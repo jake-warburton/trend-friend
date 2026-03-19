@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED_ROUTES = ["/admin"];
+/**
+ * Routes that require Supabase session handling (auth checks / token refresh).
+ * All other routes bypass middleware entirely so Vercel's CDN can cache them.
+ */
+const AUTH_ROUTES = ["/admin", "/settings", "/login", "/signup", "/auth"];
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -34,8 +38,7 @@ export async function middleware(request: NextRequest) {
 
   // Protect routes that require authentication (bypass for screenshot captures)
   const isScreenshot = request.nextUrl.searchParams.get("screenshot") === "1";
-  const isProtected = PROTECTED_ROUTES.some((route) => request.nextUrl.pathname.startsWith(route));
-  if (isProtected && !user && !isScreenshot) {
+  if (request.nextUrl.pathname.startsWith("/admin") && !user && !isScreenshot) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", request.nextUrl.pathname);
@@ -52,6 +55,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/admin/:path*",
+    "/settings/:path*",
+    "/login",
+    "/signup",
+    "/auth/:path*",
   ],
 };
