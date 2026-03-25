@@ -111,7 +111,7 @@ CREATE POLICY "Owners can manage own watchlist shares"
 
 CREATE POLICY "Public shares are readable by anyone"
   ON watchlist_shares FOR SELECT
-  USING (is_public = 1);
+  USING (is_public != 0);
 
 ALTER TABLE watchlist_share_events ENABLE ROW LEVEL SECURITY;
 
