@@ -1,14 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import Image from "next/image";
-import { cookies } from "next/headers";
 import Link from "next/link";
 import { PricingTable } from "@/components/pricing-table";
 import {
   DARK_THEME,
   LIGHT_THEME,
-  readThemePreference,
-  THEME_COOKIE,
 } from "@/lib/settings";
 
 type ScreenshotManifest = Record<string, string>;
@@ -102,16 +99,7 @@ function getScreenshotSet(
 }
 
 export default async function Page() {
-  let themeKey: typeof LIGHT_THEME | typeof DARK_THEME = LIGHT_THEME;
-  try {
-    const cookieStore = await cookies();
-    const preferredTheme =
-      readThemePreference(cookieStore.get(THEME_COOKIE)?.value) ?? LIGHT_THEME;
-    themeKey = preferredTheme === DARK_THEME ? DARK_THEME : LIGHT_THEME;
-  } catch {
-    themeKey = LIGHT_THEME;
-  }
-  const screenshotSet = getScreenshotSet(themeKey);
+  const screenshotSet = getScreenshotSet(LIGHT_THEME);
 
   return (
     <main className="landing-page">

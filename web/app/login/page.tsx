@@ -4,8 +4,32 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+
+function AuthUnavailableCard() {
+  return (
+    <main className="auth-page">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <h1 className="auth-brand-title">Sign in unavailable</h1>
+          <p className="auth-brand-subtitle">
+            This environment does not have Supabase auth configured.
+          </p>
+        </div>
+        <p className="auth-error">
+          Set <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+          <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> to enable sign in.
+        </p>
+        <p className="auth-switch">
+          <Link href="/explore">Return to explorer</Link>
+        </p>
+      </div>
+    </main>
+  );
+}
 
 function LoginForm() {
+  const authEnabled = isSupabaseConfigured();
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || "/explore";
@@ -13,6 +37,10 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  if (!authEnabled) {
+    return <AuthUnavailableCard />;
+  }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendExplorer } from "@/lib/trends";
 import { findMetaTrendGroup, slugifyBrowseValue } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
@@ -17,8 +17,8 @@ type MetaTrendPageProps = {
 
 export async function generateMetadata({ params }: MetaTrendPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const details = await loadTrendDetails();
-  const group = details ? findMetaTrendGroup(details.trends, slug) : null;
+  const explorer = await loadTrendExplorer();
+  const group = findMetaTrendGroup(explorer.trends, slug);
   if (!group) return { title: "Meta-Trend Not Found" };
 
   const description = `${group.label} — a meta-trend connecting ${group.trendCount} related trends with an average momentum score of ${Math.round(group.averageScore)}.`;
@@ -33,8 +33,8 @@ export async function generateMetadata({ params }: MetaTrendPageProps): Promise<
 
 export default async function MetaTrendPage({ params }: MetaTrendPageProps) {
   const { slug } = await params;
-  const details = await loadTrendDetails();
-  const group = findMetaTrendGroup(details.trends, slug);
+  const explorer = await loadTrendExplorer();
+  const group = findMetaTrendGroup(explorer.trends, slug);
 
   if (group == null) {
     notFound();

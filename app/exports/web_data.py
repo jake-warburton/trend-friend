@@ -26,6 +26,7 @@ from app.exports.files import (
     TREND_DETAIL_INDEX_V2_FILENAME,
     TREND_EXPLORER_V2_FILENAME,
     TREND_HISTORY_FILENAME,
+    build_trend_detail_filename,
     write_export_payloads,
     write_json,
 )
@@ -128,6 +129,14 @@ def export_web_data_payloads(settings: Settings) -> None:
     explorer_payload_dict = explorer_payload.to_dict()
     detail_payload_dict = detail_payload.to_dict()
     source_summary_payload_dict = source_summary_payload.to_dict()
+    detail_payload_rows = [
+        (
+            build_trend_detail_filename(trend_dict["id"]),
+            detail_payload_dict["generatedAt"],
+            json.dumps(trend_dict),
+        )
+        for trend_dict in detail_payload_dict["trends"]
+    ]
 
     write_export_payloads(
         settings.web_data_path,
@@ -152,6 +161,7 @@ def export_web_data_payloads(settings: Settings) -> None:
             (SOURCE_SUMMARY_V2_FILENAME, source_summary_payload_dict["generatedAt"], json.dumps(source_summary_payload_dict)),
             (AD_INTELLIGENCE_FILENAME, ad_intelligence_payload_dict["generatedAt"], json.dumps(ad_intelligence_payload_dict)),
         ]
+        + detail_payload_rows
     )
     connection.close()
 

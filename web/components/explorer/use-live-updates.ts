@@ -12,6 +12,10 @@ import {
   OVERVIEW_POLL_INTERVAL_MS,
   UPDATED_TRENDS_FLASH_MS,
 } from "./constants";
+import {
+  isBreakingFeedAutoRefreshEnabled,
+  isDashboardAutoRefreshEnabled,
+} from "@/lib/runtime-flags";
 
 export function useLiveUpdates(
   initialData: ExploreInitialData,
@@ -21,10 +25,10 @@ export function useLiveUpdates(
   const overview = initialData.overview;
   const explorer = initialData.explorer;
 
-  const [overviewMeta, setOverviewMeta] = useState({
+  const overviewMeta = {
     generatedAt: initialData.overview.generatedAt,
     lastRunAt: initialData.overview.operations.lastRunAt,
-  });
+  };
   const [liveUpdateState, setLiveUpdateState] = useState<
     "idle" | "checking" | "updating" | "updated"
   >("idle");
@@ -48,6 +52,7 @@ export function useLiveUpdates(
   );
 
   useEffect(() => {
+    let updateTimerId: ReturnType<typeof setTimeout> | null = null;
     const nextOverviewMeta = {
       generatedAt: overview.generatedAt,
       operations: { lastRunAt: overview.operations.lastRunAt },
@@ -69,30 +74,37 @@ export function useLiveUpdates(
 
     overviewMetaRef.current = nextOverviewMeta;
     explorerTrendRef.current = nextExplorerTrends;
-    setOverviewMeta({
-      generatedAt: nextOverviewMeta.generatedAt,
-      lastRunAt: nextOverviewMeta.operations.lastRunAt,
-    });
-
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
     }
 
     if (overviewChanged) {
-      setLiveUpdateState("updated");
-      setChangedTrendIds(changedIds);
-      if (updatedBadgeTimeoutRef.current) {
-        clearTimeout(updatedBadgeTimeoutRef.current);
-      }
-      updatedBadgeTimeoutRef.current = setTimeout(() => {
-        setLiveUpdateState("idle");
-        setChangedTrendIds([]);
-      }, UPDATED_TRENDS_FLASH_MS);
+      updateTimerId = setTimeout(() => {
+        setLiveUpdateState("updated");
+        setChangedTrendIds(changedIds);
+        if (updatedBadgeTimeoutRef.current) {
+          clearTimeout(updatedBadgeTimeoutRef.current);
+        }
+        updatedBadgeTimeoutRef.current = setTimeout(() => {
+          setLiveUpdateState("idle");
+          setChangedTrendIds([]);
+        }, UPDATED_TRENDS_FLASH_MS);
+      }, 0);
     }
+
+    return () => {
+      if (updateTimerId != null) {
+        window.clearTimeout(updateTimerId);
+      }
+    };
   }, [explorer.trends, overview]);
 
   useEffect(() => {
+    if (!isBreakingFeedAutoRefreshEnabled()) {
+      return;
+    }
+
     async function fetchBreakingFeed() {
       try {
         const response = await fetch("/api/breaking");
@@ -119,7 +131,7 @@ export function useLiveUpdates(
   }, []);
 
   useEffect(() => {
-    if (screenshotMode) {
+    if (screenshotMode || !isDashboardAutoRefreshEnabled()) {
       return;
     }
     const intervalId = window.setInterval(async () => {

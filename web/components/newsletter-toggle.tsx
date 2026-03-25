@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export function NewsletterToggle() {
+  const authEnabled = isSupabaseConfigured();
   const [optedIn, setOptedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(authEnabled);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!authEnabled) {
+      return;
+    }
+
     const supabase = createSupabaseBrowserClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
@@ -25,9 +31,13 @@ export function NewsletterToggle() {
         setLoading(false);
       }
     });
-  }, []);
+  }, [authEnabled]);
 
   const handleToggle = async () => {
+    if (!authEnabled) {
+      return;
+    }
+
     setSaving(true);
     const supabase = createSupabaseBrowserClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -46,6 +56,10 @@ export function NewsletterToggle() {
 
   if (loading) {
     return <div className="skeleton-pulse" style={{ width: 200, height: 20, borderRadius: 4 }} />;
+  }
+
+  if (!authEnabled) {
+    return <p className="detail-copy">Newsletter preferences require Supabase auth to be configured.</p>;
   }
 
   return (

@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:budget-check": "npm run build 2>&1 | node scripts/assert-build-budget.mjs",
     "start": "next start",
     "lint": "eslint .",
     "test": "node --import tsx --test tests/**/*.test.ts",
+    "test:vercel-budget": "node --import tsx --test tests/vercel-budget-guardrails.test.ts",
     "screenshots": "node scripts/capture-marketing-screenshots.mjs",
     "screenshots:install": "playwright install chromium"
   },

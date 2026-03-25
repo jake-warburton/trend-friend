@@ -30,7 +30,11 @@ function LogoutButtonInner({ user, signOut }: LogoutButtonInnerProps) {
 }
 
 export function LogoutButton() {
-  const { user, signOut } = useAuth();
+  const { authEnabled, user, signOut } = useAuth();
+
+  if (!authEnabled) {
+    return <p className="detail-copy">Authentication is not configured in this environment.</p>;
+  }
 
   if (!user) {
     return <p className="detail-copy">You are not signed in.</p>;

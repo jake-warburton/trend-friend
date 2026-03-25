@@ -13,6 +13,7 @@ import {
 
 import type { TrendForecast, TrendHistoryPoint } from "@/lib/types";
 import { formatForecastConfidence } from "@/lib/forecast-ui";
+import type { TrendHistoryGranularity } from "@/lib/trend-history";
 
 const CHART_AXIS_COLOR = "var(--chart-axis)";
 const CHART_GRID_COLOR = "var(--chart-grid)";
@@ -20,10 +21,13 @@ const CHART_GRID_COLOR = "var(--chart-grid)";
 type TrendScoreChartProps = {
   history: TrendHistoryPoint[];
   currentScore: number;
+  bucketGranularity?: TrendHistoryGranularity;
   forecast?: TrendForecast | null;
 };
 
 type TrendScoreChartDatum = {
+  axisLabel: string;
+  axisValue: string;
   date: string;
   score: number | null;
   forecast: number | null;
@@ -33,10 +37,13 @@ type TrendScoreChartDatum = {
 
 export function buildTrendScoreChartData(
   history: TrendHistoryPoint[],
+  bucketGranularity: TrendHistoryGranularity = "day",
   forecast?: TrendForecast | null,
 ): TrendScoreChartDatum[] {
   const data: TrendScoreChartDatum[] = history.map((point) => ({
-    date: formatShortDate(point.capturedAt),
+    axisLabel: buildAxisLabel(point.capturedAt, bucketGranularity),
+    axisValue: point.capturedAt,
+    date: formatTooltipDate(point.capturedAt, bucketGranularity),
     score: point.scoreTotal,
     forecast: point.scoreTotal,
     rank: point.rank,
@@ -49,6 +56,8 @@ export function buildTrendScoreChartData(
 
   forecast.predictedScores.forEach((score, index) => {
     data.push({
+      axisLabel: `Run +${index + 1}`,
+      axisValue: `forecast-${index + 1}`,
       date: `Run +${index + 1}`,
       score: null,
       forecast: score,
@@ -60,12 +69,20 @@ export function buildTrendScoreChartData(
   return data;
 }
 
-export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreChartProps) {
+export function TrendScoreChart({
+  history,
+  currentScore,
+  bucketGranularity = "day",
+  forecast,
+}: TrendScoreChartProps) {
   if (history.length === 0) {
     return <p className="chart-empty">No historical data yet. Scores will appear after multiple pipeline runs.</p>;
   }
 
-  const data = buildTrendScoreChartData(history, forecast);
+  const data = buildTrendScoreChartData(history, bucketGranularity, forecast);
+  const ticks = buildAxisTicks(data);
+  const tickLabels = new Map(data.map((datum) => [datum.axisValue, datum.axisLabel]));
+  const axisLayout = buildAxisLayout(ticks.length);
   const maxScore = Math.max(
     ...data.flatMap((datum) => [datum.score ?? 0, datum.forecast ?? 0]),
     currentScore,
@@ -73,8 +90,11 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
 
   return (
     <div className="chart-container">
-      <ResponsiveContainer width="100%" height={260}>
-        <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+      <ResponsiveContainer width="100%" height={axisLayout.chartHeight}>
+        <AreaChart
+          data={data}
+          margin={{ top: 8, right: 12, bottom: axisLayout.bottomMargin, left: 0 }}
+        >
           <defs>
             <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#5e6bff" stopOpacity={0.3} />
@@ -83,10 +103,22 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_COLOR} />
           <XAxis
-            dataKey="date"
-            tick={{ fill: CHART_AXIS_COLOR, fontSize: 11, fontWeight: 500 }}
+            dataKey="axisValue"
+            ticks={ticks}
+            interval={0}
+            tickFormatter={(value) => tickLabels.get(String(value)) ?? ""}
+            tick={{
+              fill: CHART_AXIS_COLOR,
+              fontSize: 11,
+              fontWeight: 500,
+              angle: axisLayout.tickAngle,
+              textAnchor: axisLayout.tickTextAnchor,
+            }}
             axisLine={{ stroke: CHART_GRID_COLOR }}
             tickLine={false}
+            minTickGap={axisLayout.minTickGap}
+            tickMargin={axisLayout.tickMargin}
+            height={axisLayout.axisHeight}
           />
           <YAxis
             domain={[0, Math.ceil(maxScore * 1.1)]}
@@ -116,6 +148,7 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
               color: "var(--copy)",
               fontSize: 12,
             }}
+            labelFormatter={(_label, payload) => payload?.[0]?.payload?.date ?? ""}
             formatter={(value, name, item) => {
               if (name === "score") return [Number(value).toFixed(1), "Score"];
               if (name === "forecast") {
@@ -173,6 +206,20 @@ export function TrendScoreChart({ history, currentScore, forecast }: TrendScoreC
   );
 }
 
+export function buildAxisLayout(tickCount: number) {
+  const shouldRotate = tickCount >= 9;
+
+  return {
+    chartHeight: shouldRotate ? 290 : 260,
+    bottomMargin: shouldRotate ? 22 : 0,
+    axisHeight: shouldRotate ? 48 : 30,
+    tickAngle: shouldRotate ? -35 : 0,
+    tickTextAnchor: shouldRotate ? "end" : "middle",
+    tickMargin: shouldRotate ? 10 : 6,
+    minTickGap: shouldRotate ? 4 : 12,
+  } as const;
+}
+
 function forecastLineColor(confidence: string) {
   if (confidence === "high") {
     return "#3ddc97";
@@ -188,4 +235,86 @@ function formatShortDate(value: string) {
     day: "numeric",
     month: "short",
   }).format(new Date(value));
+}
+
+function formatMonthLabel(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatYearLabel(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatTooltipDate(
+  value: string,
+  granularity: TrendHistoryGranularity,
+) {
+  if (granularity === "day") {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(value));
+  }
+
+  if (granularity === "week") {
+    const start = new Date(value);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 6);
+    return `${new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(start)} to ${new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(end)}`;
+  }
+
+  if (granularity === "month") {
+    return formatMonthLabel(value);
+  }
+
+  return formatYearLabel(value);
+}
+
+function buildAxisLabel(
+  value: string,
+  granularity: TrendHistoryGranularity,
+) {
+  if (granularity === "month") {
+    return formatMonthLabel(value);
+  }
+
+  if (granularity === "year") {
+    return formatYearLabel(value);
+  }
+
+  return formatShortDate(value);
+}
+
+function buildAxisTicks(data: TrendScoreChartDatum[]) {
+  const dateTicks = data.filter((datum) => !datum.isProjected);
+
+  if (dateTicks.length <= 14) {
+    return dateTicks.map((datum) => datum.axisValue);
+  }
+
+  const maxTicks = 14;
+  const sampledTicks: string[] = [];
+  for (let index = 0; index < maxTicks; index += 1) {
+    const sourceIndex = Math.round((index * (dateTicks.length - 1)) / (maxTicks - 1));
+    const tick = dateTicks[sourceIndex]?.axisValue;
+    if (tick && sampledTicks[sampledTicks.length - 1] !== tick) {
+      sampledTicks.push(tick);
+    }
+  }
+
+  return sampledTicks;
 }

@@ -14,17 +14,21 @@ import type {
   TrendExplorerRecord,
   LatestTrendsResponse,
   TrendExplorerResponse,
+  TrendHistoryPoint,
   TrendHistoryResponse,
   BreakingFeed,
 } from "@/lib/types";
+import { buildTrendChartHistory } from "@/lib/trend-history";
 
 const DATA_DIRECTORIES = [
   path.join(process.cwd(), "data"),
   path.join(process.cwd(), "web", "data"),
 ];
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_ACCESS_KEY =
-  process.env.SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY ??
+  SUPABASE_SERVICE_ROLE_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
@@ -34,6 +38,8 @@ const SUPABASE_ACCESS_KEY =
  */
 const API_ENABLED = !!process.env.SIGNAL_EYE_API_URL;
 const SUPABASE_PAYLOADS_ENABLED = !!SUPABASE_URL && !!SUPABASE_ACCESS_KEY;
+const SUPABASE_DIRECT_HISTORY_ENABLED =
+  !!SUPABASE_URL && !!SUPABASE_SERVICE_ROLE_KEY;
 
 export async function loadExploreInitialData(): Promise<ExploreInitialData> {
   const [overview, explorer] = await Promise.all([
@@ -44,12 +50,22 @@ export async function loadExploreInitialData(): Promise<ExploreInitialData> {
 }
 
 export async function loadExploreDeferredData(): Promise<ExploreDeferredData> {
-  const [history, details, sourceSummary] = await Promise.all([
-    readTrendHistory(),
+  const [details, sourceSummary] = await Promise.all([
     readTrendDetailIndex(),
     readSourceSummary(),
   ]);
-  return { history, details, sourceSummary };
+
+  // The explore dashboard does not currently render the shared history payload.
+  // Returning an empty placeholder avoids shipping ~2MB of unused data on every
+  // dashboard visit.
+  return {
+    history: {
+      generatedAt: details.generatedAt,
+      snapshots: [],
+    },
+    details,
+    sourceSummary,
+  };
 }
 
 async function readLatestTrends(): Promise<LatestTrendsResponse> {
@@ -352,12 +368,10 @@ export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord |
       return normalizeTrendDetailRecord(trend);
     } catch { /* fall through to file */ }
   }
-  const payload = await readTrendDetailIndex();
-  const detailMatch = payload.trends.find((trend) => trend.id === slug) ?? null;
-  if (detailMatch) {
-    return detailMatch;
+  const directPayload = await readTrendDetailPayload(slug);
+  if (directPayload) {
+    return directPayload;
   }
-
   const explorer = await readTrendExplorer();
   const explorerMatch = explorer.trends.find((trend) => trend.id === slug);
   if (explorerMatch) {
@@ -370,7 +384,157 @@ export async function loadTrendDetail(slug: string): Promise<TrendDetailRecord |
     return buildFallbackTrendDetailFromOverviewItem(experimentalMatch, overview);
   }
 
+  const payload = await readTrendDetailIndex();
+  const detailMatch = payload.trends.find((trend) => trend.id === slug) ?? null;
+  if (detailMatch) {
+    return detailMatch;
+  }
+
   return null;
+}
+
+export async function loadTrendDetailsByIds(
+  ids: string[],
+): Promise<TrendDetailRecord[]> {
+  const orderedIds = [...new Set(ids.filter(Boolean))];
+  const trends = await Promise.all(
+    orderedIds.map((id) => loadTrendDetail(id)),
+  );
+  return trends.filter((trend): trend is TrendDetailRecord => trend !== null);
+}
+
+export async function loadTrendDetailHistory(
+  slug: string,
+  detailHistory: TrendHistoryPoint[] = [],
+  snapshotHistory?: TrendHistoryResponse,
+  trendName?: string,
+): Promise<TrendHistoryPoint[]> {
+  if (SUPABASE_DIRECT_HISTORY_ENABLED) {
+    try {
+      const history = await readSupabaseTrendDetailHistory(slug, trendName);
+      if (history.length > 0) {
+        return history;
+      }
+    } catch {
+      // Fall back to the shared history payload below.
+    }
+  }
+
+  const history = snapshotHistory ?? (await readTrendHistory());
+  return buildTrendChartHistory(slug, history, detailHistory);
+}
+
+type SupabaseTrendHistoryRow = {
+  rank_position: number | null;
+  total_score: number | null;
+  trend_runs: { captured_at?: string | null } | Array<{ captured_at?: string | null }> | null;
+};
+
+const SUPABASE_HISTORY_PAGE_SIZE = 1000;
+const SUPABASE_DIRECT_HISTORY_REVALIDATE_SECONDS = 3600;
+
+async function readSupabaseTrendDetailHistory(
+  slug: string,
+  trendName?: string,
+): Promise<TrendHistoryPoint[]> {
+  for (const topic of buildTrendHistoryTopicCandidates(slug, trendName)) {
+    const rows: SupabaseTrendHistoryRow[] = [];
+    let offset = 0;
+
+    while (true) {
+      const response = await fetch(
+        buildSupabaseTrendHistoryUrl(topic, SUPABASE_HISTORY_PAGE_SIZE, offset),
+        {
+          method: "GET",
+          headers: {
+            apikey: SUPABASE_SERVICE_ROLE_KEY!,
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY!}`,
+            Accept: "application/json",
+          },
+          next: { revalidate: SUPABASE_DIRECT_HISTORY_REVALIDATE_SECONDS },
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to load Supabase trend history for ${slug}: ${response.status}`);
+      }
+
+      const pageRows = (await response.json()) as SupabaseTrendHistoryRow[];
+      rows.push(...pageRows);
+
+      if (pageRows.length < SUPABASE_HISTORY_PAGE_SIZE) {
+        break;
+      }
+
+      offset += SUPABASE_HISTORY_PAGE_SIZE;
+    }
+
+    const history = normalizeSupabaseTrendHistoryRows(rows);
+    if (history.length > 0) {
+      return history;
+    }
+  }
+
+  return [];
+}
+
+function buildTrendHistoryTopicCandidates(
+  slug: string,
+  trendName?: string,
+): string[] {
+  const candidates = [
+    slug.replace(/-/g, " ").trim(),
+    trendName?.trim().toLowerCase() ?? "",
+  ];
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+export function normalizeSupabaseTrendHistoryRows(
+  rows: SupabaseTrendHistoryRow[],
+): TrendHistoryPoint[] {
+  return rows
+    .map((row) => {
+      const trendRun = Array.isArray(row.trend_runs)
+        ? row.trend_runs[0]
+        : row.trend_runs;
+      if (
+        !trendRun?.captured_at ||
+        row.rank_position == null ||
+        row.total_score == null
+      ) {
+        return null;
+      }
+
+      return {
+        capturedAt: trendRun.captured_at,
+        rank: row.rank_position,
+        scoreTotal: row.total_score,
+      };
+    })
+    .filter((point): point is TrendHistoryPoint => point !== null)
+    .sort(
+      (left, right) =>
+        new Date(left.capturedAt).getTime() - new Date(right.capturedAt).getTime(),
+    );
+}
+
+export function buildSupabaseTrendHistoryUrl(
+  topic: string,
+  limit: number = SUPABASE_HISTORY_PAGE_SIZE,
+  offset: number = 0,
+): string {
+  const url = new URL(
+    "/rest/v1/trend_score_snapshots",
+    SUPABASE_URL ?? "https://example.supabase.co",
+  );
+  url.searchParams.set("select", "rank_position,total_score,trend_runs!inner(captured_at)");
+  url.searchParams.set("topic", `eq.${topic}`);
+  url.searchParams.set("is_published", "eq.1");
+  url.searchParams.set("limit", String(limit));
+  if (offset > 0) {
+    url.searchParams.set("offset", String(offset));
+  }
+  return url.toString();
 }
 
 export async function loadSourceSummary(sourceId: string) {
@@ -424,6 +588,30 @@ function normalizeSourceRecord(source: SourceSummaryRecord): SourceSummaryRecord
   };
 }
 
+export function buildTrendDetailPayloadKey(slug: string): string {
+  return `trend-details/${slug}.json`;
+}
+
+async function readTrendDetailPayload(
+  slug: string,
+): Promise<TrendDetailRecord | null> {
+  if (SUPABASE_PAYLOADS_ENABLED) {
+    try {
+      const payload = await readSupabasePayload<TrendDetailRecord>(
+        buildTrendDetailPayloadKey(slug),
+      );
+      return normalizeTrendDetailRecord(payload);
+    } catch {
+      // Fall back to file/index lookup below.
+    }
+  }
+
+  const payload = await readJsonFileOrNull<TrendDetailRecord>(
+    buildTrendDetailPayloadKey(slug),
+  );
+  return payload ? normalizeTrendDetailRecord(payload) : null;
+}
+
 async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
   let payload: TrendDetailIndexResponse;
   if (API_ENABLED) {
@@ -434,7 +622,11 @@ async function readTrendDetailIndex(): Promise<TrendDetailIndexResponse> {
   }
   if (SUPABASE_PAYLOADS_ENABLED) {
     try {
-      payload = await readSupabasePayload<TrendDetailIndexResponse>("trend-detail-index.v2.json");
+      payload = await readSupabasePayloadWithOptions<TrendDetailIndexResponse>(
+        "trend-detail-index.v2.json",
+        SUPABASE_CACHE_TTL_MS,
+        false,
+      );
       return normalizeTrendDetailIndex(payload);
     } catch { /* fall through to file */ }
   }
@@ -803,6 +995,19 @@ async function readJsonFile<T>(filename: string, fallback: T): Promise<T> {
   return fallback;
 }
 
+async function readJsonFileOrNull<T>(filename: string): Promise<T | null> {
+  for (const directory of DATA_DIRECTORIES) {
+    try {
+      const filePath = path.join(directory, filename);
+      const contents = await fs.readFile(filePath, "utf8");
+      return JSON.parse(contents) as T;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 const supabasePayloadCache = new Map<string, { data: unknown; expiresAt: number }>();
 const SUPABASE_CACHE_TTL_MS = 3_600_000; // 1 hour
 
@@ -811,6 +1016,14 @@ export function clearSupabasePayloadCache() {
 }
 
 async function readSupabasePayload<T>(payloadKey: string, ttlMs = SUPABASE_CACHE_TTL_MS): Promise<T> {
+  return readSupabasePayloadWithOptions(payloadKey, ttlMs, true);
+}
+
+async function readSupabasePayloadWithOptions<T>(
+  payloadKey: string,
+  ttlMs: number,
+  allowNextCache: boolean,
+): Promise<T> {
   const cached = supabasePayloadCache.get(payloadKey);
   if (cached && Date.now() < cached.expiresAt) {
     return cached.data as T;
@@ -823,7 +1036,9 @@ async function readSupabasePayload<T>(payloadKey: string, ttlMs = SUPABASE_CACHE
       Authorization: `Bearer ${SUPABASE_ACCESS_KEY!}`,
       Accept: "application/json",
     },
-    cache: "no-store",
+    ...(allowNextCache
+      ? { next: { revalidate: Math.max(1, Math.floor(ttlMs / 1000)) } }
+      : { cache: "no-store" as const }),
   });
   if (!response.ok) {
     throw new Error(`Failed to load Supabase payload ${payloadKey}: ${response.status}`);

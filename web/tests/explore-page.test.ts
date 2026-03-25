@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { metadata } from "@/app/explore/page";
 import { handleExploreBootstrapGet } from "@/app/api/explore/bootstrap/route";
-import { loadExploreInitialData } from "@/lib/trends";
+import { loadExploreDeferredData, loadExploreInitialData } from "@/lib/trends";
 
 test("explore page metadata is specific to the explorer route", () => {
   assert.equal(metadata.title, "Explore Emerging Trends");
@@ -48,4 +48,11 @@ test("explore bootstrap route returns deferred datasets", async () => {
     "history",
     "sourceSummary",
   ]);
+});
+
+test("explore deferred loader omits the shared history payload", async () => {
+  const payload = await loadExploreDeferredData();
+
+  assert.equal(payload.history.snapshots.length, 0);
+  assert.equal(payload.history.generatedAt, payload.details.generatedAt);
 });

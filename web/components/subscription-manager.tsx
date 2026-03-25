@@ -5,15 +5,15 @@ import { useAuth } from "@/components/auth-provider";
 import { isPro, type BillingStatus } from "@/lib/subscription";
 
 export function SubscriptionManager() {
-  const { user } = useAuth();
+  const { authEnabled, user } = useAuth();
   const [status, setStatus] = useState<BillingStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(authEnabled);
   const [actionLoading, setActionLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!user) {
+    if (!authEnabled || !user) {
       setLoading(false);
       return;
     }
@@ -28,7 +28,7 @@ export function SubscriptionManager() {
       }
     };
     load();
-  }, [user]);
+  }, [authEnabled, user]);
 
   useEffect(() => {
     if (showCancelModal) {
@@ -69,6 +69,10 @@ export function SubscriptionManager() {
 
   if (loading) {
     return <p className="detail-copy">Loading subscription info...</p>;
+  }
+
+  if (!authEnabled) {
+    return <p className="detail-copy">Billing is unavailable until Supabase auth is configured.</p>;
   }
 
   if (!user) {

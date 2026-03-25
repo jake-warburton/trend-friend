@@ -81,13 +81,23 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Copy the example environment file if you want to customize runtime values:
+There are two env locations in this repo:
+
+- root env files are for the Python pipeline and shared backend scripts
+- `web/` env files are for the Next.js frontend
+
+Copy the example environment files you need:
 
 ```bash
 cp .env.example .env
+cp web/.env.example web/.env.local
 ```
 
+Important: if you run `npm run dev` inside [`web/`](/Users/jakewarburton/Documents/repos/trend-friend/web), Next.js reads env files from [`web/.env.local`](/Users/jakewarburton/Documents/repos/trend-friend/web/.env.local), not from the repo root. Put `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` there if you want sign-in enabled locally.
+
 Supported environment variables:
+
+Root / backend:
 
 - `SIGNAL_EYE_DATABASE_PATH`: SQLite database location. Default: `data/signal_eye.db`
 - `SIGNAL_EYE_DATABASE_URL`: Optional Supabase/Postgres connection string
@@ -114,6 +124,20 @@ Supported environment variables:
 - `SIGNAL_EYE_GOOGLE_SEARCH_METRICS_TOKEN`: Optional bearer token for the Google metrics provider
 - `SIGNAL_EYE_TIKTOK_METRICS_URL`: Optional provider endpoint for TikTok views / video counts
 - `SIGNAL_EYE_TIKTOK_METRICS_TOKEN`: Optional bearer token for the TikTok metrics provider
+
+Frontend / `web/.env.local`:
+
+- `NEXT_PUBLIC_APP_URL`: Public app origin for shared links. Default: `http://localhost:3000`
+- `NEXT_PUBLIC_SITE_URL`: Canonical site origin for metadata and sitemap. Default: `http://localhost:3000` locally
+- `SIGNAL_EYE_API_URL`: Optional backend API base URL. Default local backend: `http://localhost:8000`
+- `NEXT_PUBLIC_SUPABASE_URL`: Required for Supabase auth in the Next.js app
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: Required for Supabase auth in the Next.js app
+- `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY`: Optional server-side Supabase access for webhook or payload reads
+- `SIGNAL_EYE_FRONTEND_URL`: Frontend origin used by billing callbacks. Default: `http://localhost:3000`
+- `STRIPE_SECRET_KEY`: Optional billing integration key
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Optional Stripe client key
+- `STRIPE_WEBHOOK_SECRET`: Optional Stripe webhook secret
+- `STRIPE_PRICE_ID_PRO_MONTHLY`: Optional Stripe price id for Pro billing
 
 ## Running The MVP
 
@@ -204,7 +228,7 @@ How it works:
 For this free path:
 
 - do **not** set `SIGNAL_EYE_API_URL` in Vercel
-- set `NEXT_PUBLIC_SUPABASE_URL` and `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY` in Vercel
+- set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY` in Vercel
 - add these GitHub repository secrets:
   - `SIGNAL_EYE_DATABASE_URL`
   - `SIGNAL_EYE_REDDIT_USER_AGENT`

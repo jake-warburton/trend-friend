@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendExplorer } from "@/lib/trends";
 import { findCategoryGroup, slugifyBrowseValue } from "@/lib/trend-browse";
 import { JsonLd, buildCollectionPageJsonLd, buildBreadcrumbJsonLd } from "@/components/json-ld";
 
@@ -16,8 +16,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.signaleye.live
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const details = await loadTrendDetails();
-  const group = details ? findCategoryGroup(details.trends, slugifyBrowseValue(slug)) : null;
+  const explorer = await loadTrendExplorer();
+  const group = findCategoryGroup(explorer.trends, slugifyBrowseValue(slug));
   if (!group) return { title: "Category Not Found" };
 
   const normalizedSlug = slugifyBrowseValue(slug);
@@ -33,8 +33,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const details = await loadTrendDetails();
-  const group = findCategoryGroup(details.trends, slugifyBrowseValue(slug));
+  const explorer = await loadTrendExplorer();
+  const group = findCategoryGroup(explorer.trends, slugifyBrowseValue(slug));
 
   if (group == null) {
     notFound();

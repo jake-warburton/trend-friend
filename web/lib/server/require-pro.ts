@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  isSupabaseConfigured,
+  SUPABASE_NOT_CONFIGURED_MESSAGE,
+} from "@/lib/supabase/config";
 
 type ProCheckResult =
   | { authorized: true; userId: string }
@@ -8,6 +12,16 @@ type ProCheckResult =
 export async function requirePro(): Promise<ProCheckResult> {
   if (process.env.SCREENSHOT_BYPASS_AUTH === "1") {
     return { authorized: true, userId: "screenshot" };
+  }
+
+  if (!isSupabaseConfigured()) {
+    return {
+      authorized: false,
+      response: NextResponse.json(
+        { error: SUPABASE_NOT_CONFIGURED_MESSAGE },
+        { status: 503 },
+      ),
+    };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -42,6 +56,16 @@ export async function requirePro(): Promise<ProCheckResult> {
 }
 
 export async function requireAuth(): Promise<ProCheckResult> {
+  if (!isSupabaseConfigured()) {
+    return {
+      authorized: false,
+      response: NextResponse.json(
+        { error: SUPABASE_NOT_CONFIGURED_MESSAGE },
+        { status: 503 },
+      ),
+    };
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
 

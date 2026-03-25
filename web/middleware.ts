@@ -1,14 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import {
+  isSupabaseConfigured,
+  requireSupabasePublicConfig,
+} from "@/lib/supabase/config";
 
 const PROTECTED_ROUTES = ["/admin"];
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
+  if (!isSupabaseConfigured()) {
+    return supabaseResponse;
+  }
+
+  const config = requireSupabasePublicConfig();
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    config.url,
+    config.publishableKey,
     {
       cookies: {
         getAll() {
@@ -52,6 +62,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/admin/:path*",
+    "/login",
+    "/signup",
   ],
 };

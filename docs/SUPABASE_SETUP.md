@@ -115,7 +115,7 @@ GITHUB_WORKFLOW_TOKEN=github_pat_xxx \
 Current production path:
 
 - keep `SIGNAL_EYE_API_URL` unset
-- set `NEXT_PUBLIC_SUPABASE_URL` and `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY` in Vercel
+- set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SIGNAL_EYE_SUPABASE_SERVICE_ROLE_KEY` in Vercel
 - let the site read published payloads directly from Supabase
 
 ## Rollout order

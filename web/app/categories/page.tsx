@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { loadTrendDetails } from "@/lib/trends";
+import { loadTrendExplorer } from "@/lib/trends";
 import { buildCategoryDirectory } from "@/lib/trend-browse";
 import { JsonLd, buildCollectionPageJsonLd } from "@/components/json-ld";
 
@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  const details = await loadTrendDetails();
-  const directory = buildCategoryDirectory(details.trends);
+  const explorer = await loadTrendExplorer();
+  const directory = buildCategoryDirectory(explorer.trends);
 
   const jsonLd = buildCollectionPageJsonLd({
     name: "Trend Categories",

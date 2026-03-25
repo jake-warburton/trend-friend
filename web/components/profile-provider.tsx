@@ -32,18 +32,16 @@ export function useProfile() {
 }
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const [fetchedForUserId, setFetchedForUserId] = useState<string | null>(null);
-  const [accountTier, setAccountTier] = useState<AccountTier>("free");
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState("none");
+  const { authEnabled, user } = useAuth();
+  const [profileState, setProfileState] = useState({
+    fetchedForUserId: null as string | null,
+    accountTier: "free" as AccountTier,
+    isAdmin: false,
+    subscriptionStatus: "none",
+  });
 
   useEffect(() => {
-    if (!user) {
-      setFetchedForUserId(null);
-      setAccountTier("free");
-      setIsAdmin(false);
-      setSubscriptionStatus("none");
+    if (!authEnabled || !user) {
       return;
     }
 
@@ -54,19 +52,33 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       .eq("id", user.id)
       .single()
       .then(({ data }) => {
-        if (data) {
-          setIsAdmin(data.is_admin ?? false);
-          setAccountTier(data.account_tier === "pro" ? "pro" : "free");
-          setSubscriptionStatus(data.subscription_status ?? "none");
-        }
-        setFetchedForUserId(user.id);
+        setProfileState({
+          fetchedForUserId: user.id,
+          isAdmin: data?.is_admin ?? false,
+          accountTier: data?.account_tier === "pro" ? "pro" : "free",
+          subscriptionStatus: data?.subscription_status ?? "none",
+        });
       });
-  }, [user]);
+  }, [authEnabled, user]);
+
+  const accountTier =
+    authEnabled && user && profileState.fetchedForUserId === user.id
+      ? profileState.accountTier
+      : "free";
+  const isAdmin =
+    authEnabled && user && profileState.fetchedForUserId === user.id
+      ? profileState.isAdmin
+      : false;
+  const subscriptionStatus =
+    authEnabled && user && profileState.fetchedForUserId === user.id
+      ? profileState.subscriptionStatus
+      : "none";
 
   // Derived synchronously: loading is true whenever the profile hasn't been
   // fetched for the current user yet. This avoids the one-frame gap where
   // useEffect hasn't fired but the user has already changed.
-  const loading = user ? fetchedForUserId !== user.id : false;
+  const loading =
+    authEnabled && user ? profileState.fetchedForUserId !== user.id : false;
 
   const isPro =
     isAdmin ||

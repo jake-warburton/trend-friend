@@ -33,7 +33,7 @@ function AvatarContent({ user }: { user: { user_metadata?: Record<string, string
 
 export function NavBar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { authEnabled, user } = useAuth();
   const { isPro } = useProfile();
   const [menuOpen, setMenuOpen] = useState(false);
   const navClassName =
@@ -42,8 +42,16 @@ export function NavBar() {
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
-    closeMenu();
-  }, [pathname, closeMenu]);
+    if (!menuOpen) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMenuOpen(false);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [pathname, menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -95,11 +103,11 @@ export function NavBar() {
           <Link href="/settings" className="nav-bar-avatar" title={user.user_metadata?.full_name || user.email || "Account"}>
             <AvatarContent user={user} />
           </Link>
-        ) : (
+        ) : authEnabled ? (
           <Link href="/login" className="nav-bar-sign-in">
             Sign in
           </Link>
-        )}
+        ) : null}
       </div>
 
       <button
@@ -130,11 +138,11 @@ export function NavBar() {
           <Link href="/settings" className="nav-bar-avatar" onClick={closeMenu} title={user.user_metadata?.full_name || user.email || "Account"}>
             <AvatarContent user={user} />
           </Link>
-        ) : (
+        ) : authEnabled ? (
           <Link href="/login" className="nav-bar-sign-in" onClick={closeMenu}>
             Sign in
           </Link>
-        )}
+        ) : null}
         <button
           className="nav-bar-mobile-close"
           onClick={closeMenu}

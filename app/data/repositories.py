@@ -2462,20 +2462,36 @@ class TrendScoreRepository:
             )
         return history
 
-    def get_topic_history(self, topic: str, limit_runs: int) -> list[TrendHistoryPoint]:
-        """Return recent history points for a single topic ordered newest first."""
+    def get_topic_history(
+        self,
+        topic: str,
+        limit_runs: int | None = None,
+    ) -> list[TrendHistoryPoint]:
+        """Return history points for a single topic ordered newest first."""
 
-        rows = self.connection.execute(
-            """
-            SELECT trend_runs.captured_at, trend_score_snapshots.rank_position, trend_score_snapshots.total_score
-            FROM trend_score_snapshots
-            INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
-            WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
-            ORDER BY trend_runs.captured_at DESC, trend_runs.id DESC
-            LIMIT ?
-            """,
-            (topic, limit_runs),
-        ).fetchall()
+        if limit_runs is None:
+            rows = self.connection.execute(
+                """
+                SELECT trend_runs.captured_at, trend_score_snapshots.rank_position, trend_score_snapshots.total_score
+                FROM trend_score_snapshots
+                INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
+                WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
+                ORDER BY trend_runs.captured_at DESC, trend_runs.id DESC
+                """,
+                (topic,),
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT trend_runs.captured_at, trend_score_snapshots.rank_position, trend_score_snapshots.total_score
+                FROM trend_score_snapshots
+                INNER JOIN trend_runs ON trend_runs.id = trend_score_snapshots.run_id
+                WHERE trend_score_snapshots.topic = ? AND trend_score_snapshots.is_published = 1
+                ORDER BY trend_runs.captured_at DESC, trend_runs.id DESC
+                LIMIT ?
+                """,
+                (topic, limit_runs),
+            ).fetchall()
         return [
             TrendHistoryPoint(
                 captured_at=datetime.fromisoformat(row["captured_at"]),

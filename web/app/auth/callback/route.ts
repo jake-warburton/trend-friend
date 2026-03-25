@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -8,6 +9,10 @@ export async function GET(request: Request) {
 
   // Prevent open redirect — only allow relative paths on this origin
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/explore";
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.redirect(`${origin}/login?error=auth_not_configured`);
+  }
 
   if (code) {
     const supabase = await createSupabaseServerClient();

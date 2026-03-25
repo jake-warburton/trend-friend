@@ -1,5 +1,19 @@
 import { formatCategoryLabel } from "@/lib/category-labels";
-import type { TrendDetailRecord } from "@/lib/types";
+import type { TrendDetailRecord, TrendExplorerRecord } from "@/lib/types";
+
+export type TrendBrowseRecord = Pick<
+  TrendExplorerRecord,
+  | "id"
+  | "name"
+  | "category"
+  | "metaTrend"
+  | "stage"
+  | "confidence"
+  | "summary"
+  | "status"
+  | "rank"
+  | "score"
+>;
 
 export type MetaTrendDirectoryItem = {
   slug: string;
@@ -29,11 +43,13 @@ export type TrendBrowseGroup = {
   trendCount: number;
   topTrendId: string;
   topTrendName: string;
-  trends: TrendDetailRecord[];
+  trends: TrendBrowseRecord[];
 };
 
-export function buildMetaTrendDirectory(trends: TrendDetailRecord[]): MetaTrendDirectoryItem[] {
-  const groups = new Map<string, TrendDetailRecord[]>();
+export function buildMetaTrendDirectory(
+  trends: TrendBrowseRecord[],
+): MetaTrendDirectoryItem[] {
+  const groups = new Map<string, TrendBrowseRecord[]>();
   for (const trend of trends) {
     groups.set(trend.metaTrend, [...(groups.get(trend.metaTrend) ?? []), trend]);
   }
@@ -53,8 +69,10 @@ export function buildMetaTrendDirectory(trends: TrendDetailRecord[]): MetaTrendD
     .sort((left, right) => right.averageScore - left.averageScore || right.trendCount - left.trendCount || left.label.localeCompare(right.label));
 }
 
-export function buildCategoryDirectory(trends: TrendDetailRecord[]): CategoryDirectoryItem[] {
-  const groups = new Map<string, TrendDetailRecord[]>();
+export function buildCategoryDirectory(
+  trends: TrendBrowseRecord[],
+): CategoryDirectoryItem[] {
+  const groups = new Map<string, TrendBrowseRecord[]>();
   for (const trend of trends) {
     groups.set(trend.category, [...(groups.get(trend.category) ?? []), trend]);
   }
@@ -74,7 +92,10 @@ export function buildCategoryDirectory(trends: TrendDetailRecord[]): CategoryDir
     .sort((left, right) => right.averageScore - left.averageScore || right.trendCount - left.trendCount || left.label.localeCompare(right.label));
 }
 
-export function findMetaTrendGroup(trends: TrendDetailRecord[], slug: string): TrendBrowseGroup | null {
+export function findMetaTrendGroup(
+  trends: TrendBrowseRecord[],
+  slug: string,
+): TrendBrowseGroup | null {
   const normalizedSlug = slugifyBrowseValue(slug);
   const label = buildMetaTrendDirectory(trends).find((item) => item.slug === normalizedSlug)?.label;
   if (!label) {
@@ -93,7 +114,10 @@ export function findMetaTrendGroup(trends: TrendDetailRecord[], slug: string): T
   };
 }
 
-export function findCategoryGroup(trends: TrendDetailRecord[], slug: string): TrendBrowseGroup | null {
+export function findCategoryGroup(
+  trends: TrendBrowseRecord[],
+  slug: string,
+): TrendBrowseGroup | null {
   const normalizedSlug = slugifyBrowseValue(slug);
   const items = sortByRank(trends.filter((trend) => trend.category === normalizedSlug));
   if (items.length === 0) {
@@ -114,12 +138,13 @@ export function findCategoryGroup(trends: TrendDetailRecord[], slug: string): Tr
 export function buildComparisonSuggestions(
   selectedIds: string[],
   trends: TrendDetailRecord[],
+  candidateTrends: TrendBrowseRecord[] = trends,
   limit = 4,
-): TrendDetailRecord[] {
+): TrendBrowseRecord[] {
   const selected = trends.filter((trend) => selectedIds.includes(trend.id));
   const selectedIdSet = new Set(selected.map((trend) => trend.id));
   if (selected.length === 0) {
-    return sortByRank(trends).slice(0, limit);
+    return sortByRank(candidateTrends).slice(0, limit);
   }
 
   const candidateIds: string[] = [];
@@ -134,7 +159,7 @@ export function buildComparisonSuggestions(
         candidateIds.push(related.id);
       }
     }
-    for (const peer of trends) {
+    for (const peer of candidateTrends) {
       if (!selectedIdSet.has(peer.id) && peer.metaTrend === trend.metaTrend) {
         candidateIds.push(peer.id);
       }
@@ -142,7 +167,9 @@ export function buildComparisonSuggestions(
   }
 
   const uniqueCandidates = Array.from(new Set(candidateIds));
-  return sortByRank(trends.filter((trend) => uniqueCandidates.includes(trend.id))).slice(0, limit);
+  return sortByRank(
+    candidateTrends.filter((trend) => uniqueCandidates.includes(trend.id)),
+  ).slice(0, limit);
 }
 
 export function slugifyBrowseValue(value: string): string {
@@ -152,13 +179,13 @@ export function slugifyBrowseValue(value: string): string {
     .replace(/(^-|-$)/g, "") || "browse";
 }
 
-function averageScore(trends: TrendDetailRecord[]): number {
+function averageScore(trends: TrendBrowseRecord[]): number {
   if (trends.length === 0) {
     return 0;
   }
   return Number((trends.reduce((total, trend) => total + trend.score.total, 0) / trends.length).toFixed(1));
 }
 
-function sortByRank(trends: TrendDetailRecord[]): TrendDetailRecord[] {
+function sortByRank<T extends TrendBrowseRecord>(trends: T[]): T[] {
   return [...trends].sort((left, right) => left.rank - right.rank || right.score.total - left.score.total || left.name.localeCompare(right.name));
 }

@@ -13,7 +13,6 @@ from app.exports.serializers import (
     build_trend_detail_index_payload,
     build_trend_explorer_payload,
     build_trend_history_payload,
-    slugify,
 )
 
 router = APIRouter(tags=["trends"])

@@ -5,8 +5,19 @@ import type { Metadata } from "next";
 import type { TrendDetailRecord, TrendHistoryPoint, TrendRecord } from "@/lib/types";
 import { formatCategoryLabel } from "@/lib/category-labels";
 import { getPrimaryEvidenceLink, normalizeEvidenceUrl } from "@/lib/evidence-links";
+import {
+  buildTrendChartHistory,
+  compressTrendChartHistory,
+  determineTrendHistoryGranularity,
+} from "@/lib/trend-history";
+import { forecastTrendFromHistory } from "@/lib/trend-forecast";
 import { slugifyBrowseValue } from "@/lib/trend-browse";
-import { loadSourceSummaries, loadTrendDetail, loadTrendHistory } from "@/lib/trends";
+import {
+  loadSourceSummaries,
+  loadTrendDetail,
+  loadTrendDetailHistory,
+  loadTrendHistory,
+} from "@/lib/trends";
 import { formatForecastMethod, summarizeForecastWindow } from "@/lib/forecast-ui";
 import { getSeasonalityBadge, summarizeSeasonality } from "@/lib/seasonality-ui";
 import {
@@ -105,7 +116,10 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
   if (trend === null) {
     const recentTrend = findRecentTrendSnapshot(history, slug);
     if (recentTrend != null) {
-      const historyPoints = buildRecentTrendHistory(history, slug);
+      const rawHistory = buildTrendChartHistory(slug, history);
+      const historyPoints = compressTrendChartHistory(rawHistory);
+      const bucketGranularity = determineTrendHistoryGranularity(rawHistory);
+      const forecast = forecastTrendFromHistory(rawHistory);
       return (
         <main className="detail-page" data-screenshot-target="trend-detail">
           <section className="detail-hero">
@@ -153,7 +167,12 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                   <h2>Recent score trajectory</h2>
                 </div>
               </div>
-              <TrendScoreChart history={historyPoints} currentScore={recentTrend.record.score.total} />
+              <TrendScoreChart
+                history={historyPoints}
+                currentScore={recentTrend.record.score.total}
+                bucketGranularity={bucketGranularity}
+                forecast={forecast}
+              />
             </section>
 
             <section className="detail-panel">
@@ -210,6 +229,15 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
     notFound();
   }
 
+  const rawTrendHistory = await loadTrendDetailHistory(
+    trend.id,
+    trend.history,
+    history,
+    trend.name,
+  );
+  const chartHistory = compressTrendChartHistory(rawTrendHistory);
+  const chartGranularity = determineTrendHistoryGranularity(rawTrendHistory);
+  const effectiveForecast = trend.forecast ?? forecastTrendFromHistory(rawTrendHistory);
   const geoSummary = trend.geoSummary ?? [];
   const audienceSummary = trend.audienceSummary ?? [];
   const seasonalityBadge = getSeasonalityBadge(trend.seasonality);
@@ -365,7 +393,12 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
             </div>
           </div>
 
-          <TrendScoreChart history={trend.history} currentScore={trend.score.total} forecast={trend.forecast} />
+          <TrendScoreChart
+            history={chartHistory}
+            currentScore={trend.score.total}
+            bucketGranularity={chartGranularity}
+            forecast={effectiveForecast}
+          />
         </section>
 
         <section className="detail-panel">
@@ -529,17 +562,17 @@ export default async function TrendDetailPage({ params }: TrendDetailPageProps) 
                 </span>
               </div>
             </article>
-            {trend.forecast ? (
+            {effectiveForecast ? (
               <article className="detail-list-item">
                 <div>
-                  <strong>{summarizeForecastWindow(trend.forecast)}</strong>
+                  <strong>{summarizeForecastWindow(effectiveForecast)}</strong>
                   <span>
-                    {formatForecastMethod(trend.forecast.method)} · {trend.forecast.mape.toFixed(1)}% backtest error
+                    {formatForecastMethod(effectiveForecast.method)} · {effectiveForecast.mape.toFixed(1)}% backtest error
                   </span>
                 </div>
                 <small>
-                  {trend.forecast.predictedScores[0]?.toFixed(1)} to{" "}
-                  {trend.forecast.predictedScores[trend.forecast.predictedScores.length - 1]?.toFixed(1)} projected
+                  {effectiveForecast.predictedScores[0]?.toFixed(1)} to{" "}
+                  {effectiveForecast.predictedScores[effectiveForecast.predictedScores.length - 1]?.toFixed(1)} projected
                 </small>
               </article>
             ) : null}
@@ -671,24 +704,6 @@ function findRecentTrendSnapshot(
     }
   }
   return null;
-}
-
-function buildRecentTrendHistory(
-  history: Awaited<ReturnType<typeof loadTrendHistory>>,
-  slug: string,
-): TrendHistoryPoint[] {
-  const points: TrendHistoryPoint[] = [];
-  for (const snapshot of history.snapshots) {
-    const record = snapshot.trends.find((trend) => trend.id === slug);
-    if (record != null) {
-      points.push({
-        rank: record.rank,
-        capturedAt: snapshot.capturedAt,
-        scoreTotal: record.score.total,
-      });
-    }
-  }
-  return points;
 }
 
 function formatDateOnly(value: string) {

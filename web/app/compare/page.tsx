@@ -1,7 +1,11 @@
 import Link from "next/link";
 
 import type { TrendDetailRecord } from "@/lib/types";
-import { loadTrendDetails, loadTrendHistory } from "@/lib/trends";
+import {
+  loadTrendDetailsByIds,
+  loadTrendExplorer,
+  loadTrendHistory,
+} from "@/lib/trends";
 import { TrendTrajectoryChart } from "@/components/trend-trajectory-chart";
 import { buildComparisonSuggestions, slugifyBrowseValue } from "@/lib/trend-browse";
 import { formatCategoryLabel } from "@/lib/category-labels";
@@ -23,12 +27,17 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       : [];
 
   const uniqueIds = Array.from(new Set(ids.filter(Boolean))).slice(0, 3);
-  const [details, history] = await Promise.all([
-    loadTrendDetails(),
+  const [details, explorer, history] = await Promise.all([
+    loadTrendDetailsByIds(uniqueIds),
+    loadTrendExplorer(),
     loadTrendHistory(),
   ]);
-  const compared = details.trends.filter((trend) => uniqueIds.includes(trend.id));
-  const suggestions = buildComparisonSuggestions(uniqueIds, details.trends);
+  const compared = details.filter((trend) => uniqueIds.includes(trend.id));
+  const suggestions = buildComparisonSuggestions(
+    uniqueIds,
+    details,
+    explorer.trends,
+  );
 
   return (
     <main className="detail-page">
