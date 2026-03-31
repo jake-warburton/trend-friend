@@ -724,6 +724,7 @@ input {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(6px);
   animation: nav-backdrop-in 200ms ease;
+  pointer-events: auto;
 }
 
 @keyframes nav-backdrop-in {
@@ -737,7 +738,7 @@ input {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 100;
+  z-index: 110;
   width: min(280px, 80vw);
   height: 100dvh;
   background: var(--surface-menu);
@@ -745,11 +746,17 @@ input {
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.25);
   padding-top: 64px;
   transform: translateX(100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-bar-mobile-menu-open {
   transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .nav-bar-mobile-header {
@@ -8024,6 +8031,86 @@ dialog::backdrop {
 
 /* ── Ad Intelligence Dashboard ──────────────────────────────── */
 
+/* ── AI Use Cases ───────────────────────────────────────────── */
+
+.ai-use-cases-page {
+  display: grid;
+  gap: 20px;
+}
+
+.ai-use-cases-note {
+  max-width: 54rem;
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(140deg, rgba(94, 107, 255, 0.08), transparent 55%),
+    var(--surface-panel);
+  color: var(--copy-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ai-use-case-cluster-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ai-use-case-cluster-card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background:
+    linear-gradient(160deg, rgba(94, 107, 255, 0.08), transparent 48%),
+    linear-gradient(0deg, var(--surface-panel), var(--surface-panel));
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.ai-use-case-cluster-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ai-use-case-cluster-top h3 {
+  margin: 4px 0 0;
+  font-size: 1.12rem;
+  font-weight: 600;
+}
+
+.ai-use-case-cluster-kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-strong);
+}
+
+.ai-use-case-cluster-copy {
+  margin: 0;
+  color: var(--copy-secondary);
+  line-height: 1.55;
+}
+
+.ai-use-case-cluster-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.ai-use-case-inline-evidence {
+  display: block;
+  margin-top: 6px;
+  color: var(--copy-secondary);
+  line-height: 1.5;
+}
+
 /* ── Social Intelligence ──────────────────────────────────── */
 
 .social-intel-wrap {
@@ -8126,6 +8213,12 @@ dialog::backdrop {
   content: "#";
   opacity: 0.5;
   margin-right: 2px;
+}
+
+@media (max-width: 640px) {
+  .ai-use-case-cluster-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Ad Intelligence ─────────────────────────────────────── */

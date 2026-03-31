@@ -8,6 +8,7 @@ import { useProfile } from "@/components/profile-provider";
 
 const NAV_LINKS = [
   { label: "Explorer", href: "/explore", pro: false, desktopOnly: false },
+  { label: "AI Use Cases", href: "/ai-use-cases", pro: true, desktopOnly: false },
   { label: "Social Intelligence", href: "/social-intelligence", pro: true, desktopOnly: false },
   { label: "Ad Intelligence", href: "/ad-intelligence", pro: true, desktopOnly: false },
   { label: "Settings", href: "/settings", pro: false, desktopOnly: false },
@@ -35,23 +36,12 @@ export function NavBar() {
   const pathname = usePathname();
   const { authEnabled, user } = useAuth();
   const { isPro } = useProfile();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpenPathname, setMenuOpenPathname] = useState<string | null>(null);
+  const menuOpen = menuOpenPathname === pathname;
   const navClassName =
     pathname === "/explore" ? "nav-bar nav-bar-static nav-bar-blend" : "nav-bar";
 
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
-
-  useEffect(() => {
-    if (!menuOpen) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setMenuOpen(false);
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [pathname, menuOpen]);
+  const closeMenu = useCallback(() => setMenuOpenPathname(null), []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -112,7 +102,7 @@ export function NavBar() {
 
       <button
         className={`nav-bar-hamburger${menuOpen ? " nav-bar-hamburger-open" : ""}`}
-        onClick={() => setMenuOpen((prev) => !prev)}
+        onClick={() => setMenuOpenPathname((prev) => (prev === pathname ? null : pathname))}
         aria-label={menuOpen ? "Close menu" : "Open menu"}
         aria-expanded={menuOpen}
       >
@@ -161,6 +151,7 @@ export function NavBar() {
           pathname={pathname}
           isPro={isPro}
           mobile
+          onClick={closeMenu}
         />
       ))}
     </div>
@@ -173,11 +164,13 @@ function NavLink({
   pathname,
   isPro,
   mobile,
+  onClick,
 }: {
   link: (typeof NAV_LINKS)[number];
   pathname: string;
   isPro: boolean;
   mobile?: boolean;
+  onClick?: () => void;
 }) {
   const active =
     link.href === "/explore"
@@ -195,6 +188,7 @@ function NavLink({
     <Link
       className={`${baseClass}${active ? ` ${activeClass}` : ""}`}
       href={link.href}
+      onClick={onClick}
     >
       {link.label}
       {link.pro && !isPro && <span className="nav-bar-pro-badge">PRO</span>}

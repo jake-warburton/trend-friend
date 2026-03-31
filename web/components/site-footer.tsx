@@ -19,6 +19,9 @@ export function SiteFooter() {
           <div className="site-footer-col">
             <h4>Product</h4>
             <Link href="/explore">Explorer</Link>
+            <Link href="/ai-use-cases">AI Use Cases</Link>
+            <Link href="/social-intelligence">Social Intelligence</Link>
+            <Link href="/ad-intelligence">Ad Intelligence</Link>
             <Link href="/pricing">Pricing</Link>
             <Link href="/">About us</Link>
           </div>

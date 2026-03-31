@@ -8,6 +8,7 @@ import { isPro, type BillingStatus } from "@/lib/subscription";
 export const PRO_FEATURES = [
   "Everything in Free",
   "CSV export",
+  "AI Use Cases",
   "Social Intelligence",
   "Ad Intelligence",
 ] as const;
